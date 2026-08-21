@@ -1,8 +1,11 @@
-pandas>=2.2.0
-numpy>=2.0.0
-scikit-learn>=1.5.0
-matplotlib>=3.9.0
-seaborn>=0.13.0
-plotly>=5.20.0
-streamlit>=1.35.0
-joblib>=1.4.0
+# Pinned for reproducibility (Phase 10). Rebuild artifacts after any version change.
+# Python: 3.14.x (tested on 3.14.0)
+pandas==3.0.0
+numpy==2.3.5
+scikit-learn==1.9.0
+matplotlib==3.10.8
+seaborn==0.13.2
+plotly==6.5.2
+streamlit==1.62.0
+joblib==1.5.3
+pytest==8.4.2

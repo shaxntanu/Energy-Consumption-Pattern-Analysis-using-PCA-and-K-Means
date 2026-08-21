@@ -1,6 +1,8 @@
 """
-Streamlit Dashboard
-Interactive dashboard for Energy Consumption Pattern Analysis.
+Streamlit Dashboard — Energy Consumption Pattern Analysis
+
+All pages read from a single AnalysisResults object. PCA / K-Means are never
+recomputed independently for display. Parameter changes invalidate via config hash.
 """
 
 import streamlit as st
@@ -11,18 +13,10 @@ import plotly.graph_objects as go
 from pathlib import Path
 import sys
 
-# Add src directory to path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
-from data_loader import generate_synthetic_data
-from preprocessing import preprocess_pipeline
-from feature_engineering import engineer_all_features, select_features
-from pca_analysis import run_pca_pipeline
-from clustering import run_clustering_pipeline
-from cluster_profiling import run_cluster_profiling
-from evaluation import calculate_clustering_metrics
+from energy_analysis import AnalysisConfig, EnergyAnalysis, AnalysisResults
 
-# Page configuration
 st.set_page_config(
     page_title="Energy Consumption Pattern Analysis",
     page_icon="⚡",
@@ -30,281 +24,267 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
 st.markdown("""
 <style>
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        text-align: center;
-        padding: 1rem 0;
-    }
-    .section-header {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #2c3e50;
-        padding: 1rem 0 0.5rem 0;
-    }
-    .metric-card {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-    }
+    .main-header { font-size: 2.5rem; font-weight: bold; color: #1f77b4; text-align: center; padding: 1rem 0; }
+    .section-header { font-size: 1.5rem; font-weight: bold; color: #2c3e50; padding: 1rem 0 0.5rem 0; }
 </style>
 """, unsafe_allow_html=True)
 
 
-def load_data_sidebar():
-    """Sidebar for data loading parameters."""
-    st.sidebar.header("Data Parameters")
-    
+def build_config_from_sidebar() -> AnalysisConfig:
+    st.sidebar.header("Analysis Parameters")
     n_consumers = st.sidebar.slider("Number of Consumers", 50, 500, 200)
     n_days = st.sidebar.slider("Number of Days", 7, 90, 30)
     hourly_records = st.sidebar.checkbox("Hourly Records", value=True)
-    
-    return n_consumers, n_days, hourly_records
+    feature_set = st.sidebar.selectbox(
+        "Feature Set",
+        options=['behavioral', 'scale', 'combined'],
+        index=0,
+        help="Primary experiment uses behavioral (shape) features."
+    )
+    random_seed = st.sidebar.number_input("Random Seed", min_value=0, value=42, step=1)
+    return AnalysisConfig(
+        n_consumers=int(n_consumers),
+        n_days=int(n_days),
+        hourly_records=bool(hourly_records),
+        feature_set=feature_set,
+        random_seed=int(random_seed),
+        test_stability=False,  # keep UI responsive; offline pipeline runs full stability
+        experiment_name=f"dashboard_{feature_set}",
+    )
 
 
-@st.cache_data
-def get_processed_data(n_consumers, n_days, hourly_records):
-    """Load and process data with caching."""
-    synthetic_data = generate_synthetic_data(n_consumers, n_days, hourly_records)
-    preprocessed = preprocess_pipeline(synthetic_data)
-    features = engineer_all_features(preprocessed)
-    return preprocessed, features
+def get_or_run_analysis(config: AnalysisConfig) -> AnalysisResults:
+    """
+    Single analysis object in session state.
+    Regenerates fully when config hash changes — never keeps stale models/labels.
+    """
+    cfg_hash = config.config_hash()
+    cached = st.session_state.get('analysis_results')
+    cached_hash = st.session_state.get('analysis_config_hash')
+
+    if cached is None or cached_hash != cfg_hash:
+        with st.spinner("Running full analysis pipeline (invalidating prior session state)..."):
+            analysis = EnergyAnalysis(config)
+            results = analysis.run()
+        st.session_state['analysis_results'] = results
+        st.session_state['analysis_config_hash'] = cfg_hash
+        # Clear any legacy keys from older dashboard versions
+        for key in ('X_pca', 'labels', 'pca', 'kmeans'):
+            st.session_state.pop(key, None)
+    return st.session_state['analysis_results']
 
 
-def overview_page(preprocessed, features):
-    """Overview page with dataset statistics."""
-    st.markdown('<div class="main-header">⚡ Energy Consumption Pattern Analysis</div>', 
-                unsafe_allow_html=True)
-    
-    st.markdown('<div class="section-header">Dataset Overview</div>', unsafe_allow_html=True)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
+def overview_page(results: AnalysisResults):
+    st.markdown('<div class="main-header">⚡ Energy Consumption Pattern Analysis</div>', unsafe_allow_html=True)
+    st.info("**Data source: Synthetic (archetype-based)** — latent archetypes are hidden ground truth and are never passed to K-Means.")
+
+    st.markdown(
+        "Objective: recover meaningful *usage-pattern* groups (when/how energy is used), "
+        "not merely low/medium/high magnitude splits. PCA + K-Means remain the core methods."
+    )
+
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        st.metric("Total Records", f"{len(preprocessed):,}")
+        st.metric("Records", f"{len(results.preprocessed_data):,}")
     with col2:
-        st.metric("Unique Consumers", f"{preprocessed['consumer_id'].nunique()}")
+        st.metric("Consumers", f"{results.preprocessed_data['consumer_id'].nunique()}")
     with col3:
-        st.metric("Date Range", f"{preprocessed['timestamp'].min().date()} to {preprocessed['timestamp'].max().date()}")
+        st.metric("Features", len(results.feature_names))
     with col4:
-        st.metric("Avg Consumption", f"{preprocessed['energy_consumption_kwh'].mean():.3f} kWh")
-    
-    st.markdown('<div class="section-header">Data Sample</div>', unsafe_allow_html=True)
-    st.dataframe(preprocessed.head(10), use_container_width=True)
-    
-    st.markdown('<div class="section-header">Feature Summary</div>', unsafe_allow_html=True)
-    st.dataframe(features.describe(), use_container_width=True)
+        st.metric("Selected K", results.optimal_k)
+    with col5:
+        st.metric("Silhouette @ K", f"{results.silhouette_for_k(results.optimal_k):.4f}")
+
+    st.caption(f"Config hash: `{results.config.config_hash()}` · PCA components: {results.n_pca_components}")
 
 
-def eda_page(preprocessed):
-    """EDA page with visualizations."""
+def methodology_page(results: AnalysisResults):
+    st.markdown('<div class="section-header">Methodology</div>', unsafe_allow_html=True)
+    st.markdown("""
+1. **Synthetic panel data** with four latent archetypes (daytime, evening, flat, weekend-heavy).
+2. **Panel-aware preprocessing** — sort by consumer/time; impute within consumer only.
+3. **Feature engineering** — behavioral shape (normalized load profile, weekend energy ratio, variability) separate from scale.
+4. **Standardization** — zero-mean, unit-variance features before PCA.
+5. **PCA** — retain components to a documented cumulative-variance threshold (default 95%).
+6. **K-Means** — evaluate K=2..10 with inertia, silhouette, Calinski-Harabasz, Davies-Bouldin; select by multi-metric consensus; optional multi-seed stability (ARI).
+7. **Profiling & recommendations** — in original feature space; recommendations triggered by measured deviations.
+    """)
+    st.json({
+        'feature_set': results.config.feature_set,
+        'n_features': len(results.feature_names),
+        'pca_components': results.n_pca_components,
+        'optimal_k': results.optimal_k,
+        'k_range': list(results.config.k_range),
+    })
+
+
+def eda_page(results: AnalysisResults):
     st.markdown('<div class="section-header">Exploratory Data Analysis</div>', unsafe_allow_html=True)
-    
-    # Hourly patterns
-    st.subheader("Hourly Consumption Patterns")
+    preprocessed = results.preprocessed_data
+
     hourly_avg = preprocessed.groupby('hour')['energy_consumption_kwh'].mean()
     fig_hourly = px.line(x=hourly_avg.index, y=hourly_avg.values,
-                        labels={'x': 'Hour of Day', 'y': 'Avg Consumption (kWh)'},
-                        title='Average Hourly Energy Consumption')
-    fig_hourly.update_traces(line=dict(width=3), marker=dict(size=8))
+                         labels={'x': 'Hour', 'y': 'Avg kWh'}, title='Average Hourly Consumption')
     st.plotly_chart(fig_hourly, use_container_width=True)
-    
-    # Weekday vs Weekend
-    st.subheader("Weekday vs Weekend Comparison")
+
     weekend_comp = preprocessed.groupby('is_weekend')['energy_consumption_kwh'].mean()
     fig_weekend = px.bar(x=['Weekday', 'Weekend'], y=weekend_comp.values,
-                        labels={'x': 'Day Type', 'y': 'Avg Consumption (kWh)'},
-                        title='Weekday vs Weekend Consumption',
-                        color=['Weekday', 'Weekend'])
+                         title='Weekday vs Weekend Consumption')
     st.plotly_chart(fig_weekend, use_container_width=True)
-    
-    # Distribution
-    st.subheader("Consumption Distribution")
-    fig_dist = px.histogram(preprocessed, x='energy_consumption_kwh', nbins=50,
-                           title='Energy Consumption Distribution')
-    st.plotly_chart(fig_dist, use_container_width=True)
-    
-    # Correlation heatmap
-    st.subheader("Feature Correlations")
-    numeric_cols = preprocessed.select_dtypes(include=[np.number]).columns
-    corr_matrix = preprocessed[numeric_cols].corr()
-    fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto",
-                        title='Correlation Heatmap')
-    st.plotly_chart(fig_corr, use_container_width=True)
+
+    # Engineered-feature correlations only (no consumer_id)
+    feat = results.features.drop(columns=['consumer_id'], errors='ignore')
+    numeric = feat.select_dtypes(include=[np.number])
+    # Limit columns for readability
+    corr_cols = [c for c in numeric.columns if c in (
+        'morning_usage', 'afternoon_usage', 'evening_usage', 'night_usage',
+        'weekend_ratio', 'peak_to_avg_ratio', 'coefficient_of_variation'
+    ) or c.startswith('hour_')][:12]
+    if corr_cols:
+        corr = numeric[corr_cols].corr()
+        st.plotly_chart(px.imshow(corr, text_auto=True, aspect='auto',
+                                  title='Engineered Feature Correlations (no IDs)'),
+                        use_container_width=True)
 
 
-def pca_page(features):
-    """PCA analysis page."""
-    st.markdown('<div class="section-header">PCA Analysis</div>', unsafe_allow_html=True)
-    
-    # Run PCA
-    features_selected = select_features(features)
-    X_pca, pca, scaler, n_components = run_pca_pipeline(features_selected)
-    
-    # Display PCA results
+def pca_page(results: AnalysisResults):
+    st.markdown('<div class="section-header">PCA</div>', unsafe_allow_html=True)
+    pca = results.pca_model
+    X_pca = results.pca_transformed
+
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Components Selected", n_components)
+        st.metric("Components Retained", results.n_pca_components)
     with col2:
         st.metric("Cumulative Variance", f"{np.cumsum(pca.explained_variance_ratio_)[-1]:.2%}")
     with col3:
-        st.metric("Original Features", features_selected.shape[1])
-    
-    # Explained variance plot
-    st.subheader("Explained Variance")
+        st.metric("Input Features", len(results.feature_names))
+
     fig_var = go.Figure()
-    fig_var.add_trace(go.Bar(x=list(range(1, len(pca.explained_variance_ratio_) + 1)),
-                             y=pca.explained_variance_ratio_,
-                             name='Individual Variance'))
-    fig_var.add_trace(go.Scatter(x=list(range(1, len(pca.explained_variance_ratio_) + 1)),
-                                y=np.cumsum(pca.explained_variance_ratio_),
-                                mode='lines+markers',
-                                name='Cumulative Variance'))
-    fig_var.update_layout(title='Explained Variance by Component',
-                         xaxis_title='Principal Component',
-                         yaxis_title='Variance Ratio')
+    xs = list(range(1, len(pca.explained_variance_ratio_) + 1))
+    fig_var.add_trace(go.Bar(x=xs, y=pca.explained_variance_ratio_, name='Individual'))
+    fig_var.add_trace(go.Scatter(x=xs, y=np.cumsum(pca.explained_variance_ratio_),
+                                 mode='lines+markers', name='Cumulative'))
+    fig_var.update_layout(title='Explained Variance (from fitted analysis object)')
     st.plotly_chart(fig_var, use_container_width=True)
-    
-    # 2D Projection
+
     if X_pca.shape[1] >= 2:
-        st.subheader("2D PCA Projection")
-        fig_pca = px.scatter(x=X_pca[:, 0], y=X_pca[:, 1],
-                            labels={'x': 'PC1', 'y': 'PC2'},
-                            title='2D PCA Projection',
-                            opacity=0.6)
-        st.plotly_chart(fig_pca, use_container_width=True)
-    
-    return X_pca
+        fig = px.scatter(x=X_pca[:, 0], y=X_pca[:, 1], opacity=0.6,
+                         labels={'x': 'PC1', 'y': 'PC2'}, title='2D PCA Projection')
+        st.plotly_chart(fig, use_container_width=True)
 
 
-def clustering_page(X_pca):
-    """Clustering analysis page."""
-    st.markdown('<div class="section-header">K-Means Clustering</div>', unsafe_allow_html=True)
-    
-    # Run clustering
-    kmeans, labels, optimal_k, k_values, inertia_values, silhouette_scores = run_clustering_pipeline(X_pca)
-    
-    # Display clustering results
+def k_selection_page(results: AnalysisResults):
+    st.markdown('<div class="section-header">K Selection</div>', unsafe_allow_html=True)
+
+    # Explicit dictionary lookup — never silhouette_scores[optimal_k - 2]
+    sil_at_k = results.silhouette_for_k(results.optimal_k)
+
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Optimal K", optimal_k)
+        st.metric("Selected K", results.optimal_k)
     with col2:
-        st.metric("Silhouette Score", f"{silhouette_scores[optimal_k-2]:.4f}")
+        st.metric("Silhouette @ Selected K", f"{sil_at_k:.4f}")
     with col3:
-        st.metric("Cluster Sizes", str(np.bincount(labels)))
-    
-    # Elbow curve
-    st.subheader("Elbow Curve")
-    fig_elbow = px.line(x=k_values, y=inertia_values,
-                        labels={'x': 'Number of Clusters (K)', 'y': 'Inertia'},
-                        title='Elbow Curve for K Selection',
-                        markers=True)
-    fig_elbow.update_traces(line=dict(width=3), marker=dict(size=8))
+        st.metric("Cluster Sizes", str(np.bincount(results.cluster_labels).tolist()))
+
+    k_vals = results.k_values
+    fig_elbow = px.line(x=k_vals, y=[results.inertia_by_k[k] for k in k_vals],
+                        markers=True, title='Elbow (Inertia vs K)',
+                        labels={'x': 'K', 'y': 'Inertia'})
     st.plotly_chart(fig_elbow, use_container_width=True)
-    
-    # Silhouette scores
-    st.subheader("Silhouette Scores")
-    fig_sil = px.line(x=k_values, y=silhouette_scores,
-                      labels={'x': 'Number of Clusters (K)', 'y': 'Silhouette Score'},
-                      title='Silhouette Scores by K',
-                      markers=True)
-    fig_sil.update_traces(line=dict(width=3), marker=dict(size=8))
+
+    fig_sil = px.line(x=k_vals, y=[results.silhouette_by_k[k] for k in k_vals],
+                      markers=True, title='Silhouette vs K (dictionary lookup)',
+                      labels={'x': 'K', 'y': 'Silhouette'})
+    fig_sil.add_vline(x=results.optimal_k, line_dash='dash', annotation_text=f'Selected K={results.optimal_k}')
     st.plotly_chart(fig_sil, use_container_width=True)
-    
-    # Cluster visualization
-    if X_pca.shape[1] >= 2:
-        st.subheader("Cluster Visualization")
-        fig_clusters = px.scatter(x=X_pca[:, 0], y=X_pca[:, 1], color=labels,
-                                  labels={'x': 'PC1', 'y': 'PC2', 'color': 'Cluster'},
-                                  title='2D Cluster Visualization',
-                                  opacity=0.7)
-        st.plotly_chart(fig_clusters, use_container_width=True)
-    
-    return labels
+
+    if results.pca_transformed.shape[1] >= 2:
+        fig = px.scatter(
+            x=results.pca_transformed[:, 0],
+            y=results.pca_transformed[:, 1],
+            color=results.cluster_labels.astype(str),
+            title='Clusters (labels from fitted K-Means)',
+            labels={'x': 'PC1', 'y': 'PC2', 'color': 'Cluster'},
+            opacity=0.7,
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 
-def cluster_insights_page(features, labels):
-    """Cluster insights page."""
-    st.markdown('<div class="section-header">Cluster Insights & Recommendations</div>', unsafe_allow_html=True)
-    
-    # Run cluster profiling
-    profiles, insights = run_cluster_profiling(features, labels)
-    
-    # Display cluster profiles
-    st.subheader("Cluster Profiles")
-    st.dataframe(profiles, use_container_width=True)
-    
-    # Display insights
-    st.subheader("Cluster Interpretations & Recommendations")
-    
-    for _, row in insights.iterrows():
-        with st.expander(f"Cluster {int(row['cluster'])} - {row['interpretation']}"):
-            st.write("**Recommendations:**")
-            recommendations = row['recommendations'].split('; ')
-            for rec in recommendations:
-                st.write(f"• {rec}")
-    
-    # Evaluation metrics
-    st.subheader("Clustering Evaluation Metrics")
-    from feature_engineering import select_features
-    features_selected = select_features(features)
-    from pca_analysis import standardize_features
-    X_scaled, _ = standardize_features(features_selected)
-    from sklearn.decomposition import PCA
-    pca_temp = PCA(n_components=6)
-    X_pca_temp = pca_temp.fit_transform(X_scaled)
-    
-    metrics = calculate_clustering_metrics(X_pca_temp, labels)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Silhouette Score", f"{metrics['silhouette_score']:.4f}")
-    with col2:
-        st.metric("Calinski-Harabasz", f"{metrics['calinski_harabasz_score']:.2f}")
-    with col3:
-        st.metric("Davies-Bouldin", f"{metrics['davies_bouldin_score']:.4f}")
-    with col4:
-        st.metric("Inertia", f"{metrics['inertia']:.2f}")
+def profiles_page(results: AnalysisResults):
+    st.markdown('<div class="section-header">Cluster Profiles</div>', unsafe_allow_html=True)
+    st.dataframe(results.cluster_profiles, use_container_width=True)
+    st.dataframe(results.cluster_insights, use_container_width=True)
+
+
+def recommendations_page(results: AnalysisResults):
+    st.markdown('<div class="section-header">Evidence-Based Recommendations</div>', unsafe_allow_html=True)
+    st.caption("Each recommendation is triggered by a measured cluster characteristic. No causal savings claims.")
+    st.dataframe(results.recommendations, use_container_width=True)
+
+
+def validation_page():
+    st.markdown('<div class="section-header">Validation / Ablation</div>', unsafe_allow_html=True)
+    report_path = Path(__file__).parent.parent / 'outputs' / 'reports' / 'ablation_study_report.md'
+    if report_path.exists():
+        st.markdown(report_path.read_text(encoding='utf-8'))
+    else:
+        st.warning("Ablation report not found. Run `py src/run_ablation_study.py` offline.")
+
+
+def limitations_page(results: AnalysisResults):
+    st.markdown('<div class="section-header">Limitations</div>', unsafe_allow_html=True)
+    st.markdown(f"""
+- **Synthetic data**: archetypes are designed; real grids may differ. Source labeled as synthetic.
+- **Weak separation possible**: behavioral silhouette at K={results.optimal_k} is
+  {results.silhouette_for_k(results.optimal_k):.4f} — reported honestly, not inflated.
+- **Clustering ≠ causation**: recommendations are correlational suggestions only.
+- **Feature dependence**: results depend on the chosen feature set (see ablation).
+- **Generalization**: single synthetic window ({results.config.n_days} days); no multi-season claim.
+- **Session safety**: changing sidebar parameters regenerates the full analysis object (hash `{results.config.config_hash()}`).
+    """)
 
 
 def main():
-    """Main application."""
-    # Sidebar
-    n_consumers, n_days, hourly_records = load_data_sidebar()
-    
-    # Load data
-    with st.spinner("Loading and processing data..."):
-        preprocessed, features = get_processed_data(n_consumers, n_days, hourly_records)
-    
-    # Page navigation
-    page = st.sidebar.radio("Navigate", ["Overview", "EDA", "PCA", "Clustering", "Cluster Insights"])
-    
+    config = build_config_from_sidebar()
+    results = get_or_run_analysis(config)
+
+    page = st.sidebar.radio(
+        "Navigate",
+        [
+            "Overview",
+            "Methodology",
+            "EDA",
+            "PCA",
+            "K Selection",
+            "Cluster Profiles",
+            "Recommendations",
+            "Validation/Ablation",
+            "Limitations",
+        ],
+    )
+
     if page == "Overview":
-        overview_page(preprocessed, features)
+        overview_page(results)
+    elif page == "Methodology":
+        methodology_page(results)
     elif page == "EDA":
-        eda_page(preprocessed)
+        eda_page(results)
     elif page == "PCA":
-        X_pca = pca_page(features)
-        st.session_state['X_pca'] = X_pca
-    elif page == "Clustering":
-        if 'X_pca' not in st.session_state:
-            features_selected = select_features(features)
-            X_pca, _, _, _ = run_pca_pipeline(features_selected)
-            st.session_state['X_pca'] = X_pca
-        labels = clustering_page(st.session_state['X_pca'])
-        st.session_state['labels'] = labels
-    elif page == "Cluster Insights":
-        if 'labels' not in st.session_state:
-            features_selected = select_features(features)
-            X_pca, _, _, _ = run_pca_pipeline(features_selected)
-            _, labels, _, _, _, _ = run_clustering_pipeline(X_pca)
-            st.session_state['labels'] = labels
-        cluster_insights_page(features, st.session_state['labels'])
+        pca_page(results)
+    elif page == "K Selection":
+        k_selection_page(results)
+    elif page == "Cluster Profiles":
+        profiles_page(results)
+    elif page == "Recommendations":
+        recommendations_page(results)
+    elif page == "Validation/Ablation":
+        validation_page()
+    elif page == "Limitations":
+        limitations_page(results)
 
 
 if __name__ == "__main__":

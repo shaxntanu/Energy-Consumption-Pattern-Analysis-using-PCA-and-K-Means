@@ -1,0 +1,5 @@
+cluster,cluster_name,recommendation,evidence,priority,category,rank
+0,Afternoon-Peak High-Variability,Implement peak-load shifting and demand-response programs,Peak-to-average ratio 7.16 indicates significant peak loads,high,peak_management,1
+0,Afternoon-Peak High-Variability,Implement load monitoring and energy storage,Coefficient of variation 1.09 indicates high usage volatility,high,variability,2
+1,Weekend-Oriented Spiky-Variable,Implement peak-load shifting and demand-response programs,Peak-to-average ratio 11.19 indicates significant peak loads,high,peak_management,1
+1,Weekend-Oriented Spiky-Variable,Implement load monitoring and energy storage,Coefficient of variation 1.34 indicates high usage volatility,high,variability,2
