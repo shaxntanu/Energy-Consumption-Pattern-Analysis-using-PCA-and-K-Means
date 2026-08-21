@@ -3,10 +3,16 @@ PCA Analysis Module
 Performs dimensionality reduction using PCA.
 """
 
+import os
+# Use non-interactive backend before pyplot import (tests / headless CI)
+os.environ.setdefault('MPLBACKEND', 'Agg')
+
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import matplotlib
+matplotlib.use('Agg', force=True)
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
@@ -42,27 +48,35 @@ def standardize_features(df: pd.DataFrame) -> tuple:
 
 def perform_pca(X: np.ndarray, variance_threshold: float = 0.95) -> tuple:
     """
-    Perform PCA and determine optimal number of components.
+    Perform PCA with documented component selection.
+    
+    Component Selection Rationale:
+    - Uses cumulative explained variance threshold (default 95%)
+    - This is a standard, defensible criterion for dimensionality reduction
+    - Ensures most information is retained while reducing dimensionality
+    - Alternative methods (Kaiser criterion, scree plot elbow) are subjective
     
     Args:
         X: Scaled feature matrix
-        variance_threshold: Minimum cumulative variance to retain
+        variance_threshold: Minimum cumulative variance to retain (default 0.95)
         
     Returns:
         Tuple of (pca_object, transformed_data, n_components)
     """
     logger.info("Performing PCA")
+    logger.info(f"Component selection method: Cumulative variance threshold ({variance_threshold:.0%})")
     
-    # Start with all components
-    pca = PCA()
-    pca.fit(X)
+    # Start with all components to analyze full variance structure
+    pca_full = PCA()
+    pca_full.fit(X)
     
     # Calculate cumulative explained variance
-    cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
+    cumulative_variance = np.cumsum(pca_full.explained_variance_ratio_)
     
     # Find number of components for threshold
     n_components = np.argmax(cumulative_variance >= variance_threshold) + 1
     logger.info(f"Selected {n_components} components for {variance_threshold:.0%} variance")
+    logger.info(f"Original dimensions: {X.shape[1]}, Reduced to: {n_components}")
     
     # Fit PCA with selected components
     pca_final = PCA(n_components=n_components)
@@ -202,7 +216,7 @@ def run_pca_pipeline(df: pd.DataFrame, variance_threshold: float = 0.95,
     Run complete PCA pipeline.
     
     Args:
-        df: DataFrame with engineered features (excluding consumer_id)
+        df: DataFrame with engineered features (consumer_id dropped if present)
         variance_threshold: Minimum cumulative variance to retain
         output_dir: Directory to save plots
         model_dir: Directory to save models
@@ -212,12 +226,19 @@ def run_pca_pipeline(df: pd.DataFrame, variance_threshold: float = 0.95,
     """
     logger.info("Starting PCA pipeline")
     
-    # Create output directories
+    # Create output directories (never assume they exist)
+    metrics_dir = Path(output_dir).parent / 'metrics'
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     Path(model_dir).mkdir(parents=True, exist_ok=True)
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Exclude identifiers from the modeling matrix
+    feature_df = df.drop(columns=['consumer_id'], errors='ignore').select_dtypes(include=[np.number])
+    if feature_df.shape[1] == 0:
+        raise ValueError("No numeric features available for PCA after dropping identifiers")
     
     # Standardize features
-    X_scaled, scaler = standardize_features(df)
+    X_scaled, scaler = standardize_features(feature_df)
     
     # Perform PCA
     pca, X_pca, n_components = perform_pca(X_scaled, variance_threshold)
@@ -225,10 +246,12 @@ def run_pca_pipeline(df: pd.DataFrame, variance_threshold: float = 0.95,
     # Generate visualizations
     plot_explained_variance(pca, output_dir)
     plot_pca_projection(X_pca, output_dir)
-    plot_component_loadings(pca, df.columns.tolist(), output_dir)
+    plot_component_loadings(pca, feature_df.columns.tolist(), output_dir)
     
-    # Save models
+    # Save models + feature names for reproducibility
     save_models(scaler, pca, model_dir)
+    feature_names_path = Path(model_dir) / 'feature_names.txt'
+    feature_names_path.write_text('\n'.join(feature_df.columns.tolist()), encoding='utf-8')
     
     # Save PCA results
     pca_results = pd.DataFrame({
@@ -236,26 +259,28 @@ def run_pca_pipeline(df: pd.DataFrame, variance_threshold: float = 0.95,
         'Explained_Variance_Ratio': pca.explained_variance_ratio_,
         'Cumulative_Variance': np.cumsum(pca.explained_variance_ratio_)
     })
-    pca_results.to_csv(Path(output_dir).parent / 'metrics' / 'pca_results.csv', index=False)
+    pca_results.to_csv(metrics_dir / 'pca_results.csv', index=False)
     
     logger.info("PCA pipeline completed")
     return X_pca, pca, scaler, n_components
 
 
 if __name__ == "__main__":
-    # Test PCA
+    # Test PCA with new feature sets
     from data_loader import generate_synthetic_data
     from preprocessing import preprocess_pipeline
     from feature_engineering import engineer_all_features, select_features
     
     synthetic_data = generate_synthetic_data(n_consumers=200, n_days=30, hourly_records=True)
-    preprocessed = preprocess_pipeline(synthetic_data)
-    features = engineer_all_features(preprocessed)
-    features_selected = select_features(features)
+    preprocessed = preprocess_pipeline(synthetic_data.drop(columns=['archetype']))
+    
+    # Test with behavioral features
+    features = engineer_all_features(preprocessed, feature_set='behavioral')
+    features_selected = select_features(features, feature_group='behavioral')
     
     X_pca, pca, scaler, n_components = run_pca_pipeline(features_selected)
     
-    print(f"\nPCA Results:")
+    print(f"\nPCA Results (Behavioral Features):")
     print(f"Number of components: {n_components}")
     print(f"Explained variance ratio: {pca.explained_variance_ratio_}")
     print(f"Cumulative variance: {np.cumsum(pca.explained_variance_ratio_)[-1]:.4f}")

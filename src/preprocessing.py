@@ -30,29 +30,65 @@ def validate_schema(df: pd.DataFrame, required_columns: list) -> bool:
     return True
 
 
-def handle_missing_values(df: pd.DataFrame, strategy: str = 'forward_fill') -> pd.DataFrame:
+def handle_missing_values(df: pd.DataFrame, strategy: str = 'forward_fill', 
+                          group_by: str = 'consumer_id') -> pd.DataFrame:
     """
-    Handle missing values in the DataFrame.
+    Handle missing values with within-group awareness to prevent cross-consumer leakage.
     
     Args:
-        df: Input DataFrame
+        df: DataFrame with potential missing values
         strategy: Strategy for handling missing values ('forward_fill', 'backward_fill', 'mean', 'drop')
+        group_by: Column to group by for within-group operations (default: consumer_id)
         
     Returns:
         DataFrame with missing values handled
     """
-    logger.info(f"Handling missing values with strategy: {strategy}")
+    logger.info(f"Handling missing values with strategy: {strategy} (grouped by {group_by})")
     logger.info(f"Missing values before: {df.isnull().sum().sum()}")
     
     df_clean = df.copy()
     
+    if group_by not in df_clean.columns:
+        logger.warning(f"Group column '{group_by}' not found, falling back to global operation")
+        group_by = None
+    
     if strategy == 'forward_fill':
-        df_clean = df_clean.ffill().bfill()
+        if group_by:
+            # Within-consumer forward fill, then backward fill for remaining
+            # Use transform to preserve group column
+            for col in df_clean.columns:
+                if col != group_by and df_clean[col].isnull().any():
+                    df_clean[col] = df_clean.groupby(group_by)[col].transform(
+                        lambda x: x.ffill().bfill()
+                    )
+        else:
+            df_clean = df_clean.ffill().bfill()
     elif strategy == 'backward_fill':
-        df_clean = df_clean.bfill().ffill()
+        if group_by:
+            for col in df_clean.columns:
+                if col != group_by and df_clean[col].isnull().any():
+                    df_clean[col] = df_clean.groupby(group_by)[col].transform(
+                        lambda x: x.bfill().ffill()
+                    )
+        else:
+            df_clean = df_clean.bfill().ffill()
     elif strategy == 'mean':
         numeric_cols = df_clean.select_dtypes(include=[np.number]).columns
-        df_clean[numeric_cols] = df_clean[numeric_cols].fillna(df_clean[numeric_cols].mean())
+        if group_by:
+            # Fill with group-specific mean
+            for col in numeric_cols:
+                if col != group_by:
+                    df_clean[col] = df_clean.groupby(group_by)[col].transform(
+                        lambda x: x.fillna(x.mean())
+                    )
+            # Fill remaining with global mean
+            df_clean[numeric_cols] = df_clean[numeric_cols].fillna(
+                df_clean[numeric_cols].mean()
+            )
+        else:
+            df_clean[numeric_cols] = df_clean[numeric_cols].fillna(
+                df_clean[numeric_cols].mean()
+            )
     elif strategy == 'drop':
         df_clean = df_clean.dropna()
     else:
@@ -85,19 +121,21 @@ def detect_invalid_values(df: pd.DataFrame, column_ranges: dict = None) -> pd.Da
     Detect and handle invalid values based on column ranges.
     
     Args:
-        df: Input DataFrame
-        column_ranges: Dictionary mapping column names to (min, max) tuples
+        df: DataFrame to validate
+        column_ranges: Dict mapping column names to (min, max) valid ranges.
+                      If None, uses conservative physical limits.
         
     Returns:
-        DataFrame with invalid values set to NaN
+        DataFrame with invalid values marked as NaN
     """
     if column_ranges is None:
+        # Conservative physical limits - only mark truly impossible values
         column_ranges = {
-            'energy_consumption_kwh': (0, 100),
-            'voltage_v': (200, 250),
-            'current_a': (0, 100),
-            'power_factor': (0, 1),
-            'temperature_c': (-20, 50)
+            'energy_consumption_kwh': (0, 1000),  # Very high upper limit to avoid removing legitimate peaks
+            'voltage_v': (0, 500),  # Allow wider range
+            'current_a': (0, 500),  # Allow wider range
+            'power_factor': (0, 1.1),  # Slightly above 1 for measurement error
+            'temperature_c': (-50, 60)  # Wider physical range
         }
     
     df_clean = df.copy()
@@ -145,18 +183,20 @@ def parse_timestamps(df: pd.DataFrame, timestamp_col: str = 'timestamp') -> pd.D
 
 
 def remove_outliers(df: pd.DataFrame, column: str, method: str = 'iqr', 
-                    threshold: float = 1.5) -> pd.DataFrame:
+                    threshold: float = 5.0, remove: bool = False) -> pd.DataFrame:
     """
-    Remove outliers from a specific column.
+    Detect outliers using IQR or Z-score method.
+    By default, only logs outliers without removing them to preserve behavioral extremes.
     
     Args:
         df: Input DataFrame
         column: Column name to check for outliers
         method: Method for outlier detection ('iqr' or 'zscore')
-        threshold: Threshold for outlier detection
+        threshold: Threshold for outlier detection (default 5.0 for IQR to be conservative)
+        remove: If True, remove outliers; if False, only log them
         
     Returns:
-        DataFrame with outliers removed
+        DataFrame with outliers optionally removed
     """
     df_clean = df.copy()
     
@@ -178,43 +218,62 @@ def remove_outliers(df: pd.DataFrame, column: str, method: str = 'iqr',
         raise ValueError(f"Unknown method: {method}")
     
     n_outliers = outlier_mask.sum()
-    df_clean = df_clean[~outlier_mask]
     
-    logger.info(f"Removed {n_outliers} outliers from column '{column}'")
+    if remove:
+        df_clean = df_clean[~outlier_mask]
+        logger.info(f"Removed {n_outliers} outliers from column '{column}'")
+    else:
+        logger.info(f"Detected {n_outliers} outliers in column '{column}' (not removed)")
+        logger.info(f"Outlier bounds: [{lower_bound:.2f}, {upper_bound:.2f}]")
+    
     return df_clean
 
 
-def preprocess_pipeline(df: pd.DataFrame, required_columns: list = None) -> pd.DataFrame:
+def preprocess_pipeline(df: pd.DataFrame, required_columns: list = None, 
+                        remove_outliers_flag: bool = False) -> pd.DataFrame:
     """
-    Complete preprocessing pipeline.
+    Complete preprocessing pipeline with panel/time-series awareness.
     
     Args:
         df: Input DataFrame
         required_columns: List of required columns for validation
+        remove_outliers_flag: If True, remove outliers; if False, only detect and log
         
     Returns:
         Preprocessed DataFrame
     """
     logger.info("Starting preprocessing pipeline")
     logger.info(f"Initial shape: {df.shape}")
+    logger.info(f"Initial columns: {df.columns.tolist()}")
     
     if required_columns:
         validate_schema(df, required_columns)
     
     # Remove duplicates
     df = remove_duplicates(df)
+    logger.info(f"After remove_duplicates: {df.columns.tolist()}")
     
     # Parse timestamps
     df = parse_timestamps(df)
+    logger.info(f"After parse_timestamps: {df.columns.tolist()}")
     
-    # Detect invalid values
+    # Sort panel data before any temporal operations (prevents cross-consumer leakage)
+    sort_cols = [c for c in ['consumer_id', 'timestamp'] if c in df.columns]
+    if sort_cols:
+        df = df.sort_values(sort_cols).reset_index(drop=True)
+        logger.info(f"Sorted by {sort_cols}")
+    
+    # Detect invalid values (only truly impossible values)
     df = detect_invalid_values(df)
+    logger.info(f"After detect_invalid_values: {df.columns.tolist()}")
     
-    # Handle missing values
-    df = handle_missing_values(df, strategy='forward_fill')
+    # Handle missing values with within-consumer awareness
+    df = handle_missing_values(df, strategy='forward_fill', group_by='consumer_id')
+    logger.info(f"After handle_missing_values: {df.columns.tolist()}")
     
-    # Remove extreme outliers from energy consumption
-    df = remove_outliers(df, 'energy_consumption_kwh', method='iqr', threshold=3.0)
+    # Detect outliers (by default, only log without removing to preserve behavioral extremes)
+    df = remove_outliers(df, 'energy_consumption_kwh', method='iqr', threshold=5.0, remove=remove_outliers_flag)
+    logger.info(f"After remove_outliers: {df.columns.tolist()}")
     
     logger.info(f"Final shape after preprocessing: {df.shape}")
     return df
