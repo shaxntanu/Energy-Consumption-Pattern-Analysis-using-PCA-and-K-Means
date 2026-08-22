@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Energy Consumption Pattern Analysis</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 42rem; margin: 3rem auto; padding: 0 1.25rem; line-height: 1.55; color: #1a1a1a; }
+    h1 { font-size: 1.6rem; }
+    code { background: #f4f4f4; padding: 0.1rem 0.35rem; }
+    a { color: #0b57d0; }
+    .note { background: #f7f3ea; border-left: 4px solid #c9a227; padding: 0.75rem 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Energy Consumption Pattern Analysis (PCA + K-Means)</h1>
+  <p class="note">
+    This Vercel site is a static landing page. The interactive dashboard is a
+    <strong>Streamlit</strong> app. Vercel Python functions cannot run Streamlit
+    (they expect a Flask/FastAPI <code>app</code> or <code>handler</code>).
+  </p>
+  <p>
+    Source:
+    <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means">GitHub repository</a>
+  </p>
+  <h2>Run the dashboard locally</h2>
+  <pre><code>py -m pip install -r requirements.txt
+py -m streamlit run streamlit_app.py</code></pre>
+  <h2>Host the dashboard</h2>
+  <ul>
+    <li><a href="https://share.streamlit.io/">Streamlit Community Cloud</a>: deploy <code>streamlit_app.py</code> from this repo.</li>
+    <li>Render / Docker: see <code>render.yaml</code> and <code>Dockerfile</code> in the repo.</li>
+  </ul>
+</body>
+</html>
