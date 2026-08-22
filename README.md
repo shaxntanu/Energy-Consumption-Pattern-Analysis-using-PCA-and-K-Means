@@ -167,19 +167,31 @@ py -m pytest tests/ -v
 py src/energy_analysis.py
 
 # Dashboard (reads one AnalysisResults object)
-py -m streamlit run app/app.py
+py -m streamlit run streamlit_app.py
 ```
 
 Dashboard: `http://localhost:8501`
 
 Pages: Overview, Methodology, EDA, PCA, K Selection, Cluster Profiles, Recommendations, Validation/Ablation, Limitations.
 
+### Hosting
+
+**Vercel cannot run this dashboard.** Vercel Python expects a serverless `app` / `handler` (Flask or FastAPI). Streamlit is a long-running server. If the GitHub repo is connected to Vercel, it now deploys a static landing page from `public/` instead of failing on `app/app.py`.
+
+To host the interactive app:
+
+1. [Streamlit Community Cloud](https://share.streamlit.io/): point at `streamlit_app.py`.
+2. Render: `render.yaml` in this repo.
+3. Docker: `docker build -t energy-pca . && docker run -p 8501:8501 energy-pca`
+
 ---
 
 ## Project structure
 
 ```
-├── app/app.py                 # Streamlit dashboard
+├── streamlit_app.py           # Streamlit dashboard
+├── public/                    # Static landing page for Vercel
+├── vercel.json                # Vercel: static site, not Python functions
 ├── src/
 │   ├── data_loader.py         # Archetype synthetic generator
 │   ├── preprocessing.py       # Panel-aware cleaning
