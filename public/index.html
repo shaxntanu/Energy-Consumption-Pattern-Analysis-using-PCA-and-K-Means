@@ -3,33 +3,560 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Energy Consumption Pattern Analysis</title>
+  <title>Energy has a rhythm - PCA + K-Means load-shape study</title>
+  <meta name="description" content="A synthetic study that groups electricity consumers by the shape of their day, not how much they use. PCA and K-Means on 51 behavioural features." />
+
+  <!--
+    This is a hand-authored static landing page (Vercel serves the /public
+    directory). It cannot run the Streamlit instrument itself; Streamlit is a
+    long-running server, not a serverless handler. The interactive dashboard is
+    hosted separately - see the "Run the instrument" section at the foot.
+
+    Every number and every curve on this page comes from the committed run
+    artifacts (outputs/reports/analysis_summary.md, config hash 6dff8faaa470d418,
+    and outputs/metrics/cluster_load_shapes.csv). Nothing here is invented. The
+    data is SYNTHETIC and is stated as such throughout.
+
+    If you deploy the dashboard, put its public URL in LAUNCH_URL below and the
+    "Explore the data" buttons will point straight at it.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
   <style>
-    body { font-family: Georgia, "Times New Roman", serif; max-width: 42rem; margin: 3rem auto; padding: 0 1.25rem; line-height: 1.55; color: #1a1a1a; }
-    h1 { font-size: 1.6rem; }
-    code { background: #f4f4f4; padding: 0.1rem 0.35rem; }
-    a { color: #0b57d0; }
-    .note { background: #f7f3ea; border-left: 4px solid #c9a227; padding: 0.75rem 1rem; }
+    :root {
+      --midnight:#0B0E14; --panel:#141A24; --panel-hi:#1B2230; --line:#262E3D;
+      --ink:#EAECEF; --mist:#8A93A6; --slate:#5B657A;
+      --cyan:#3BC9DE; --cyan-deep:#1E9DB2; --green:#4FD1A5;
+      --indigo:#6C8CFF; --amber:#F5A524; --violet:#B085F5; --rose:#F26D6D;
+      --display:'Space Grotesk',system-ui,sans-serif;
+      --body:'Inter',system-ui,sans-serif;
+      --mono:'IBM Plex Mono',ui-monospace,monospace;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0; background:var(--midnight); color:var(--ink);
+      font-family:var(--body); line-height:1.62;
+      -webkit-font-smoothing:antialiased;
+    }
+    a { color:var(--cyan); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    h1,h2,h3 { font-family:var(--display); letter-spacing:-0.02em; line-height:1.05; }
+    ::selection { background:rgba(59,201,222,0.28); }
+    :focus-visible { outline:2px solid var(--cyan); outline-offset:3px; border-radius:2px; }
+
+    .wrap { max-width:1140px; margin:0 auto; padding:0 1.5rem; }
+    .kicker {
+      font-family:var(--mono); font-size:0.72rem; font-weight:600;
+      text-transform:uppercase; letter-spacing:0.24em; color:var(--cyan);
+    }
+
+    /* Sticky nav ------------------------------------------------------- */
+    nav {
+      position:sticky; top:0; z-index:50;
+      background:rgba(11,14,20,0.82); backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    nav .wrap { display:flex; align-items:center; gap:1.2rem; height:58px; }
+    nav .brand { font-family:var(--display); font-weight:600; font-size:0.95rem; letter-spacing:-0.01em; }
+    nav .brand .mark { color:var(--cyan); }
+    nav .spacer { flex:1; }
+    nav .links { display:flex; gap:1.4rem; }
+    nav .links a {
+      font-family:var(--mono); font-size:0.72rem; letter-spacing:0.08em;
+      text-transform:uppercase; color:var(--mist);
+    }
+    nav .links a:hover { color:var(--ink); text-decoration:none; }
+    nav .launch {
+      font-family:var(--body); font-weight:600; font-size:0.82rem;
+      background:var(--cyan); color:var(--midnight);
+      padding:0.42rem 0.95rem; border-radius:9px;
+    }
+    nav .launch:hover { background:var(--cyan-deep); text-decoration:none; }
+    @media (max-width:820px){ nav .links { display:none; } }
+
+    /* Hero ------------------------------------------------------------- */
+    .hero { padding:4.2rem 0 2.6rem; }
+    .hero h1 {
+      font-size:clamp(2.8rem,8vw,5.6rem); font-weight:700; margin:0.8rem 0 0;
+    }
+    .hero h1 .accent { color:var(--cyan); }
+    .hero .lede {
+      font-size:clamp(1.05rem,1.9vw,1.35rem); color:var(--mist);
+      max-width:60ch; margin:1.3rem 0 0;
+    }
+    .hero .cta { display:flex; flex-wrap:wrap; gap:0.8rem; margin-top:2rem; }
+    .btn {
+      font-family:var(--body); font-weight:600; font-size:0.95rem;
+      padding:0.72rem 1.4rem; border-radius:11px; cursor:pointer; border:1px solid transparent;
+      display:inline-flex; align-items:center; gap:0.5rem;
+    }
+    .btn-primary { background:var(--cyan); color:var(--midnight); }
+    .btn-primary:hover { background:var(--cyan-deep); text-decoration:none; }
+    .btn-ghost { background:transparent; border-color:var(--line); color:var(--ink); }
+    .btn-ghost:hover { border-color:var(--cyan); text-decoration:none; }
+
+    .badge-synthetic {
+      display:inline-flex; align-items:center; gap:0.5rem;
+      background:rgba(245,165,36,0.10); border:1px solid rgba(245,165,36,0.35);
+      color:var(--amber); font-family:var(--mono); font-size:0.72rem;
+      text-transform:uppercase; letter-spacing:0.12em; font-weight:600;
+      padding:0.4rem 0.8rem; border-radius:999px;
+    }
+    .badge-synthetic::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--amber); }
+
+    /* Hero chart ------------------------------------------------------- */
+    .chart-card {
+      margin-top:2.6rem; background:var(--panel); border:1px solid var(--line);
+      border-radius:18px; padding:1.4rem 1.4rem 1rem;
+    }
+    .chart-head { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.4rem; }
+    .chart-head .t { font-family:var(--display); font-weight:600; font-size:1.05rem; }
+    .chart-head .s { font-family:var(--mono); font-size:0.72rem; color:var(--mist); }
+    svg { display:block; width:100%; height:auto; }
+    .legend { display:flex; flex-wrap:wrap; gap:1.1rem; margin-top:0.7rem; }
+    .legend .item { display:flex; align-items:center; gap:0.45rem; font-size:0.82rem; color:var(--ink); }
+    .legend .swatch { width:22px; height:3px; border-radius:2px; }
+    .legend .item.pop .swatch { height:0; border-top:2px dashed var(--slate); }
+    .axis-note { font-family:var(--mono); font-size:0.68rem; color:var(--slate); margin-top:0.5rem; }
+
+    /* Story ------------------------------------------------------------ */
+    .story { border-top:1px solid var(--line); }
+    section.step { padding:3.4rem 0; border-bottom:1px solid var(--line); }
+    .step .num {
+      font-family:var(--mono); font-size:0.78rem; color:var(--cyan);
+      letter-spacing:0.18em; font-weight:600;
+    }
+    .step h2 { font-size:clamp(1.7rem,3.6vw,2.5rem); font-weight:600; margin:0.5rem 0 0.9rem; max-width:20ch; }
+    .step p { color:var(--mist); max-width:66ch; font-size:1.02rem; margin:0.6rem 0; }
+    .step p strong, .step p b { color:var(--ink); font-weight:600; }
+    .step .cols { display:grid; grid-template-columns:0.9fr 1.1fr; gap:2.4rem; align-items:center; }
+    @media (max-width:820px){ .step .cols { grid-template-columns:1fr; gap:1.4rem; } }
+
+    /* Reveal on scroll */
+    .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+    .reveal.in { opacity:1; transform:none; }
+
+    /* Stat tiles */
+    .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.85rem; margin-top:1.2rem; }
+    .tile { background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:1rem 1.1rem; }
+    .tile .v { font-family:var(--display); font-weight:600; font-size:1.7rem; font-variant-numeric:tabular-nums; }
+    .tile .l { font-family:var(--mono); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.13em; color:var(--mist); margin-top:0.35rem; }
+    .tile .l b { color:var(--ink); font-weight:600; }
+
+    /* Small multiples (the clusters) */
+    .sm-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.9rem; margin-top:1.4rem; }
+    @media (max-width:820px){ .sm-grid { grid-template-columns:1fr; } }
+    .sm-card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:1rem 1.05rem 0.8rem; border-top:3px solid var(--sw); }
+    .sm-card .name { font-family:var(--display); font-weight:600; font-size:1.02rem; display:flex; align-items:center; gap:0.5rem; }
+    .sm-card .name .dot { width:10px; height:10px; border-radius:50%; background:var(--sw); }
+    .sm-card .meta { font-family:var(--mono); font-size:0.7rem; color:var(--mist); margin:0.25rem 0 0.4rem; }
+    .sm-card .desc { font-size:0.85rem; color:var(--mist); margin-top:0.3rem; }
+
+    /* Pipeline */
+    .pipe { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.7rem; margin-top:1.3rem; }
+    .pipe .p { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:0.85rem 0.95rem; }
+    .pipe .p .n { font-family:var(--mono); font-size:0.7rem; color:var(--cyan); }
+    .pipe .p .t { font-family:var(--display); font-weight:600; margin-top:0.25rem; font-size:0.95rem; }
+    .pipe .p .d { font-size:0.78rem; color:var(--mist); margin-top:0.2rem; line-height:1.42; }
+
+    .note {
+      border-left:3px solid var(--cyan); background:var(--panel);
+      padding:0.85rem 1.1rem; border-radius:0 10px 10px 0; color:var(--mist);
+      max-width:66ch; margin-top:1.2rem; font-size:0.92rem;
+    }
+    .note.warn { border-left-color:var(--amber); }
+    .note strong { color:var(--ink); }
+
+    /* Launch + footer */
+    .launch-sec { padding:3.6rem 0; }
+    .launch-sec pre {
+      background:var(--panel-hi); border:1px solid var(--line); border-radius:12px;
+      padding:1rem 1.1rem; overflow:auto; font-family:var(--mono); font-size:0.84rem; color:var(--ink);
+    }
+    .launch-sec code { font-family:var(--mono); }
+    .opts { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:0.85rem; margin-top:1.2rem; }
+    .opt { background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:1rem 1.1rem; }
+    .opt .t { font-family:var(--display); font-weight:600; margin-bottom:0.3rem; }
+    .opt p { color:var(--mist); font-size:0.86rem; margin:0; }
+    footer { border-top:1px solid var(--line); padding:2rem 0 3rem; color:var(--slate); font-size:0.82rem; }
+    footer .wrap { display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; }
+
+    @media (prefers-reduced-motion:reduce){
+      html { scroll-behavior:auto; }
+      .reveal { opacity:1; transform:none; transition:none; }
+      .draw { stroke-dasharray:none !important; stroke-dashoffset:0 !important; }
+    }
   </style>
 </head>
 <body>
-  <h1>Energy Consumption Pattern Analysis (PCA + K-Means)</h1>
-  <p class="note">
-    This Vercel site is a static landing page. The interactive dashboard is a
-    <strong>Streamlit</strong> app. Vercel Python functions cannot run Streamlit
-    (they expect a Flask/FastAPI <code>app</code> or <code>handler</code>).
-  </p>
-  <p>
-    Source:
-    <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means">GitHub repository</a>
-  </p>
-  <h2>Run the dashboard locally</h2>
-  <pre><code>py -m pip install -r requirements.txt
+  <nav>
+    <div class="wrap">
+      <span class="brand"><span class="mark">/</span> Load-Shape Study</span>
+      <span class="spacer"></span>
+      <div class="links">
+        <a href="#question">The question</a>
+        <a href="#clusters">Clusters</a>
+        <a href="#validation">Validation</a>
+        <a href="#launch">Method</a>
+      </div>
+      <a class="launch" href="#launch">Explore the data</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="kicker">PCA + K-Means &middot; synthetic study</span>
+      <h1>Energy has<br />a <span class="accent">rhythm</span>.</h1>
+      <p class="lede">
+        Two homes can use the same amount of electricity and behave nothing alike.
+        One runs flat all day; another barely stirs until the evening. This project
+        groups consumers by the <strong style="color:var(--ink)">shape of their day</strong>,
+        not by how much they use.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#launch">Explore the data</a>
+        <a class="btn btn-ghost" href="#question">Read the study</a>
+      </div>
+
+      <div class="chart-card reveal">
+        <div class="chart-head">
+          <span class="t">One average day, three ways to live it</span>
+          <span class="s">share of daily energy by hour &middot; synthetic</span>
+        </div>
+        <svg id="hero-chart" viewBox="0 0 1000 400" role="img"
+             aria-labelledby="hero-title hero-desc" preserveAspectRatio="xMidYMid meet">
+          <title id="hero-title">Normalised 24-hour load curves for three consumer clusters and the population</title>
+          <desc id="hero-desc">
+            The midday-peaking cluster rises through the morning to a broad peak
+            near 1 pm. The evening-peaking cluster is quiet by day and peaks
+            sharply near 8 pm. The flat all-day cluster stays close to level.
+            The population average is drawn faintly for reference.
+          </desc>
+        </svg>
+        <div class="legend" id="hero-legend"></div>
+        <div class="axis-note">x: hour of day (00-24), shaded night / morning / afternoon / evening &nbsp;&middot;&nbsp; y: fraction of each consumer's daily energy</div>
+      </div>
+      <div style="margin-top:1.4rem"><span class="badge-synthetic">Synthetic data - not real households</span></div>
+    </div>
+  </header>
+
+  <main class="story">
+    <section class="step" id="question">
+      <div class="wrap reveal">
+        <div class="num">01 &middot; THE QUESTION</div>
+        <h2>Do people differ by when, not just how much?</h2>
+        <p>
+          The easy way to sort electricity customers is by size: small, medium, large.
+          It is also the least useful, because it says nothing about <em>when</em> demand
+          lands on the grid. The question here is whether households fall into distinct
+          <strong>timing patterns</strong> - a daytime shape, an evening shape, a flat
+          shape - that survive once you remove the effect of sheer volume.
+        </p>
+      </div>
+    </section>
+
+    <section class="step" id="data">
+      <div class="wrap reveal">
+        <div class="num">02 &middot; THE DATA</div>
+        <h2>A controlled, synthetic world</h2>
+        <p>
+          To ask the question cleanly, the data is generated, not measured. A generator
+          draws each consumer from one of four hidden archetypes, then adds amplitude,
+          timing jitter, weekday and weekend differences, and noise. That hidden label is
+          set aside before any modelling and used only, at the very end, to check the answer.
+        </p>
+        <div class="tiles">
+          <div class="tile"><div class="v">200</div><div class="l">consumers</div></div>
+          <div class="tile"><div class="v">30</div><div class="l">days, hourly</div></div>
+          <div class="tile"><div class="v">144,000</div><div class="l">records</div></div>
+          <div class="tile"><div class="v">4</div><div class="l">hidden archetypes</div></div>
+        </div>
+        <div class="note warn">
+          <strong>This is synthetic data.</strong> The consumers do not exist. Nothing here
+          is evidence about real-world household behaviour; it is a test of whether the
+          method can recover structure that was deliberately built in.
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="shape">
+      <div class="wrap reveal">
+        <div class="num">03 &middot; THE SHAPE OF A DAY</div>
+        <div class="cols">
+          <div>
+            <h2>Divide out the size</h2>
+            <p>
+              Each consumer's 24 hourly values are scaled to sum to one, turning a
+              load <em>amount</em> into a load <em>shape</em>. After that step, a household
+              that uses ten times the energy but at the same hours has an identical curve.
+              What is left to cluster on is pure timing.
+            </p>
+            <p>The faint line is the population's average day - the baseline every cluster is measured against.</p>
+          </div>
+          <div class="chart-card" style="margin-top:0">
+            <div class="chart-head"><span class="t">Population average day</span></div>
+            <svg id="pop-chart" viewBox="0 0 640 300" role="img" aria-label="The population's average normalised load curve, peaking gently in the early evening"></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="features">
+      <div class="wrap reveal">
+        <div class="num">04 &middot; THE FEATURES</div>
+        <h2>Fifty-one ways to describe a curve</h2>
+        <p>
+          A shape is more than 24 numbers. Alongside the hourly bins sit summary
+          descriptors: the share of energy in each part of the day, how peaked the curve is,
+          how much it varies hour to hour, its entropy and inequality, its dominant
+          periodicities, and how different its weekend looks. Together, <strong>51 behavioural
+          features</strong> - and not one of them is the raw size of the consumer.
+        </p>
+        <div class="tiles">
+          <div class="tile"><div class="v">24</div><div class="l">hourly <b>shape</b> bins</div></div>
+          <div class="tile"><div class="v">27</div><div class="l">summary descriptors</div></div>
+          <div class="tile"><div class="v">51</div><div class="l">behavioural features</div></div>
+          <div class="tile"><div class="v">0</div><div class="l">scale features used</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="method">
+      <div class="wrap reveal">
+        <div class="num">05 &middot; THE METHOD</div>
+        <h2>Compress, then group</h2>
+        <p>
+          Fifty-one features are correlated, so they are first standardised and passed
+          through <strong>PCA</strong>, which keeps the <strong>14 components</strong> that
+          together hold <strong>95%</strong> of the variance. K-Means then groups consumers
+          in that compressed space, and the number of groups is chosen by a rule fixed in
+          advance - not picked to look tidy.
+        </p>
+        <div class="pipe">
+          <div class="p"><div class="n">01</div><div class="t">Standardise</div><div class="d">Zero mean, unit variance per feature.</div></div>
+          <div class="p"><div class="n">02</div><div class="t">PCA</div><div class="d">14 components, 95% variance kept.</div></div>
+          <div class="p"><div class="n">03</div><div class="t">Sweep K</div><div class="d">K = 2 to 10, four internal metrics.</div></div>
+          <div class="p"><div class="n">04</div><div class="t">Select</div><div class="d">Pre-registered rule, then stability.</div></div>
+          <div class="p"><div class="n">05</div><div class="t">Profile</div><div class="d">Describe each group in real units.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="clusters">
+      <div class="wrap reveal">
+        <div class="num">06 &middot; THE CLUSTERS</div>
+        <h2>Three ways a day is spent</h2>
+        <p>
+          The rule settled on <strong>three groups</strong>. They are not big, medium and
+          small - they are three different daily rhythms. Each card shows the cluster's own
+          average day (bold) against the population (faint).
+        </p>
+        <div class="sm-grid" id="cluster-cards"></div>
+        <div class="note">
+          Cluster identity is always colour <em>and</em> name. The numbers below each name
+          are the count of consumers, their share of the population, and the hour their
+          average curve peaks.
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="validation">
+      <div class="wrap reveal">
+        <div class="num">07 &middot; HONEST VALIDATION</div>
+        <h2>Stable grouping, modest separation</h2>
+        <p>
+          Good practice is to report the awkward number as plainly as the flattering one.
+          The clusters are <strong>highly reproducible</strong> across random restarts, and
+          they line up moderately with the hidden archetypes. But the <strong>separation is
+          modest</strong> - a silhouette of 0.31 means the groups touch at their edges rather
+          than sitting far apart. Both things are true at once.
+        </p>
+        <div class="tiles">
+          <div class="tile"><div class="v">0.312</div><div class="l">silhouette @ K=3 <b>(modest)</b></div></div>
+          <div class="tile"><div class="v">0.988</div><div class="l">stability ARI <b>(high)</b></div></div>
+          <div class="tile"><div class="v">0.614</div><div class="l">agreement with archetypes</div></div>
+          <div class="tile"><div class="v">20</div><div class="l">seeds in robustness check</div></div>
+        </div>
+        <div class="note">
+          "Stability" here means the clusters reappear when the algorithm is restarted - it
+          is a property of the <strong>clustering</strong>, not a confidence that any single
+          consumer is correctly placed.
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="learned">
+      <div class="wrap reveal">
+        <div class="num">08 &middot; WHAT WE LEARNED</div>
+        <h2>Timing is a real axis - here</h2>
+        <p>
+          On this generated world, grouping by shape recovers timing patterns that pure
+          size would miss, and it does so stably. It also shows the limit honestly: the
+          groups overlap, and a single synthetic draw is not the world. The finding is
+          about a method's behaviour on data built to test it - a narrower and more truthful
+          claim than a statement about real homes.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#launch">Explore the data</a>
+          <a class="btn btn-ghost" href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means" target="_blank" rel="noopener">Read the code</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="launch-sec" id="launch">
+    <div class="wrap reveal">
+      <span class="kicker">Run the instrument</span>
+      <h2 style="font-size:clamp(1.7rem,3.6vw,2.5rem);margin:0.5rem 0 0.6rem">The interactive dashboard</h2>
+      <p style="color:var(--mist);max-width:66ch">
+        The full study is a Streamlit application: cluster explorer, PCA and K-selection
+        views, the stability check, and the evidence behind each observation. Vercel serves
+        this page but cannot run Streamlit, so the dashboard runs on a Python host or locally.
+      </p>
+      <div class="opts">
+        <div class="opt"><div class="t">Streamlit Community Cloud</div><p>Deploy <code>streamlit_app.py</code> straight from the repository.</p></div>
+        <div class="opt"><div class="t">Render or Docker</div><p>Use the included <code>render.yaml</code> or <code>Dockerfile</code>.</p></div>
+        <div class="opt"><div class="t">Locally</div><p>Two commands, below. No account needed.</p></div>
+      </div>
+      <pre><code>py -m pip install -r requirements.txt
 py -m streamlit run streamlit_app.py</code></pre>
-  <h2>Host the dashboard</h2>
-  <ul>
-    <li><a href="https://share.streamlit.io/">Streamlit Community Cloud</a>: deploy <code>streamlit_app.py</code> from this repo.</li>
-    <li>Render / Docker: see <code>render.yaml</code> and <code>Dockerfile</code> in the repo.</li>
-  </ul>
+      <p style="color:var(--slate);font-size:0.86rem">
+        Source and full method:
+        <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means" target="_blank" rel="noopener">GitHub repository</a>.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>Synthetic study &middot; PCA + K-Means &middot; run 6dff8faaa470d418</span>
+      <span>Grouped by the shape of the day, not the size of the bill.</span>
+    </div>
+  </footer>
+
+  <script>
+    // --- Real run artifacts, embedded verbatim ---------------------------
+    // Source: outputs/metrics/cluster_load_shapes.csv (normalised 24h profiles)
+    // and outputs/reports/analysis_summary.md (sizes, shares, peak hours).
+    // These are the committed numbers; do not edit by hand.
+    const POP = [0.028466357740810667,0.025474043186782005,0.023935084698732262,0.024027838732045777,0.025785265216039684,0.03045333460557753,0.03698334852959925,0.04315529793894835,0.04496606545180381,0.045423356689191674,0.04488760347209067,0.045636551361103325,0.04669075808113471,0.0477181400210072,0.04773581855008266,0.04802025247909883,0.04910972444357354,0.05088965705905707,0.054460639080527624,0.056867743145354435,0.055341103889927246,0.04919057846163299,0.040800195203407504,0.03398124196247117];
+    const CLUSTERS = [
+      { id:0, name:"Midday-Peaking", size:94, share:47.0, peak:13, color:"#F5A524",
+        desc:"Rises through the morning to a broad afternoon plateau.",
+        values:[0.023725416002354793,0.021205824084254553,0.020476450648502554,0.020663252579809124,0.022506539961782597,0.02710808421462534,0.03362397369274933,0.04097953948118093,0.04439433132248673,0.048452879143212176,0.05070519565157359,0.05338766365563257,0.05537057858877592,0.05675131399777931,0.056546171519307596,0.05576548237640492,0.05529751747749871,0.053718976309472026,0.053484226874514006,0.05255306203688513,0.048590271259341254,0.04218483915931178,0.03416209831849763,0.028346311644047422] },
+      { id:1, name:"Flat All-Day", size:57, share:28.5, peak:19, color:"#3BC9DE",
+        desc:"Close to level; a weak nominal peak near 7 pm.",
+        values:[0.03521782388977236,0.03413544606344973,0.033120848387478134,0.03337971217904694,0.034361952215771534,0.036542130679719995,0.039598747948201465,0.0423544184925479,0.04368058033438673,0.04472402224770468,0.044385521058915335,0.04454872596196006,0.04496588686898238,0.04521663279545757,0.044585122922648275,0.04468490799758105,0.04509711922039297,0.04594181761178507,0.047288023759077355,0.047856994977798085,0.04630817284675817,0.044062642141839546,0.04038475350646228,0.03755799589226237] },
+      { id:2, name:"Evening-Peaking", size:49, share:24.5, peak:20, color:"#B085F5",
+        desc:"Quiet by day, then a sharp peak near 8 pm.",
+        values:[0.029707479229056297,0.023586545873874255,0.01988453511634611,0.019603641014314735,0.022098102255130536,0.02978786849380988,0.040385460117427115,0.048260837193539435,0.04755822177524419,0.0404251312297393,0.03431137964922536,0.03203250017876486,0.03204615668061243,0.03329911059324704,0.03449942001246261,0.03704194686888945,0.041906988780967956,0.051217633364271334,0.06467741093130207,0.07562677722182028,0.07879937606820722,0.06859531039319257,0.05401777242600762,0.040630394532547354] }
+    ];
+    const BANDS = [[0,6,"Night"],[6,12,"Morning"],[12,18,"Afternoon"],[18,24,"Evening"]];
+    const BAND_FILL = ["rgba(108,140,255,0.06)","rgba(59,201,222,0.05)","rgba(79,209,165,0.05)","rgba(245,165,36,0.07)"];
+    // Shared y-domain so every curve on the page is directly comparable.
+    const YMIN = 0.015, YMAX = 0.085;
+
+    const SVGNS = "http://www.w3.org/2000/svg";
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function el(tag, attrs) {
+      const n = document.createElementNS(SVGNS, tag);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
+      return n;
+    }
+    // Build one hour-axis chart into an <svg> with the given inner padding.
+    function drawChart(svg, opts) {
+      const vb = svg.viewBox.baseVal;
+      const W = vb.width, H = vb.height;
+      const padL = opts.padL, padR = opts.padR, padT = opts.padT, padB = opts.padB;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      const xFor = h => padL + (h / 24) * plotW;
+      const yFor = v => padT + (1 - (v - YMIN) / (YMAX - YMIN)) * plotH;
+
+      // time-of-day bands
+      BANDS.forEach((b, i) => {
+        svg.appendChild(el("rect", { x: xFor(b[0]), y: padT, width: xFor(b[1]) - xFor(b[0]),
+          height: plotH, fill: BAND_FILL[i] }));
+        if (opts.bandLabels) {
+          const t = el("text", { x: xFor(b[0]) + 6, y: padT + 14, fill: "#5B657A",
+            "font-family": "IBM Plex Mono, monospace", "font-size": 11 });
+          t.textContent = b[2]; svg.appendChild(t);
+        }
+      });
+      // baseline + hour ticks
+      [0,6,12,18,24].forEach(h => {
+        const t = el("text", { x: xFor(h), y: H - padB + 20, fill: "#5B657A",
+          "font-family": "IBM Plex Mono, monospace", "font-size": 11, "text-anchor": "middle" });
+        t.textContent = String(h).padStart(2,"0"); svg.appendChild(t);
+      });
+
+      const path = (vals) => "M" + vals.map((v,h)=>`${xFor(h).toFixed(1)},${yFor(v).toFixed(1)}`).join("L");
+
+      // population reference (dashed, faint)
+      if (opts.showPop) {
+        svg.appendChild(el("path", { d: path(POP), fill: "none", stroke: "#5B657A",
+          "stroke-width": 1.6, "stroke-dasharray": "4 4", opacity: 0.7 }));
+      }
+      // series
+      (opts.series || []).forEach((s, i) => {
+        const p = el("path", { d: path(s.values), fill: "none", stroke: s.color,
+          "stroke-width": 2.6, "stroke-linejoin": "round", "stroke-linecap": "round", class: "draw" });
+        svg.appendChild(p);
+        if (!reduceMotion) {
+          const len = p.getTotalLength();
+          p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+          p.style.transition = `stroke-dashoffset 1.6s ease ${0.15 * i}s`;
+          requestAnimationFrame(() => requestAnimationFrame(() => { p.style.strokeDashoffset = 0; }));
+        }
+      });
+    }
+
+    // Hero: three clusters + population.
+    drawChart(document.getElementById("hero-chart"), {
+      padL: 40, padR: 20, padT: 24, padB: 34, bandLabels: true, showPop: true,
+      series: CLUSTERS.map(c => ({ values: c.values, color: c.color }))
+    });
+    // Hero legend
+    const legend = document.getElementById("hero-legend");
+    legend.innerHTML =
+      `<span class="item pop"><span class="swatch"></span>Population average</span>` +
+      CLUSTERS.map(c => `<span class="item"><span class="swatch" style="background:${c.color}"></span>${c.name}</span>`).join("");
+
+    // Section 03: population only.
+    drawChart(document.getElementById("pop-chart"), {
+      padL: 36, padR: 16, padT: 18, padB: 30, bandLabels: false, showPop: true, series: []
+    });
+
+    // Section 06: three small multiples.
+    const cardWrap = document.getElementById("cluster-cards");
+    CLUSTERS.forEach(c => {
+      const div = document.createElement("div");
+      div.className = "sm-card"; div.style.setProperty("--sw", c.color);
+      const peakLabel = c.id === 1 ? "near-flat" : `peaks ${String(c.peak).padStart(2,"0")}:00`;
+      div.innerHTML =
+        `<div class="name"><span class="dot"></span>${c.name}</div>` +
+        `<div class="meta">${c.size} consumers &middot; ${c.share}% &middot; ${peakLabel}</div>` +
+        `<svg viewBox="0 0 320 150" role="img" aria-label="${c.name} average day against the population"></svg>` +
+        `<div class="desc">${c.desc}</div>`;
+      cardWrap.appendChild(div);
+      drawChart(div.querySelector("svg"), {
+        padL: 8, padR: 8, padT: 10, padB: 22, bandLabels: false, showPop: true,
+        series: [{ values: c.values, color: c.color }]
+      });
+    });
+
+    // Reveal on scroll.
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { threshold: 0.14 });
+      document.querySelectorAll(".reveal").forEach(n => io.observe(n));
+    } else {
+      document.querySelectorAll(".reveal").forEach(n => n.classList.add("in"));
+    }
+  </script>
 </body>
 </html>

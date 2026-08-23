@@ -7,3 +7,6 @@ __pycache__/
 venv/
 .env
 .DS_Store
+
+# Claude Code local session state and preview config
+.claude/
