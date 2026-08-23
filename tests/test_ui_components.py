@@ -142,3 +142,71 @@ def test_the_checkbox_uses_the_project_palette(css):
 def test_the_checkbox_stands_still_for_a_reader_who_asked_for_less_motion(css):
     reduced = css.split('@media (prefers-reduced-motion: reduce)')
     assert any('stCheckbox' in part for part in reduced[1:])
+
+
+# --- the cluster identity card ------------------------------------------------
+
+def test_only_the_identity_card_is_three_dimensional(css):
+    """The tilt is the point of one card, and would be noise on the rest.
+
+    Reference cards, step cards and metric cards carry text to be read; rotating
+    them would cost legibility and buy nothing.
+    """
+    for match in re.finditer(r'([^{}]*)\{([^{}]*)\}', css):
+        selector, block = match.group(1), match.group(2)
+        if 'rotate3d' in block or 'preserve-3d' in block or 'perspective:' in block:
+            assert 'arch' in selector, selector
+
+
+def test_the_card_is_flat_until_it_is_hovered(css):
+    """A card that is already tilted is harder to read for no reason."""
+    rest = _rules_for(css, '.arch-card')[0]
+    assert 'rotate3d' not in rest
+    hover = _rules_for(css, '.arch-3d:hover .arch-card')[0]
+    assert 'rotate3d' in hover
+
+
+def test_the_tilt_is_gentler_than_the_reference(css):
+    """Thirty degrees distorts the bullet list enough to need re-reading."""
+    hover = _rules_for(css, '.arch-3d:hover .arch-card')[0]
+    angle = re.search(r'rotate3d\([^)]*?(\d+)deg\)', hover)
+    assert angle and int(angle.group(1)) <= 20
+
+
+def test_the_card_is_coloured_by_the_cluster_not_by_a_brand(css):
+    """The reference's lime is replaced by a tint of the cluster's own colour."""
+    body = _rules_for(css, '.arch-card .arch-body')[0]
+    assert 'var(--swatch' in body
+    assert '8ed500' not in css.lower()
+    # A tint, because the qualitative palette at full strength leaves the text on
+    # top of it no contrast.
+    assert 'color-mix' in body
+    # And a plain colour first, for a browser that cannot mix.
+    assert body.index('background: var(--panel-hi)') < body.index('color-mix')
+
+
+def test_the_card_stands_still_for_a_reader_who_asked_for_less_motion(css):
+    reduced = css.split('@media (prefers-reduced-motion: reduce)')
+    assert any('.arch-3d:hover .arch-card' in part and 'transform: none' in part
+               for part in reduced[1:])
+
+
+def test_the_corner_box_is_left_out_when_there_is_no_figure_for_it(monkeypatch):
+    """An empty box would read as a missing value rather than an absent one."""
+    captured = []
+    monkeypatch.setattr(ui.st, 'markdown', lambda html, **kw: captured.append(html))
+    ui.archetype_card('Evening-Peaking', '#B085F5', '49 consumers', ['a', 'b'])
+    assert 'arch-badge' not in captured[0]
+    captured.clear()
+    ui.archetype_card('Evening-Peaking', '#B085F5', '49 consumers', ['a', 'b'],
+                      badge='24.5%')
+    assert '<div class="arch-badge">24.5%</div>' in captured[0]
+
+
+def test_the_card_carries_the_cluster_colour_as_a_variable(monkeypatch):
+    """One value in the markup drives the border, the dot and the corner box."""
+    captured = []
+    monkeypatch.setattr(ui.st, 'markdown', lambda html, **kw: captured.append(html))
+    ui.archetype_card('Flat All-Day', '#3BC9DE', '57 consumers', ['near-flat'])
+    assert '--swatch:#3BC9DE' in captured[0]
+    assert captured[0].count('#3BC9DE') == 1
