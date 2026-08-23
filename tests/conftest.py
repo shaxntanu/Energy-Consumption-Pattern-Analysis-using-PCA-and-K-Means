@@ -24,7 +24,14 @@ from feature_engineering import engineer_all_features, select_features
 
 @pytest.fixture(scope='session')
 def small_raw():
-    return generate_synthetic_data(n_consumers=20, n_days=5, hourly_records=True, random_seed=42)
+    """A small panel that still contains weekends.
+
+    The generator starts on 2024-01-01, a Monday. Anything shorter than 7 days
+    holds no Saturday or Sunday, which silently drops weekend_ratio and
+    weekend_shape_distance from the feature set and hides bugs in them. 14 days
+    gives two full weekends while staying fast.
+    """
+    return generate_synthetic_data(n_consumers=20, n_days=14, hourly_records=True, random_seed=42)
 
 
 @pytest.fixture(scope='session')

@@ -1,0 +1,47 @@
+{
+  "candidates": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "rules": {
+    "min_cluster_share": 0.05,
+    "min_stability_ari": 0.6,
+    "tolerance": 0.05
+  },
+  "relaxed_filters": [],
+  "after_balance_filter": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "after_stability_filter": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "composite_scores": {
+    "2": 0.0,
+    "3": 1.0,
+    "4": 0.8565022133027705,
+    "5": 0.7229089939809509,
+    "6": 0.5939610074116698
+  },
+  "best_score": 1.0,
+  "best_k_by_score": 3,
+  "within_tolerance": [
+    3
+  ],
+  "selected_k": 3,
+  "elbow_k": 4.0
+}

@@ -98,21 +98,38 @@ def handle_missing_values(df: pd.DataFrame, strategy: str = 'forward_fill',
     return df_clean
 
 
-def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+def remove_duplicates(df: pd.DataFrame, keys: list = None) -> pd.DataFrame:
     """
-    Remove duplicate records from the DataFrame.
-    
+    Remove records that repeat a (consumer, timestamp) pair.
+
+    A full-row comparison is the wrong test for panel data. Two readings for the
+    same consumer at the same timestamp are a duplicate even when the measured
+    values differ slightly, and a full-row comparison would keep both. Keying on
+    the identifier and the timestamp catches the case that actually matters.
+
     Args:
         df: Input DataFrame
-        
+        keys: Columns that identify one observation. Defaults to
+              ['consumer_id', 'timestamp'] when both are present, otherwise
+              falls back to a full-row comparison.
+
     Returns:
-        DataFrame with duplicates removed
+        DataFrame with duplicates removed, keeping the first occurrence
     """
+    if keys is None:
+        default = ['consumer_id', 'timestamp']
+        keys = default if all(col in df.columns for col in default) else None
+
     n_before = len(df)
-    df_clean = df.drop_duplicates()
+    if keys:
+        df_clean = df.drop_duplicates(subset=keys, keep='first')
+        basis = f"on {keys}"
+    else:
+        df_clean = df.drop_duplicates()
+        basis = "on all columns"
+
     n_removed = n_before - len(df_clean)
-    
-    logger.info(f"Removed {n_removed} duplicate records")
+    logger.info(f"Removed {n_removed} duplicate records (matched {basis})")
     return df_clean
 
 
