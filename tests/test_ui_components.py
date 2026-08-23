@@ -210,3 +210,59 @@ def test_the_card_carries_the_cluster_colour_as_a_variable(monkeypatch):
     ui.archetype_card('Flat All-Day', '#3BC9DE', '57 consumers', ['near-flat'])
     assert '--swatch:#3BC9DE' in captured[0]
     assert captured[0].count('#3BC9DE') == 1
+
+
+# --- what a reader can select -------------------------------------------------
+
+def _unselectable(css: str) -> str:
+    """The selector lists of every rule that switches selection off."""
+    parts = []
+    for match in re.finditer(r'([^{}]+)\{([^{}]*)\}', css):
+        if 'user-select: none' in match.group(2):
+            parts.append(match.group(1))
+    return ' '.join(parts)
+
+
+def test_selection_is_never_switched_off_wholesale(css):
+    """The one failure mode that would matter: nobody can quote the work.
+
+    A blanket rule is easy to write and hard to notice, so it is named here
+    explicitly rather than left to the per-selector checks below.
+    """
+    for selector in re.findall(r'([^{}]+)\{[^{}]*user-select: none[^{}]*\}', css):
+        for part in selector.split(','):
+            part = part.strip()
+            assert part not in ('*', 'body', 'html', '.stApp', '.block-container')
+            assert not part.endswith('*')
+
+
+def test_the_chrome_a_double_click_lands_on_is_unselectable(css):
+    """Eyebrows, structural labels, sequence numbers and control names."""
+    off = _unselectable(css)
+    for selector in ('.kicker', '.nav-group', '.insight .k', '.pipe .step .n',
+                     '.masthead .brand', '[data-testid="stTab"]'):
+        assert selector in off, selector
+    # Both button areas, since either one is a label on a control.
+    assert '[data-testid="stMain"] .stButton > button' in off
+    assert '[data-testid="stSidebar"] .stButton > button' in off
+
+
+def test_the_work_itself_stays_selectable(css):
+    """Anything a reader might quote must not appear in a selection-off rule.
+
+    The bibliographic values are the sharpest case: a citation nobody can copy is
+    worse than no citation card at all.
+    """
+    off = _unselectable(css)
+    for selector in ('.hero h1', '.hero .lede', '.note', '.tag',
+                     '.ref-card .ref-title', '.ref-card .ref-authors',
+                     '.ref-card .ref-grid .rv', '.ref-card .ref-why',
+                     '.arch-card li', '.insight .v', '[data-testid="stMetricValue"]'):
+        assert selector not in off, selector
+
+
+def test_the_reference_cards_lose_only_their_label_column(css):
+    """The keys are structure; the values beside them are the citation."""
+    off = _unselectable(css)
+    assert '.ref-card .ref-grid .rk' in off
+    assert '.rv' not in off
