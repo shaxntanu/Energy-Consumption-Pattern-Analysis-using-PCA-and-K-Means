@@ -4,7 +4,8 @@ Undergraduate mini-project for AI-ML for Engineers. The goal is to group electri
 
 **Data source: Synthetic (archetype-based).** Four latent load archetypes (daytime, evening, flat, weekend-heavy) generate the panel. Those labels are validation-only ground truth and are never passed into K-Means.
 
-Repo: [shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means](https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means)\n
+Repo: [shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means](https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means)
+
 Vercel: [Vercel Webpage](https://energy-pattern-analysis.vercel.app)
 
 ---
