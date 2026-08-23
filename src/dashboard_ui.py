@@ -34,6 +34,11 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import streamlit as st
 
+# The one thing this module imports from the app: how a star count is written
+# down. The rule it encodes - truncate, never round up - is about honesty rather
+# than layout, so it stays with the code that fetches the number.
+from dashboard_github import format_count
+
 # --- Colour tokens -----------------------------------------------------------
 # Surfaces run from the graphite canvas up through raised panels.
 MIDNIGHT = "#0B0E14"    # app background, the darkest surface
@@ -392,6 +397,62 @@ a:hover { text-decoration: underline; }
 .foot .f-line { font-size: 0.86rem; color: var(--mist); }
 .foot .spacer { flex: 1 1 auto; }
 
+/* Star on GitHub ---------------------------------------------------------- */
+/* Black, because that is the button every reader already recognises from every
+   other repository page. It is chrome and a mouse target, so its label is not
+   selectable; the count beside it is a fact, and is. */
+.gh-star {
+  display: inline-flex; align-items: stretch; overflow: hidden;
+  background: #000; border: 1px solid var(--line); border-radius: 10px;
+  color: var(--ink); text-decoration: none; position: relative;
+  font-family: var(--body); font-size: 0.86rem; font-weight: 600;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.gh-star:hover { border-color: var(--slate); text-decoration: none; transform: translateY(-1px); }
+.gh-star:active { transform: translateY(0); }
+
+/* The shine. A single pass of light across the face on hover, clipped by the
+   button's own overflow, sitting under the label so it never washes it out. */
+.gh-star::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.13), transparent);
+  transform: skewX(-18deg); pointer-events: none;
+  transition: left 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.gh-star:hover::after { left: 130%; }
+
+.gh-star .gh-face {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0.85rem; user-select: none; -webkit-user-select: none;
+}
+.gh-star .gh-mark { display: inline-flex; color: var(--ink); }
+.gh-star .gh-mark svg { width: 17px; height: 17px; fill: currentColor; }
+
+/* The count is separated the way GitHub's own social count is, so it reads as a
+   number the repository reported rather than part of the label. */
+.gh-star .gh-count {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.5rem 0.8rem; border-left: 1px solid var(--line);
+  background: rgba(255,255,255,0.04);
+  font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums;
+  color: var(--mist); transition: color 0.2s ease, background 0.2s ease;
+}
+.gh-star:hover .gh-count { color: var(--ink); background: rgba(255,255,255,0.07); }
+.gh-star .gh-count svg {
+  width: 14px; height: 14px; fill: currentColor;
+  color: var(--slate); transition: color 0.2s ease, transform 0.25s ease;
+}
+/* The one moment of colour: the star lights up under the pointer, which is the
+   only hint the button needs that clicking it is the point. */
+.gh-star:hover .gh-count svg { color: var(--amber); transform: rotate(-14deg) scale(1.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gh-star, .gh-star::after, .gh-star .gh-count svg { transition: none; }
+  .gh-star:hover { transform: none; }
+  .gh-star:hover::after { left: -60%; }
+  .gh-star:hover .gh-count svg { transform: none; }
+}
+
 /* Sidebar navigation ---------------------------------------------------- */
 /* Buttons rather than a radio, so the pages can be grouped under real
    headings. Streamlit's own button semantics are kept, so each item is still a
@@ -436,6 +497,12 @@ a:hover { text-decoration: underline; }
 
 /* Accessibility --------------------------------------------------------- */
 *:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* Text for a screen reader only. Clipped rather than display:none, which would
+   take it out of the accessibility tree along with the layout. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 @media (prefers-reduced-motion: reduce) { .metric-card { transition: none; } }
 @media (max-width: 640px) { .block-container { padding-left: 1rem; padding-right: 1rem; } .insight .row { grid-template-columns: 1fr; gap: 0.2rem; } }
 """
@@ -679,6 +746,50 @@ def chapter(number: int, kicker_text: str, title: str, body_html: str = "") -> N
 def nav_group(label: str) -> None:
     """A heading over one run of sidebar navigation items."""
     st.sidebar.markdown(f'<div class="nav-group">{label}</div>', unsafe_allow_html=True)
+
+
+# The official GitHub mark and the octicon star, inline so the button needs no
+# network to draw itself and so both take their colour from the CSS.
+_GITHUB_MARK = (
+    '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 '
+    '3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53'
+    '-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 '
+    '1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 '
+    '0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 '
+    '2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56'
+    '.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93'
+    '-.01 2.2 0 .21.15.46.55.38A7.995 7.995 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>'
+)
+_STAR_MARK = (
+    '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 01.673.418'
+    'l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01'
+    '-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75'
+    '.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path></svg>'
+)
+
+
+def star_button(repo_url: str, count: int | None = None,
+                label: str = "Star on GitHub") -> None:
+    """A link to the repository, with its star count when there is one to show.
+
+    Args:
+        repo_url: The repository's web URL. The link goes here.
+        count: Stars, as reported by GitHub. Pass None when that could not be
+            established and the count is left off entirely - the alternative
+            would be a number nobody can stand behind.
+        label: The button's text.
+    """
+    pill = ""
+    if count is not None:
+        pill = (f'<span class="gh-count">{_STAR_MARK}'
+                f'<span>{format_count(count)}</span>'
+                f'<span class="sr-only"> stars</span></span>')
+    st.markdown(
+        f'<a class="gh-star" href="{repo_url}" target="_blank" rel="noopener">'
+        f'<span class="gh-face"><span class="gh-mark">{_GITHUB_MARK}</span>'
+        f'<span>{label}</span></span>{pill}</a>',
+        unsafe_allow_html=True,
+    )
 
 
 def footer(run_line: str, tagline: str, links: Sequence[tuple[str, str]] = ()) -> None:
