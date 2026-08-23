@@ -181,6 +181,19 @@
     .opt { background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:1rem 1.1rem; }
     .opt .t { font-family:var(--display); font-weight:600; margin-bottom:0.3rem; }
     .opt p { color:var(--mist); font-size:0.86rem; margin:0; }
+
+    /* References ------------------------------------------------------- */
+    .refs-sec { padding:3.6rem 0; border-top:1px solid var(--line); }
+    .refs { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:0.85rem; margin-top:1.4rem; }
+    .ref { display:block; background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:1rem 1.1rem; color:var(--ink); }
+    .ref:hover { border-color:var(--cyan); text-decoration:none; }
+    .ref .ref-t { font-family:var(--display); font-weight:600; font-size:0.98rem; line-height:1.32; }
+    .ref .ref-m { font-family:var(--mono); font-size:0.72rem; color:var(--mist); margin-top:0.45rem; line-height:1.5; }
+    .ref .ref-doi { font-family:var(--mono); font-size:0.72rem; color:var(--cyan); margin-top:0.55rem; letter-spacing:0.04em; }
+    @media (prefers-reduced-motion:no-preference){
+      .ref { transition:border-color .2s ease, transform .2s ease; }
+      .ref:hover { transform:translateY(-2px); }
+    }
     footer { border-top:1px solid var(--line); padding:2rem 0 3rem; color:var(--slate); font-size:0.82rem; }
     footer .wrap { display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; }
 
@@ -200,6 +213,7 @@
         <a href="#question">The question</a>
         <a href="#clusters">Clusters</a>
         <a href="#validation">Validation</a>
+        <a href="#reading">References</a>
         <a href="#launch">Method</a>
       </div>
       <a class="launch" href="#launch">Explore the data</a>
@@ -406,6 +420,57 @@
       </div>
     </section>
   </main>
+
+  <section class="refs-sec" id="reading">
+    <div class="wrap reveal">
+      <span class="kicker">The lineage</span>
+      <h2 style="font-size:clamp(1.7rem,3.6vw,2.5rem);margin:0.5rem 0 0.6rem">Where the method comes from</h2>
+      <p style="color:var(--mist);max-width:66ch">
+        Grouping households by the shape of their load curve is an established idea. These
+        peer-reviewed studies shaped the approach used here - shape-based features, PCA before
+        clustering, and honest internal validation. This project is synthetic, so it does not
+        reproduce their real-world findings; the papers are context and method lineage, not
+        evidence for anything claimed on this page. Every entry was checked against Crossref.
+      </p>
+      <div class="refs">
+        <a class="ref" href="https://doi.org/10.1016/j.jclepro.2018.12.067" target="_blank" rel="noopener">
+          <div class="ref-t">A shape-based clustering method for pattern recognition of residential electricity consumption</div>
+          <div class="ref-m">Wen, Zhou, Yang &middot; 2019 &middot; Journal of Cleaner Production</div>
+          <div class="ref-doi">10.1016/j.jclepro.2018.12.067</div>
+        </a>
+        <a class="ref" href="https://doi.org/10.1016/j.apenergy.2014.12.039" target="_blank" rel="noopener">
+          <div class="ref-t">A clustering approach to domestic electricity load profile characterisation using smart metering data</div>
+          <div class="ref-m">McLoughlin, Duffy, Conlon &middot; 2015 &middot; Applied Energy</div>
+          <div class="ref-doi">10.1016/j.apenergy.2014.12.039</div>
+        </a>
+        <a class="ref" href="https://doi.org/10.1016/j.energy.2011.12.031" target="_blank" rel="noopener">
+          <div class="ref-t">Overview and performance assessment of the clustering methods for electrical load pattern grouping</div>
+          <div class="ref-m">Chicco &middot; 2012 &middot; Energy</div>
+          <div class="ref-doi">10.1016/j.energy.2011.12.031</div>
+        </a>
+        <a class="ref" href="https://doi.org/10.3390/en11040859" target="_blank" rel="noopener">
+          <div class="ref-t">Electricity Consumption Clustering Using Smart Meter Data</div>
+          <div class="ref-m">Tureczek, Nielsen, Madsen &middot; 2018 &middot; Energies</div>
+          <div class="ref-doi">10.3390/en11040859</div>
+        </a>
+        <a class="ref" href="https://doi.org/10.1016/j.enbuild.2010.10.008" target="_blank" rel="noopener">
+          <div class="ref-t">Principal component analysis of the electricity consumption in residential dwellings</div>
+          <div class="ref-m">Ndiaye, Gabriel &middot; 2011 &middot; Energy and Buildings</div>
+          <div class="ref-doi">10.1016/j.enbuild.2010.10.008</div>
+        </a>
+        <a class="ref" href="https://doi.org/10.1016/0377-0427(87)90125-7" target="_blank" rel="noopener">
+          <div class="ref-t">Silhouettes: a graphical aid to the interpretation and validation of cluster analysis</div>
+          <div class="ref-m">Rousseeuw &middot; 1987 &middot; Journal of Computational and Applied Mathematics</div>
+          <div class="ref-doi">10.1016/0377-0427(87)90125-7</div>
+        </a>
+        <a class="ref" href="https://doi.org/10.1145/2723372.2737793" target="_blank" rel="noopener">
+          <div class="ref-t">k-Shape: Efficient and Accurate Clustering of Time Series</div>
+          <div class="ref-m">Paparrizos, Gravano &middot; 2015 &middot; ACM SIGMOD</div>
+          <div class="ref-doi">10.1145/2723372.2737793</div>
+        </a>
+      </div>
+    </div>
+  </section>
 
   <section class="launch-sec" id="launch">
     <div class="wrap reveal">
