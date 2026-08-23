@@ -331,6 +331,150 @@ def correlation_heatmap(results) -> go.Figure:
     return fig
 
 
+# --- one consumer at a time (the dataset explorer) ---------------------------
+# These are the only charts that show a single row of the dataset rather than an
+# aggregate. They exist so a reader can check the analysis against the raw
+# readings for a consumer they picked themselves, instead of taking the
+# population summaries on trust.
+
+def consumer_cluster_map(results) -> dict:
+    """consumer_id -> cluster label, taken from the frame the model was fitted on.
+
+    The mapping is read from the same frame and in the same row order that
+    produced ``cluster_labels``, so it cannot drift from the fitted assignment.
+    """
+    for frame in (results.features_combined, results.features):
+        if frame is not None and "consumer_id" in frame.columns:
+            ids = frame["consumer_id"].to_numpy()
+            if len(ids) == len(results.cluster_labels):
+                return {int(c): int(k) for c, k in zip(ids, results.cluster_labels)}
+    return {}
+
+
+def consumer_ids(results) -> list:
+    """Every consumer in the dataset, in ascending order."""
+    return sorted(int(c) for c in results.preprocessed_data["consumer_id"].unique())
+
+
+def consumer_profile_chart(results, consumer_id: int) -> go.Figure:
+    """One consumer's average day in kWh, against the population average.
+
+    This is the raw magnitude the clustering never sees, shown so the reader can
+    tell how much of the difference between consumers is size.
+    """
+    pp = results.preprocessed_data
+    mine = pp.loc[pp["consumer_id"] == int(consumer_id)].groupby("hour")["energy_consumption_kwh"].mean()
+    everyone = pp.groupby("hour")["energy_consumption_kwh"].mean()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=everyone.index, y=everyone.values, name="Population", mode="lines",
+        line=dict(color=ui.SLATE, width=1.6, dash="dot"), hoverinfo="skip"))
+    fig.add_trace(go.Scatter(
+        x=mine.index, y=mine.values, name=f"Consumer {int(consumer_id)}", mode="lines",
+        line=dict(color=ui.CYAN, width=2.8, shape="spline", smoothing=0.6),
+        fill="tonexty", fillcolor="rgba(59,201,222,0.07)",
+        hovertemplate="%{x}:00 &middot; %{y:.3f} kWh<extra></extra>"))
+    ui.add_time_of_day_bands(fig)
+    fig.update_layout(
+        title=f"Consumer {int(consumer_id)}: average day in kWh (magnitude)",
+        xaxis=dict(title="Hour of day", tickvals=[0, 6, 12, 18, 23], range=[0, 23]),
+        yaxis=dict(title="Mean kWh"), height=380,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0))
+    return fig
+
+
+def consumer_shape_chart(results, consumer_id: int) -> go.Figure:
+    """One consumer's normalised day against its own cluster and the population.
+
+    The point of the chart is the comparison: this is what the model actually
+    clustered on, so a reader can see why a consumer landed where it did - and
+    where it sits awkwardly between two groups.
+    """
+    pp = results.preprocessed_data
+    mine = pp.loc[pp["consumer_id"] == int(consumer_id)].groupby("hour")["energy_consumption_kwh"].mean()
+    total = float(mine.sum())
+    shape = (mine / total) if total else mine
+
+    df, hour_cols = _shape_matrix(results)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=HOURS, y=_population_shape(results, df, hour_cols), name="Population",
+        mode="lines", line=dict(color=ui.SLATE, width=1.6, dash="dot"), hoverinfo="skip"))
+
+    cid = consumer_cluster_map(results).get(int(consumer_id))
+    if cid is not None and str(cid) in df.index:
+        name_by_id = {int(p["cluster"]): str(p["cluster_name"])
+                      for _, p in results.cluster_profiles.iterrows()}
+        fig.add_trace(go.Scatter(
+            x=HOURS, y=df.loc[str(cid), hour_cols].astype(float),
+            name=f"{name_by_id.get(cid, f'Cluster {cid}')} (mean)", mode="lines",
+            line=dict(color=ui.cluster_color(cid), width=2.6, shape="spline", smoothing=0.6),
+            hoverinfo="skip"))
+
+    fig.add_trace(go.Scatter(
+        x=shape.index, y=shape.values, name=f"Consumer {int(consumer_id)}",
+        mode="lines+markers", line=dict(color=ui.INK, width=2.2),
+        marker=dict(size=5, color=ui.INK),
+        hovertemplate="%{x}:00 &middot; %{y:.1%} of daily energy<extra></extra>"))
+
+    ui.add_time_of_day_bands(fig)
+    fig.update_layout(
+        title=f"Consumer {int(consumer_id)}: share of the day (what the model sees)",
+        xaxis=dict(title="Hour of day", tickvals=[0, 6, 12, 18, 23], range=[0, 23]),
+        yaxis=dict(title="Share of daily energy", tickformat=".0%"), height=420,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0))
+    return fig
+
+
+def consumer_day_heatmap(results, consumer_id: int) -> go.Figure:
+    """Every recorded day for one consumer, as day against hour.
+
+    Shows the day-to-day variation that the mean profile hides, including the
+    weekend rows.
+    """
+    pp = results.preprocessed_data
+    mine = pp.loc[pp["consumer_id"] == int(consumer_id)].copy()
+    mine["date"] = mine["timestamp"].dt.date
+    grid = mine.pivot_table(index="date", columns="hour",
+                            values="energy_consumption_kwh", aggfunc="mean")
+    grid = grid.reindex(columns=HOURS)
+    weekend = (mine.groupby("date")["is_weekend"].first()
+               .reindex(grid.index).fillna(False).astype(bool))
+    labels = [f"{d.isoformat()}{'  (weekend)' if w else ''}"
+              for d, w in zip(grid.index, weekend)]
+    fig = go.Figure(go.Heatmap(
+        z=grid.to_numpy(), x=HOURS, y=labels, colorscale=_day_ramp_colorscale(),
+        colorbar=dict(title="kWh"),
+        hovertemplate="%{y}<br>%{x}:00 &middot; %{z:.3f} kWh<extra></extra>"))
+    fig.update_layout(
+        title=f"Consumer {int(consumer_id)}: every day on record (kWh)",
+        xaxis=dict(title="Hour of day", tickvals=[0, 6, 12, 18, 23]),
+        # type="category" is required: most of these labels parse as dates, so
+        # Plotly would guess a date axis, thin the ticks and mangle the rows
+        # carrying the weekend suffix.
+        yaxis=dict(title="", type="category", autorange="reversed",
+                   tickmode="array", tickvals=labels, ticktext=labels,
+                   tickfont=dict(family="IBM Plex Mono, monospace", size=10)),
+        height=max(260, 22 * len(labels) + 110), margin=dict(l=170))
+    return fig
+
+
+def cluster_size_chart(results) -> go.Figure:
+    """How the dataset's consumers divide between the clusters."""
+    profiles = results.cluster_profiles.sort_values("cluster")
+    names = [str(p["cluster_name"]) for _, p in profiles.iterrows()]
+    sizes = [int(p["size"]) for _, p in profiles.iterrows()]
+    colors = [ui.cluster_color(int(p["cluster"])) for _, p in profiles.iterrows()]
+    fig = go.Figure(go.Bar(
+        x=sizes, y=names, orientation="h", marker_color=colors,
+        text=[f"{s}" for s in sizes], textposition="outside", textfont=dict(color=ui.INK),
+        hovertemplate="%{y}<br>%{x} consumers<extra></extra>"))
+    fig.update_layout(title="Consumers per cluster", xaxis_title="Consumers",
+                      yaxis=dict(title="", autorange="reversed"), height=260,
+                      margin=dict(l=150))
+    return fig
+
+
 # --- exploratory (raw magnitude, clearly labelled as such) -------------------
 
 def eda_hourly_chart(results) -> go.Figure:
