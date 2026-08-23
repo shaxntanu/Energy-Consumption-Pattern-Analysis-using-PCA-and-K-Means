@@ -194,6 +194,7 @@ PAGES = [
     "Stability",
     "Validation",
     "Insights",
+    "Research",
     "Limitations",
 ]
 
@@ -594,6 +595,85 @@ def page_insights(results: AnalysisResults):
             )
 
 
+REFERENCES = [
+    {
+        "title": "A shape-based clustering method for pattern recognition of residential electricity consumption",
+        "authors": "Wen, Zhou, Yang", "year": "2019", "venue": "Journal of Cleaner Production",
+        "method": "Shape-based clustering of daily residential load curves",
+        "dataset": "Residential electricity consumption records",
+        "why": "Frames residential clustering around the shape of the day rather than its magnitude, which is the central premise of this project.",
+        "url": "https://doi.org/10.1016/j.jclepro.2018.12.067",
+    },
+    {
+        "title": "A clustering approach to domestic electricity load profile characterisation using smart metering data",
+        "authors": "McLoughlin, Duffy, Conlon", "year": "2015", "venue": "Applied Energy",
+        "method": "Clustering of domestic load profiles from smart-meter data",
+        "dataset": "Residential smart-meter measurements",
+        "why": "A domestic-sector precedent for characterising households by load-profile clusters.",
+        "url": "https://doi.org/10.1016/j.apenergy.2014.12.039",
+    },
+    {
+        "title": "Overview and performance assessment of the clustering methods for electrical load pattern grouping",
+        "authors": "Chicco", "year": "2012", "venue": "Energy",
+        "method": "Comparative assessment of clustering algorithms for load patterns",
+        "dataset": "Electrical load pattern sets",
+        "why": "Argues for comparing algorithms and validating with internal indices rather than assuming one method, which is why K here is chosen by a rule and checked, not defaulted.",
+        "url": "https://doi.org/10.1016/j.energy.2011.12.031",
+    },
+    {
+        "title": "Electricity Consumption Clustering Using Smart Meter Data",
+        "authors": "Tureczek, Nielsen, Madsen", "year": "2018", "venue": "Energies",
+        "method": "Review of smart-meter electricity consumption clustering",
+        "dataset": "Smart-meter data",
+        "why": "Surveys the practical choices and pitfalls of smart-meter clustering that this pipeline tries to make explicit.",
+        "url": "https://doi.org/10.3390/en11040859",
+    },
+    {
+        "title": "Principal component analysis of the electricity consumption in residential dwellings",
+        "authors": "Ndiaye, Gabriel", "year": "2011", "venue": "Energy and Buildings",
+        "method": "Principal component analysis of residential consumption",
+        "dataset": "Residential dwelling consumption",
+        "why": "A direct precedent for the PCA dimensionality-reduction step on residential electricity features.",
+        "url": "https://doi.org/10.1016/j.enbuild.2010.10.008",
+    },
+    {
+        "title": "Silhouettes: a graphical aid to the interpretation and validation of cluster analysis",
+        "authors": "Rousseeuw", "year": "1987", "venue": "Journal of Computational and Applied Mathematics",
+        "method": "The silhouette coefficient for cluster validation",
+        "dataset": "General cluster analysis",
+        "why": "The silhouette used here to help choose K comes from this paper.",
+        "url": "https://doi.org/10.1016/0377-0427(87)90125-7",
+    },
+    {
+        "title": "k-Shape: Efficient and Accurate Clustering of Time Series",
+        "authors": "Paparrizos, Gravano", "year": "2015", "venue": "Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data",
+        "method": "Shape-based time-series clustering with a normalised cross-correlation distance",
+        "dataset": "Time-series benchmark datasets",
+        "why": "The shape-aware alternative to Euclidean K-Means that this project names as a benchmark worth comparing against.",
+        "url": "https://doi.org/10.1145/2723372.2737793",
+    },
+]
+
+
+def page_research(results: AnalysisResults):
+    ui.section(
+        "Research",
+        "Where the method comes from, and the work worth comparing it against.",
+        eyebrow="References",
+    )
+    ui.note(
+        "Every reference below was checked against Crossref for its title, authors, year, "
+        "venue and DOI. These are real-world studies; this project is synthetic, so they "
+        "are context and lineage for the method, not evidence for any result shown here."
+    )
+    ui.research_grid(REFERENCES)
+    ui.note(
+        "One named lead the brief asked to check, an Okereke reference on load-profile "
+        "clustering, could not be found in Crossref against this topic, so it is left out "
+        "rather than cited from memory."
+    )
+
+
 def page_limitations(results: AnalysisResults):
     ui.section("Limitations", "What this study does not show.", eyebrow="Honesty")
     sil = results.silhouette_for_k(results.optimal_k)
@@ -626,6 +706,7 @@ PAGE_FUNCS = {
     "Stability": page_stability,
     "Validation": page_validation,
     "Insights": page_insights,
+    "Research": page_research,
     "Limitations": page_limitations,
 }
 
