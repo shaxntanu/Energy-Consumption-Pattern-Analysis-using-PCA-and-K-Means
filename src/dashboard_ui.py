@@ -276,6 +276,22 @@ a:hover { text-decoration: underline; }
 .arch-card li { font-size: 0.85rem; color: var(--ink); margin-bottom: 0.3rem; line-height: 1.5; }
 .arch-card li span { color: var(--mist); }
 
+/* Numbered step card (the quickstart) ------------------------------------ */
+.step-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 1.1rem 1.2rem; height: 100%; position: relative;
+}
+.step-card .step-n {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+  color: var(--cyan); font-variant-numeric: tabular-nums; margin-bottom: 0.5rem;
+  user-select: none;
+}
+.step-card .step-t {
+  font-family: var(--display); font-weight: 600; font-size: 1.05rem;
+  color: var(--ink); margin-bottom: 0.4rem; line-height: 1.25;
+}
+.step-card .step-b { font-size: 0.85rem; color: var(--mist); line-height: 1.55; }
+
 /* Four-part insight block ----------------------------------------------- */
 .insight { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.15rem 1.25rem; margin-bottom: 0.9rem; }
 .insight .insight-head { font-family: var(--display); font-weight: 600; font-size: 1.05rem; color: var(--ink); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -514,6 +530,22 @@ def archetype_card(name: str, color: str, meta: str, bullets: Sequence[str]) -> 
         f'<div class="arch-name"><span class="dot"></span>{name}</div>'
         f'<div class="arch-meta">{meta}</div>'
         f"<ul>{lis}</ul></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def step_card(number: int, title: str, body: str) -> None:
+    """One numbered step in a short sequence.
+
+    The number is real information here - the steps are meant to be done in
+    order - so it is set in the mono face and left unselectable, the same
+    treatment the chapter numbers get.
+    """
+    st.markdown(
+        f'<div class="step-card">'
+        f'<div class="step-n">STEP {number:02d}</div>'
+        f'<div class="step-t">{title}</div>'
+        f'<div class="step-b">{body}</div></div>',
         unsafe_allow_html=True,
     )
 
