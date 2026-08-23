@@ -41,17 +41,30 @@ PROFILE_METRICS: Dict[str, str] = {
     'profile_ramp': 'profile_ramp',
     'weekend_ratio': 'weekend_ratio',
     'weekend_shape_distance': 'weekend_shape_distance',
+    'shape_entropy': 'shape_entropy',
+    'shape_gini': 'shape_gini',
+    'base_load_share': 'base_load_share',
+    'harmonic_1_amplitude': 'harmonic_1_amplitude',
+    'harmonic_2_amplitude': 'harmonic_2_amplitude',
     'peak_to_avg_ratio': 'peak_to_avg_ratio',
     'coefficient_of_variation': 'coefficient_of_variation',
+    'daily_total_cv': 'daily_total_cv',
+    'p90_median_ratio': 'p90_median_ratio',
     'mean_kwh': 'energy_consumption_kwh_mean',
     'max_kwh': 'energy_consumption_kwh_max',
     'total_kwh': 'energy_consumption_kwh_sum',
 }
 
 # Metrics whose deviation from the population is worth reporting as a column.
+# Every entry here is divided by the population value, so a metric only belongs
+# in this list if a ratio of two of its values means something. shape_entropy is
+# reported as a level but not as a ratio: it is bounded above by 1 and every
+# cluster sits near the top of that range, so the ratio would compress a real
+# difference into a number that always looks like 1.0.
 COMPARED_METRICS = [
     'morning_share', 'afternoon_share', 'evening_share', 'night_share',
-    'weekend_ratio', 'peak_to_avg_ratio', 'coefficient_of_variation', 'mean_kwh',
+    'weekend_ratio', 'shape_gini', 'base_load_share', 'peak_to_avg_ratio',
+    'coefficient_of_variation', 'daily_total_cv', 'mean_kwh',
 ]
 
 PERIOD_LABELS = {
@@ -295,16 +308,48 @@ def interpret_cluster(profile: dict, baseline: Optional[Dict[str, float]] = None
             ) + f"; {strongest} is the largest."
         )
 
+    entropy = profile.get('shape_entropy')
+    if entropy is not None:
+        sentences.append(
+            "Spread over the 24 hours is " +
+            _describe("a normalized entropy of", float(entropy),
+                      baseline.get('shape_entropy')) +
+            ", on a scale where a perfectly even day scores 1.000 and a day using "
+            "one single hour scores 0.000."
+        )
+
+    base_load = profile.get('base_load_share')
+    if base_load is not None:
+        floor_reference = baseline.get('base_load_share')
+        sentence = (
+            f"A flat baseline held at the cluster's quietest hour would account for "
+            f"{float(base_load):.1%} of its daily energy"
+        )
+        if floor_reference:
+            sentence += f", against {float(floor_reference):.1%} for the population"
+        sentences.append(sentence + "; the rest is consumption above that floor.")
+
     ratio = profile.get('weekend_ratio')
     reference = baseline.get('weekend_ratio')
     if ratio is not None:
-        direction = "more" if reference and ratio > reference else "less"
-        sentences.append(
-            "Weekend energy is " + f"{float(ratio):.2f}" +
-            " times weekday energy" +
-            (f", {direction} weekend-oriented than the population figure of {reference:.2f}."
-             if reference else ".")
-        )
+        sentence = f"Weekend energy is {float(ratio):.2f} times weekday energy"
+        if reference:
+            # Compare at the precision actually printed. Asserting a direction
+            # that the two displayed numbers do not differ in reads as a
+            # contradiction, and the difference behind it is not one this many
+            # consumers can support anyway.
+            shown = round(float(ratio), 2)
+            shown_reference = round(float(reference), 2)
+            if shown > shown_reference:
+                sentence += (f", more weekend-oriented than the population figure "
+                             f"of {shown_reference:.2f}")
+            elif shown < shown_reference:
+                sentence += (f", less weekend-oriented than the population figure "
+                             f"of {shown_reference:.2f}")
+            else:
+                sentence += (f", indistinguishable from the population figure of "
+                             f"{shown_reference:.2f} at this precision")
+        sentences.append(sentence + ".")
 
     cv = profile.get('coefficient_of_variation')
     p2a = profile.get('peak_to_avg_ratio')

@@ -18,78 +18,78 @@ evidence about real-world household behaviour.
 - Feature set: behavioral
 - Random seed: 42
 - Package versions: pandas 3.0.0, numpy 2.3.5, scikit-learn 1.9.0, scipy 1.18.0, matplotlib 3.10.8, seaborn 0.13.2, plotly 6.5.2, streamlit 1.62.0, joblib 1.5.3
-- Generated: 2026-08-23T08:40:57.229723+00:00
+- Generated: 2026-08-23T11:56:05.838638+00:00
 
 ## Dimensionality reduction
 
-- Features into PCA: 39
-- Components retained: 11 (target 95% cumulative variance)
-- Cumulative variance retained: 0.9507
+- Features into PCA: 51
+- Components retained: 14 (target 95% cumulative variance)
+- Cumulative variance retained: 0.9526
 
 ## Choice of K
 
 - Candidates evaluated: K = 2 to 10
 - Selected K: 3
-- Silhouette at selected K: 0.3116
-- Cluster sizes: [53, 87, 60]
-- Stability across 10 restarts: mean pairwise ARI 0.9846 (sd 0.0151), assignment agreement 0.995
+- Silhouette at selected K: 0.3124
+- Cluster sizes: [94, 57, 49]
+- Stability across 10 restarts: mean pairwise ARI 0.9884 (sd 0.0175), assignment agreement 0.996
 - Inertia elbow, reported for comparison: K=4
-- Rejected for producing a cluster below 5% of consumers: K=[7, 8, 9, 10]
+- Rejected for producing a cluster below 5% of consumers: K=[6, 7, 8, 9, 10]
 
 ### Full sweep
 
 | K | Inertia | Silhouette | Calinski-Harabasz | Davies-Bouldin | Stability ARI |
 | - | ------- | ---------- | ----------------- | -------------- | ------------- |
-| 2 | 5615.5 | 0.2319 | 63.5 | 1.6608 | 0.9804 |
-| 3 (selected) | 4046.1 | 0.3116 | 82.0 | 1.2187 | 0.9846 |
-| 4 | 3319.5 | 0.2937 | 80.6 | 1.2762 | 0.9748 |
-| 5 | 2961.0 | 0.2994 | 73.3 | 1.3115 | 0.9442 |
-| 6 | 2643.4 | 0.2872 | 70.0 | 1.3366 | 0.9614 |
-| 7 | 2478.6 | 0.2884 | 64.1 | 1.3419 | 0.8872 |
-| 8 | 2334.0 | 0.2363 | 59.7 | 1.3505 | 0.7933 |
-| 9 | 2168.2 | 0.2871 | 57.8 | 1.2911 | 0.8252 |
-| 10 | 2055.9 | 0.2309 | 55.0 | 1.3803 | 0.8132 |
+| 2 | 7219.5 | 0.2582 | 68.5 | 1.1727 | 1.0000 |
+| 3 (selected) | 5176.8 | 0.3124 | 86.4 | 1.2541 | 0.9884 |
+| 4 | 4208.3 | 0.2916 | 85.5 | 1.2099 | 0.9882 |
+| 5 | 3818.5 | 0.3005 | 75.3 | 1.3914 | 0.9269 |
+| 6 | 3458.2 | 0.2888 | 70.2 | 1.3912 | 0.9123 |
+| 7 | 3220.9 | 0.2726 | 64.9 | 1.3342 | 0.8330 |
+| 8 | 3026.3 | 0.2702 | 60.6 | 1.3246 | 0.8551 |
+| 9 | 2875.0 | 0.2136 | 56.8 | 1.4585 | 0.8108 |
+| 10 | 2686.7 | 0.2179 | 55.2 | 1.4115 | 0.8382 |
 
 ## Cluster profiles
 
-### Cluster 0: Flat All-Day
+### Cluster 0: Midday-Peaking
 
-- Size: 53 consumers (26.5%)
-- Peak hour of the mean load shape: 19
-- Evening share of daily energy: 0.2598 (population 0.2906)
-- Afternoon share: 0.2711 (population 0.2902)
-- Morning share: 0.2600 (population 0.2611)
-- Night share: 0.2091 (population 0.1581)
-- Weekend to weekday energy ratio: 0.9698 (population 1.0363)
-- Peak-to-average ratio: 3.3562 (population 5.5016)
-- Coefficient of variation: 0.2535 (population 0.5109)
-- Mean kWh per record (context only): 1.3653 (population 1.3487)
-
-### Cluster 1: Evening-Peaking Weekend-Heavy
-
-- Size: 87 consumers (43.5%)
-- Peak hour of the mean load shape: 20
-- Evening share of daily energy: 0.3520 (population 0.2906)
-- Afternoon share: 0.2606 (population 0.2902)
-- Morning share: 0.2408 (population 0.2611)
-- Night share: 0.1467 (population 0.1581)
-- Weekend to weekday energy ratio: 1.2036 (population 1.0363)
-- Peak-to-average ratio: 6.4665 (population 5.5016)
-- Coefficient of variation: 0.6203 (population 0.5109)
-- Mean kWh per record (context only): 1.3765 (population 1.3487)
-
-### Cluster 2: Midday-Peaking Weekday-Heavy
-
-- Size: 60 consumers (30.0%)
+- Size: 94 consumers (47.0%)
 - Peak hour of the mean load shape: 13
-- Evening share of daily energy: 0.2290 (population 0.2906)
-- Afternoon share: 0.3499 (population 0.2902)
-- Morning share: 0.2914 (population 0.2611)
-- Night share: 0.1297 (population 0.1581)
-- Weekend to weekday energy ratio: 0.8525 (population 1.0363)
-- Peak-to-average ratio: 5.9975 (population 5.5016)
-- Coefficient of variation: 0.5795 (population 0.5109)
-- Mean kWh per record (context only): 1.2938 (population 1.3487)
+- Evening share of daily energy: 0.2593 (population 0.2906)
+- Afternoon share: 0.3335 (population 0.2902)
+- Morning share: 0.2715 (population 0.2611)
+- Night share: 0.1357 (population 0.1581)
+- Weekend to weekday energy ratio: 1.0547 (population 1.0363)
+- Peak-to-average ratio: 5.8785 (population 5.5016)
+- Coefficient of variation: 0.5729 (population 0.5109)
+- Mean kWh per record (context only): 1.3333 (population 1.3487)
+
+### Cluster 1: Flat All-Day
+
+- Size: 57 consumers (28.5%)
+- Peak hour of the mean load shape: 19
+- Evening share of daily energy: 0.2635 (population 0.2906)
+- Afternoon share: 0.2705 (population 0.2902)
+- Morning share: 0.2593 (population 0.2611)
+- Night share: 0.2068 (population 0.1581)
+- Weekend to weekday energy ratio: 1.0006 (population 1.0363)
+- Peak-to-average ratio: 3.5249 (population 5.5016)
+- Coefficient of variation: 0.2737 (population 0.5109)
+- Mean kWh per record (context only): 1.3706 (population 1.3487)
+
+### Cluster 2: Evening-Peaking
+
+- Size: 49 consumers (24.5%)
+- Peak hour of the mean load shape: 20
+- Evening share of daily energy: 0.3823 (population 0.2906)
+- Afternoon share: 0.2300 (population 0.2902)
+- Morning share: 0.2430 (population 0.2611)
+- Night share: 0.1447 (population 0.1581)
+- Weekend to weekday energy ratio: 1.0426 (population 1.0363)
+- Peak-to-average ratio: 7.0779 (population 5.5016)
+- Coefficient of variation: 0.6677 (population 0.5109)
+- Mean kWh per record (context only): 1.3527 (population 1.3487)
 
 ## Validation against the hidden archetypes
 
@@ -101,31 +101,31 @@ real dataset.
 
 | K | Adjusted Rand Index | Normalized Mutual Information |
 | - | ------------------- | ----------------------------- |
-| 2 | 0.3875 | 0.5229 |
-| 3 (selected) | 0.6364 | 0.7144 |
-| 4 | 0.8123 | 0.8198 |
-| 5 | 0.8005 | 0.8235 |
-| 6 | 0.7521 | 0.7998 |
-| 7 | 0.7102 | 0.7766 |
-| 8 | 0.5675 | 0.7066 |
-| 9 | 0.6551 | 0.7357 |
-| 10 | 0.5234 | 0.6887 |
+| 2 | 0.3243 | 0.5421 |
+| 3 (selected) | 0.6140 | 0.7029 |
+| 4 | 0.8713 | 0.8507 |
+| 5 | 0.8078 | 0.8273 |
+| 6 | 0.7508 | 0.7812 |
+| 7 | 0.7031 | 0.7427 |
+| 8 | 0.6859 | 0.7495 |
+| 9 | 0.5331 | 0.6948 |
+| 10 | 0.5166 | 0.6828 |
 
-At the selected K=3 the Adjusted Rand Index against the archetypes is 0.6364.
+At the selected K=3 the Adjusted Rand Index against the archetypes is 0.6140.
 
 ### Cluster against archetype
 
 ```
 cluster     0   1   2
 archetype            
-daytime     0   0  50
-evening     0  49   1
-flat       50   0   0
-weekend     3  38   9
+daytime    50   0   0
+evening     3   0  47
+flat        0  50   0
+weekend    41   7   2
 ```
 
 ## Recommendations
 
-- Rows generated: 10
+- Rows generated: 7
 - See reports/recommendations_report.md. No savings figures and no causal
   claims are made anywhere in that file.
