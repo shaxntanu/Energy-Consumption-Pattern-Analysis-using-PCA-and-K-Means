@@ -317,11 +317,12 @@ def _home_chapter_figure(index: int, results: AnalysisResults) -> None:
         profiles = results.cluster_profiles.sort_values("cluster")
         for col, (_, prof) in zip(st.columns(len(profiles)), profiles.iterrows()):
             cid = int(prof["cluster"])
-            meta = (f"{int(prof['size'])} consumers &middot; {prof['size_share']:.1%} "
-                    f"&middot; {_peak_label(prof, results)}")
+            meta = (f"{int(prof['size'])} consumers &middot; "
+                    f"{_peak_label(prof, results)}")
             with col:
                 ui.archetype_card(str(prof["cluster_name"]), ui.cluster_color(cid), meta,
-                                  _cluster_bullets(prof, results))
+                                  _cluster_bullets(prof, results),
+                                  badge=f"{prof['size_share']:.1%}")
         _plot(ch.hour_by_cluster_heatmap(results))
     elif index == 7:
         _plot(ch.stability_by_k_chart(results) if results.stability_results
@@ -873,10 +874,11 @@ def page_clusters(results: AnalysisResults):
     cols = st.columns(len(profiles))
     for col, (_, prof) in zip(cols, profiles.iterrows()):
         cid = int(prof["cluster"])
-        meta = f"{int(prof['size'])} consumers &middot; {prof['size_share']:.1%} &middot; {_peak_label(prof, results)}"
+        meta = f"{int(prof['size'])} consumers &middot; {_peak_label(prof, results)}"
         with col:
             ui.archetype_card(str(prof["cluster_name"]), ui.cluster_color(cid), meta,
-                              _cluster_bullets(prof, results))
+                              _cluster_bullets(prof, results),
+                              badge=f"{prof['size_share']:.1%}")
 
     _plot(ch.load_shape_chart(results))
     _plot(ch.hour_by_cluster_heatmap(results))
