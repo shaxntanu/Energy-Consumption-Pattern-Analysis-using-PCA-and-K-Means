@@ -580,9 +580,9 @@ def how_to_use_quickstart() -> Sequence[tuple[str, str]]:
         ("Look at the shape", "Open Overview and read the load-shape chart. Each coloured "
                               "line is one cluster's average day against the dotted "
                               "population average."),
-        ("Follow the method", "How it works, then The data, Features, Principal components "
-                              "and Choosing K, in that order. Each page explains the step "
-                              "it performs."),
+        ("Follow the method", "Dataset first, to see the readings themselves. Then How it "
+                              "works, Features, Principal components and Choosing K, in "
+                              "that order. Each page performs one step and explains it."),
         ("Change something", "Open \"Adjust the run\" in the sidebar and switch the feature "
                              "set to scale. Watch the silhouette rise and the archetype "
                              "agreement fall."),
