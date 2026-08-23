@@ -31,6 +31,7 @@ from energy_analysis import AnalysisConfig, AnalysisResults, EnergyAnalysis  # n
 import dashboard_ui as ui  # noqa: E402
 import dashboard_charts as ch  # noqa: E402
 import dashboard_content as content  # noqa: E402
+import dashboard_zoom as zoom  # noqa: E402
 
 st.set_page_config(
     page_title="Energy load-shape study",
@@ -1098,6 +1099,10 @@ def main():
         tagline="Grouped by the shape of the day, not the size of the bill.",
         links=(("Read the code", content.REPO_URL),),
     )
+    # Last, so the zero-height frame lands at the end of the page rather than
+    # opening a gap between sections. The listeners are on the document and the
+    # markers are built on demand, so it does not need the charts to exist yet.
+    zoom.inject()
 
 
 if __name__ == "__main__":
