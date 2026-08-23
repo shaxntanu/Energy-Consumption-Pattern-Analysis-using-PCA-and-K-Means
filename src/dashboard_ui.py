@@ -445,11 +445,11 @@ def insight_block(head: str, color: str, observation: str, evidence: str,
     )
 
 
-def research_card(title: str, authors: str, year: str, venue: str, method: str,
-                  dataset: str, why: str, url: str, url_label: str = "DOI") -> None:
-    """A single research reference card. Every field is the caller's; this only
-    lays them out. Do not pass invented bibliographic data to it."""
-    st.markdown(
+def research_card_html(title: str, authors: str, year: str, venue: str, method: str,
+                       dataset: str, why: str, url: str, url_label: str = "DOI") -> str:
+    """Markup for one research reference card. Every field is the caller's; this
+    only lays them out. Do not pass invented bibliographic data to it."""
+    return (
         f'<div class="ref-card">'
         f'<div class="ref-title">{title}</div>'
         f'<div class="ref-authors">{authors} - {year} - {venue}</div>'
@@ -459,15 +459,26 @@ def research_card(title: str, authors: str, year: str, venue: str, method: str,
         f"</div>"
         f'<div class="ref-why">{why}</div>'
         f'<div style="margin-top:0.6rem"><a href="{url}" target="_blank" rel="noopener">{url_label}</a></div>'
-        "</div>",
-        unsafe_allow_html=True,
+        "</div>"
     )
 
 
-def research_grid(cards_html: str) -> None:
-    """Open/close a responsive grid around a run of research cards is handled by
-    CSS on the container; this helper only exists to document the wrapper."""
-    st.markdown(f'<div class="research">{cards_html}</div>', unsafe_allow_html=True)
+def research_card(title: str, authors: str, year: str, venue: str, method: str,
+                  dataset: str, why: str, url: str, url_label: str = "DOI") -> None:
+    """Render a single research reference card on its own."""
+    st.markdown(research_card_html(title, authors, year, venue, method, dataset, why,
+                                   url, url_label), unsafe_allow_html=True)
+
+
+def research_grid(cards: Sequence[dict]) -> None:
+    """Render a run of research cards inside the responsive grid.
+
+    Args:
+        cards: dicts whose keys match research_card_html's parameters. Only pass
+            bibliographic data you have verified against a source, never invented.
+    """
+    html = "".join(research_card_html(**card) for card in cards)
+    st.markdown(f'<div class="research">{html}</div>', unsafe_allow_html=True)
 
 
 def pipeline(steps: Iterable[tuple[str, str]]) -> None:
