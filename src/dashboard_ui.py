@@ -308,6 +308,106 @@ a:hover { text-decoration: underline; }
 .pipe .step .t { font-family: var(--display); font-weight: 600; margin-top: 0.3rem; color: var(--ink); }
 .pipe .step .d { font-size: 0.82rem; color: var(--mist); margin-top: 0.25rem; line-height: 1.45; }
 
+/* Masthead -------------------------------------------------------------- */
+/* The band that used to be the landing page's top navigation. It carries
+   identity and the outbound links only; the page nav itself lives in the
+   sidebar, so there is one place to change pages and no competing menus. */
+.masthead {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 0.55rem 0 0.9rem 0; margin-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.masthead .brand {
+  font-family: var(--display); font-weight: 600; font-size: 0.95rem;
+  color: var(--ink); display: flex; align-items: center; gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.masthead .brand .slash {
+  font-family: var(--mono); color: var(--cyan); font-weight: 500; font-size: 1.05rem;
+}
+.masthead .where {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--slate);
+  padding-left: 1rem; border-left: 1px solid var(--line);
+}
+.masthead .where b { color: var(--mist); font-weight: 500; }
+.masthead .spacer { flex: 1 1 auto; }
+.masthead .out {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--mist);
+  border: 1px solid var(--line); border-radius: 999px; padding: 0.34rem 0.8rem;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.masthead .out:hover {
+  color: var(--cyan); border-color: var(--cyan-deep);
+  background: rgba(59,201,222,0.07); text-decoration: none;
+}
+
+/* Story chapters -------------------------------------------------------- */
+/* Numbered because the study genuinely is a sequence: each chapter depends on
+   the one before it. The number is information, not ornament. */
+.chapter { margin: 2.6rem 0 1.2rem 0; }
+.chapter .ch-head { display: flex; align-items: baseline; gap: 1rem; }
+.chapter .ch-n {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 600; color: var(--cyan);
+  letter-spacing: 0.1em; padding-top: 0.15rem; flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.chapter .ch-kicker {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.22em; color: var(--mist);
+}
+.chapter h2 {
+  font-size: clamp(1.5rem, 2.9vw, 2.1rem); font-weight: 600;
+  margin: 0.35rem 0 0.7rem 0; line-height: 1.12;
+}
+.chapter .ch-body { color: var(--mist); font-size: 1.02rem; max-width: 68ch; margin: 0; }
+.chapter .ch-body strong { color: var(--ink); font-weight: 600; }
+.chapter .ch-body em { color: var(--ink); font-style: italic; }
+.chapter .ch-indent { padding-left: 2.6rem; }
+@media (max-width: 640px) { .chapter .ch-indent { padding-left: 0; } }
+
+/* Footer ---------------------------------------------------------------- */
+.foot {
+  margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; align-items: baseline;
+}
+.foot .f-run { font-family: var(--mono); font-size: 0.72rem; color: var(--slate); }
+.foot .f-line { font-size: 0.86rem; color: var(--mist); }
+.foot .spacer { flex: 1 1 auto; }
+
+/* Sidebar navigation ---------------------------------------------------- */
+/* Buttons rather than a radio, so the pages can be grouped under real
+   headings. Streamlit's own button semantics are kept, so each item is still a
+   focusable, keyboard-operable control. */
+.nav-group {
+  font-family: var(--mono); font-size: 0.63rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.2em; color: var(--slate);
+  margin: 1.1rem 0 0.35rem 0;
+}
+.nav-group:first-of-type { margin-top: 0.2rem; }
+[data-testid="stSidebar"] .stButton > button {
+  background: transparent; color: var(--mist); border: none;
+  border-left: 2px solid transparent; border-radius: 0 6px 6px 0;
+  font-family: var(--body); font-size: 0.86rem; font-weight: 500;
+  text-align: left; justify-content: flex-start;
+  padding: 0.34rem 0.7rem; width: 100%; min-height: 0;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+  background: var(--panel-hi); color: var(--ink); border-left-color: var(--slate);
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"],
+[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
+  background: rgba(59,201,222,0.09); color: var(--cyan);
+  border-left-color: var(--cyan); font-weight: 600;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover,
+[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"]:hover {
+  background: rgba(59,201,222,0.14); color: var(--cyan);
+}
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.12rem; }
+
 /* Streamlit widgets ----------------------------------------------------- */
 [data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 12px; }
 .stRadio > label, .stSelectbox label, .stSlider label, .stMultiSelect label { color: var(--mist) !important; font-family: var(--mono); font-size: 0.8rem; }
@@ -495,3 +595,75 @@ def pipeline(steps: Iterable[tuple[str, str]]) -> None:
         )
     html.append("</div>")
     st.markdown("".join(html), unsafe_allow_html=True)
+
+
+# --- Masthead, chapters and footer -------------------------------------------
+# These carry the presentation the static landing page had. They are structure
+# only: the words and the numbers arrive from the caller, which reads them from
+# the live analysis, so nothing here can drift out of step with a run.
+
+def masthead(section_label: str, links: Sequence[tuple[str, str]] = (),
+             brand: str = "Load-Shape Study") -> None:
+    """The identity band at the top of every page.
+
+    Args:
+        section_label: Where the reader currently is, shown as a breadcrumb.
+        links: (label, url) pairs for outbound links only. Page navigation
+            belongs in the sidebar; putting it here too would make two menus.
+        brand: The project's short name.
+    """
+    outs = "".join(
+        f'<a class="out" href="{url}" target="_blank" rel="noopener">{label}</a>'
+        for label, url in links
+    )
+    st.markdown(
+        f'<div class="masthead">'
+        f'<span class="brand"><span class="slash">/</span>{brand}</span>'
+        f'<span class="where"><b>{section_label}</b></span>'
+        f'<span class="spacer"></span>{outs}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def chapter(number: int, kicker_text: str, title: str, body_html: str = "") -> None:
+    """One numbered movement of the story.
+
+    Args:
+        number: 1-based position, rendered zero-padded.
+        kicker_text: The short eyebrow, e.g. "The method".
+        title: The chapter's claim, as a sentence.
+        body_html: Prose; inline HTML is allowed for emphasis only.
+    """
+    body = f'<div class="ch-indent"><p class="ch-body">{body_html}</p></div>' if body_html else ""
+    st.markdown(
+        f'<div class="chapter">'
+        f'<div class="ch-head"><span class="ch-n">{number:02d}</span>'
+        f'<span class="ch-kicker">{kicker_text}</span></div>'
+        f'<div class="ch-indent"><h2>{title}</h2></div>{body}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def nav_group(label: str) -> None:
+    """A heading over one run of sidebar navigation items."""
+    st.sidebar.markdown(f'<div class="nav-group">{label}</div>', unsafe_allow_html=True)
+
+
+def footer(run_line: str, tagline: str, links: Sequence[tuple[str, str]] = ()) -> None:
+    """The closing band.
+
+    Args:
+        run_line: A mono line identifying the run, e.g. its config hash.
+        tagline: One sentence on what the study claims.
+        links: (label, url) outbound pairs.
+    """
+    outs = "".join(
+        f'<a class="out" href="{url}" target="_blank" rel="noopener">{label}</a>'
+        for label, url in links
+    )
+    st.markdown(
+        f'<div class="foot"><span class="f-run">{run_line}</span>'
+        f'<span class="f-line">{tagline}</span>'
+        f'<span class="spacer"></span>{outs}</div>',
+        unsafe_allow_html=True,
+    )
