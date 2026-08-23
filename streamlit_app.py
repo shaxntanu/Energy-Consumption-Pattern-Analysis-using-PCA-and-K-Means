@@ -30,6 +30,7 @@ sys.path.append(str(ROOT / "src"))
 from energy_analysis import AnalysisConfig, AnalysisResults, EnergyAnalysis  # noqa: E402
 import dashboard_ui as ui  # noqa: E402
 import dashboard_charts as ch  # noqa: E402
+import dashboard_content as content  # noqa: E402
 
 st.set_page_config(
     page_title="Energy load-shape study",
@@ -64,8 +65,7 @@ def build_config_from_sidebar() -> AnalysisConfig:
         unsafe_allow_html=True,
     )
 
-    page = st.sidebar.radio("Navigate", PAGES, label_visibility="collapsed")
-    st.session_state["_page"] = page
+    render_nav()
 
     with st.sidebar.expander("Adjust the run", expanded=False):
         st.caption(
@@ -183,23 +183,142 @@ def _cluster_bullets(profile, results, n: int = 3) -> list:
     return bullets
 
 
-PAGES = [
-    "Overview",
-    "How it works",
-    "The data",
-    "Features",
-    "Principal components",
-    "Choosing K",
-    "The clusters",
-    "Stability",
-    "Validation",
-    "Insights",
-    "Research",
-    "Limitations",
-]
+# --- navigation --------------------------------------------------------------
+# One navigation, in the sidebar, grouped under the same top-level headings the
+# landing page used. The masthead deliberately carries no page links: two menus
+# for one set of pages is two things to keep in step.
+
+NAV_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Start", ("Home",)),
+    ("Simulator", ("Overview", "The data", "Features")),
+    ("Method", ("How it works", "Principal components", "Choosing K")),
+    ("Clusters", ("The clusters", "Insights")),
+    ("Validation", ("Stability", "Validation", "Limitations")),
+    ("Research", ("Research",)),
+)
+
+HOME_PAGE = "Home"
+
+PAGES = [name for _, names in NAV_GROUPS for name in names]
+
+SECTION_OF_PAGE = {name: group for group, names in NAV_GROUPS for name in names}
+
+
+def current_page() -> str:
+    """The page being shown, defaulting to Home on first load."""
+    page = st.session_state.get("_page", HOME_PAGE)
+    return page if page in PAGES else HOME_PAGE
+
+
+def goto(page: str) -> None:
+    """Switch pages and rerun.
+
+    Rerunning immediately keeps the highlighted navigation item and the rendered
+    page in step; without it the run that handles the click would still be
+    drawing the previous page's chrome. The analysis itself is cached on the
+    config hash, so a page change never recomputes a model.
+    """
+    st.session_state["_page"] = page
+    st.rerun()
+
+
+def render_nav() -> None:
+    """Draw the grouped sidebar navigation."""
+    active = current_page()
+    for group, names in NAV_GROUPS:
+        ui.nav_group(group)
+        for name in names:
+            if st.sidebar.button(
+                name, key=f"nav::{name}",
+                type="primary" if name == active else "secondary",
+            ):
+                goto(name)
+
+
+def nav_button(label: str, page: str, key: str) -> None:
+    """A main-area call to action that moves to another page."""
+    if st.button(label, key=key):
+        goto(page)
 
 
 # --- pages -------------------------------------------------------------------
+
+def page_home(results: AnalysisResults):
+    """The landing story, carried over from the static site.
+
+    The static page had to hard-code its figures into JavaScript. Here every
+    figure in the prose and every chart is read from the run that is currently
+    loaded, so the story cannot fall out of step with the analysis it describes.
+    """
+    ui.kicker("PCA + K-Means &middot; synthetic study")
+    ui.hero(
+        'Energy has a <span class="accent">rhythm</span>.',
+        "Two homes can use the same amount of electricity and behave nothing alike. "
+        "This study groups consumers by the shape of their day, not by how much they use.",
+    )
+    ui.synthetic_badge("Synthetic data - not real households")
+    st.write("")
+
+    cta_left, cta_right, _ = st.columns([1, 1, 2])
+    with cta_left:
+        nav_button("Explore the data", "Overview", "cta::overview")
+    with cta_right:
+        nav_button("Read the method", "How it works", "cta::method")
+
+    _plot(ch.load_shape_chart(results))
+    st.caption(
+        "Each coloured line is one cluster's average day; the dotted line is the "
+        "population. Drag to zoom, double-click to reset."
+    )
+
+    for i, step in enumerate(content.story_steps(results), 1):
+        ui.chapter(i, step["kicker"], step["title"], step.get("body", ""))
+        if step.get("tiles"):
+            ui.metric_cards(step["tiles"])
+        if step.get("pipeline"):
+            ui.pipeline(step["pipeline"])
+        if step.get("warn"):
+            ui.note(step["warn"], warn=True)
+        if step.get("note"):
+            ui.note(step["note"])
+        _home_chapter_figure(i, results)
+
+    ui.hairline()
+    ui.section(
+        "Where the method comes from",
+        "Seven verified studies stand behind the choices made here.",
+        eyebrow="Further reading",
+    )
+    nav_button("Open the references", "Research", "cta::research")
+
+
+def _home_chapter_figure(index: int, results: AnalysisResults) -> None:
+    """The live figure that belongs to one story chapter, if it has one.
+
+    Kept apart from the prose so the words stay in dashboard_content and the
+    charts stay in dashboard_charts, with only this mapping in between.
+    """
+    if index == 3:
+        _plot(ch.eda_hourly_chart(results))
+        ui.note(
+            "That chart is in kilowatt-hours, and it is the one thing the clustering "
+            "never sees. Divide each consumer's day by its own total and the size drops "
+            "out, leaving the proportions that every other chart here is drawn from."
+        )
+    elif index == 6:
+        profiles = results.cluster_profiles.sort_values("cluster")
+        for col, (_, prof) in zip(st.columns(len(profiles)), profiles.iterrows()):
+            cid = int(prof["cluster"])
+            meta = (f"{int(prof['size'])} consumers &middot; {prof['size_share']:.1%} "
+                    f"&middot; {_peak_label(prof, results)}")
+            with col:
+                ui.archetype_card(str(prof["cluster_name"]), ui.cluster_color(cid), meta,
+                                  _cluster_bullets(prof, results))
+        _plot(ch.hour_by_cluster_heatmap(results))
+    elif index == 7:
+        _plot(ch.stability_by_k_chart(results) if results.stability_results
+              else ch.k_composite_chart(results))
+
 
 def page_overview(results: AnalysisResults):
     ui.kicker("PCA + K-Means &middot; synthetic study")
@@ -595,66 +714,6 @@ def page_insights(results: AnalysisResults):
             )
 
 
-REFERENCES = [
-    {
-        "title": "A shape-based clustering method for pattern recognition of residential electricity consumption",
-        "authors": "Wen, Zhou, Yang", "year": "2019", "venue": "Journal of Cleaner Production",
-        "method": "Shape-based clustering of daily residential load curves",
-        "dataset": "Residential electricity consumption records",
-        "why": "Frames residential clustering around the shape of the day rather than its magnitude, which is the central premise of this project.",
-        "url": "https://doi.org/10.1016/j.jclepro.2018.12.067",
-    },
-    {
-        "title": "A clustering approach to domestic electricity load profile characterisation using smart metering data",
-        "authors": "McLoughlin, Duffy, Conlon", "year": "2015", "venue": "Applied Energy",
-        "method": "Clustering of domestic load profiles from smart-meter data",
-        "dataset": "Residential smart-meter measurements",
-        "why": "A domestic-sector precedent for characterising households by load-profile clusters.",
-        "url": "https://doi.org/10.1016/j.apenergy.2014.12.039",
-    },
-    {
-        "title": "Overview and performance assessment of the clustering methods for electrical load pattern grouping",
-        "authors": "Chicco", "year": "2012", "venue": "Energy",
-        "method": "Comparative assessment of clustering algorithms for load patterns",
-        "dataset": "Electrical load pattern sets",
-        "why": "Argues for comparing algorithms and validating with internal indices rather than assuming one method, which is why K here is chosen by a rule and checked, not defaulted.",
-        "url": "https://doi.org/10.1016/j.energy.2011.12.031",
-    },
-    {
-        "title": "Electricity Consumption Clustering Using Smart Meter Data",
-        "authors": "Tureczek, Nielsen, Madsen", "year": "2018", "venue": "Energies",
-        "method": "Review of smart-meter electricity consumption clustering",
-        "dataset": "Smart-meter data",
-        "why": "Surveys the practical choices and pitfalls of smart-meter clustering that this pipeline tries to make explicit.",
-        "url": "https://doi.org/10.3390/en11040859",
-    },
-    {
-        "title": "Principal component analysis of the electricity consumption in residential dwellings",
-        "authors": "Ndiaye, Gabriel", "year": "2011", "venue": "Energy and Buildings",
-        "method": "Principal component analysis of residential consumption",
-        "dataset": "Residential dwelling consumption",
-        "why": "A direct precedent for the PCA dimensionality-reduction step on residential electricity features.",
-        "url": "https://doi.org/10.1016/j.enbuild.2010.10.008",
-    },
-    {
-        "title": "Silhouettes: a graphical aid to the interpretation and validation of cluster analysis",
-        "authors": "Rousseeuw", "year": "1987", "venue": "Journal of Computational and Applied Mathematics",
-        "method": "The silhouette coefficient for cluster validation",
-        "dataset": "General cluster analysis",
-        "why": "The silhouette used here to help choose K comes from this paper.",
-        "url": "https://doi.org/10.1016/0377-0427(87)90125-7",
-    },
-    {
-        "title": "k-Shape: Efficient and Accurate Clustering of Time Series",
-        "authors": "Paparrizos, Gravano", "year": "2015", "venue": "Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data",
-        "method": "Shape-based time-series clustering with a normalised cross-correlation distance",
-        "dataset": "Time-series benchmark datasets",
-        "why": "The shape-aware alternative to Euclidean K-Means that this project names as a benchmark worth comparing against.",
-        "url": "https://doi.org/10.1145/2723372.2737793",
-    },
-]
-
-
 def page_research(results: AnalysisResults):
     ui.section(
         "Research",
@@ -666,12 +725,8 @@ def page_research(results: AnalysisResults):
         "venue and DOI. These are real-world studies; this project is synthetic, so they "
         "are context and lineage for the method, not evidence for any result shown here."
     )
-    ui.research_grid(REFERENCES)
-    ui.note(
-        "One named lead the brief asked to check, an Okereke reference on load-profile "
-        "clustering, could not be found in Crossref against this topic, so it is left out "
-        "rather than cited from memory."
-    )
+    ui.research_grid(content.REFERENCES)
+    ui.note(content.REFERENCES_OMITTED_NOTE)
 
 
 def page_limitations(results: AnalysisResults):
@@ -696,6 +751,7 @@ def page_limitations(results: AnalysisResults):
 
 
 PAGE_FUNCS = {
+    "Home": page_home,
     "Overview": page_overview,
     "How it works": page_how_it_works,
     "The data": page_data,
@@ -710,11 +766,23 @@ PAGE_FUNCS = {
     "Limitations": page_limitations,
 }
 
+MASTHEAD_LINKS = (
+    ("Landing page", "https://energy-pattern-analysis.vercel.app"),
+    ("Repository", content.REPO_URL),
+)
+
 
 def main():
     config = build_config_from_sidebar()
+    page = current_page()
+    ui.masthead(SECTION_OF_PAGE.get(page, "Start"), MASTHEAD_LINKS)
     results = get_or_run_analysis(config)
-    PAGE_FUNCS[st.session_state.get("_page", "Overview")](results)
+    PAGE_FUNCS[page](results)
+    ui.footer(
+        run_line=f"Synthetic study &middot; PCA + K-Means &middot; run {config.config_hash()}",
+        tagline="Grouped by the shape of the day, not the size of the bill.",
+        links=(("Read the code", content.REPO_URL),),
+    )
 
 
 if __name__ == "__main__":
