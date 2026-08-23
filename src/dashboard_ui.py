@@ -404,11 +404,18 @@ a:hover { text-decoration: underline; }
 .gh-star {
   display: inline-flex; align-items: stretch; overflow: hidden;
   background: #000; border: 1px solid var(--line); border-radius: 10px;
-  color: var(--ink); text-decoration: none; position: relative;
+  text-decoration: none; position: relative;
   font-family: var(--body); font-size: 0.86rem; font-weight: 600;
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
-.gh-star:hover { border-color: var(--slate); text-decoration: none; transform: translateY(-1px); }
+/* Streamlit gives links inside a markdown block their own colour and underline
+   through a generated class, which outranks a single class of ours. The class is
+   repeated here to outrank it back: the emotion hash changes between Streamlit
+   versions and must not be named, and !important would be harder to override
+   later than this is to read. */
+a.gh-star.gh-star { color: var(--ink); text-decoration: none; }
+a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
+.gh-star:hover { border-color: var(--slate); transform: translateY(-1px); }
 .gh-star:active { transform: translateY(0); }
 
 /* The shine. A single pass of light across the face on hover, clipped by the
