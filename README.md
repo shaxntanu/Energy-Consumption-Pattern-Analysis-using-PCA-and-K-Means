@@ -38,12 +38,17 @@ Instead of one shared daily curve with different base loads, each consumer draws
 <p align="center">
   <img src="outputs/figures/archetype_profiles.png" alt="Archetype load profiles" width="720"/>
 </p>
-<p align="center"><em>Mean 24-hour profiles by latent archetype</em></p>
+<p align="center"><em>Mean normalized 24-hour shape per archetype, with individual consumers behind it. The overlap is deliberate: clusters are not perfectly separable by design.</em></p>
 
 <p align="center">
-  <img src="outputs/figures/within_archetype_variation.png" alt="Within-archetype variation" width="720"/>
+  <img src="outputs/figures/archetype_separation.png" alt="Archetype separation matrix" width="720"/>
 </p>
-<p align="center"><em>Continuous variation inside each archetype (clusters are not perfectly separable by design)</em></p>
+<p align="center"><em>Distance between archetype mean shapes divided by within-archetype scatter. Values near 1 mean the pair overlaps.</em></p>
+
+<p align="center">
+  <img src="outputs/figures/archetype_magnitude_check.png" alt="Magnitude does not separate the archetypes" width="720"/>
+</p>
+<p align="center"><em>Mean consumption by archetype. This figure is meant to look boring: magnitude carries almost no archetype information, which is what makes the behavioral-versus-scale ablation a fair test.</em></p>
 
 <p align="center">
   <img src="outputs/figures/cross_archetype_overlap.png" alt="Cross-archetype overlap" width="720"/>

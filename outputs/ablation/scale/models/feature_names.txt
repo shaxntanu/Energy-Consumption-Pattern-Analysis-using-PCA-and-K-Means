@@ -1,0 +1,7 @@
+energy_consumption_kwh_mean
+energy_consumption_kwh_max
+energy_consumption_kwh_min
+energy_consumption_kwh_median
+energy_consumption_kwh_std
+energy_consumption_kwh_sum
+current_a_mean

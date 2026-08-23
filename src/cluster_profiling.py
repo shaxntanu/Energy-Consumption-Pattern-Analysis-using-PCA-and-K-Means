@@ -1,368 +1,471 @@
 """
 Cluster Profiling Module
-Profiles clusters and generates optimization recommendations.
+
+Describes each cluster in the original feature units, always next to the
+population baseline. A cluster mean on its own is not interpretable: 0.31 of
+daily energy in the evening only means something once you know the population
+figure is 0.26.
+
+Two rules are applied throughout:
+
+- Profiling reports behaviour first and magnitude second. Magnitude is included
+  because it is useful context, but it did not take part in the behavioral
+  clustering and is never used to name a cluster.
+- Names are derived from measured quantities (peak hour of the cluster mean load
+  shape, flatness, weekend ratio against the population). Clusters keep integer
+  IDs internally; the name is a label for reading, not a key.
 """
 
-import pandas as pd
-import numpy as np
+import json
 import logging
 from pathlib import Path
+from typing import Dict, Optional, Tuple
+
+import numpy as np
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+SHAPE_COLUMNS = [f'hour_{h}_shape' for h in range(24)]
 
-def profile_clusters(features: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
-    """
-    Profile each cluster using statistical summaries.
-    
+# Profile column -> source feature column. Only entries whose source exists in
+# the supplied feature frame are reported.
+PROFILE_METRICS: Dict[str, str] = {
+    'morning_share': 'morning_share',
+    'afternoon_share': 'afternoon_share',
+    'evening_share': 'evening_share',
+    'night_share': 'night_share',
+    'night_day_ratio': 'night_day_ratio',
+    'peak_concentration': 'peak_concentration',
+    'profile_ramp': 'profile_ramp',
+    'weekend_ratio': 'weekend_ratio',
+    'weekend_shape_distance': 'weekend_shape_distance',
+    'peak_to_avg_ratio': 'peak_to_avg_ratio',
+    'coefficient_of_variation': 'coefficient_of_variation',
+    'mean_kwh': 'energy_consumption_kwh_mean',
+    'max_kwh': 'energy_consumption_kwh_max',
+    'total_kwh': 'energy_consumption_kwh_sum',
+}
+
+# Metrics whose deviation from the population is worth reporting as a column.
+COMPARED_METRICS = [
+    'morning_share', 'afternoon_share', 'evening_share', 'night_share',
+    'weekend_ratio', 'peak_to_avg_ratio', 'coefficient_of_variation', 'mean_kwh',
+]
+
+PERIOD_LABELS = {
+    'night': 'Night-Peaking',
+    'morning': 'Morning-Peaking',
+    'afternoon': 'Midday-Peaking',
+    'evening': 'Evening-Peaking',
+}
+
+# A perfectly flat 24-hour profile puts 3/24 = 0.125 of its energy in its three
+# busiest hours. Anything below this stays close enough to flat that naming it
+# after a peak hour would overstate what the data shows.
+FLAT_CONCENTRATION_LIMIT = 0.16
+
+# Relative gaps against the population before a qualifier is added to a name.
+WEEKEND_HIGH = 1.10
+WEEKEND_LOW = 0.90
+
+
+def _period_of_hour(hour: int) -> str:
+    """Map an hour of day to its period block."""
+    if 0 <= hour < 6:
+        return 'night'
+    if 6 <= hour < 12:
+        return 'morning'
+    if 12 <= hour < 18:
+        return 'afternoon'
+    return 'evening'
+
+
+def cluster_load_shapes(features: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
+    """Mean normalized 24-hour load shape per cluster, plus the population mean.
+
     Args:
-        features: DataFrame with engineered features (including consumer_id)
-        labels: Cluster labels
-        
+        features: Per-consumer feature frame containing the hour_<h>_shape columns.
+        labels: Cluster label per row, in the same order as features.
+
     Returns:
-        DataFrame with cluster profiles
+        DataFrame indexed by cluster ID with 24 columns named 0..23. The
+        population mean is included under the index label 'population'.
     """
-    logger.info("Profiling clusters")
-    
-    # Add labels to features
-    features_with_labels = features.copy()
-    features_with_labels['cluster'] = labels
-    
-    # Calculate cluster profiles
-    cluster_profiles = []
-    
+    available = [c for c in SHAPE_COLUMNS if c in features.columns]
+    if len(available) != 24:
+        raise ValueError(
+            f"Expected 24 shape columns for load-shape profiling, found {len(available)}"
+        )
+
+    shapes = features[available].copy()
+    shapes.columns = list(range(24))
+
+    by_cluster = shapes.groupby(np.asarray(labels)).mean()
+    by_cluster.index.name = 'cluster'
+
+    population = shapes.mean().to_frame().T
+    population.index = ['population']
+
+    return pd.concat([by_cluster, population])
+
+
+def population_baseline(features: pd.DataFrame) -> Dict[str, float]:
+    """Population mean of every profile metric present in the feature frame.
+
+    This is the mean over consumers, not the median of the cluster means. The
+    median of cluster means changes when clusters change size and is not a
+    property of the population.
+
+    Args:
+        features: Per-consumer feature frame.
+
+    Returns:
+        Mapping of profile metric name to population mean.
+    """
+    baseline = {
+        name: float(features[source].mean())
+        for name, source in PROFILE_METRICS.items()
+        if source in features.columns
+    }
+
+    shape_columns = [c for c in SHAPE_COLUMNS if c in features.columns]
+    if len(shape_columns) == 24:
+        mean_shape = features[shape_columns].mean().to_numpy()
+        baseline['peak_hour'] = float(int(np.argmax(mean_shape)))
+
+    baseline['size'] = float(len(features))
+    return baseline
+
+
+def profile_clusters(features: pd.DataFrame,
+                     labels: np.ndarray) -> Tuple[pd.DataFrame, Dict[str, float]]:
+    """Summarize every cluster in original feature units against the population.
+
+    Args:
+        features: Per-consumer feature frame, ideally the combined set so that
+            magnitude context is available alongside behaviour.
+        labels: Cluster label per row, in the same order as features.
+
+    Returns:
+        Tuple of (profiles frame, population baseline dict). The profiles frame
+        has one row per cluster and, for the metrics in COMPARED_METRICS, an
+        extra <metric>_vs_population column holding the cluster value divided by
+        the population value.
+    """
+    labels = np.asarray(labels)
+    if len(labels) != len(features):
+        raise ValueError(
+            f"Got {len(labels)} labels for {len(features)} consumers; they must match"
+        )
+
+    logger.info(f"Profiling {len(np.unique(labels))} clusters over {len(features)} consumers")
+
+    baseline = population_baseline(features)
+    shape_columns = [c for c in SHAPE_COLUMNS if c in features.columns]
+    has_shape = len(shape_columns) == 24
+
+    rows = []
     for cluster_id in sorted(np.unique(labels)):
-        cluster_data = features_with_labels[features_with_labels['cluster'] == cluster_id]
-        
-        profile = {
-            'cluster': cluster_id,
-            'size': len(cluster_data),
-            'size_percentage': len(cluster_data) / len(features_with_labels) * 100
+        members = features[labels == cluster_id]
+
+        row = {
+            'cluster': int(cluster_id),
+            'size': int(len(members)),
+            'size_share': float(len(members) / len(features)),
         }
-        
-        # Consumption statistics
-        if 'energy_consumption_kwh_mean' in cluster_data.columns:
-            profile['avg_consumption'] = cluster_data['energy_consumption_kwh_mean'].mean()
-            profile['peak_consumption'] = cluster_data['energy_consumption_kwh_max'].mean()
-            profile['min_consumption'] = cluster_data['energy_consumption_kwh_min'].mean()
-            profile['consumption_std'] = cluster_data['energy_consumption_kwh_std'].mean()
-        
-        # Variability
-        if 'coefficient_of_variation' in cluster_data.columns:
-            profile['avg_cv'] = cluster_data['coefficient_of_variation'].mean()
-        
-        if 'peak_to_avg_ratio' in cluster_data.columns:
-            profile['avg_peak_to_avg'] = cluster_data['peak_to_avg_ratio'].mean()
-        
-        # Temporal patterns
-        if 'morning_usage' in cluster_data.columns:
-            profile['morning_usage'] = cluster_data['morning_usage'].mean()
-            profile['afternoon_usage'] = cluster_data['afternoon_usage'].mean()
-            profile['evening_usage'] = cluster_data['evening_usage'].mean()
-            profile['night_usage'] = cluster_data['night_usage'].mean()
-        
-        if 'weekend_ratio' in cluster_data.columns:
-            profile['weekend_ratio'] = cluster_data['weekend_ratio'].mean()
-        
-        # Other features
-        if 'temperature_c_mean' in cluster_data.columns:
-            profile['avg_temperature'] = cluster_data['temperature_c_mean'].mean()
-        
-        cluster_profiles.append(profile)
-    
-    profiles_df = pd.DataFrame(cluster_profiles)
-    
-    logger.info(f"Cluster profiling completed. {len(profiles_df)} clusters profiled")
-    return profiles_df
+
+        if has_shape:
+            mean_shape = members[shape_columns].mean().to_numpy()
+            row['peak_hour'] = int(np.argmax(mean_shape))
+
+        for name, source in PROFILE_METRICS.items():
+            if source in members.columns:
+                row[name] = float(members[source].mean())
+
+        for name in COMPARED_METRICS:
+            if name in row and baseline.get(name):
+                row[f'{name}_vs_population'] = float(row[name] / baseline[name])
+
+        rows.append(row)
+
+    profiles = pd.DataFrame(rows)
+    logger.info(f"Profiled clusters with sizes {profiles['size'].tolist()}")
+    return profiles, baseline
 
 
-def interpret_cluster(profile: dict) -> str:
-    """
-    Generate a textual interpretation of a cluster based on its profile.
-    
+def name_cluster(profile: dict, baseline: Optional[Dict[str, float]] = None) -> str:
+    """Build a readable name from the measured behaviour of one cluster.
+
+    The name answers "when does this group use energy, and how evenly", because
+    that is what the behavioral features encode. It deliberately says nothing
+    about how much energy the group uses: magnitude was excluded from the
+    clustering, so putting it in the name would misdescribe the result.
+
     Args:
-        profile: Dictionary containing cluster profile
-        
+        profile: One row of the profiles frame as a dictionary.
+        baseline: Population baseline. Without it, only the flatness and peak
+            hour parts of the name can be built.
+
     Returns:
-        Textual interpretation of the cluster
+        Name string, for example "Evening-Peaking Weekend-Heavy".
     """
-    interpretations = []
-    
-    # Consumption level
-    avg_consumption = profile.get('avg_consumption', 0)
-    if avg_consumption < 1.0:
-        interpretations.append("Low consumption consumers")
-    elif avg_consumption < 1.5:
-        interpretations.append("Moderate consumption consumers")
+    baseline = baseline or {}
+    parts = []
+
+    concentration = profile.get('peak_concentration')
+    peak_hour = profile.get('peak_hour')
+
+    is_flat = concentration is not None and float(concentration) < FLAT_CONCENTRATION_LIMIT
+
+    if is_flat:
+        parts.append('Flat All-Day')
+    elif peak_hour is not None and not pd.isna(peak_hour):
+        parts.append(PERIOD_LABELS[_period_of_hour(int(peak_hour))])
     else:
-        interpretations.append("High consumption consumers")
-    
-    # Variability
-    cv = profile.get('avg_cv', 0)
-    if cv < 0.3:
-        interpretations.append("with stable usage patterns")
-    elif cv < 0.5:
-        interpretations.append("with moderate variability")
-    else:
-        interpretations.append("with highly variable usage")
-    
-    # Peak patterns
-    peak_to_avg = profile.get('avg_peak_to_avg', 1)
-    if peak_to_avg > 2.0:
-        interpretations.append("and significant peak loads")
-    
-    # Temporal patterns
-    morning = profile.get('morning_usage', 0)
-    evening = profile.get('evening_usage', 0)
-    night = profile.get('night_usage', 0)
-    
-    if morning > evening and morning > night:
-        interpretations.append("with morning-heavy usage")
-    elif evening > morning and evening > night:
-        interpretations.append("with evening-heavy usage")
-    elif night > morning and night > evening:
-        interpretations.append("with night-heavy usage")
-    
-    weekend_ratio = profile.get('weekend_ratio', 1.0)
-    if weekend_ratio > 1.15:
-        interpretations.append("and weekend-oriented energy intensity")
-    elif weekend_ratio < 0.85:
-        interpretations.append("and weekday-oriented energy intensity")
-    
-    return " ".join(interpretations)
+        parts.append('Unclassified-Timing')
+
+    ratio = profile.get('weekend_ratio')
+    reference = baseline.get('weekend_ratio')
+    if ratio is not None and reference:
+        relative = float(ratio) / float(reference)
+        if relative >= WEEKEND_HIGH:
+            parts.append('Weekend-Heavy')
+        elif relative <= WEEKEND_LOW:
+            parts.append('Weekday-Heavy')
+
+    return ' '.join(parts)
 
 
-def generate_recommendations(profile: dict) -> list:
-    """
-    Generate evidence-based energy optimization recommendations specific to cluster profile.
-    No generic recommendations - only those supported by cluster characteristics.
-    
+def _describe(label: str, value: float, reference: Optional[float], unit: str = '') -> str:
+    """Format one metric next to its population value."""
+    if reference is None or not np.isfinite(reference) or reference == 0:
+        return f"{label} {value:.3f}{unit}"
+    return f"{label} {value:.3f}{unit} against a population {reference:.3f}{unit}"
+
+
+def interpret_cluster(profile: dict, baseline: Optional[Dict[str, float]] = None) -> str:
+    """Describe a cluster in plain sentences, each backed by a number.
+
+    Every clause states a measured value and the population value it is being
+    compared with, so the description can be checked against the profile table.
+
     Args:
-        profile: Dictionary containing cluster profile
-        
+        profile: One row of the profiles frame as a dictionary.
+        baseline: Population baseline.
+
     Returns:
-        List of specific recommendations
+        Multi-sentence description.
     """
-    recommendations = []
-    
-    avg_consumption = profile.get('avg_consumption', 0)
-    cv = profile.get('avg_cv', 0)
-    peak_to_avg = profile.get('avg_peak_to_avg', 1)
-    evening = profile.get('evening_usage', 0)
-    morning = profile.get('morning_usage', 0)
-    weekend_ratio = profile.get('weekend_ratio', 0)
-    
-    # High consumption recommendations (only if truly high)
-    if avg_consumption > 2.0:
-        recommendations.append("Consider energy efficiency audits to identify reduction opportunities")
-        recommendations.append("Evaluate equipment upgrades for more efficient alternatives")
-    
-    # High variability recommendations (only if truly variable)
-    if cv > 0.6:
-        recommendations.append("Implement load monitoring to understand usage patterns")
-        recommendations.append("Consider energy storage to smooth demand fluctuations")
-    
-    # High peak-to-average recommendations (only if truly high)
-    if peak_to_avg > 2.5:
-        recommendations.append("Implement peak-load shifting strategies")
-        recommendations.append("Consider demand-response programs to reduce peak charges")
-        recommendations.append("Schedule high-energy tasks during off-peak hours")
-    
-    # Evening-heavy usage recommendations (only if significantly evening-heavy)
-    if evening > morning * 1.5 and evening > 0.5:
-        recommendations.append("Consider shifting evening loads to earlier hours")
-        recommendations.append("Implement smart scheduling for appliances")
-    
-    # Weekend-specific recommendations
-    if weekend_ratio > 1.2:
-        recommendations.append("Weekend-dominant usage: Consider time-of-use optimization")
-    elif weekend_ratio < 0.8:
-        recommendations.append("Weekday-dominant usage: Consider weekend load shifting")
-    
-    # Only add recommendations if there are specific characteristics to address
-    return recommendations
+    baseline = baseline or {}
+    sentences = []
 
+    size = profile.get('size')
+    share = profile.get('size_share')
+    if size is not None and share is not None:
+        sentences.append(f"Holds {int(size)} consumers, {share:.1%} of the population.")
 
-def name_cluster(profile: dict, population: dict = None) -> str:
-    """
-    Generate a descriptive name from measured behavioral traits.
-    Uses weekend ratio and peakiness when absolute scale is compressed
-    (normalized behavioral experiments often share low absolute kWh means).
-    """
-    if population is None:
-        population = {}
-
-    weekend_ratio = float(profile.get('weekend_ratio', 1.0) or 1.0)
-    peak_to_avg = float(profile.get('avg_peak_to_avg', 0) or 0)
-    cv = float(profile.get('avg_cv', 0) or 0)
-    avg_consumption = float(profile.get('avg_consumption', 0) or 0)
-
-    morning = float(profile.get('morning_usage', 0) or 0)
-    afternoon = float(profile.get('afternoon_usage', 0) or 0)
-    evening = float(profile.get('evening_usage', 0) or 0)
-    night = float(profile.get('night_usage', 0) or 0)
-    max_period = max(morning, afternoon, evening, night)
-
-    if weekend_ratio >= 1.15:
-        primary = "Weekend-Oriented"
-    elif weekend_ratio <= 0.85:
-        primary = "Weekday-Oriented"
-    elif max_period == evening and evening > 0:
-        primary = "Evening-Peak"
-    elif max_period == morning and morning > 0:
-        primary = "Morning-Peak"
-    elif max_period == afternoon and afternoon > 0:
-        primary = "Afternoon-Peak"
-    elif max_period == night and night > 0:
-        primary = "Night-Peak"
-    else:
-        primary = "Balanced-Timing"
-
-    if peak_to_avg >= 9.0 or cv >= 1.2:
-        secondary = "Spiky-Variable"
-    elif peak_to_avg <= 5.0 and cv <= 0.8:
-        secondary = "Flat-Stable"
-    elif cv >= 1.0:
-        secondary = "High-Variability"
-    else:
-        secondary = "Moderate-Variability"
-
-    # Optional scale tag only when magnitude actually differs across clusters
-    pop_mean = population.get('avg_consumption')
-    if pop_mean and avg_consumption > 0:
-        if avg_consumption < 0.85 * pop_mean:
-            scale = "Lower-Scale"
-        elif avg_consumption > 1.15 * pop_mean:
-            scale = "Higher-Scale"
+    peak_hour = profile.get('peak_hour')
+    concentration = profile.get('peak_concentration')
+    if peak_hour is not None and not pd.isna(peak_hour):
+        if concentration is not None and float(concentration) < FLAT_CONCENTRATION_LIMIT:
+            sentences.append(
+                f"The mean load shape is close to flat: its three busiest hours hold "
+                f"{float(concentration):.1%} of daily energy, against "
+                f"{baseline.get('peak_concentration', float('nan')):.1%} for the population, "
+                f"so the nominal peak at hour {int(peak_hour)} is weak."
+            )
         else:
-            scale = None
-    else:
-        scale = None
+            sentences.append(
+                f"The mean load shape peaks at hour {int(peak_hour)}, with "
+                f"{float(concentration):.1%} of daily energy in its three busiest hours."
+            )
 
-    parts = [primary, secondary] if scale is None else [scale, primary, secondary]
-    return " ".join(parts)
+    shares = {
+        period: profile.get(f'{period}_share')
+        for period in ('night', 'morning', 'afternoon', 'evening')
+    }
+    shares = {k: v for k, v in shares.items() if v is not None}
+    if shares:
+        strongest = max(shares, key=lambda k: shares[k])
+        sentences.append(
+            "Period shares are " + ", ".join(
+                f"{period} {value:.1%}" for period, value in shares.items()
+            ) + f"; {strongest} is the largest."
+        )
+
+    ratio = profile.get('weekend_ratio')
+    reference = baseline.get('weekend_ratio')
+    if ratio is not None:
+        direction = "more" if reference and ratio > reference else "less"
+        sentences.append(
+            "Weekend energy is " + f"{float(ratio):.2f}" +
+            " times weekday energy" +
+            (f", {direction} weekend-oriented than the population figure of {reference:.2f}."
+             if reference else ".")
+        )
+
+    cv = profile.get('coefficient_of_variation')
+    p2a = profile.get('peak_to_avg_ratio')
+    if cv is not None and p2a is not None:
+        sentences.append(
+            "Hour-to-hour variability is " +
+            _describe("a coefficient of variation of", float(cv), baseline.get('coefficient_of_variation')) +
+            ", and " +
+            _describe("a peak-to-average ratio of", float(p2a), baseline.get('peak_to_avg_ratio')) + "."
+        )
+
+    mean_kwh = profile.get('mean_kwh')
+    if mean_kwh is not None:
+        sentences.append(
+            "For context only, since magnitude was not clustered on: " +
+            _describe("mean consumption", float(mean_kwh), baseline.get('mean_kwh'), " kWh per record") + "."
+        )
+
+    return " ".join(sentences)
 
 
-def save_cluster_profiles(profiles: pd.DataFrame, output_dir: str = 'outputs/reports') -> pd.DataFrame:
-    """
-    Save cluster profiles to CSV with descriptive names.
-    
+def save_cluster_profiles(profiles: pd.DataFrame,
+                          baseline: Dict[str, float],
+                          output_dir: str = 'outputs/reports') -> pd.DataFrame:
+    """Add names to the profiles frame and write it out with the baseline.
+
     Args:
-        profiles: DataFrame with cluster profiles
-        output_dir: Directory to save reports
-        
+        profiles: Frame from profile_clusters.
+        baseline: Population baseline from profile_clusters.
+        output_dir: Directory for the CSV and JSON files.
+
     Returns:
-        DataFrame with cluster names added
+        The profiles frame with a cluster_name column inserted after cluster.
     """
     logger.info("Saving cluster profiles")
-    
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
-    
-    population = {
-        'avg_consumption': float(profiles['avg_consumption'].median())
-        if 'avg_consumption' in profiles.columns else None
-    }
-    profiles_with_names = profiles.copy()
-    profiles_with_names['cluster_name'] = profiles_with_names.apply(
-        lambda row: name_cluster(row.to_dict(), population), axis=1
+
+    path = Path(output_dir)
+    path.mkdir(parents=True, exist_ok=True)
+
+    named = profiles.copy()
+    named['cluster_name'] = named.apply(lambda row: name_cluster(row.to_dict(), baseline), axis=1)
+
+    columns = ['cluster', 'cluster_name'] + [c for c in named.columns
+                                             if c not in ('cluster', 'cluster_name')]
+    named = named[columns]
+
+    duplicates = named['cluster_name'].duplicated(keep=False)
+    if duplicates.any():
+        # Two clusters can legitimately share a description. Numbering keeps the
+        # labels unique for display without pretending they differ behaviourally.
+        logger.warning("Some clusters share a name; appending the cluster ID to keep labels unique")
+        named.loc[duplicates, 'cluster_name'] = (
+            named.loc[duplicates, 'cluster_name'] + ' ' +
+            named.loc[duplicates, 'cluster'].astype(str)
+        )
+
+    named.to_csv(path / 'cluster_profiles.csv', index=False)
+    (path / 'population_baseline.json').write_text(
+        json.dumps(baseline, indent=2), encoding='utf-8'
     )
-    
-    profiles_with_names.to_csv(Path(output_dir) / 'cluster_profiles.csv', index=False)
-    
-    logger.info(f"Cluster profiles saved to {output_dir}")
-    return profiles_with_names
+
+    logger.info(f"Cluster profiles saved to {path}")
+    return named
 
 
-def save_cluster_insights(profiles: pd.DataFrame, output_dir: str = 'outputs/reports'):
-    """
-    Save detailed cluster insights including interpretations and recommendations.
-    
+def save_cluster_insights(profiles: pd.DataFrame,
+                          baseline: Dict[str, float],
+                          output_dir: str = 'outputs/reports') -> pd.DataFrame:
+    """Write the per-cluster descriptions.
+
     Args:
-        profiles: DataFrame with cluster profiles
-        output_dir: Directory to save reports
+        profiles: Named profiles frame.
+        baseline: Population baseline.
+        output_dir: Directory for the CSV file.
+
+    Returns:
+        DataFrame with cluster, cluster_name and interpretation.
     """
     logger.info("Generating cluster insights")
-    
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
-    
-    insights = []
-    for _, profile in profiles.iterrows():
-        profile_dict = profile.to_dict()
-        interpretation = interpret_cluster(profile_dict)
-        recommendations = generate_recommendations(profile_dict)
-        
-        insight = {
-            'cluster': profile_dict['cluster'],
-            'interpretation': interpretation,
-            'recommendations': '; '.join(recommendations)
+
+    path = Path(output_dir)
+    path.mkdir(parents=True, exist_ok=True)
+
+    insights = pd.DataFrame([
+        {
+            'cluster': int(row['cluster']),
+            'cluster_name': row.get('cluster_name', f"Cluster {int(row['cluster'])}"),
+            'interpretation': interpret_cluster(row.to_dict(), baseline),
         }
-        insights.append(insight)
-    
-    insights_df = pd.DataFrame(insights)
-    insights_df.to_csv(Path(output_dir) / 'cluster_insights.csv', index=False)
-    
-    logger.info(f"Cluster insights saved to {output_dir}")
-    return insights_df
+        for _, row in profiles.iterrows()
+    ])
+
+    insights.to_csv(path / 'cluster_insights.csv', index=False)
+    logger.info(f"Cluster insights saved to {path}")
+    return insights
 
 
-def run_cluster_profiling(features: pd.DataFrame, labels: np.ndarray,
-                         output_dir: str = 'outputs/reports') -> tuple:
-    """
-    Run complete cluster profiling pipeline.
-    
+def run_cluster_profiling(features: pd.DataFrame,
+                          labels: np.ndarray,
+                          output_dir: str = 'outputs/reports',
+                          metrics_dir: Optional[str] = None
+                          ) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[str, float]]:
+    """Profile, name and describe every cluster, and write the artifacts.
+
     Args:
-        features: DataFrame with engineered features
-        labels: Cluster labels
-        output_dir: Directory to save outputs
-        
+        features: Per-consumer feature frame. Pass the combined set so that
+            magnitude context is reported alongside behaviour.
+        labels: Cluster label per row, in the same order as features.
+        output_dir: Directory for the report CSV and JSON files.
+        metrics_dir: Directory for the cluster load-shape table. Defaults to a
+            sibling 'metrics' directory next to output_dir.
+
     Returns:
-        Tuple of (profiles_df_with_names, insights_df)
+        Tuple of (named profiles frame, insights frame, population baseline).
     """
     logger.info("Starting cluster profiling pipeline")
-    
-    # Profile clusters
-    profiles = profile_clusters(features, labels)
-    
-    # Save profiles with names
-    profiles_with_names = save_cluster_profiles(profiles, output_dir)
-    
-    # Generate and save insights
-    insights = save_cluster_insights(profiles_with_names, output_dir)
-    
+
+    profiles, baseline = profile_clusters(features, labels)
+    named = save_cluster_profiles(profiles, baseline, output_dir)
+    insights = save_cluster_insights(named, baseline, output_dir)
+
+    metrics_path = Path(metrics_dir) if metrics_dir else Path(output_dir).parent / 'metrics'
+    metrics_path.mkdir(parents=True, exist_ok=True)
+    try:
+        shapes = cluster_load_shapes(features, labels)
+        shapes.to_csv(metrics_path / 'cluster_load_shapes.csv', index_label='cluster')
+    except ValueError as error:
+        logger.warning(f"Skipping cluster load-shape table: {error}")
+
     logger.info("Cluster profiling pipeline completed")
-    return profiles_with_names, insights
+    return named, insights, baseline
 
 
 if __name__ == "__main__":
-    # Test cluster profiling with combined features for complete profiling
+    from project_paths import anchor_to_project_root
+
+    anchor_to_project_root()
+
+    from clustering import run_clustering_pipeline
     from data_loader import generate_synthetic_data
-    from preprocessing import preprocess_pipeline
     from feature_engineering import engineer_all_features, select_features
     from pca_analysis import run_pca_pipeline
-    from clustering import run_clustering_pipeline
-    
-    synthetic_data = generate_synthetic_data(n_consumers=200, n_days=30, hourly_records=True)
-    preprocessed = preprocess_pipeline(synthetic_data.drop(columns=['archetype']))
-    
-    # Use behavioral features for clustering (more meaningful for behavioral patterns)
-    features_behavioral = engineer_all_features(preprocessed, feature_set='behavioral')
-    features_behavioral_selected = select_features(features_behavioral, feature_group='behavioral')
-    
-    X_pca, pca, scaler, n_components = run_pca_pipeline(features_behavioral_selected)
-    kmeans, labels, optimal_k, k_values, inertia_values, silhouette_scores, ch_scores, db_scores, stability_results = run_clustering_pipeline(X_pca, test_stability=False)
-    
-    # Use combined features for profiling (includes scale features for complete profile)
-    features_combined = engineer_all_features(preprocessed, feature_set='combined')
-    
-    profiles, insights = run_cluster_profiling(features_combined, labels)
-    
-    print("\nCluster Profiles:")
+    from preprocessing import preprocess_pipeline
+
+    raw = generate_synthetic_data(n_consumers=200, n_days=30, hourly_records=True)
+    preprocessed = preprocess_pipeline(raw.drop(columns=['archetype']))
+    behavioral = select_features(
+        engineer_all_features(preprocessed, feature_set='behavioral'),
+        feature_group='behavioral',
+    )
+
+    X_pca, pca, scaler, n_components = run_pca_pipeline(behavioral)
+    clustering = run_clustering_pipeline(X_pca, test_stability=False)
+
+    combined = engineer_all_features(preprocessed, feature_set='combined')
+    profiles, insights, baseline = run_cluster_profiling(combined, clustering.labels)
+
+    print(f"\nSelected K: {clustering.optimal_k}")
+    print("\nCluster profiles:")
     print(profiles.to_string(index=False))
-    
-    print("\nCluster Insights:")
+    print("\nCluster descriptions:")
     for _, row in insights.iterrows():
-        print(f"\nCluster {row['cluster']}:")
-        print(f"  Name: {profiles[profiles['cluster'] == row['cluster']]['cluster_name'].values[0]}")
-        print(f"  Interpretation: {row['interpretation']}")
-        print(f"  Recommendations: {row['recommendations'] if row['recommendations'] else 'No specific recommendations for this cluster'}")
+        print(f"\nCluster {row['cluster']} - {row['cluster_name']}")
+        print(f"  {row['interpretation']}")

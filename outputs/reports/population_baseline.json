@@ -1,0 +1,18 @@
+{
+  "morning_share": 0.26105222344273704,
+  "afternoon_share": 0.290164350633954,
+  "evening_share": 0.290641501743321,
+  "night_share": 0.15814192417998793,
+  "night_day_ratio": 0.29565737792269803,
+  "peak_concentration": 0.19267625031867566,
+  "profile_ramp": 0.0050730533130906716,
+  "weekend_ratio": 1.0363048730108018,
+  "weekend_shape_distance": 0.07140943828675758,
+  "peak_to_avg_ratio": 5.501575735878792,
+  "coefficient_of_variation": 0.5108802467137618,
+  "mean_kwh": 1.3486937606056726,
+  "max_kwh": 7.34991261357322,
+  "total_kwh": 971.0595076360842,
+  "peak_hour": 19.0,
+  "size": 200.0
+}

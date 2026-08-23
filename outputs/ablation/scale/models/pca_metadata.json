@@ -1,0 +1,24 @@
+{
+  "n_input_features": 7,
+  "feature_names": [
+    "energy_consumption_kwh_mean",
+    "energy_consumption_kwh_max",
+    "energy_consumption_kwh_min",
+    "energy_consumption_kwh_median",
+    "energy_consumption_kwh_std",
+    "energy_consumption_kwh_sum",
+    "current_a_mean"
+  ],
+  "variance_threshold": 0.95,
+  "n_components_retained": 2,
+  "cumulative_variance_retained": 0.970207999867798,
+  "component_count_by_criterion": {
+    "variance_threshold": 2,
+    "kaiser": 2,
+    "scree_elbow": 3
+  },
+  "component_descriptions": [
+    "PC1: energy_consumption_kwh_mean +1.00, energy_consumption_kwh_sum +1.00, current_a_mean +0.99, energy_consumption_kwh_median +0.97, energy_consumption_kwh_std +0.83",
+    "PC2: energy_consumption_kwh_min +0.76, energy_consumption_kwh_std -0.55, energy_consumption_kwh_max -0.49, energy_consumption_kwh_median +0.20, energy_consumption_kwh_sum +0.06"
+  ]
+}

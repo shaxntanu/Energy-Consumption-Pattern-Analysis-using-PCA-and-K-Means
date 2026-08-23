@@ -43,7 +43,7 @@ def test_artifacts_reload_under_pinned_versions(tmp_path):
     assert kmeans.n_clusters == results.optimal_k
     np.testing.assert_array_equal(labels, results.cluster_labels)
 
-    assert meta['dataset_source'].startswith('Synthetic')
+    assert 'synthetic' in meta['dataset_source'].lower()
     assert meta['selected_k'] == results.optimal_k
     assert meta['pca_components'] == results.n_pca_components
     assert 'package_versions' in meta
