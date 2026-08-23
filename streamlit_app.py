@@ -577,9 +577,28 @@ def page_dataset(results: AnalysisResults):
         )
         _plot(ch.cluster_size_chart(results))
         assignment = _assignment_table(results)
+        # The archetype each consumer was generated from is the answer key: it is
+        # dropped before preprocessing and the model never sees it. Reading the
+        # table with it visible is a different exercise from reading the table the
+        # model produced, so revealing it is a deliberate act rather than the
+        # default, and what gets downloaded matches what is on screen.
+        filename = "cluster_assignment.csv"
+        if "hidden_archetype" in assignment.columns:
+            reveal = st.checkbox(
+                "Reveal the hidden archetype", value=False,
+                help="The label the generator drew each consumer from. Available "
+                     "only because the data is synthetic.",
+            )
+            if reveal:
+                # A different file, so a different name: the CSV cache is keyed on
+                # it, and two downloads with the same name and different columns
+                # would be the same file to anyone who kept both.
+                filename = "cluster_assignment_with_archetype.csv"
+            else:
+                assignment = assignment.drop(columns=["hidden_archetype"])
         st.dataframe(assignment, width="stretch", hide_index=True)
         _download("Download the cluster assignment (CSV)", assignment,
-                  "cluster_assignment.csv", results.config.config_hash())
+                  filename, results.config.config_hash())
 
 
 COLUMN_NOTES = {
