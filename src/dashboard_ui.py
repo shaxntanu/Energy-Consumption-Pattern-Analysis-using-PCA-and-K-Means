@@ -672,6 +672,35 @@ a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
 
 [data-testid="stMetricValue"] { font-family: var(--display); font-variant-numeric: tabular-nums; }
 
+/* Text selection -------------------------------------------------------- */
+/* What a reader can select is a statement about what is worth taking away. The
+   line drawn here: anything that names a control, labels a structure, or numbers
+   a sequence is chrome and is not selectable, because selecting it is almost
+   always an accident of double-clicking. Everything that is the study - headings,
+   ledes, prose, results, figures, feature names, bibliographic details, captions,
+   the synthetic-data warning - stays selectable, because a reader quoting this
+   work has to be able to copy it.
+
+   Two calls worth stating. A heading that names what a reader is looking at is
+   content and stays selectable; the eyebrow above it is decoration and does not.
+   The feature chips are not selected out either: they read as chrome but each one
+   is the name of a real feature group, and a reader listing what went into the
+   model needs them. */
+.kicker,
+.masthead .brand, .masthead .where, .masthead a,
+.nav-group,
+.insight .k,
+.ref-card .ref-grid .rk,
+.pipe .step .n,
+[data-testid="stSidebar"] .stButton > button,
+[data-testid="stMain"] .stButton > button,
+[data-testid="stDownloadButton"] button,
+[data-testid="stTab"],
+[data-testid="stCheckbox"] label,
+.stSlider label, .stSelectbox label, .stMultiSelect label, .stRadio > label {
+  user-select: none; -webkit-user-select: none;
+}
+
 /* Accessibility --------------------------------------------------------- */
 *:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 /* Text for a screen reader only. Clipped rather than display:none, which would
