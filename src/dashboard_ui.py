@@ -419,20 +419,28 @@ def archetype_card(name: str, color: str, meta: str, bullets: Sequence[str]) -> 
 
 
 def insight_block(head: str, color: str, observation: str, evidence: str,
-                  interpretation: str, action: str) -> None:
+                  interpretation: str = "", action: str = "") -> None:
     """A four-part evidence block: observation, evidence, interpretation, action.
 
     Keeps the honest structure of the recommendation engine (a measured
-    deviation, not a causal claim) visible in the layout itself.
+    deviation, not a causal claim) visible in the layout itself. Any of the four
+    parts may be empty; an empty part is omitted rather than shown blank, because
+    the recommendation engine emits observation, evidence and action but no
+    separate interpretation, and inventing one to fill the slot would be a
+    fabrication.
     """
+    rows = [("obs", "Observation", observation, "v"),
+            ("ev", "Evidence", evidence, "v mono"),
+            ("interp", "Interpretation", interpretation, "v"),
+            ("act", "Possible action", action, "v")]
+    body = "".join(
+        f'<div class="row"><div class="k {cls}">{label}</div><div class="{vcls}">{text}</div></div>'
+        for cls, label, text, vcls in rows if text
+    )
     st.markdown(
         f'<div class="insight" style="--swatch:{color}">'
         f'<div class="insight-head"><span class="dot"></span>{head}</div>'
-        f'<div class="row"><div class="k obs">Observation</div><div class="v">{observation}</div></div>'
-        f'<div class="row"><div class="k ev">Evidence</div><div class="v mono">{evidence}</div></div>'
-        f'<div class="row"><div class="k interp">Interpretation</div><div class="v">{interpretation}</div></div>'
-        f'<div class="row"><div class="k act">Possible action</div><div class="v">{action}</div></div>'
-        "</div>",
+        f"{body}</div>",
         unsafe_allow_html=True,
     )
 
