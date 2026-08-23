@@ -266,20 +266,77 @@ a:hover { text-decoration: underline; }
 .note.warn { border-left-color: var(--amber); }
 
 /* Archetype (cluster identity) card ------------------------------------- */
+/* The one card in this project that gets a three-dimensional treatment, adapted
+   from a reference component. It is used here and nowhere else: these three cards
+   are the study's result, they are the thing a reader is meant to remember, and
+   they are short enough that tilting them costs no legibility. A reference card,
+   a metric card or a step card carries text to be read rather than an identity to
+   be recognised, and would only be made harder to read by it.
+
+   Three things are deliberately not copied. The reference's lime fill is replaced
+   by a tint of the cluster's own colour, so the card is coloured by the data
+   rather than by a brand. Its 30-degree tilt is halved, because at thirty the
+   bullet list distorts enough to be worth re-reading. And its 50px title lift is
+   scaled down: in a three-column grid that much depth pushes the text past the
+   card's own edge. */
+.arch-3d { perspective: 1000px; height: 100%; }
 .arch-card {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
-  padding: 1.1rem 1.2rem; border-top: 3px solid var(--swatch, var(--cyan));
-  height: 100%;
+  position: relative; height: 100%;
+  transform-style: preserve-3d;
+  border: 1px solid var(--line); border-radius: 14px;
+  border-top: 3px solid var(--swatch, var(--cyan));
+  /* The striped band the content sits below. The stripes are the reference's
+     idea; at this contrast they read as a texture rather than a pattern, and they
+     are what makes the shift on hover visible. */
+  background-color: var(--panel);
+  background-image: repeating-linear-gradient(
+    45deg, var(--panel-hi) 0 7px, var(--panel) 7px 17px);
+  padding-top: 30px;
+  transition: transform 0.5s ease-in-out, background-position 0.5s ease-in-out,
+              box-shadow 0.5s ease-in-out;
+}
+.arch-3d:hover .arch-card {
+  transform: rotate3d(0.5, 1, 0, 14deg);
+  background-position: -20px 20px;
+  box-shadow: -12px 16px 32px rgba(0, 0, 0, 0.45);
+}
+.arch-card .arch-body {
+  transform-style: preserve-3d;
+  background: var(--panel-hi);
+  /* A tint rather than the colour itself: at full strength the qualitative
+     palette leaves no contrast for the text on top of it. */
+  background: color-mix(in srgb, var(--swatch, var(--cyan)) 11%, var(--panel-hi));
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 13px 13px;
+  padding: 0.95rem 1.2rem 1.1rem;
 }
 .arch-card .arch-name {
   font-family: var(--display); font-weight: 600; font-size: 1.15rem; color: var(--ink);
   display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.15rem;
+  transform: translate3d(0, 0, 26px);
 }
 .arch-card .arch-name .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--swatch, var(--cyan)); flex: none; }
 .arch-card .arch-meta { font-family: var(--mono); font-size: 0.72rem; color: var(--mist); margin-bottom: 0.7rem; }
 .arch-card ul { margin: 0; padding-left: 1.05rem; }
 .arch-card li { font-size: 0.85rem; color: var(--ink); margin-bottom: 0.3rem; line-height: 1.5; }
 .arch-card li span { color: var(--mist); }
+/* Where the reference put a date. This one holds the cluster's share of the
+   population, which is the number that decides how much any of the rest matters,
+   and it sits furthest forward for that reason. */
+.arch-card .arch-badge {
+  position: absolute; top: 11px; right: 13px;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 54px; height: 30px; padding: 0 0.4rem;
+  background: var(--midnight); border: 1px solid var(--swatch, var(--cyan));
+  border-radius: 8px;
+  font-family: var(--mono); font-size: 0.76rem; color: var(--swatch, var(--cyan));
+  font-variant-numeric: tabular-nums;
+  transform: translate3d(0, 0, 40px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .arch-card { transition: none; }
+  .arch-3d:hover .arch-card { transform: none; background-position: 0 0; }
+}
 
 /* Numbered step card (the quickstart) ------------------------------------ */
 .step-card {
@@ -702,21 +759,30 @@ def hairline() -> None:
     st.markdown('<hr class="hairline" />', unsafe_allow_html=True)
 
 
-def archetype_card(name: str, color: str, meta: str, bullets: Sequence[str]) -> None:
+def archetype_card(name: str, color: str, meta: str, bullets: Sequence[str],
+                   badge: str | None = None) -> None:
     """A cluster identity card: colour swatch, name, one meta line, and bullets.
+
+    The only card here with a three-dimensional treatment - see the stylesheet for
+    why this one and not the others.
 
     Args:
         name: Cluster name, e.g. "Evening-Peaking".
         color: The cluster's qualitative colour (see cluster_color).
-        meta: A single mono line, e.g. "49 consumers - 24.5% - peaks 20:00".
+        meta: A single mono line, e.g. "49 consumers - peaks 20:00".
         bullets: Short defining characteristics, HTML allowed for emphasis.
+        badge: A short figure for the corner box, normally the cluster's share of
+            consumers. Omitted rather than filled with a placeholder if unknown.
     """
     lis = "".join(f"<li>{b}</li>" for b in bullets)
+    corner = f'<div class="arch-badge">{badge}</div>' if badge else ""
     st.markdown(
-        f'<div class="arch-card" style="--swatch:{color}">'
+        f'<div class="arch-3d"><div class="arch-card" style="--swatch:{color}">'
+        f"{corner}"
+        f'<div class="arch-body">'
         f'<div class="arch-name"><span class="dot"></span>{name}</div>'
         f'<div class="arch-meta">{meta}</div>'
-        f"<ul>{lis}</ul></div>",
+        f"<ul>{lis}</ul></div></div></div>",
         unsafe_allow_html=True,
     )
 
