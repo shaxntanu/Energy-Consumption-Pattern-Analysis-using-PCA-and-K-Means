@@ -150,7 +150,7 @@ weekend    1.3618  0.5510  0.3673  2.7148
 
 ## Check 4: the weekend axis
 
-The ratio of weekend to weekday energy is one feature out of the 39 the clustering uses, and it is worth measuring on its own because of how much archetype information it carries.
+The ratio of weekend to weekday energy is one feature out of the 51 the clustering uses, and it is worth measuring on its own because of how much archetype information it carries.
 
 - Archetype explains 83.3% of the variation in the weekend ratio.
 - For comparison, it explains 49.7% of the variation in the normalized shape, averaged over the 24 hours, and 0.6% of the variation in magnitude.
@@ -166,7 +166,82 @@ weekend    1.4372  0.1302     50
 
 So a single feature carries more archetype information than the average hour of
 the load shape. Standardization gives it the same weight as every other
-feature, which means the distinction it encodes occupies 1 of the 39 dimensions K-Means measures distance in. An archetype that differs mainly along this axis is therefore easy to lose, and the closest pair found above, evening and weekend, is where that would show up.
+feature, which means the distinction it encodes occupies 1 of the 51 dimensions K-Means measures distance in. An archetype that differs mainly along this axis is therefore easy to lose, and the closest pair found above, evening and weekend, is where that would show up.
+
+## Check 5: does every behavioral feature carry archetype information?
+
+The clustering standardizes 51 behavioral features and gives
+each of them equal weight in the distance it measures. A feature that carries
+no archetype information does not average out: it adds a dimension of noise
+that the structure has to compete with. This check measures each feature on
+its own, before any model is fitted.
+
+Two caveats on how to read it. Eta squared measures one feature against the
+grouping, not its contribution to a partition, so a feature can be weak here
+and still useful in combination with others. And a high value does not make a
+feature necessary, since several features can carry the same information.
+
+Strongest ten:
+
+```
+                 feature             group  eta_squared  magnitude_correlation
+         base_load_share shape descriptors       0.8743                -0.0038
+           weekend_ratio            timing       0.8329                 0.0421
+            profile_ramp            timing       0.8119                -0.0305
+              shape_gini shape descriptors       0.8111                 0.0015
+    harmonic_2_amplitude shape descriptors       0.8029                 0.0184
+            hour_3_shape        shape bins       0.8013                -0.0296
+coefficient_of_variation       variability       0.8013                -0.0031
+            hour_2_shape        shape bins       0.7596                 0.0205
+           evening_share            timing       0.7549                 0.0373
+           hour_13_shape        shape bins       0.7526                -0.0466
+```
+
+Weakest ten:
+
+```
+         feature       group  eta_squared  magnitude_correlation
+    hour_9_shape  shape bins       0.2712                 0.0281
+    hour_7_shape  shape bins       0.2705                -0.0726
+    hour_6_shape  shape bins       0.2543                -0.1276
+   hour_16_shape  shape bins       0.2468                 0.0057
+   peak_hour_sin      timing       0.2390                 0.0203
+    hour_8_shape  shape bins       0.1957                -0.0165
+   hour_17_shape  shape bins       0.1106                -0.0015
+        kurtosis variability       0.0488                -0.0038
+        skewness variability       0.0225                 0.0173
+weekend_cv_ratio  dispersion       0.0110                -0.0320
+```
+
+By feature group, mean eta squared:
+
+- shape descriptors: mean 0.651, best 0.874, 9 features
+- timing: mean 0.622, best 0.833, 11 features
+- shape bins: mean 0.497, best 0.801, 24 features
+- dispersion: mean 0.427, best 0.671, 3 features
+- variability: mean 0.325, best 0.801, 4 features
+
+The single most informative feature is base_load_share at 0.874.
+
+3 of 51 features fall below 0.05: kurtosis, skewness, weekend_cv_ratio.
+
+Those are the features to be sceptical about. They are kept because eta
+squared judges one feature at a time against one grouping, which is not the
+same question as whether a feature helps a partition, and because dropping
+features on the strength of a supervised statistic would use the archetype
+labels to build the model. The ablation study in
+outputs/reports/ablation_study_report.md is where their contribution is
+tested without that circularity.
+
+On the magnitude column: every behavioral feature is scale free by
+construction, which tests/test_features.py verifies by multiplying a
+consumer's whole series by a constant and checking that nothing moves. A
+correlation with mean kWh is therefore a fact about this population rather
+than a leak. The three largest are:
+
+- hour_0_shape: correlation +0.138 with mean kWh
+- hour_6_shape: correlation -0.128 with mean kWh
+- hour_23_shape: correlation +0.114 with mean kWh
 
 ## What this file does and does not establish
 

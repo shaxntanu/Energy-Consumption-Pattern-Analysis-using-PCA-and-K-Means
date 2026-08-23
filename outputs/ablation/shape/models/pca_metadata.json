@@ -1,0 +1,44 @@
+{
+  "n_input_features": 24,
+  "feature_names": [
+    "hour_0_shape",
+    "hour_1_shape",
+    "hour_2_shape",
+    "hour_3_shape",
+    "hour_4_shape",
+    "hour_5_shape",
+    "hour_6_shape",
+    "hour_7_shape",
+    "hour_8_shape",
+    "hour_9_shape",
+    "hour_10_shape",
+    "hour_11_shape",
+    "hour_12_shape",
+    "hour_13_shape",
+    "hour_14_shape",
+    "hour_15_shape",
+    "hour_16_shape",
+    "hour_17_shape",
+    "hour_18_shape",
+    "hour_19_shape",
+    "hour_20_shape",
+    "hour_21_shape",
+    "hour_22_shape",
+    "hour_23_shape"
+  ],
+  "variance_threshold": 0.95,
+  "n_components_retained": 8,
+  "cumulative_variance_retained": 0.9529294620346727,
+  "component_count_by_criterion": {
+    "variance_threshold": 8,
+    "kaiser": 4,
+    "scree_elbow": 5
+  },
+  "component_descriptions": [
+    "PC1: hour_13_shape +0.92, hour_12_shape +0.91, hour_14_shape +0.89, hour_11_shape +0.88, hour_22_shape -0.86",
+    "PC2: hour_3_shape +0.87, hour_2_shape +0.86, hour_4_shape +0.83, hour_18_shape -0.80, hour_1_shape +0.71",
+    "PC3: hour_7_shape +0.87, hour_8_shape +0.83, hour_6_shape +0.70, hour_9_shape +0.49, hour_16_shape -0.43",
+    "PC4: hour_17_shape +0.55, hour_5_shape +0.52, hour_6_shape +0.46, hour_9_shape -0.45, hour_16_shape +0.44",
+    "PC5: hour_6_shape +0.36, hour_9_shape -0.32, hour_18_shape -0.28, hour_17_shape -0.25, hour_14_shape +0.24"
+  ]
+}

@@ -2,7 +2,7 @@
 Dataset Validation Module
 
 Checks whether the generated dataset actually contains the structure the
-generator was designed to put in. Two questions:
+generator was designed to put in. Three questions:
 
 1. Are the four archetypes distinguishable by the shape of their load, and by how
    much? Not "do they look different on a plot" but a number: between-archetype
@@ -12,6 +12,9 @@ generator was designed to put in. Two questions:
    mean kWh should carry no information about which archetype it came from. If it
    does, the ablation study comparing behavioral against scale features is
    measuring the wrong thing.
+3. Does each behavioral feature carry any of that structure? Standardization gives
+   every feature the same weight in the distance K-Means measures, so a feature
+   that carries nothing is not free.
 
 Everything here is measured from the data. Nothing is asserted about the
 generator that is not computed from its output, because the two can drift apart:
@@ -55,6 +58,11 @@ DISTINCT_RATIO_FLOOR = 1.0
 # An eta squared above this on mean kWh would mean magnitude carries archetype
 # information, which the generator is designed to avoid.
 MAGNITUDE_LEAK_LIMIT = 0.05
+
+# Below this, a single feature explains so little of the archetype structure that
+# it is worth naming in the report. It is a reporting threshold, not a filter: no
+# feature is dropped on the strength of a statistic computed from the labels.
+WEAK_FEATURE_ETA = 0.05
 
 
 def consumer_normalized_shapes(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
@@ -479,6 +487,110 @@ def plot_archetype_overlap_in_pca(df: pd.DataFrame,
     logger.info(f"Saved the PCA overlap plot to {path}")
 
 
+def feature_informativeness(df: pd.DataFrame) -> pd.DataFrame:
+    """Rank every behavioral feature by how much archetype information it carries.
+
+    Two numbers per feature, both measured on the engineered feature table:
+
+    - eta_squared: the share of the feature's variance that sits between
+      archetypes. This is the same statistic used elsewhere in this file, applied
+      one feature at a time. A feature near zero contributes a standardized
+      dimension to the distance K-Means measures without contributing any of the
+      structure the data was built with.
+    - magnitude_correlation: Pearson correlation with mean kWh per consumer. Every
+      behavioral feature is scale free by construction, so this is not a leak: it
+      says whether shape and amplitude happen to move together in this population.
+      It is reported because a reader is entitled to check rather than trust.
+
+    This does not decide which features to keep. A feature can be individually
+    uninformative and still matter in combination, and eta squared measures a
+    single feature against a grouping rather than its contribution to a partition.
+    It does tell you which features to be sceptical about.
+
+    Args:
+        df: Panel data with the archetype column attached.
+
+    Returns:
+        One row per feature, most informative first, with the feature's declared
+        group.
+    """
+    logger.info("Measuring per-feature archetype informativeness")
+
+    from feature_engineering import (
+        BEHAVIORAL_FEATURES,
+        DISPERSION_FEATURES,
+        SHAPE_DESCRIPTOR_FEATURES,
+        SHAPE_FEATURES,
+        TIMING_FEATURES,
+        VARIABILITY_FEATURES,
+        engineer_all_features,
+    )
+    from preprocessing import preprocess_pipeline
+
+    group_of = {}
+    for name, group in (('shape bins', SHAPE_FEATURES),
+                        ('timing', TIMING_FEATURES),
+                        ('shape descriptors', SHAPE_DESCRIPTOR_FEATURES),
+                        ('variability', VARIABILITY_FEATURES),
+                        ('dispersion', DISPERSION_FEATURES)):
+        for feature in group:
+            group_of[feature] = name
+
+    truth = df.groupby('consumer_id')[ARCHETYPE_COL].first()
+    preprocessed = preprocess_pipeline(df.drop(columns=[ARCHETYPE_COL]))
+    features = engineer_all_features(preprocessed, feature_set='combined')
+
+    order = features['consumer_id'].tolist()
+    labels = truth.reindex(order).to_numpy()
+    magnitude = features[f'{ENERGY_COL}_mean']
+
+    rows = []
+    for feature in BEHAVIORAL_FEATURES:
+        if feature not in features.columns:
+            continue
+        values = features[feature]
+        rows.append({
+            'feature': feature,
+            'group': group_of.get(feature, 'unassigned'),
+            'eta_squared': eta_squared(values, labels),
+            'magnitude_correlation': float(values.corr(magnitude)),
+        })
+
+    table = pd.DataFrame(rows).sort_values('eta_squared', ascending=False)
+    return table.reset_index(drop=True)
+
+
+def plot_feature_informativeness(table: pd.DataFrame,
+                                 output_dir: str = 'outputs/figures') -> None:
+    """Bar chart of per-feature archetype eta squared, coloured by feature group."""
+    logger.info("Plotting per-feature archetype informativeness")
+
+    ordered = table.sort_values('eta_squared', ascending=True)
+    groups = sorted(ordered['group'].unique())
+    palette = dict(zip(groups, sns.color_palette('deep', len(groups))))
+    colors = [palette[group] for group in ordered['group']]
+
+    fig, ax = plt.subplots(figsize=(10, max(6.0, 0.22 * len(ordered))))
+    ax.barh(ordered['feature'], ordered['eta_squared'], color=colors,
+            edgecolor='black', linewidth=0.3)
+    ax.set_xlabel('Share of the feature\'s variance explained by archetype (eta squared)')
+    ax.set_ylabel('')
+    ax.set_title('How much archetype information each behavioral feature carries\n'
+                 'Measured on the engineered features, not on the model')
+    ax.tick_params(axis='y', labelsize=7)
+
+    handles = [plt.Rectangle((0, 0), 1, 1, facecolor=palette[group],
+                             edgecolor='black', linewidth=0.3) for group in groups]
+    ax.legend(handles, groups, title='Feature group', fontsize=8, loc='lower right')
+
+    fig.tight_layout()
+    path = Path(output_dir) / 'feature_informativeness.png'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=200, bbox_inches='tight')
+    plt.close(fig)
+    logger.info(f"Saved the feature informativeness plot to {path}")
+
+
 def _closest_pair(ratio: pd.DataFrame) -> Tuple[str, str, float]:
     """Return the pair of archetypes with the smallest separation ratio."""
     stacked = ratio.astype(float).stack().dropna()
@@ -516,10 +628,12 @@ def generate_validation_report(df: pd.DataFrame,
     nearest = nearest_centroid_agreement(shapes, archetypes)
     leak = magnitude_leakage(df)
     weekend, weekend_eta = weekend_ratio_by_archetype(df)
+    informative = feature_informativeness(df)
 
     hourly.to_csv(metrics_path / 'archetype_shape_separation.csv', index=False)
     ratio.astype(float).to_csv(metrics_path / 'archetype_separation_ratio.csv')
     leak['summary'].to_csv(metrics_path / 'archetype_magnitude_summary.csv')
+    informative.to_csv(metrics_path / 'feature_informativeness.csv', index=False)
 
     closest_a, closest_b, closest_ratio = _closest_pair(ratio)
     strongest_hours = hourly.nlargest(3, 'eta_squared')
@@ -829,6 +943,92 @@ def generate_validation_report(df: pd.DataFrame,
         ]
 
     lines += [
+        "## Check 5: does every behavioral feature carry archetype information?",
+        "",
+        f"The clustering standardizes {len(informative)} behavioral features and gives",
+        "each of them equal weight in the distance it measures. A feature that carries",
+        "no archetype information does not average out: it adds a dimension of noise",
+        "that the structure has to compete with. This check measures each feature on",
+        "its own, before any model is fitted.",
+        "",
+        "Two caveats on how to read it. Eta squared measures one feature against the",
+        "grouping, not its contribution to a partition, so a feature can be weak here",
+        "and still useful in combination with others. And a high value does not make a",
+        "feature necessary, since several features can carry the same information.",
+        "",
+        "Strongest ten:",
+        "",
+        "```",
+        informative.head(10).round(4).to_string(index=False),
+        "```",
+        "",
+        "Weakest ten:",
+        "",
+        "```",
+        informative.tail(10).round(4).to_string(index=False),
+        "```",
+        "",
+        "By feature group, mean eta squared:",
+        "",
+    ]
+    by_group = (informative.groupby('group')['eta_squared']
+                           .agg(['mean', 'max', 'count'])
+                           .sort_values('mean', ascending=False))
+    for group_name, row in by_group.iterrows():
+        lines.append(
+            f"- {group_name}: mean {row['mean']:.3f}, best {row['max']:.3f}, "
+            f"{int(row['count'])} features"
+        )
+
+    weak = informative[informative['eta_squared'] < WEAK_FEATURE_ETA]
+    strongest = informative.iloc[0]
+    lines += [
+        "",
+        f"The single most informative feature is {strongest['feature']} at "
+        f"{strongest['eta_squared']:.3f}.",
+        "",
+    ]
+    if not weak.empty:
+        lines += [
+            f"{len(weak)} of {len(informative)} features fall below "
+            f"{WEAK_FEATURE_ETA:.2f}: " + ", ".join(weak['feature'].tolist()) + ".",
+            "",
+            "Those are the features to be sceptical about. They are kept because eta",
+            "squared judges one feature at a time against one grouping, which is not the",
+            "same question as whether a feature helps a partition, and because dropping",
+            "features on the strength of a supervised statistic would use the archetype",
+            "labels to build the model. The ablation study in",
+            "outputs/reports/ablation_study_report.md is where their contribution is",
+            "tested without that circularity.",
+            "",
+        ]
+    else:
+        lines += [
+            f"Every feature reaches at least {WEAK_FEATURE_ETA:.2f}, so none of them is",
+            "pure noise with respect to the generated structure.",
+            "",
+        ]
+
+    entangled = informative.reindex(
+        informative['magnitude_correlation'].abs().sort_values(ascending=False).index
+    ).head(3)
+    lines += [
+        "On the magnitude column: every behavioral feature is scale free by",
+        "construction, which tests/test_features.py verifies by multiplying a",
+        "consumer's whole series by a constant and checking that nothing moves. A",
+        "correlation with mean kWh is therefore a fact about this population rather",
+        "than a leak. The three largest are:",
+        "",
+    ]
+    for _, row in entangled.iterrows():
+        lines.append(
+            f"- {row['feature']}: correlation {row['magnitude_correlation']:+.3f} with mean kWh"
+        )
+    lines += [
+        "",
+    ]
+
+    lines += [
         "## What this file does and does not establish",
         "",
         "It establishes that the dataset contains measurable, overlapping shape structure",
@@ -857,12 +1057,13 @@ def generate_validation_report(df: pd.DataFrame,
         'weekend_eta_squared': weekend_eta,
         'closest_pair': (closest_a, closest_b, closest_ratio),
         'mean_eta_squared': mean_eta,
+        'feature_informativeness': informative,
     }
 
 
 def run_dataset_validation(df: pd.DataFrame,
                            output_dir: str = 'outputs') -> Dict[str, object]:
-    """Run every check, write four figures, the tables and the report.
+    """Run every check, write five figures, the tables and the report.
 
     Args:
         df: Panel data with the archetype column attached.
@@ -899,6 +1100,7 @@ def run_dataset_validation(df: pd.DataFrame,
         output_dir=f"{output_dir}/reports",
         metrics_dir=f"{output_dir}/metrics",
     )
+    plot_feature_informativeness(measurements['feature_informativeness'], figures)
 
     logger.info("Dataset validation completed")
     return measurements
@@ -922,3 +1124,9 @@ if __name__ == "__main__":
     print(f"Magnitude leakage (eta squared): {results['magnitude_leak']['eta_squared']:.4f}")
     closest = results['closest_pair']
     print(f"Closest archetype pair: {closest[0]} and {closest[1]} at ratio {closest[2]:.2f}")
+
+    informative = results['feature_informativeness']
+    print("\nMost informative behavioral features:")
+    print(informative.head(8).round(4).to_string(index=False))
+    print("\nLeast informative behavioral features:")
+    print(informative.tail(8).round(4).to_string(index=False))

@@ -7,7 +7,7 @@
   "n_days": 30,
   "n_records": 144000,
   "feature_set": "behavioral",
-  "n_features": 39,
+  "n_features": 51,
   "feature_list": [
     "hour_0_shape",
     "hour_1_shape",
@@ -44,14 +44,26 @@
     "profile_ramp",
     "weekend_ratio",
     "weekend_shape_distance",
+    "shape_entropy",
+    "shape_gini",
+    "base_load_share",
+    "harmonic_1_amplitude",
+    "harmonic_2_amplitude",
+    "harmonic_3_amplitude",
+    "haar_detail_l1",
+    "haar_detail_l2",
+    "haar_detail_l3",
     "peak_to_avg_ratio",
     "coefficient_of_variation",
     "skewness",
-    "kurtosis"
+    "kurtosis",
+    "daily_total_cv",
+    "p90_median_ratio",
+    "weekend_cv_ratio"
   ],
   "pca_variance_threshold": 0.95,
-  "pca_components": 11,
-  "pca_cumulative_variance": 0.9507245045015693,
+  "pca_components": 14,
+  "pca_cumulative_variance": 0.9526428075184418,
   "k_range": [
     2,
     11
@@ -79,24 +91,21 @@
       2,
       3,
       4,
-      5,
-      6
+      5
     ],
     "after_stability_filter": [
       2,
       3,
       4,
-      5,
-      6
+      5
     ],
     "composite_scores": {
-      "2": 0.0,
-      "3": 1.0,
-      "4": 0.8565022133027705,
-      "5": 0.7229089939809509,
-      "6": 0.5939610074116698
+      "2": 0.3333333333333333,
+      "3": 0.8759707979488215,
+      "4": 0.7992011657332115,
+      "5": 0.38689501652984304
     },
-    "best_score": 1.0,
+    "best_score": 0.8759707979488215,
     "best_k_by_score": 3,
     "within_tolerance": [
       3
@@ -104,30 +113,30 @@
     "selected_k": 3,
     "elbow_k": 4.0
   },
-  "silhouette_at_selected_k": 0.3115740409621532,
+  "silhouette_at_selected_k": 0.3124209863345198,
   "cluster_sizes": [
-    53,
-    87,
-    60
+    94,
+    57,
+    49
   ],
   "cluster_names": [
+    "Midday-Peaking",
     "Flat All-Day",
-    "Evening-Peaking Weekend-Heavy",
-    "Midday-Peaking Weekday-Heavy"
+    "Evening-Peaking"
   ],
   "stability_at_selected_k": {
     "n_clusters": 3,
     "n_runs": 10,
-    "mean_ari": 0.9846048856306031,
-    "std_ari": 0.015094746757644389,
-    "min_ari": 0.9520090231611059,
-    "mean_agreement": 0.9952222222222221,
-    "mean_inertia": 4046.453652983978,
-    "std_inertia": 0.2898996658843529,
-    "min_cluster_share": 0.265
+    "mean_ari": 0.9883670007514509,
+    "std_ari": 0.017482915069917258,
+    "min_ari": 0.95396034104778,
+    "mean_agreement": 0.9962222222222222,
+    "mean_inertia": 5177.130071636066,
+    "std_inertia": 0.6577729291461218,
+    "min_cluster_share": 0.245
   },
-  "ari_vs_archetypes_at_selected_k": 0.6363929620698922,
-  "n_recommendations": 10,
+  "ari_vs_archetypes_at_selected_k": 0.6139744173887723,
+  "n_recommendations": 7,
   "package_versions": {
     "pandas": "3.0.0",
     "numpy": "2.3.5",
@@ -139,5 +148,5 @@
     "streamlit": "1.62.0",
     "joblib": "1.5.3"
   },
-  "timestamp_utc": "2026-08-23T08:40:57.229723+00:00"
+  "timestamp_utc": "2026-08-23T11:56:05.838638+00:00"
 }

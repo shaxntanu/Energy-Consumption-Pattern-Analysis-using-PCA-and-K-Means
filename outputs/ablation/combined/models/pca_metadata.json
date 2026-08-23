@@ -1,5 +1,5 @@
 {
-  "n_input_features": 46,
+  "n_input_features": 58,
   "feature_names": [
     "hour_0_shape",
     "hour_1_shape",
@@ -36,10 +36,22 @@
     "profile_ramp",
     "weekend_ratio",
     "weekend_shape_distance",
+    "shape_entropy",
+    "shape_gini",
+    "base_load_share",
+    "harmonic_1_amplitude",
+    "harmonic_2_amplitude",
+    "harmonic_3_amplitude",
+    "haar_detail_l1",
+    "haar_detail_l2",
+    "haar_detail_l3",
     "peak_to_avg_ratio",
     "coefficient_of_variation",
     "skewness",
     "kurtosis",
+    "daily_total_cv",
+    "p90_median_ratio",
+    "weekend_cv_ratio",
     "energy_consumption_kwh_mean",
     "energy_consumption_kwh_max",
     "energy_consumption_kwh_min",
@@ -49,18 +61,18 @@
     "current_a_mean"
   ],
   "variance_threshold": 0.95,
-  "n_components_retained": 12,
-  "cumulative_variance_retained": 0.9527597023809924,
+  "n_components_retained": 15,
+  "cumulative_variance_retained": 0.9539063310824415,
   "component_count_by_criterion": {
-    "variance_threshold": 12,
-    "kaiser": 7,
+    "variance_threshold": 15,
+    "kaiser": 9,
     "scree_elbow": 8
   },
   "component_descriptions": [
-    "PC1: evening_share +0.96, hour_21_shape +0.90, hour_12_shape -0.90, hour_13_shape -0.89, hour_11_shape -0.88",
-    "PC2: night_share +0.97, hour_2_shape +0.95, hour_3_shape +0.94, coefficient_of_variation -0.90, hour_4_shape +0.87",
-    "PC3: energy_consumption_kwh_sum +0.98, energy_consumption_kwh_mean +0.98, current_a_mean +0.98, energy_consumption_kwh_median +0.97, energy_consumption_kwh_std +0.79",
-    "PC4: hour_8_shape +0.83, hour_7_shape +0.75, morning_share +0.71, hour_16_shape -0.61, hour_9_shape +0.58",
-    "PC5: hour_6_shape +0.55, hour_17_shape +0.51, hour_5_shape +0.48, hour_18_shape +0.44, hour_7_shape +0.43"
+    "PC1: profile_ramp +0.95, coefficient_of_variation +0.94, peak_concentration +0.94, shape_gini +0.93, p90_median_ratio +0.92",
+    "PC2: afternoon_share +0.91, hour_13_shape +0.90, hour_14_shape +0.88, hour_12_shape +0.88, hour_11_shape +0.84",
+    "PC3: energy_consumption_kwh_sum +0.94, energy_consumption_kwh_mean +0.94, current_a_mean +0.94, energy_consumption_kwh_median +0.92, energy_consumption_kwh_std +0.77",
+    "PC4: hour_8_shape +0.78, morning_share +0.72, hour_7_shape +0.70, hour_9_shape +0.58, hour_6_shape +0.55",
+    "PC5: hour_17_shape +0.58, hour_6_shape +0.48, hour_18_shape +0.47, hour_5_shape +0.41, hour_23_shape -0.40"
   ]
 }

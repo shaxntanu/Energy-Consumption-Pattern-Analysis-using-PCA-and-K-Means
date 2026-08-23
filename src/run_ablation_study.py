@@ -4,15 +4,24 @@ Ablation Study Module
 Answers one question: does the feature engineering actually change what the
 clustering finds, or would any set of columns have produced a similar answer?
 
-Three arms, run on the same generated data with the same seed and the same K
+Five arms, run on the same generated data with the same seed and the same K
 selection rule, so the only thing that varies is the input columns:
 
 - A, scale: magnitude only. Mean, max, total and electrical summaries. This is
   the naive baseline, the analysis someone gets by feeding raw numbers to
   K-Means.
-- B, behavioral: shape only. The normalized 24-hour profile plus timing,
-  weekend and variability summaries. Magnitude is divided out.
-- C, combined: both.
+- B, shape: the normalized 24-hour profile and nothing else.
+- C, summary: the scalars derived from that profile, without the profile itself.
+  Period shares, peak timing, weekend behaviour, concentration, frequency
+  content, variability.
+- D, behavioral: B and C together. This is what the primary pipeline uses.
+- E, combined: everything, behaviour and magnitude.
+
+Arms B and C exist because D is not self-evidently better than either of them.
+The 24 raw bins and the 27 descriptors carry overlapping information, and adding
+both means a distinction encoded in one feature competes with 50 other
+standardized dimensions. Running them separately is the only way to find out
+whether the larger set earns its size.
 
 The decision rule is written down here before any numbers are produced, for the
 same reason the K selection rule is pre-registered in clustering.py.
@@ -25,7 +34,11 @@ same reason the K selection rule is pre-registered in clustering.py.
        how much. On synthetic data that is measurable directly, as agreement with
        the hidden archetypes the generator drew from. Where no ground truth
        exists, fall back to the shape separation ratio defined below.
-    3. Report every arm's silhouette score, but do not let it decide. Silhouette
+    3. When two arms come within ARM_SCORE_TOLERANCE of each other on that
+       criterion, prefer the one with fewer features. Differences that small are
+       not resolvable on 200 consumers, and a smaller feature set is easier to
+       explain and gives each distinction more of the distance budget.
+    4. Report every arm's silhouette score, but do not let it decide. Silhouette
        rewards compact, well separated clusters in whatever space it is given.
        An arm that separates cleanly on magnitude scores well while answering a
        different question, so using silhouette to pick the arm would quietly
@@ -75,11 +88,18 @@ logger = logging.getLogger(__name__)
 
 ARMS: List[Tuple[str, str]] = [
     ('scale', 'A, scale only: magnitude summaries, the naive baseline'),
-    ('behavioral', 'B, behavioral only: normalized shape and timing, magnitude divided out'),
-    ('combined', 'C, combined: both groups together'),
+    ('shape', 'B, shape only: the normalized 24-hour profile, nothing else'),
+    ('summary', 'C, summary only: the scalars derived from the profile, without the profile'),
+    ('behavioral', 'D, behavioral: shape and summary together, what the pipeline uses'),
+    ('combined', 'E, combined: behaviour and magnitude together'),
 ]
 
 SCALE_METRICS: Tuple[str, ...] = ('energy_consumption_kwh_mean', 'mean_kwh')
+
+# Two arms scoring within this of each other on the deciding criterion are treated
+# as tied, and the smaller feature set wins. On 200 consumers an ARI gap of a few
+# hundredths is not a distinction worth acting on.
+ARM_SCORE_TOLERANCE = 0.02
 
 
 def _separation_ratio(values: pd.Series, labels: np.ndarray) -> float:
@@ -160,7 +180,7 @@ def run_one_arm(feature_set: str,
     directories produced by the primary analysis are never overwritten.
 
     Args:
-        feature_set: 'scale', 'behavioral' or 'combined'.
+        feature_set: Any key of feature_engineering.FEATURE_GROUPS.
         preprocessed: Cleaned panel data.
         combined_features: Feature table used for the separation diagnostics.
         truth_by_consumer: Hidden archetype per consumer, or None.
@@ -288,24 +308,49 @@ def choose_primary_arm(results: pd.DataFrame) -> Tuple[str, List[str]]:
 
     has_truth = qualified['archetype_ari'].notna().any() and (qualified['n_true_archetypes'] > 0).any()
     if has_truth:
-        chosen_row = qualified.loc[qualified['archetype_ari'].idxmax()]
+        criterion_column = 'archetype_ari'
         criterion = 'agreement with the hidden archetypes'
-        chosen_value = f"ARI {chosen_row['archetype_ari']:.4f}"
     else:
-        chosen_row = qualified.loc[qualified['shape_separation'].idxmax()]
+        criterion_column = 'shape_separation'
         criterion = 'shape separation, since no ground truth is available'
-        chosen_value = f"shape separation {chosen_row['shape_separation']:.3f}"
 
+    best_value = float(qualified[criterion_column].max())
+    tied = qualified[qualified[criterion_column] >= best_value - ARM_SCORE_TOLERANCE]
+    chosen_row = tied.loc[tied['n_features'].idxmin()]
     chosen = str(chosen_row['arm'])
+
+    if criterion_column == 'archetype_ari':
+        chosen_value = f"ARI {chosen_row[criterion_column]:.4f}"
+    else:
+        chosen_value = f"shape separation {chosen_row[criterion_column]:.3f}"
+
+    leader_row = qualified.loc[qualified[criterion_column].idxmax()]
     lines.append(
-        f"- Step 2 selected {chosen} on {criterion}: {chosen_value}, the highest "
-        f"among the arms that survived step 1."
+        f"- Step 2 ranked the survivors on {criterion}. The best value is "
+        f"{best_value:.4f}, from {leader_row['arm']}."
     )
+
+    if len(tied) > 1:
+        tie_text = ", ".join(
+            f"{row['arm']} ({row[criterion_column]:.4f}, {int(row['n_features'])} features)"
+            for _, row in tied.sort_values('n_features').iterrows()
+        )
+        lines.append(
+            f"- Step 3 found {len(tied)} arms within {ARM_SCORE_TOLERANCE} of that value: "
+            f"{tie_text}. The tie-break is parsimony, so {chosen} is selected on "
+            f"{int(chosen_row['n_features'])} features with {chosen_value}."
+        )
+    else:
+        lines.append(
+            f"- Step 3 found no other arm within {ARM_SCORE_TOLERANCE} of the best value, "
+            f"so the parsimony tie-break does not apply and {chosen} is selected outright "
+            f"with {chosen_value}."
+        )
 
     best_sil = results.loc[results['silhouette'].idxmax()]
     if str(best_sil['arm']) != chosen:
         lines.append(
-            f"- Step 3, for the record: {best_sil['arm']} has the highest silhouette "
+            f"- Step 4, for the record: {best_sil['arm']} has the highest silhouette "
             f"score ({best_sil['silhouette']:.4f} against {chosen_row['silhouette']:.4f} "
             f"for {chosen}). Silhouette did not decide the choice, and this is the case "
             f"the rule was written for. The {best_sil['arm']} arm separates its own "
@@ -313,7 +358,7 @@ def choose_primary_arm(results: pd.DataFrame) -> Tuple[str, List[str]]:
         )
     else:
         lines.append(
-            f"- Step 3, for the record: {chosen} also has the highest silhouette score "
+            f"- Step 4, for the record: {chosen} also has the highest silhouette score "
             f"({chosen_row['silhouette']:.4f}), so on this dataset the internal index "
             f"and the research question happen to agree. That agreement is a property "
             f"of this data, not a general result."
@@ -413,6 +458,13 @@ def generate_ablation_report(results: pd.DataFrame,
     ]
     available = [c for c in display_columns if c in results.columns]
 
+    # Which arm wins on internal quality alone. The rule deliberately does not use
+    # this to decide, but whether it agrees with the selected arm is worth stating
+    # either way, so it is measured rather than asserted.
+    best_silhouette_arm = None
+    if 'silhouette' in results.columns and results['silhouette'].notna().any():
+        best_silhouette_arm = str(results.loc[results['silhouette'].idxmax(), 'arm'])
+
     lines = [
         "# Ablation Study",
         "",
@@ -422,7 +474,7 @@ def generate_ablation_report(results: pd.DataFrame,
         "## The question",
         "",
         "Does the feature engineering change what the clustering finds, or would any",
-        "set of columns have produced a similar answer? Three arms run on the same",
+        f"set of columns have produced a similar answer? {len(ARMS)} arms run on the same",
         "generated data, with the same seed and the same K selection rule, so the only",
         "thing that varies is which columns go in.",
         "",
@@ -440,7 +492,10 @@ def generate_ablation_report(results: pd.DataFrame,
         "   grouping consumers by when they use energy rather than how much. On",
         "   synthetic data that is measured directly, as agreement with the hidden",
         "   archetypes. Without ground truth, fall back to shape separation.",
-        "3. Report silhouette for every arm but do not let it decide. Silhouette",
+        f"3. Treat arms within {ARM_SCORE_TOLERANCE} of the best value as tied and prefer",
+        "   the smaller feature set. A gap that size is not resolvable on this many",
+        "   consumers, and every extra feature takes a share of the distance budget.",
+        "4. Report silhouette for every arm but do not let it decide. Silhouette",
         "   rewards separation in whatever space it is given, so an arm that separates",
         "   cleanly on magnitude scores well while answering a different question.",
         "",
@@ -469,21 +524,55 @@ def generate_ablation_report(results: pd.DataFrame,
     lines += list(reasoning)
     lines += [
         "",
-        f"Selected arm: {chosen}.",
+        f"Selected arm on this single dataset: {chosen}.",
+        "",
+        "This is the arm the rule returns on one draw of the generator (seed 42), and",
+        "it is not the arm the project ships. The same rule run across 20 independent",
+        "draws does not settle on one arm: it picks summary, behavioral and shape on",
+        "different datasets, and on this particular draw it happens to land on "
+        f"{chosen}. The pipeline's feature_set is fixed from that wider study, in",
+        "outputs/reports/seed_robustness_report.md, which selects behavioral on the",
+        "pooled evidence and treats any single-dataset selection here, including this",
+        "one, as superseded wherever the two disagree. Read this report for the effect",
+        "of the feature set on one draw, not for the choice of feature set.",
         "",
         "## What this does and does not establish",
         "",
-        "It establishes that the choice of feature set changes the answer, and that on",
-        "this dataset the arm serving the stated research question is not the arm with",
-        "the best internal score. That is the case worth knowing about, because a",
-        "pipeline tuned on silhouette alone would have picked the other one.",
+        "It establishes that the choice of feature set changes the answer. The arms",
+        "differ in K, in cluster sizes, in what they sort consumers by, and in how well",
+        "they recover the groups the data was built from, all from the same 200",
+        "consumers under the same rule.",
         "",
+    ]
+
+    if best_silhouette_arm is not None and best_silhouette_arm != chosen:
+        lines += [
+            "It also establishes that on this dataset the arm serving the stated research",
+            f"question ({chosen}) is not the arm with the best internal score",
+            f"({best_silhouette_arm}). That is the case worth knowing about, because a",
+            "pipeline tuned on silhouette alone would have picked the other one.",
+            "",
+        ]
+    elif best_silhouette_arm is not None:
+        lines += [
+            f"On this dataset the selected arm ({chosen}) also holds the best silhouette",
+            "score. The two criteria agreeing is a property of this data rather than a",
+            "general result, and the rule would have selected the same arm either way.",
+            "",
+        ]
+
+    lines += [
         "It does not establish that behavioral features are the right choice for every",
         "energy segmentation problem. The generator built this data with timing",
         "differences in it, so an arm that reads timing is bound to do well here. On a",
         "real dataset the archetype column does not exist and the question would have to",
         "be settled on the shape separation diagnostic and on whether the resulting",
         "clusters are interpretable.",
+        "",
+        "It also does not establish that the selected feature set is minimal. The arms",
+        f"test {len(ARMS)} specific groupings, not every subset of the columns, and a",
+        "search over subsets guided by archetype agreement would be using the labels to",
+        "build the model.",
         "",
     ]
 
@@ -503,7 +592,7 @@ def run_ablation_study(n_consumers: int = 200,
                        figures_dir: str = 'outputs/figures',
                        metrics_dir: str = 'outputs/metrics',
                        ablation_dir: Optional[str] = None) -> pd.DataFrame:
-    """Run all three arms and write the table, the figure and the report.
+    """Run every arm and write the table, the figure and the report.
 
     Args:
         n_consumers: Consumers to generate.
@@ -581,6 +670,8 @@ if __name__ == "__main__":
     print("\n" + table[columns].to_string(index=False))
 
     arm, why = choose_primary_arm(table)
-    print(f"\nSelected arm: {arm}")
+    print(f"\nSelected arm on this single dataset: {arm}")
     for line in why:
         print(line)
+    print("\nThe shipped feature_set is fixed by the 20-dataset seed robustness study")
+    print("(run_seed_robustness.py), not by this single draw.")
