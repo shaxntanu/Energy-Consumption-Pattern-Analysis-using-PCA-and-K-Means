@@ -31,6 +31,7 @@ from energy_analysis import AnalysisConfig, AnalysisResults, EnergyAnalysis  # n
 import dashboard_ui as ui  # noqa: E402
 import dashboard_charts as ch  # noqa: E402
 import dashboard_content as content  # noqa: E402
+import dashboard_github as gh  # noqa: E402
 import dashboard_zoom as zoom  # noqa: E402
 
 st.set_page_config(
@@ -260,11 +261,17 @@ def page_home(results: AnalysisResults):
     ui.synthetic_badge("Synthetic data - not real households")
     st.write("")
 
-    cta_left, cta_right, _ = st.columns([1, 1, 2])
+    cta_left, cta_right, cta_star = st.columns([1, 1, 2])
     with cta_left:
         nav_button("Explore the data", "Overview", "cta::overview")
     with cta_right:
         nav_button("Read the method", "How it works", "cta::method")
+    with cta_star:
+        # Only here. The footer already links the code for anyone who reads to
+        # the end, and a star button on all fifteen pages would be nagging.
+        # The count is whatever GitHub reports, and is left off if it will not
+        # say - a private repository, no network, or a rate limit.
+        ui.star_button(content.REPO_URL, gh.star_count(content.REPO_URL))
 
     _plot(ch.load_shape_chart(results))
     st.caption(
