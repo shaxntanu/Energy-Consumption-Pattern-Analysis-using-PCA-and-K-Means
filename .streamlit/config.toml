@@ -13,7 +13,7 @@ gatherUsageStats = false
 # already dark rather than flashing white.
 [theme]
 base = "dark"
-primaryColor = "#F5A524"
+primaryColor = "#3BC9DE"
 backgroundColor = "#0B0E14"
 secondaryBackgroundColor = "#141A24"
 textColor = "#EAECEF"
