@@ -556,6 +556,63 @@ a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
   }
 }
 
+/* Checkboxes ------------------------------------------------------------ */
+/* A round well that fills when the option is on, adapted from a reference
+   component whose square-cornered original was 50px across - far too big to sit
+   beside a line of text in a settings panel, so the shape is kept and the size
+   is not.
+
+   What is deliberately NOT done here: the reference hid its input with
+   display:none and drew its own markup. Streamlit already renders a real
+   checkbox, clipped to a single pixel but present, focusable and announced, and
+   these rules only paint the two divs beside it. So Tab still reaches the
+   control, Space still toggles it, and the accessible name still comes from the
+   label - none of which a hand-built div could claim without reimplementing all
+   three. The checked state is read from the input itself rather than from a
+   class, so what a reader sees cannot drift away from the value the app got. */
+[data-testid="stCheckbox"] label { align-items: center; gap: 0.6rem; }
+[data-testid="stCheckbox"] label > div:first-of-type {
+  width: 20px; height: 20px; min-width: 20px;
+  border-radius: 50%;
+  background: var(--midnight);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
+}
+[data-testid="stCheckbox"] label:hover > div:first-of-type { border-color: var(--cyan-deep); }
+[data-testid="stCheckbox"] label:has(input:checked) > div:first-of-type {
+  background: var(--cyan-deep); border-color: var(--cyan);
+}
+/* The tick is Streamlit's own, and it only exists in the DOM while the box is
+   checked; these two rules are insurance rather than an animation, so that a
+   future version which renders it always still shows it only when it means
+   something. */
+[data-testid="stCheckbox"] label > div:first-of-type svg {
+  opacity: 0; transition: opacity 0.2s ease;
+}
+[data-testid="stCheckbox"] label:has(input:checked) > div:first-of-type svg { opacity: 1; }
+[data-testid="stCheckbox"] label > div:first-of-type svg polyline {
+  stroke: var(--midnight); stroke-width: 2.6;
+}
+/* The input carries the focus but is a pixel wide, so the ring has to be drawn
+   on the well. Without this the keyboard has nowhere visible to be. */
+[data-testid="stCheckbox"] label:has(input:focus-visible) > div:first-of-type {
+  outline: 2px solid var(--cyan); outline-offset: 2px;
+}
+[data-testid="stCheckbox"] label:active > div:first-of-type { transform: scale(0.92); }
+/* A sentence rather than a field name, so it is set in the body face at body
+   weight - not the mono treatment the sliders and selects use for their labels.
+   The paragraph is targeted because Streamlit wraps the label in markdown, which
+   sets its own size. */
+[data-testid="stCheckbox"] [data-testid="stWidgetLabel"] p {
+  color: var(--mist); font-family: var(--body); font-size: 0.88rem; margin: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="stCheckbox"] label > div:first-of-type,
+  [data-testid="stCheckbox"] label > div:first-of-type svg { transition: none; }
+  [data-testid="stCheckbox"] label:active > div:first-of-type { transform: none; }
+}
+
 [data-testid="stMetricValue"] { font-family: var(--display); font-variant-numeric: tabular-nums; }
 
 /* Accessibility --------------------------------------------------------- */
