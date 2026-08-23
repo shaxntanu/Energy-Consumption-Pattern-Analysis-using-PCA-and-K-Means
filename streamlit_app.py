@@ -1,354 +1,639 @@
-"""
-Streamlit dashboard for Energy Consumption Pattern Analysis.
+"""Streamlit dashboard for the energy load-shape study.
 
-All pages read from a single AnalysisResults object. PCA / K-Means are never
-recomputed independently for display. Parameter changes invalidate via config hash.
+The interface is a research instrument: it runs the pipeline once per set of
+settings and then reads everything from that single AnalysisResults object, so
+there is exactly one set of numbers in play at a time. PCA and K-Means are never
+recomputed for a single chart.
 
-Vercel cannot host this file: Streamlit is a long-running server, not a
-Python serverless handler. Use Streamlit Community Cloud, Render, Docker, or run locally.
+At its default settings the run reproduces the committed reference run
+(config hash 6dff8faaa470d418), so the dashboard, the landing page and the
+README all show the same numbers. Changing a setting in the sidebar starts a new
+run in a private temporary directory; the committed artifacts under outputs/ and
+models/ are never overwritten by the dashboard.
+
+Vercel cannot host this file: Streamlit is a long-running server, not a Python
+serverless handler. Use Streamlit Community Cloud, Render, Docker, or run locally.
 """
+from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
-sys.path.append(str(Path(__file__).resolve().parent / "src"))
+ROOT = Path(__file__).resolve().parent
+sys.path.append(str(ROOT / "src"))
 
-from energy_analysis import AnalysisConfig, EnergyAnalysis, AnalysisResults
+from energy_analysis import AnalysisConfig, AnalysisResults, EnergyAnalysis  # noqa: E402
+import dashboard_ui as ui  # noqa: E402
+import dashboard_charts as ch  # noqa: E402
 
 st.set_page_config(
-    page_title="Energy Consumption Pattern Analysis",
-    page_icon="⚡",
+    page_title="Energy load-shape study",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+ui.inject_theme()
 
-st.markdown(
-    """
-<style>
-    .main-header { font-size: 2.5rem; font-weight: bold; color: #1f77b4; text-align: center; padding: 1rem 0; }
-    .section-header { font-size: 1.5rem; font-weight: bold; color: #2c3e50; padding: 1rem 0 0.5rem 0; }
-</style>
-""",
-    unsafe_allow_html=True,
-)
+PLOTLY_CONFIG = {"displayModeBar": False, "responsive": True}
+
+
+# --- run plumbing ------------------------------------------------------------
+
+def _session_workdir() -> str:
+    """A private temp directory for this session's runs, so in-dashboard runs
+    never overwrite the committed outputs/ and models/ artifacts. config_hash
+    excludes these paths, so routing here does not change any number."""
+    wd = st.session_state.get("_workdir")
+    if not wd or not Path(wd).exists():
+        wd = tempfile.mkdtemp(prefix="energy_dash_")
+        st.session_state["_workdir"] = wd
+    return wd
 
 
 def build_config_from_sidebar() -> AnalysisConfig:
-    st.sidebar.header("Analysis Parameters")
-    n_consumers = st.sidebar.slider("Number of Consumers", 50, 500, 200)
-    n_days = st.sidebar.slider("Number of Days", 7, 90, 30)
-    hourly_records = st.sidebar.checkbox("Hourly Records", value=True)
-    feature_set = st.sidebar.selectbox(
-        "Feature Set",
-        options=["behavioral", "scale", "combined"],
-        index=0,
-        help="Primary experiment uses behavioral (shape) features.",
+    st.sidebar.markdown(
+        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;'
+        'letter-spacing:0.2em;text-transform:uppercase;color:#3BC9DE;font-weight:600">'
+        "Load-shape study</div>"
+        '<div style="color:#8A93A6;font-size:0.82rem;margin:0.35rem 0 0.9rem">'
+        "Synthetic data. PCA + K-Means on the shape of the day.</div>",
+        unsafe_allow_html=True,
     )
-    random_seed = st.sidebar.number_input("Random Seed", min_value=0, value=42, step=1)
+
+    page = st.sidebar.radio("Navigate", PAGES, label_visibility="collapsed")
+    st.session_state["_page"] = page
+
+    with st.sidebar.expander("Adjust the run", expanded=False):
+        st.caption(
+            "Defaults reproduce the committed reference run. Changing anything "
+            "starts a fresh run in a private temporary folder."
+        )
+        n_consumers = st.slider("Consumers", 50, 500, 200, step=10)
+        n_days = st.slider("Days", 7, 90, 30)
+        feature_set = st.selectbox(
+            "Feature set", ["behavioral", "scale", "combined"], index=0,
+            help="The primary study is behavioral (shape). scale and combined exist for the ablation.",
+        )
+        random_seed = st.number_input("Random seed", min_value=0, value=42, step=1)
+        test_stability = st.checkbox(
+            "Measure clustering stability", value=True,
+            help="Repeats K-Means from several seeds at each K. Off is faster but drops the stability view.",
+        )
+
+    experiment = "behavioral_primary" if feature_set == "behavioral" else f"{feature_set}_ablation"
+    wd = Path(_session_workdir())
     return AnalysisConfig(
         n_consumers=int(n_consumers),
         n_days=int(n_days),
-        hourly_records=bool(hourly_records),
+        hourly_records=True,
         feature_set=feature_set,
         random_seed=int(random_seed),
-        test_stability=False,
-        experiment_name=f"dashboard_{feature_set}",
+        test_stability=bool(test_stability),
+        experiment_name=experiment,
+        output_dir=str(wd / "outputs"),
+        model_dir=str(wd / "models"),
     )
+
+
+@st.cache_resource(show_spinner=False)
+def _run(cfg_hash: str, _config: AnalysisConfig) -> AnalysisResults:
+    """Run the pipeline once per config hash. Cached across reruns so a chart
+    interaction never recomputes the models. The hash is the cache key; the
+    config is passed for the actual run and deliberately not hashed by Streamlit."""
+    return EnergyAnalysis(_config).run()
 
 
 def get_or_run_analysis(config: AnalysisConfig) -> AnalysisResults:
-    """
-    Single analysis object in session state.
-    Regenerates fully when config hash changes. Never keeps stale models or labels.
-    """
     cfg_hash = config.config_hash()
-    cached = st.session_state.get("analysis_results")
-    cached_hash = st.session_state.get("analysis_config_hash")
-
-    if cached is None or cached_hash != cfg_hash:
-        with st.spinner("Running full analysis pipeline (invalidating prior session state)..."):
-            analysis = EnergyAnalysis(config)
-            results = analysis.run()
-        st.session_state["analysis_results"] = results
-        st.session_state["analysis_config_hash"] = cfg_hash
-        for key in ("X_pca", "labels", "pca", "kmeans"):
-            st.session_state.pop(key, None)
-    return st.session_state["analysis_results"]
-
-
-def overview_page(results: AnalysisResults):
-    st.markdown(
-        '<div class="main-header">⚡ Energy Consumption Pattern Analysis</div>',
-        unsafe_allow_html=True,
-    )
-    st.info(
-        "**Data source: Synthetic (archetype-based).** "
-        "Latent archetypes are hidden ground truth and are never passed to K-Means."
-    )
-
-    st.markdown(
-        "Objective: recover meaningful *usage-pattern* groups (when/how energy is used), "
-        "not merely low/medium/high magnitude splits. PCA + K-Means remain the core methods."
-    )
-
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.metric("Records", f"{len(results.preprocessed_data):,}")
-    with col2:
-        st.metric("Consumers", f"{results.preprocessed_data['consumer_id'].nunique()}")
-    with col3:
-        st.metric("Features", len(results.feature_names))
-    with col4:
-        st.metric("Selected K", results.optimal_k)
-    with col5:
-        st.metric("Silhouette @ K", f"{results.silhouette_for_k(results.optimal_k):.4f}")
-
-    st.caption(
-        f"Config hash: `{results.config.config_hash()}` · PCA components: {results.n_pca_components}"
-    )
-
-
-def methodology_page(results: AnalysisResults):
-    st.markdown('<div class="section-header">Methodology</div>', unsafe_allow_html=True)
-    st.markdown(
-        """
-1. **Synthetic panel data** with four latent archetypes (daytime, evening, flat, weekend-heavy).
-2. **Panel-aware preprocessing**: sort by consumer/time; impute within consumer only.
-3. **Feature engineering**: behavioral shape (normalized load profile, weekend energy ratio, variability) separate from scale.
-4. **Standardization**: zero-mean, unit-variance features before PCA.
-5. **PCA**: retain components to a documented cumulative-variance threshold (default 95%).
-6. **K-Means**: evaluate K=2..10 with inertia, silhouette, Calinski-Harabasz, Davies-Bouldin; select by multi-metric consensus; optional multi-seed stability (ARI).
-7. **Profiling and recommendations**: in original feature space; recommendations triggered by measured deviations.
-        """
-    )
-    st.json(
-        {
-            "feature_set": results.config.feature_set,
-            "n_features": len(results.feature_names),
-            "pca_components": results.n_pca_components,
-            "optimal_k": results.optimal_k,
-            "k_range": list(results.config.k_range),
-        }
-    )
-
-
-def eda_page(results: AnalysisResults):
-    st.markdown('<div class="section-header">Exploratory Data Analysis</div>', unsafe_allow_html=True)
-    preprocessed = results.preprocessed_data
-
-    hourly_avg = preprocessed.groupby("hour")["energy_consumption_kwh"].mean()
-    fig_hourly = px.line(
-        x=hourly_avg.index,
-        y=hourly_avg.values,
-        labels={"x": "Hour", "y": "Avg kWh"},
-        title="Average Hourly Consumption",
-    )
-    st.plotly_chart(fig_hourly, use_container_width=True)
-
-    weekend_comp = preprocessed.groupby("is_weekend")["energy_consumption_kwh"].mean()
-    fig_weekend = px.bar(
-        x=["Weekday", "Weekend"],
-        y=weekend_comp.values,
-        title="Weekday vs Weekend Consumption",
-    )
-    st.plotly_chart(fig_weekend, use_container_width=True)
-
-    feat = results.features.drop(columns=["consumer_id"], errors="ignore")
-    numeric = feat.select_dtypes(include=[np.number])
-    corr_cols = [
-        c
-        for c in numeric.columns
-        if c
-        in (
-            "morning_usage",
-            "afternoon_usage",
-            "evening_usage",
-            "night_usage",
-            "weekend_ratio",
-            "peak_to_avg_ratio",
-            "coefficient_of_variation",
-        )
-        or c.startswith("hour_")
-    ][:12]
-    if corr_cols:
-        corr = numeric[corr_cols].corr()
-        st.plotly_chart(
-            px.imshow(corr, text_auto=True, aspect="auto", title="Engineered Feature Correlations (no IDs)"),
-            use_container_width=True,
-        )
-
-
-def pca_page(results: AnalysisResults):
-    st.markdown('<div class="section-header">PCA</div>', unsafe_allow_html=True)
-    pca = results.pca_model
-    X_pca = results.pca_transformed
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Components Retained", results.n_pca_components)
-    with col2:
-        st.metric("Cumulative Variance", f"{np.cumsum(pca.explained_variance_ratio_)[-1]:.2%}")
-    with col3:
-        st.metric("Input Features", len(results.feature_names))
-
-    fig_var = go.Figure()
-    xs = list(range(1, len(pca.explained_variance_ratio_) + 1))
-    fig_var.add_trace(go.Bar(x=xs, y=pca.explained_variance_ratio_, name="Individual"))
-    fig_var.add_trace(
-        go.Scatter(
-            x=xs,
-            y=np.cumsum(pca.explained_variance_ratio_),
-            mode="lines+markers",
-            name="Cumulative",
-        )
-    )
-    fig_var.update_layout(title="Explained Variance (from fitted analysis object)")
-    st.plotly_chart(fig_var, use_container_width=True)
-
-    if X_pca.shape[1] >= 2:
-        fig = px.scatter(
-            x=X_pca[:, 0],
-            y=X_pca[:, 1],
-            opacity=0.6,
-            labels={"x": "PC1", "y": "PC2"},
-            title="2D PCA Projection",
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-
-def k_selection_page(results: AnalysisResults):
-    st.markdown('<div class="section-header">K Selection</div>', unsafe_allow_html=True)
-
-    sil_at_k = results.silhouette_for_k(results.optimal_k)
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Selected K", results.optimal_k)
-    with col2:
-        st.metric("Silhouette @ Selected K", f"{sil_at_k:.4f}")
-    with col3:
-        st.metric("Cluster Sizes", str(np.bincount(results.cluster_labels).tolist()))
-
-    k_vals = results.k_values
-    fig_elbow = px.line(
-        x=k_vals,
-        y=[results.inertia_by_k[k] for k in k_vals],
-        markers=True,
-        title="Elbow (Inertia vs K)",
-        labels={"x": "K", "y": "Inertia"},
-    )
-    st.plotly_chart(fig_elbow, use_container_width=True)
-
-    fig_sil = px.line(
-        x=k_vals,
-        y=[results.silhouette_by_k[k] for k in k_vals],
-        markers=True,
-        title="Silhouette vs K (dictionary lookup)",
-        labels={"x": "K", "y": "Silhouette"},
-    )
-    fig_sil.add_vline(
-        x=results.optimal_k,
-        line_dash="dash",
-        annotation_text=f"Selected K={results.optimal_k}",
-    )
-    st.plotly_chart(fig_sil, use_container_width=True)
-
-    if results.pca_transformed.shape[1] >= 2:
-        fig = px.scatter(
-            x=results.pca_transformed[:, 0],
-            y=results.pca_transformed[:, 1],
-            color=results.cluster_labels.astype(str),
-            title="Clusters (labels from fitted K-Means)",
-            labels={"x": "PC1", "y": "PC2", "color": "Cluster"},
-            opacity=0.7,
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-
-def profiles_page(results: AnalysisResults):
-    st.markdown('<div class="section-header">Cluster Profiles</div>', unsafe_allow_html=True)
-    st.dataframe(results.cluster_profiles, use_container_width=True)
-    st.dataframe(results.cluster_insights, use_container_width=True)
-
-
-def recommendations_page(results: AnalysisResults):
-    st.markdown(
-        '<div class="section-header">Evidence-Based Recommendations</div>',
-        unsafe_allow_html=True,
-    )
-    st.caption(
-        "Each recommendation is triggered by a measured cluster characteristic. No causal savings claims."
-    )
-    st.dataframe(results.recommendations, use_container_width=True)
-
-
-def validation_page():
-    st.markdown('<div class="section-header">Validation / Ablation</div>', unsafe_allow_html=True)
-    report_path = Path(__file__).resolve().parent / "outputs" / "reports" / "ablation_study_report.md"
-    if report_path.exists():
-        st.markdown(report_path.read_text(encoding="utf-8"))
+    is_default = cfg_hash == REFERENCE_HASH
+    if cfg_hash not in st.session_state.get("_seen_hashes", set()):
+        label = "reference run" if is_default else "new settings"
+        with st.spinner(f"Running the pipeline ({label})..."):
+            results = _run(cfg_hash, config)
+        st.session_state.setdefault("_seen_hashes", set()).add(cfg_hash)
     else:
-        st.warning("Ablation report not found. Run `py src/run_ablation_study.py` offline.")
+        results = _run(cfg_hash, config)
+    return results
 
 
-def limitations_page(results: AnalysisResults):
-    st.markdown('<div class="section-header">Limitations</div>', unsafe_allow_html=True)
+REFERENCE_HASH = "6dff8faaa470d418"
+
+
+# --- small helpers -----------------------------------------------------------
+
+def _plot(fig):
+    st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
+
+
+def _pct(x) -> str:
+    return f"{float(x) * 100:.1f}%"
+
+
+def _num(x, dp: int = 3) -> str:
+    return f"{float(x):.{dp}f}"
+
+
+def _baseline(results, key):
+    return (results.population_baseline or {}).get(key)
+
+
+def _peak_label(profile, results) -> str:
+    ratio = profile.get("peak_to_avg_ratio_vs_population")
+    if ratio is not None and pd.notna(ratio) and float(ratio) < 0.85:
+        return "near-flat"
+    return f"peaks {int(profile['peak_hour']):02d}:00"
+
+
+BULLET_DESCRIPTORS = [
+    ("Evening share", "evening_share", "pct"),
+    ("Afternoon share", "afternoon_share", "pct"),
+    ("Morning share", "morning_share", "pct"),
+    ("Night share", "night_share", "pct"),
+    ("Base-load share", "base_load_share", "pct"),
+    ("Peak-to-average", "peak_to_avg_ratio", "ratio"),
+    ("Hour-to-hour variation", "coefficient_of_variation", "ratio"),
+    ("Weekend/weekday energy", "weekend_ratio", "ratio"),
+]
+
+
+def _fmt_value(kind: str, value: float) -> str:
+    return _pct(value) if kind == "pct" else _num(value, 2)
+
+
+def _cluster_bullets(profile, results, n: int = 3) -> list:
+    """The n most distinctive descriptors for a cluster, each against population."""
+    scored = []
+    for label, key, kind in BULLET_DESCRIPTORS:
+        if key not in profile or pd.isna(profile[key]):
+            continue
+        base = _baseline(results, key)
+        dev = abs(float(profile[key]) / float(base) - 1.0) if base else 0.0
+        scored.append((dev, label, key, kind))
+    scored.sort(reverse=True)
+    bullets = []
+    for _, label, key, kind in scored[:n]:
+        base = _baseline(results, key)
+        cval = _fmt_value(kind, profile[key])
+        bval = _fmt_value(kind, base) if base is not None else "-"
+        bullets.append(f"{label} <b>{cval}</b> <span>vs {bval} population</span>")
+    return bullets
+
+
+PAGES = [
+    "Overview",
+    "How it works",
+    "The data",
+    "Features",
+    "Principal components",
+    "Choosing K",
+    "The clusters",
+    "Stability",
+    "Validation",
+    "Insights",
+    "Limitations",
+]
+
+
+# --- pages -------------------------------------------------------------------
+
+def page_overview(results: AnalysisResults):
+    ui.kicker("PCA + K-Means &middot; synthetic study")
+    ui.hero(
+        'Energy has a <span class="accent">rhythm</span>.',
+        "Two homes can use the same amount of electricity and behave nothing alike. "
+        "This study groups consumers by the shape of their day, not by how much they use.",
+    )
+    ui.synthetic_badge("Synthetic data - not real households")
+
+    sizes = results.cluster_sizes()
+    stability = results.stability_results or {}
+    ari = results.ari_for_k(results.optimal_k)
+    ui.metric_cards([
+        {"label": "Records", "value": f"{len(results.preprocessed_data):,}"},
+        {"label": "Consumers", "value": f"{results.preprocessed_data['consumer_id'].nunique()}"},
+        {"label": "Features", "value": len(results.feature_names), "sub": "behavioural, shape only"},
+        {"label": "PCA components", "value": results.n_pca_components,
+         "sub": f"{results.metadata['pca_cumulative_variance']:.1%} variance"},
+        {"label": "Clusters", "value": results.optimal_k, "accent": True,
+         "sub": f"sizes {sizes}"},
+        {"label": "Silhouette", "value": _num(results.silhouette_for_k(results.optimal_k)),
+         "sub": "separation, modest"},
+        {"label": "Stability ARI", "value": _num(stability.get("mean_ari", float("nan"))),
+         "sub": "across restarts"},
+        {"label": "Archetype ARI", "value": _num(ari) if ari is not None else "-",
+         "sub": "agreement with hidden truth"},
+    ])
+
+    ui.section("The shape of a day", "Each cluster's mean day, over the population average.")
+    _plot(ch.load_shape_chart(results))
+    ui.note(
+        "Every consumer's 24 hourly values are scaled to sum to one before anything "
+        "else, so what is grouped is the <strong>shape</strong> of the day, not its size. "
+        "The clusters below are three different daily rhythms, not big, medium and small."
+    )
+    st.caption(
+        f"Config hash `{results.config.config_hash()}` &middot; "
+        f"generated {results.metadata['timestamp_utc']}"
+    )
+
+
+def page_how_it_works(results: AnalysisResults):
+    ui.section("How it works", "The whole method in plain terms, then as steps.", eyebrow="Beginner mode")
+    st.markdown(
+        "A household's day can be drawn as a curve: how much electricity it uses in "
+        "each hour. If you scale that curve so the whole day adds up to one, you throw "
+        "away the size and keep only the **timing** - when the household is busy. This "
+        "study describes each consumer's timing with a set of numbers, compresses those "
+        "numbers so the redundant ones do not dominate, and then looks for groups of "
+        "consumers whose timing is alike."
+    )
+    st.markdown(
+        "- **PCA** finds the few combinations of features that carry most of the variation, "
+        "so clustering happens in a compact, less redundant space.\n"
+        "- **K-Means** puts each consumer in the nearest of K groups; the number of groups K "
+        "is chosen by a rule fixed in advance, not to make the picture tidy.\n"
+        "- **Silhouette** measures how cleanly separated the groups are (higher is better).\n"
+        "- **Stability** measures whether the same groups reappear when the algorithm is "
+        "restarted; it is not a confidence that any one consumer is correctly placed.\n"
+        "- **Adjusted Rand Index** checks the groups against the hidden archetypes the "
+        "generator used - a check only possible because the data is synthetic."
+    )
+    ui.section("The pipeline")
+    ui.pipeline([
+        ("Generate", "A synthetic panel of consumers drawn from four hidden archetypes."),
+        ("Preprocess", "Sort by consumer and time; impute within a consumer only."),
+        ("Engineer features", f"{len(results.feature_names)} behavioural descriptors of the daily shape."),
+        ("Reduce", f"Standardise, then PCA to {results.metadata['pca_cumulative_variance']:.0%} variance "
+                   f"({results.n_pca_components} components)."),
+        ("Sweep K", f"K-Means for K = {min(results.k_values)} to {max(results.k_values)}, four internal metrics."),
+        ("Select", "A pre-registered rule, then a multi-seed stability check."),
+        ("Profile", "Describe each cluster in real units, against the population."),
+        ("Validate", "Compare with the hidden archetypes (synthetic data only)."),
+    ])
+    ui.note(
+        "The archetype label is dropped before preprocessing and never reaches the "
+        "scaler, PCA or K-Means. It is used only at the end, as an independent check."
+    )
+
+
+def page_data(results: AnalysisResults):
+    ui.section("The data", "A controlled, synthetic world built to test the method.", eyebrow="Provenance")
+    ui.note(
+        "<strong>This is synthetic data.</strong> The consumers do not exist. Nothing here "
+        "is evidence about real-world household behaviour; it is a test of whether the "
+        "method recovers structure that was deliberately built in.",
+        warn=True,
+    )
+    ui.metric_cards([
+        {"label": "Consumers", "value": f"{results.config.n_consumers}"},
+        {"label": "Days", "value": f"{results.config.n_days}", "sub": "hourly records"},
+        {"label": "Records", "value": f"{len(results.preprocessed_data):,}"},
+        {"label": "Hidden archetypes", "value": "4", "sub": "daytime, evening, flat, weekend"},
+    ])
+    col1, col2 = st.columns(2)
+    with col1:
+        _plot(ch.eda_hourly_chart(results))
+    with col2:
+        _plot(ch.eda_weekend_chart(results))
+    ui.section("How the shape descriptors move together")
+    _plot(ch.correlation_heatmap(results))
+    ui.note(
+        "These are the interpretable shape descriptors, and they are correlated by "
+        "construction (the period shares sum to one, peakiness and variation track each "
+        "other). That correlation is exactly why the next step reduces the dimensions "
+        "before clustering."
+    )
+
+
+def page_features(results: AnalysisResults):
+    ui.section(
+        "Features",
+        f"{len(results.feature_names)} numbers describe each consumer's daily shape - and not one is the raw size.",
+        eyebrow="What is measured",
+    )
+    ui.tags([
+        "24 hourly shape bins", "4 period shares", "peakiness", "entropy and inequality",
+        "Fourier harmonics", "wavelet detail energy", "weekend shape distance",
+        "dispersion", "base-load share",
+    ])
+    st.write("")
+    interpretable = [
+        ("Evening share of daily energy", "evening_share"),
+        ("Afternoon share", "afternoon_share"),
+        ("Morning share", "morning_share"),
+        ("Night share", "night_share"),
+        ("Base-load share", "base_load_share"),
+        ("Peak-to-average ratio", "peak_to_avg_ratio"),
+        ("Hour-to-hour variation (CV)", "coefficient_of_variation"),
+        ("Weekend to weekday energy", "weekend_ratio"),
+        ("Shape inequality (Gini)", "shape_gini"),
+        ("Shape entropy", "shape_entropy"),
+        ("Peak concentration", "peak_concentration"),
+    ]
+    present = [(lbl, key) for lbl, key in interpretable if key in results.features_combined.columns]
+    labels = [lbl for lbl, _ in present]
+    chosen = st.selectbox("Show the spread of", labels, index=0)
+    key = dict(present)[chosen]
+    _plot(ch.feature_distribution_chart(results, key))
+    ui.note(
+        "Each box is one cluster; the dotted line is the population value. The clusters "
+        "were not formed from any single feature - they come from the compressed "
+        "combination of all of them - so a feature that separates the boxes well is "
+        "describing the grouping, not defining it."
+    )
+
+
+def page_pca(results: AnalysisResults):
+    ui.section(
+        "Principal components",
+        f"Standardise the {len(results.feature_names)} features, then keep the components that hold the variance.",
+        eyebrow="Dimensionality reduction",
+    )
+    ui.metric_cards([
+        {"label": "Components kept", "value": results.n_pca_components, "accent": True},
+        {"label": "Cumulative variance", "value": f"{results.metadata['pca_cumulative_variance']:.2%}"},
+        {"label": "Input features", "value": len(results.feature_names)},
+    ])
+    _plot(ch.pca_variance_chart(results))
+    ui.section("What the axes mean")
+    loadings = ch._loadings(results)
+    pcs = [c for c in loadings.columns if str(c).upper().startswith("PC")][:6]
+    pc = st.selectbox("Component", pcs, index=0)
+    _plot(ch.pca_loadings_chart(results, pc))
+    ui.note(
+        "A component is a direction in feature space. The features with the largest "
+        "positive and negative loadings are what that direction contrasts - for example "
+        "a peaky, high-variation evening against a flat, high-base-load night."
+    )
+    ui.section("The consumers in that space")
+    _plot(ch.pca_projection_chart(results, color_by_cluster=False))
+
+
+def page_k(results: AnalysisResults):
+    ui.section(
+        "Choosing K",
+        "The number of clusters is chosen by a rule fixed in advance, and the awkward numbers are shown too.",
+        eyebrow="Model selection",
+    )
+    sizes = results.cluster_sizes()
+    ui.metric_cards([
+        {"label": "Candidates", "value": f"{min(results.k_values)}-{max(results.k_values)}"},
+        {"label": "Selected K", "value": results.optimal_k, "accent": True},
+        {"label": "Silhouette @ K", "value": _num(results.silhouette_for_k(results.optimal_k), 4),
+         "sub": "modest separation"},
+        {"label": "Cluster sizes", "value": str(sizes)},
+    ])
+    _plot(ch.k_composite_chart(results))
+    trace = results.k_selection_trace
+    rejected = sorted(set(trace.get("candidates", [])) - set(trace.get("after_balance_filter", [])))
+    elbow = trace.get("elbow_k")
+    ui.note(
+        f"The composite score combines silhouette, Calinski-Harabasz and Davies-Bouldin, "
+        f"normalised across candidates. It is only computed for K that first pass the "
+        f"filters: candidates {rejected} were rejected for producing a cluster below 5% "
+        f"of consumers. The score picks K={trace.get('best_k_by_score', results.optimal_k)}, "
+        f"while the inertia elbow points at K={int(elbow) if elbow else '-'} - reported for "
+        f"comparison, not used to decide."
+    )
+    metric = st.selectbox(
+        "Metric across the sweep",
+        ["silhouette", "inertia", "calinski_harabasz", "davies_bouldin"],
+        format_func=lambda m: m.replace("_", " ").title(),
+    )
+    _plot(ch.k_metric_chart(results, metric))
+    ui.section("The clusters in component space")
+    _plot(ch.pca_projection_chart(results, color_by_cluster=True))
+
+
+def page_clusters(results: AnalysisResults):
+    ui.section("The clusters", "Three daily rhythms, each named for its own characteristics.", eyebrow="Result")
+    profiles = results.cluster_profiles.sort_values("cluster")
+    cols = st.columns(len(profiles))
+    for col, (_, prof) in zip(cols, profiles.iterrows()):
+        cid = int(prof["cluster"])
+        meta = f"{int(prof['size'])} consumers &middot; {prof['size_share']:.1%} &middot; {_peak_label(prof, results)}"
+        with col:
+            ui.archetype_card(str(prof["cluster_name"]), ui.cluster_color(cid), meta,
+                              _cluster_bullets(prof, results))
+
+    _plot(ch.load_shape_chart(results))
+    _plot(ch.hour_by_cluster_heatmap(results))
+
+    ui.section("Compare clusters", "Pick clusters to line their numbers up against the population.")
+    name_by_id = {int(p["cluster"]): str(p["cluster_name"]) for _, p in profiles.iterrows()}
+    picked = st.multiselect(
+        "Clusters", options=list(name_by_id), default=list(name_by_id),
+        format_func=lambda cid: name_by_id[cid],
+    )
+    if picked:
+        _plot(_comparison_table(results, picked))
+
+    ui.section("Read each cluster")
+    insights = results.cluster_insights.set_index("cluster")
+    for _, prof in profiles.iterrows():
+        cid = int(prof["cluster"])
+        with st.expander(f"{prof['cluster_name']}  -  {int(prof['size'])} consumers"):
+            if cid in insights.index:
+                st.markdown(str(insights.loc[cid, "interpretation"]))
+
+
+def _comparison_table(results, picked):
+    profiles = results.cluster_profiles
+    rows = [
+        ("Share of consumers", "size_share", "pct"),
+        ("Peak hour", "peak_hour", "hour"),
+        ("Evening share", "evening_share", "pct"),
+        ("Afternoon share", "afternoon_share", "pct"),
+        ("Night share", "night_share", "pct"),
+        ("Base-load share", "base_load_share", "pct"),
+        ("Peak-to-average", "peak_to_avg_ratio", "num"),
+        ("Hour-to-hour variation", "coefficient_of_variation", "num"),
+        ("Weekend/weekday energy", "weekend_ratio", "num"),
+    ]
+    import plotly.graph_objects as go
+    header_names = [profiles.loc[profiles["cluster"] == cid, "cluster_name"].iloc[0] for cid in picked]
+    header = ["Metric"] + header_names + ["Population"]
+
+    def cell(kind, val):
+        if val is None or (isinstance(val, float) and np.isnan(val)):
+            return "-"
+        if kind == "pct":
+            return _pct(val)
+        if kind == "hour":
+            return f"{int(val):02d}:00"
+        return _num(val, 2)
+
+    table_cols = [[label for label, _, _ in rows]]
+    for cid in picked:
+        prof = profiles.loc[profiles["cluster"] == cid].iloc[0]
+        table_cols.append([cell(kind, prof.get(key)) for _, key, kind in rows])
+    table_cols.append([cell(kind, _baseline(results, key)) if kind != "hour" else "-"
+                       for _, key, kind in rows])
+
+    fig = go.Figure(go.Table(
+        header=dict(values=header, fill_color=ui.PANEL_HI, align="left",
+                    font=dict(color=ui.INK, family="IBM Plex Mono, monospace", size=12),
+                    line_color=ui.LINE),
+        cells=dict(values=table_cols, fill_color=ui.PANEL, align="left",
+                   font=dict(color=ui.INK, size=12), line_color=ui.LINE, height=30),
+    ))
+    fig.update_layout(height=40 + 32 * (len(rows) + 1), margin=dict(l=0, r=0, t=8, b=0))
+    return fig
+
+
+def page_stability(results: AnalysisResults):
+    ui.section(
+        "Stability",
+        "Whether the same clusters reappear when the algorithm is restarted.",
+        eyebrow="Robustness",
+    )
+    stability = results.stability_results or {}
+    if not stability:
+        ui.note("Stability was not measured for this run. Turn on "
+                "\"Measure clustering stability\" in the sidebar to compute it.", warn=True)
+        return
+    ui.metric_cards([
+        {"label": "Mean pairwise ARI", "value": _num(stability.get("mean_ari", float("nan"))),
+         "accent": True, "sub": "1.0 is identical every restart"},
+        {"label": "Assignment agreement", "value": _num(stability.get("mean_agreement", float("nan")))},
+        {"label": "Restarts", "value": stability.get("n_runs", "-")},
+        {"label": "Lowest pair ARI", "value": _num(stability.get("min_ari", float("nan")))
+         if stability.get("min_ari") is not None else "-"},
+    ])
+    _plot(ch.stability_by_k_chart(results))
+    ui.note(
+        "Stability is a property of the <strong>clustering</strong>: it says the same "
+        "groups keep forming. It is not a per-consumer confidence, and it does not say "
+        "the groups are well separated - that is the silhouette, which is only modest here. "
+        "A clustering can be highly stable and only moderately separated at the same time, "
+        "and this one is."
+    )
+
+
+def page_validation(results: AnalysisResults):
+    ui.section(
+        "Validation",
+        "Comparing the recovered clusters with the hidden archetypes - possible only because the data is synthetic.",
+        eyebrow="Ground-truth check",
+    )
+    recovery = results.archetype_recovery
+    if recovery is not None:
+        import plotly.graph_objects as go
+        ks = recovery["K"].astype(int).tolist()
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=ks, y=recovery["ari"], mode="lines+markers", name="Adjusted Rand Index",
+                                 line=dict(color=ui.GREEN, width=2.4)))
+        fig.add_trace(go.Scatter(x=ks, y=recovery["nmi"], mode="lines+markers", name="Normalised Mutual Information",
+                                 line=dict(color=ui.CYAN, width=2.4)))
+        fig.add_vline(x=results.optimal_k, line_dash="dash", line_color=ui.MIST,
+                      annotation_text=f"selected K={results.optimal_k}", annotation_font_color=ui.MIST)
+        fig.update_layout(title="Agreement with the hidden archetypes by K",
+                          xaxis=dict(title="K", dtick=1), yaxis=dict(title="Score", range=[0, 1.05]),
+                          height=380, legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0))
+        _plot(fig)
+
+        ari = results.ari_for_k(results.optimal_k)
+        ui.note(
+            f"At the selected K={results.optimal_k}, the Adjusted Rand Index against the "
+            f"archetypes is {_num(ari, 4)}. That is moderate: the recovered clusters line up "
+            f"with the built-in structure well above chance, but they are not the same "
+            f"partition. The four archetypes and three clusters do not map one to one, which "
+            f"the cross-tabulation below makes visible."
+        )
+        if results.archetype_crosstab is not None:
+            st.markdown("**Cluster against archetype**")
+            st.dataframe(results.archetype_crosstab, use_container_width=True)
+
+    _external_report("Ablation study", ROOT / "outputs" / "reports" / "ablation_study_report.md")
+    _external_report("Seed robustness", ROOT / "outputs" / "reports" / "seed_robustness_report.md")
+
+
+def _external_report(title: str, path: Path):
+    if not path.exists():
+        return
+    ui.section(title)
+    with st.expander(f"Read the {title.lower()} report"):
+        st.markdown(path.read_text(encoding="utf-8"))
+
+
+def page_insights(results: AnalysisResults):
+    ui.section(
+        "Insights",
+        "Each is a measured deviation from the population, not a cause and not a saving.",
+        eyebrow="Observation to action",
+    )
+    ui.note(
+        "The engine only raises a point when a cluster's characteristic differs enough "
+        "from the population. It makes no causal claim and quotes no savings figure. Where "
+        "a cluster sits close to the population, it stays silent - that silence is a result too."
+    )
+    recs = results.recommendations
+    profiles = results.cluster_profiles.sort_values("cluster")
+    for _, prof in profiles.iterrows():
+        cid = int(prof["cluster"])
+        color = ui.cluster_color(cid)
+        ui.section(str(prof["cluster_name"]))
+        cluster_recs = recs[recs["cluster"] == cid] if "cluster" in recs.columns else recs.iloc[0:0]
+        if not len(cluster_recs):
+            ui.note(
+                "No point was raised for this cluster: on every measured characteristic it "
+                "sits close enough to the population that the engine stayed silent."
+            )
+            continue
+        for _, row in cluster_recs.iterrows():
+            head = f"{str(row['category']).replace('_', ' ').title()} &middot; {row['priority']} priority"
+            ui.insight_block(
+                head=head, color=color,
+                observation=str(row["observation"]),
+                evidence=str(row["evidence"]),
+                action=str(row["action"]),
+            )
+
+
+def page_limitations(results: AnalysisResults):
+    ui.section("Limitations", "What this study does not show.", eyebrow="Honesty")
+    sil = results.silhouette_for_k(results.optimal_k)
     st.markdown(
         f"""
-- **Synthetic data**: archetypes are designed; real grids may differ. Source labeled as synthetic.
-- **Weak separation possible**: behavioral silhouette at K={results.optimal_k} is
-  {results.silhouette_for_k(results.optimal_k):.4f} (reported honestly, not inflated).
-- **Clustering is not causation**: recommendations are correlational suggestions only.
-- **Feature dependence**: results depend on the chosen feature set (see ablation).
-- **Generalization**: single synthetic window ({results.config.n_days} days); no multi-season claim.
-- **Session safety**: changing sidebar parameters regenerates the full analysis object (hash `{results.config.config_hash()}`).
+- **Synthetic data.** The archetypes are designed; a real grid may differ. The source is
+  labelled synthetic everywhere, and no result here is evidence about real households.
+- **Modest separation.** The silhouette at K={results.optimal_k} is {sil:.4f}. The clusters
+  are stable but they overlap at their edges; they are tendencies, not sharp categories.
+- **Clustering is not causation.** The insights are correlational descriptions of a group,
+  never a claim that a pattern causes an outcome or that acting on it saves a fixed amount.
+- **One synthetic window.** A single generated panel of {results.config.n_days} days. The
+  seed-robustness study repeats the generation, but this is not a multi-season claim.
+- **Feature dependence.** The result depends on the behavioural feature set; the scale and
+  combined sets behave differently, which is the point of the ablation.
+- **Session safety.** Changing a sidebar setting starts a fresh run in a private temporary
+  folder (current hash `{results.config.config_hash()}`); the committed artifacts are untouched.
         """
     )
+
+
+PAGE_FUNCS = {
+    "Overview": page_overview,
+    "How it works": page_how_it_works,
+    "The data": page_data,
+    "Features": page_features,
+    "Principal components": page_pca,
+    "Choosing K": page_k,
+    "The clusters": page_clusters,
+    "Stability": page_stability,
+    "Validation": page_validation,
+    "Insights": page_insights,
+    "Limitations": page_limitations,
+}
 
 
 def main():
     config = build_config_from_sidebar()
     results = get_or_run_analysis(config)
-
-    page = st.sidebar.radio(
-        "Navigate",
-        [
-            "Overview",
-            "Methodology",
-            "EDA",
-            "PCA",
-            "K Selection",
-            "Cluster Profiles",
-            "Recommendations",
-            "Validation/Ablation",
-            "Limitations",
-        ],
-    )
-
-    if page == "Overview":
-        overview_page(results)
-    elif page == "Methodology":
-        methodology_page(results)
-    elif page == "EDA":
-        eda_page(results)
-    elif page == "PCA":
-        pca_page(results)
-    elif page == "K Selection":
-        k_selection_page(results)
-    elif page == "Cluster Profiles":
-        profiles_page(results)
-    elif page == "Recommendations":
-        recommendations_page(results)
-    elif page == "Validation/Ablation":
-        validation_page()
-    elif page == "Limitations":
-        limitations_page(results)
+    PAGE_FUNCS[st.session_state.get("_page", "Overview")](results)
 
 
 if __name__ == "__main__":
