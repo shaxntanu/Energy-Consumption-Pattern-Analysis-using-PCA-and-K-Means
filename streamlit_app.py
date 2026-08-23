@@ -126,7 +126,7 @@ REFERENCE_HASH = "6dff8faaa470d418"
 # --- small helpers -----------------------------------------------------------
 
 def _plot(fig):
-    st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(fig, width="stretch", config=PLOTLY_CONFIG)
 
 
 def _pct(x) -> str:
@@ -189,7 +189,7 @@ def _cluster_bullets(profile, results, n: int = 3) -> list:
 # for one set of pages is two things to keep in step.
 
 NAV_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("Start", ("Home",)),
+    ("Start", ("Home", "How to use this simulator")),
     ("Simulator", ("Overview", "Dataset", "Data provenance", "Features")),
     ("Method", ("How it works", "Principal components", "Choosing K")),
     ("Clusters", ("The clusters", "Insights")),
@@ -320,6 +320,122 @@ def _home_chapter_figure(index: int, results: AnalysisResults) -> None:
               else ch.k_composite_chart(results))
 
 
+def page_how_to(results: AnalysisResults):
+    """A guide for a reader who knows what electricity is and nothing about ML.
+
+    Fifteen chapters in a fixed order, because each one depends on the one before
+    it. The prose lives in dashboard_content; this function decides where a live
+    chart earns its place and where the reader should be sent next.
+    """
+    ui.kicker("Start here")
+    ui.hero(
+        'How to use this <span class="accent">simulator</span>.',
+        "Every page here runs a real analysis on real code. This explains what it is "
+        "doing, in order, assuming you know what a kilowatt-hour is and nothing about "
+        "machine learning.",
+    )
+
+    st.write("")
+    steps = content.how_to_use_quickstart()
+    for i, (col, (title, body)) in enumerate(zip(st.columns(len(steps)), steps), 1):
+        with col:
+            ui.step_card(i, title, body)
+
+    ui.hairline()
+    chapters = content.how_to_use_chapters(results)
+    ui.section(
+        "The long version",
+        f"{len(chapters)} short chapters, in order. Each one assumes the one before it.",
+        eyebrow="Contents",
+    )
+    _contents_list(chapters)
+
+    for i, chap in enumerate(chapters, 1):
+        ui.chapter(i, HOW_TO_KICKERS[i], chap["title"])
+        st.markdown(chap["body"])
+        _how_to_chapter_extra(i, results)
+
+    ui.hairline()
+    ui.section(
+        "Now go and look",
+        "The guide is finished. The analysis is one click away.",
+        eyebrow="Next",
+    )
+    left, middle, _ = st.columns([1, 1, 2])
+    with left:
+        nav_button("Open the dataset", "Dataset", "howto::dataset")
+    with middle:
+        nav_button("See the clusters", "The clusters", "howto::clusters")
+
+
+HOW_TO_KICKERS = {
+    1: "The question", 2: "The measurement", 3: "The shape", 4: "The table",
+    5: "The numbers", 6: "The reason", 7: "Step one", 8: "Step two",
+    9: "The result", 10: "Reading the charts", 11: "The controls",
+    12: "Cause and effect", 13: "The scores", 14: "The findings", 15: "The caveats",
+}
+
+# Where a live chart says it better than another paragraph would.
+HOW_TO_FIGURES = {
+    3: ch.eda_hourly_chart,
+    7: ch.pca_variance_chart,
+    8: ch.pca_projection_chart,
+    9: ch.load_shape_chart,
+    13: ch.k_composite_chart,
+}
+
+HOW_TO_FIGURE_CAPTIONS = {
+    3: "The average day across every consumer, in kilowatt-hours. This is a load "
+       "profile: consumption against the hour it happened in.",
+    7: "PCA's own report card. Each bar is one component's share of the variance; "
+       "the line is the running total, and the analysis keeps components until it "
+       "crosses 95 per cent.",
+    8: "The first two components, with each point one consumer, coloured by the "
+       "cluster K-Means put it in. This is the space the grouping happens in.",
+    9: "One coloured line per cluster: the average day of everyone in it, as a share "
+       "of their own daily total. This is the answer the whole pipeline exists to "
+       "produce.",
+    13: "The three scores that chose K, each rescaled to a common range so they can "
+        "be read together. Drag to zoom, double-click to reset.",
+}
+
+HOW_TO_JUMPS = {
+    4: ("Look at the rows", "Dataset", "howto::jump-dataset"),
+    10: ("See them all at once", "Overview", "howto::jump-overview"),
+    11: ("Try the controls", "Overview", "howto::jump-controls"),
+    15: ("Read the full limitations", "Limitations", "howto::jump-limits"),
+}
+
+
+def _contents_list(chapters: list) -> None:
+    """A numbered list of what follows.
+
+    Streamlit reruns on every interaction and has no in-page anchor navigation, so
+    this is a map rather than a set of links: it tells a reader how long the guide
+    is and lets them decide where to start scrolling.
+    """
+    halves = (chapters[:8], chapters[8:])
+    for col, half in zip(st.columns(2), halves):
+        offset = 1 if half is halves[0] else 9
+        with col:
+            st.markdown("\n".join(
+                f"{i}. {chap['title']}" for i, chap in enumerate(half, offset)
+            ))
+
+
+def _how_to_chapter_extra(index: int, results: AnalysisResults) -> None:
+    """The chart or the onward link that belongs to one chapter of the guide."""
+    figure = HOW_TO_FIGURES.get(index)
+    if figure is not None:
+        _plot(figure(results))
+        caption = HOW_TO_FIGURE_CAPTIONS.get(index)
+        if caption:
+            st.caption(caption)
+    jump = HOW_TO_JUMPS.get(index)
+    if jump is not None:
+        nav_button(*jump)
+
+
 def page_dataset(results: AnalysisResults):
     """The dataset itself, open to inspection.
 
@@ -374,10 +490,10 @@ def page_dataset(results: AnalysisResults):
         )
         view = pp[pp["consumer_id"].isin(consumer_filter)] if consumer_filter else pp
         st.caption(f"Showing {min(n_rows, len(view)):,} of {len(view):,} rows.")
-        st.dataframe(view.head(n_rows), use_container_width=True, hide_index=True)
+        st.dataframe(view.head(n_rows), width="stretch", hide_index=True)
 
         ui.section("What each column is")
-        st.dataframe(_schema_table(pp), use_container_width=True, hide_index=True)
+        st.dataframe(_schema_table(pp), width="stretch", hide_index=True)
         _download("Download the preprocessed panel (CSV)", pp, "preprocessed_panel.csv",
                   results.config.config_hash())
 
@@ -393,7 +509,7 @@ def page_dataset(results: AnalysisResults):
                      .rename("archetype").reset_index())
             counts = truth["archetype"].value_counts().rename_axis("archetype")
             st.dataframe(counts.rename("consumers").reset_index(),
-                         use_container_width=True, hide_index=True)
+                         width="stretch", hide_index=True)
 
     with tab_one:
         ids = ch.consumer_ids(results)
@@ -432,7 +548,7 @@ def page_dataset(results: AnalysisResults):
         )
         _plot(ch.consumer_day_heatmap(results, picked))
         with st.expander(f"Every reading for consumer {picked}"):
-            st.dataframe(mine, use_container_width=True, hide_index=True)
+            st.dataframe(mine, width="stretch", hide_index=True)
 
     with tab_features:
         st.markdown(
@@ -441,7 +557,7 @@ def page_dataset(results: AnalysisResults):
             "The Features page explains what the columns mean."
         )
         feats = results.features_combined
-        st.dataframe(feats, use_container_width=True, hide_index=True)
+        st.dataframe(feats, width="stretch", hide_index=True)
         st.caption(f"{feats.shape[0]:,} consumers x {feats.shape[1]} columns.")
         _download("Download the feature matrix (CSV)", feats, "consumer_features.csv",
                   results.config.config_hash())
@@ -453,7 +569,7 @@ def page_dataset(results: AnalysisResults):
         )
         _plot(ch.cluster_size_chart(results))
         assignment = _assignment_table(results)
-        st.dataframe(assignment, use_container_width=True, hide_index=True)
+        st.dataframe(assignment, width="stretch", hide_index=True)
         _download("Download the cluster assignment (CSV)", assignment,
                   "cluster_assignment.csv", results.config.config_hash())
 
@@ -861,7 +977,7 @@ def page_validation(results: AnalysisResults):
         )
         if results.archetype_crosstab is not None:
             st.markdown("**Cluster against archetype**")
-            st.dataframe(results.archetype_crosstab, use_container_width=True)
+            st.dataframe(results.archetype_crosstab, width="stretch")
 
     _external_report("Ablation study", ROOT / "outputs" / "reports" / "ablation_study_report.md")
     _external_report("Seed robustness", ROOT / "outputs" / "reports" / "seed_robustness_report.md")
@@ -945,21 +1061,24 @@ def page_limitations(results: AnalysisResults):
     )
 
 
+# Keyed by page name, in the same order as NAV_GROUPS so the two can be read
+# side by side.
 PAGE_FUNCS = {
     "Home": page_home,
+    "How to use this simulator": page_how_to,
     "Overview": page_overview,
-    "How it works": page_how_it_works,
     "Dataset": page_dataset,
     "Data provenance": page_data,
     "Features": page_features,
+    "How it works": page_how_it_works,
     "Principal components": page_pca,
     "Choosing K": page_k,
     "The clusters": page_clusters,
+    "Insights": page_insights,
     "Stability": page_stability,
     "Validation": page_validation,
-    "Insights": page_insights,
-    "Research": page_research,
     "Limitations": page_limitations,
+    "Research": page_research,
 }
 
 MASTHEAD_LINKS = (
