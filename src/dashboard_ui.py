@@ -95,6 +95,16 @@ def cluster_color(i: int) -> str:
     return CLUSTER_COLORS[int(i) % len(CLUSTER_COLORS)]
 
 
+def get_plotly_config() -> dict:
+    """Return the shared Plotly config dict that disables UI chrome."""
+    return {
+        'displayModeBar': False,
+        'doubleClick': False,
+        'displaylogo': False,
+        'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d', 'zoomIn', 'zoomOut', 'autoScale', 'resetScale'],
+    }
+
+
 def register_plotly_template() -> None:
     """Register and activate the shared dark Plotly template.
 

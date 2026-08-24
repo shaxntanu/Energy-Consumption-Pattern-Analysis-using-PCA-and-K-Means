@@ -1,18 +1,13 @@
-"""Streamlit dashboard for the energy load-shape study.
+"""Streamlit simulator for energy load-shape clustering analysis.
 
-The interface is a research instrument: it runs the pipeline once per set of
-settings and then reads everything from that single AnalysisResults object, so
-there is exactly one set of numbers in play at a time. PCA and K-Means are never
-recomputed for a single chart.
+Interactive parameter controls with real-time re-computation:
+- Adjust simulation parameters in the sidebar
+- View cluster results, metrics, and visualizations
+- Inspect the generated dataset
+- Explore cluster profiles and assignments
 
-At its default settings the run reproduces the committed reference run
-(config hash 6dff8faaa470d418), so the dashboard, the landing page and the
-README all show the same numbers. Changing a setting in the sidebar starts a new
-run in a private temporary directory; the committed artifacts under outputs/ and
-models/ are never overwritten by the dashboard.
-
-Vercel cannot host this file: Streamlit is a long-running server, not a Python
-serverless handler. Use Streamlit Community Cloud, Render, Docker, or run locally.
+The narrative methodology and research context are on the Vercel landing page.
+This simulator focuses purely on the interactive analysis.
 """
 from __future__ import annotations
 
@@ -35,13 +30,19 @@ import dashboard_github as gh  # noqa: E402
 import dashboard_zoom as zoom  # noqa: E402
 
 st.set_page_config(
-    page_title="Energy load-shape study",
+    page_title="Energy Clustering Simulator",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 ui.inject_theme()
 
-PLOTLY_CONFIG = {"displayModeBar": False, "responsive": True}
+PLOTLY_CONFIG = {
+    "displayModeBar": False,
+    "responsive": True,
+    "doubleClick": False,
+    "displaylogo": False,
+    "scrollZoom": False,
+}
 
 
 # --- run plumbing ------------------------------------------------------------
@@ -59,32 +60,27 @@ def _session_workdir() -> str:
 
 def build_config_from_sidebar() -> AnalysisConfig:
     st.sidebar.markdown(
-        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;'
+        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.82rem;'
         'letter-spacing:0.2em;text-transform:uppercase;color:#3BC9DE;font-weight:600">'
-        "Load-shape study</div>"
+        "Interactive Simulator</div>"
         '<div style="color:#8A93A6;font-size:0.82rem;margin:0.35rem 0 0.9rem">'
-        "Synthetic data. PCA + K-Means on the shape of the day.</div>",
+        "Adjust parameters and watch the analysis recompute.</div>",
         unsafe_allow_html=True,
     )
 
-    render_nav()
-
-    with st.sidebar.expander("Adjust the run", expanded=False):
-        st.caption(
-            "Defaults reproduce the committed reference run. Changing anything "
-            "starts a fresh run in a private temporary folder."
-        )
-        n_consumers = st.slider("Consumers", 50, 500, 200, step=10)
-        n_days = st.slider("Days", 7, 90, 30)
-        feature_set = st.selectbox(
-            "Feature set", ["behavioral", "scale", "combined"], index=0,
-            help="The primary study is behavioral (shape). scale and combined exist for the ablation.",
-        )
-        random_seed = st.number_input("Random seed", min_value=0, value=42, step=1)
-        test_stability = st.checkbox(
-            "Measure clustering stability", value=True,
-            help="Repeats K-Means from several seeds at each K. Off is faster but drops the stability view.",
-        )
+    st.sidebar.markdown("### Simulation Controls")
+    
+    n_consumers = st.sidebar.slider("Consumers", 50, 500, 200, step=10)
+    n_days = st.sidebar.slider("Days", 7, 90, 30)
+    feature_set = st.sidebar.selectbox(
+        "Feature set", ["behavioral", "scale", "combined"], index=0,
+        help="behavioral = shape patterns, scale = magnitude, combined = both",
+    )
+    random_seed = st.sidebar.number_input("Random seed", min_value=0, value=42, step=1)
+    test_stability = st.sidebar.checkbox(
+        "Measure clustering stability", value=True,
+        help="Repeats K-Means from several seeds. Turn off for faster runs.",
+    )
 
     experiment = "behavioral_primary" if feature_set == "behavioral" else f"{feature_set}_ablation"
     wd = Path(_session_workdir())
@@ -186,20 +182,13 @@ def _cluster_bullets(profile, results, n: int = 3) -> list:
 
 
 # --- navigation --------------------------------------------------------------
-# One navigation, in the sidebar, grouped under the same top-level headings the
-# landing page used. The masthead deliberately carries no page links: two menus
-# for one set of pages is two things to keep in step.
+# Simplified navigation - only simulator pages
 
 NAV_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("Start", ("Home", "How to use this simulator")),
-    ("Simulator", ("Overview", "Dataset", "Data provenance", "Features")),
-    ("Method", ("How it works", "Principal components", "Choosing K")),
-    ("Clusters", ("The clusters", "Insights")),
-    ("Validation", ("Stability", "Validation", "Limitations")),
-    ("Research", ("Research",)),
+    ("Simulator", ("Overview", "Dataset", "The clusters")),
 )
 
-HOME_PAGE = "Home"
+HOME_PAGE = "Overview"
 
 PAGES = [name for _, names in NAV_GROUPS for name in names]
 
@@ -693,6 +682,14 @@ def page_overview(results: AnalysisResults):
         "else, so what is grouped is the <strong>shape</strong> of the day, not its size. "
         "The clusters below are three different daily rhythms, not big, medium and small."
     )
+    
+    ui.section("Explore the results")
+    col1, col2 = st.columns(2)
+    with col1:
+        nav_button("View the dataset", "Dataset", "overview::dataset")
+    with col2:
+        nav_button("See cluster details", "The clusters", "overview::clusters")
+    
     st.caption(
         f"Config hash `{results.config.config_hash()}` &middot; "
         f"generated {results.metadata['timestamp_utc']}"
@@ -1090,28 +1087,14 @@ def page_limitations(results: AnalysisResults):
     )
 
 
-# Keyed by page name, in the same order as NAV_GROUPS so the two can be read
-# side by side.
+# Keyed by page name - only simulator pages remain
 PAGE_FUNCS = {
-    "Home": page_home,
-    "How to use this simulator": page_how_to,
     "Overview": page_overview,
     "Dataset": page_dataset,
-    "Data provenance": page_data,
-    "Features": page_features,
-    "How it works": page_how_it_works,
-    "Principal components": page_pca,
-    "Choosing K": page_k,
     "The clusters": page_clusters,
-    "Insights": page_insights,
-    "Stability": page_stability,
-    "Validation": page_validation,
-    "Limitations": page_limitations,
-    "Research": page_research,
 }
 
 MASTHEAD_LINKS = (
-    ("Landing page", "https://energy-pattern-analysis.vercel.app"),
     ("Repository", content.REPO_URL),
 )
 
