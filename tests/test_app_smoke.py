@@ -29,7 +29,7 @@ def _small_run(at: AppTest) -> AppTest:
     ever executed at the reduced size; booting at the default 200 consumers and
     30 days would make this suite far slower than the analysis tests.
     """
-    at.session_state['_page'] = 'Home'
+    at.session_state['_page'] = 'Overview'
     at.run(timeout=BOOT_TIMEOUT)
     return at
 
@@ -60,42 +60,19 @@ def test_navigation_is_complete_and_unique():
     assert len(app.PAGES) == len(set(app.PAGES))
     assert set(app.PAGES) == set(app.PAGE_FUNCS)
     assert app.HOME_PAGE in app.PAGES
-    assert 'How to use this simulator' in app.PAGES
-    assert app.SECTION_OF_PAGE['How to use this simulator'] == 'Start'
+    assert app.PAGES == ['Overview', 'Dataset', 'The clusters']
 
 
-def test_home_draws_live_charts(booted):
-    """The landing page must draw its figures, not describe them."""
-    booted.session_state['_page'] = 'Home'
+def test_overview_draws_the_simulator_summary(booted):
+    """The simulator overview shows the core result and routes to details."""
+    booted.session_state['_page'] = 'Overview'
     booted.run(timeout=BOOT_TIMEOUT)
     assert not booted.exception
-    assert len(booted.get('plotly_chart')) >= 3
-
-
-def test_how_to_use_draws_its_fifteen_chapters(booted):
-    """Fifteen numbered chapters, their kickers, and their five figures.
-
-    The titles are checked against the ones that carry no live figures, so this
-    stays true for any run size; the chapter count is checked through the
-    zero-padded numbers the chapter component emits.
-    """
-    booted.session_state['_page'] = 'How to use this simulator'
-    booted.run(timeout=BOOT_TIMEOUT)
-    assert not booted.exception
-    text = ' '.join(m.value for m in booted.markdown)
-
-    for number in range(1, 16):
-        assert f'>{number:02d}<' in text, f"chapter {number} is missing its number"
-    for kicker in app.HOW_TO_KICKERS.values():
-        assert kicker in text
-    for title in ('What this project is', 'What a load profile is', 'What PCA does',
-                  'What K-Means does', 'What the metrics mean',
-                  'What the limitations are'):
-        assert title in text, f"missing chapter: {title}"
-
-    assert len(booted.get('plotly_chart')) == len(app.HOW_TO_FIGURES)
-    assert 'squeezing many related measurements' in text
-    assert 'STEP 01' in text and 'STEP 03' in text
+    assert len(booted.get('plotly_chart')) >= 1
+    labels = [button.label for button in booted.button]
+    assert 'View the dataset' in labels
+    assert 'See cluster details' in labels
+    assert {'Overview', 'Dataset', 'The clusters'}.issubset(labels)
 
 
 def test_dataset_page_draws_its_tables_and_charts(booted):
@@ -115,7 +92,7 @@ def test_dataset_page_draws_its_tables_and_charts(booted):
 def test_no_emoji_reaches_the_rendered_page(booted):
     """House rule, checked against what the app actually emits."""
     import re
-    for page in ('Home', 'How to use this simulator', 'Dataset', 'The clusters'):
+    for page in app.PAGES:
         booted.session_state['_page'] = page
         booted.run(timeout=BOOT_TIMEOUT)
         blob = ' '.join(m.value for m in booted.markdown)

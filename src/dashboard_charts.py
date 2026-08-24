@@ -108,8 +108,6 @@ def load_shape_chart(results) -> go.Figure:
         height=540,
         margin=dict(l=54, r=24, t=120, b=48),
     )
-    fig.update_xaxes(fixedrange=True)
-    fig.update_yaxes(fixedrange=True)
     return fig
 
 
