@@ -39,7 +39,7 @@ ui.inject_theme()
 PLOTLY_CONFIG = {
     "displayModeBar": False,
     "responsive": True,
-    "doubleClick": False,
+    "doubleClick": "reset",  # Enable double-click to reset zoom
     "displaylogo": False,
     "scrollZoom": False,
 }
