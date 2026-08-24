@@ -1,5 +1,6 @@
 import React from 'react';
 import ClusterExplorer from './components/ClusterExplorer';
+import DatasetViewer from './components/DatasetViewer';
 
 export default function Home() {
   return (
@@ -102,6 +103,13 @@ export default function Home() {
                   <div className="text-xs font-mono text-[#8A93A6] uppercase tracking-wider mt-2">{stat.label}</div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-12">
+              <p className="text-xs font-mono text-[#8A93A6] font-semibold uppercase tracking-widest mb-4">
+                Explore Patterns
+              </p>
+              <DatasetViewer />
             </div>
           </div>
         </section>
