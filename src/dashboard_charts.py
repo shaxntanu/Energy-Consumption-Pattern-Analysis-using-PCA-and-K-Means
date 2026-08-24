@@ -10,6 +10,7 @@ Two conventions hold throughout:
 - Any figure whose x-axis is the hour of the day gets the four faint
   time-of-day bands behind it (the project's signature), via dashboard_ui.
 - Cluster identity is colour *and* the cluster's name, never colour alone.
+- All charts have proper spacing between title and legend (y=1.15, margin.t=120).
 
 The helpers that read cluster_shapes and pca_loadings are deliberately defensive
 about whether the cluster label or feature name arrives as a column or as the
