@@ -5,6 +5,7 @@ import ProfilePlayback from './components/ProfilePlayback';
 import ClusterComparison from './components/ClusterComparison';
 import NarrativeCards from './components/NarrativeCards';
 import StreamlitLink from './components/StreamlitLink';
+import ExportData from './components/ExportData';
 
 export default function Home() {
   return (
@@ -298,6 +299,22 @@ export default function Home() {
             <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means" target="_blank" rel="noopener noreferrer" className="text-[#3BC9DE] hover:text-[#1E9DB2] transition font-mono text-sm">
               View on GitHub →
             </a>
+          </div>
+        </section>
+
+        <section id="export" className="py-20 px-6 border-b border-[#262E3D]">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-xs font-mono text-[#3BC9DE] font-semibold uppercase tracking-widest mb-4">
+              08 · EXPORT
+            </p>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-6 max-w-2xl">
+              Download your findings
+            </h2>
+            <p className="text-lg text-[#8A93A6] max-w-2xl leading-relaxed mb-8">
+              Export cluster data and analysis results in multiple formats for further research, integration, or reporting.
+            </p>
+            
+            <ExportData />
           </div>
         </section>
 
