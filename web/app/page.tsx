@@ -1,4 +1,5 @@
 import React from 'react';
+import ClusterExplorer from './components/ClusterExplorer';
 
 export default function Home() {
   return (
@@ -149,6 +150,14 @@ export default function Home() {
               The rule settled on <strong className="text-[#EAECEF]">three groups</strong>. They are not big, medium and
               small - they are three different daily rhythms.
             </p>
+            
+            {/* 3D Cluster Explorer */}
+            <div className="mb-12">
+              <div className="lazy-load">
+                <ClusterExplorer />
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 { name: "Midday-Peaking", color: "#F5A524", size: 94, peak: 13, desc: "Rises through the morning to a broad afternoon plateau." },
