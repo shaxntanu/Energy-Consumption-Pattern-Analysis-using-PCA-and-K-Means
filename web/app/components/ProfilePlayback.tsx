@@ -49,7 +49,7 @@ export default function ProfilePlayback() {
 
     animationRef.current = setInterval(() => {
       setCurrentHour((prev) => (prev + 1) % 24);
-    }, 500 / speed);
+    }, 500 / speed) as unknown as NodeJS.Timeout;
 
     return () => {
       if (animationRef.current) clearInterval(animationRef.current);
