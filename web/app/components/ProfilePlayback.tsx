@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Profile Playback Component
+ * Animates hourly consumption patterns across 24 hours
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 
 interface HourData {
