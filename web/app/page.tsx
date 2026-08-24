@@ -3,6 +3,7 @@ import ClusterExplorer from './components/ClusterExplorer';
 import DatasetViewer from './components/DatasetViewer';
 import ProfilePlayback from './components/ProfilePlayback';
 import ClusterComparison from './components/ClusterComparison';
+import NarrativeCards from './components/NarrativeCards';
 
 export default function Home() {
   return (
@@ -216,6 +217,19 @@ export default function Home() {
             </p>
             
             <ClusterComparison />
+          </div>
+        </section>
+
+        <section id="narrative" className="py-20 px-6 border-b border-[#262E3D]">
+          <div className="max-w-4xl mx-auto">
+            <p className="text-xs font-mono text-[#3BC9DE] font-semibold uppercase tracking-widest mb-4">
+              07 · THE STORY
+            </p>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-12 max-w-2xl">
+              From data to insight
+            </h2>
+            
+            <NarrativeCards />
           </div>
         </section>
 
