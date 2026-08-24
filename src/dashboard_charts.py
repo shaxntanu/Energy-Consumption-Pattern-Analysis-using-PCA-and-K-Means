@@ -104,9 +104,9 @@ def load_shape_chart(results) -> go.Figure:
         title="Mean load shape by cluster",
         xaxis=dict(title="Hour of day", tickmode="array", tickvals=[0, 6, 12, 18, 23], range=[0, 23]),
         yaxis=dict(title="Share of daily energy", tickformat=".0%"),
-        legend=dict(orientation="h", yanchor="bottom", y=1.08, xanchor="left", x=0),
-        height=480,
-        margin=dict(l=54, r=24, t=80, b=48),
+        legend=dict(orientation="h", yanchor="bottom", y=1.15, xanchor="left", x=0),
+        height=540,
+        margin=dict(l=54, r=24, t=120, b=48),
     )
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
@@ -169,9 +169,9 @@ def pca_variance_chart(results) -> go.Figure:
     fig.add_vline(x=results.n_pca_components, line_dash="dot", line_color=ui.MIST,
                   annotation_text=f"{results.n_pca_components} kept", annotation_font_color=ui.MIST)
     fig.update_layout(title="Explained variance", xaxis_title="Principal component",
-                      yaxis=dict(title="Variance", tickformat=".0%"), height=400,
-                      legend=dict(orientation="h", yanchor="bottom", y=1.08, x=0),
-                      margin=dict(l=54, r=24, t=80, b=48))
+                      yaxis=dict(title="Variance", tickformat=".0%"), height=450,
+                      legend=dict(orientation="h", yanchor="bottom", y=1.15, x=0),
+                      margin=dict(l=54, r=24, t=120, b=48))
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     return fig
@@ -194,9 +194,9 @@ def pca_projection_chart(results, color_by_cluster: bool = True) -> go.Figure:
         fig.add_trace(go.Scatter(x=xp[:, 0], y=xp[:, 1], mode="markers",
                                  marker=dict(color=ui.CYAN, size=7, opacity=0.6), showlegend=False))
     fig.update_layout(title="Consumers in the first two components",
-                      xaxis_title="PC1", yaxis_title="PC2", height=480,
-                      legend=dict(orientation="h", yanchor="bottom", y=1.08, x=0),
-                      margin=dict(l=54, r=24, t=80, b=48))
+                      xaxis_title="PC1", yaxis_title="PC2", height=530,
+                      legend=dict(orientation="h", yanchor="bottom", y=1.15, x=0),
+                      margin=dict(l=54, r=24, t=120, b=48))
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     return fig
@@ -387,9 +387,9 @@ def consumer_profile_chart(results, consumer_id: int) -> go.Figure:
     fig.update_layout(
         title=f"Consumer {int(consumer_id)}: average day in kWh (magnitude)",
         xaxis=dict(title="Hour of day", tickvals=[0, 6, 12, 18, 23], range=[0, 23]),
-        yaxis=dict(title="Mean kWh"), height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.08, x=0),
-        margin=dict(l=54, r=24, t=80, b=48))
+        yaxis=dict(title="Mean kWh"), height=460,
+        legend=dict(orientation="h", yanchor="bottom", y=1.15, x=0),
+        margin=dict(l=54, r=24, t=120, b=48))
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     return fig
@@ -433,9 +433,9 @@ def consumer_shape_chart(results, consumer_id: int) -> go.Figure:
     fig.update_layout(
         title=f"Consumer {int(consumer_id)}: share of the day (what the model sees)",
         xaxis=dict(title="Hour of day", tickvals=[0, 6, 12, 18, 23], range=[0, 23]),
-        yaxis=dict(title="Share of daily energy", tickformat=".0%"), height=440,
-        legend=dict(orientation="h", yanchor="bottom", y=1.08, x=0),
-        margin=dict(l=54, r=24, t=80, b=48))
+        yaxis=dict(title="Share of daily energy", tickformat=".0%"), height=500,
+        legend=dict(orientation="h", yanchor="bottom", y=1.15, x=0),
+        margin=dict(l=54, r=24, t=120, b=48))
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     return fig
