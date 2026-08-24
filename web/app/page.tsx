@@ -4,6 +4,7 @@ import DatasetViewer from './components/DatasetViewer';
 import ProfilePlayback from './components/ProfilePlayback';
 import ClusterComparison from './components/ClusterComparison';
 import NarrativeCards from './components/NarrativeCards';
+import StreamlitLink from './components/StreamlitLink';
 
 export default function Home() {
   return (
@@ -292,6 +293,8 @@ export default function Home() {
               <p className="text-[#EAECEF]">py -m pip install -r requirements.txt</p>
               <p className="text-[#EAECEF] mt-2">py -m streamlit run streamlit_app.py</p>
             </div>
+
+            <StreamlitLink />
             <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means" target="_blank" rel="noopener noreferrer" className="text-[#3BC9DE] hover:text-[#1E9DB2] transition font-mono text-sm">
               View on GitHub →
             </a>
