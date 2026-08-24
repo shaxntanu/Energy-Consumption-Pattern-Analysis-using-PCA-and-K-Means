@@ -32,8 +32,10 @@ export function getWebVitals(): PerformanceMetrics {
     try {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1] as any;
-        metrics.lcp = Math.round(lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime);
+        if (entries.length > 0) {
+          const lastEntry = entries[entries.length - 1] as any;
+          metrics.lcp = Math.round(lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime);
+        }
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
     } catch (e) {

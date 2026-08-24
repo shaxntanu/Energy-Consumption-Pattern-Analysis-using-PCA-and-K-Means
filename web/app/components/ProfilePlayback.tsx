@@ -38,7 +38,7 @@ export default function ProfilePlayback() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentHour, setCurrentHour] = useState(0);
   const [speed, setSpeed] = useState(1);
-  const animationRef = useRef<NodeJS.Timeout>();
+  const animationRef = useRef<any>(null);
   const profiles = generateProfiles();
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function ProfilePlayback() {
 
     animationRef.current = setInterval(() => {
       setCurrentHour((prev) => (prev + 1) % 24);
-    }, 500 / speed) as unknown as NodeJS.Timeout;
+    }, 500 / speed);
 
     return () => {
       if (animationRef.current) clearInterval(animationRef.current);
