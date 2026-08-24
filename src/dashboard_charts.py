@@ -171,8 +171,6 @@ def pca_variance_chart(results) -> go.Figure:
                       yaxis=dict(title="Variance", tickformat=".0%"), height=450,
                       legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
                       margin=dict(l=54, r=24, t=60, b=80))
-    fig.update_xaxes(fixedrange=True)
-    fig.update_yaxes(fixedrange=True)
     return fig
 
 
@@ -196,8 +194,6 @@ def pca_projection_chart(results, color_by_cluster: bool = True) -> go.Figure:
                       xaxis_title="PC1", yaxis_title="PC2", height=530,
                       legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
                       margin=dict(l=54, r=24, t=60, b=80))
-    fig.update_xaxes(fixedrange=True)
-    fig.update_yaxes(fixedrange=True)
     return fig
 
 
@@ -504,8 +500,6 @@ def eda_hourly_chart(results) -> go.Figure:
                       xaxis=dict(title="Hour of day", tickvals=[0, 6, 12, 18, 23], range=[0, 23]),
                       yaxis_title="Mean kWh per record", height=400,
                       margin=dict(l=54, r=24, t=70, b=48))
-    fig.update_xaxes(fixedrange=True)
-    fig.update_yaxes(fixedrange=True)
     return fig
 
 
