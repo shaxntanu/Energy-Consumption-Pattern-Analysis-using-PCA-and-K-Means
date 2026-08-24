@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0B0E14;
+  --foreground: #EAECEF;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-midnight: #0B0E14;
+  --color-panel: #141A24;
+  --color-panel-hi: #1B2230;
+  --color-line: #262E3D;
+  --color-ink: #EAECEF;
+  --color-mist: #8A93A6;
+  --color-slate: #5B657A;
+  --color-cyan: #3BC9DE;
+  --color-cyan-deep: #1E9DB2;
+  --color-green: #4FD1A5;
+  --color-green-deep: #2FA980;
+  --color-indigo: #6C8CFF;
+  --color-amber: #F5A524;
+  --color-amber-deep: #E0871B;
+  --color-rose: #F26D6D;
+  --color-violet: #B085F5;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-cyan);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
