@@ -232,6 +232,28 @@ def nav_button(label: str, page: str, key: str) -> None:
         goto(page)
 
 
+def render_view_switcher(active: str) -> None:
+    """Keep the simulator from becoming a one-way trip.
+
+    The app is intentionally just three working views now. This compact switcher
+    stays above every view so someone who opens the dataset or cluster details
+    always has a clear route back.
+    """
+    labels = ("Overview", "Dataset", "The clusters")
+    cols = st.columns(len(labels))
+    for col, label in zip(cols, labels):
+        with col:
+            if st.button(
+                label,
+                key=f"switch::{label}",
+                type="primary" if label == active else "secondary",
+                disabled=label == active,
+                width="stretch",
+            ):
+                goto(label)
+    st.write("")
+
+
 # --- pages -------------------------------------------------------------------
 
 def page_home(results: AnalysisResults):
@@ -1104,6 +1126,7 @@ def main():
     page = current_page()
     ui.masthead(SECTION_OF_PAGE.get(page, "Start"), MASTHEAD_LINKS)
     results = get_or_run_analysis(config)
+    render_view_switcher(current_page())
     PAGE_FUNCS[page](results)
     ui.footer(
         run_line=f"Synthetic study &middot; PCA + K-Means &middot; run {config.config_hash()}",
