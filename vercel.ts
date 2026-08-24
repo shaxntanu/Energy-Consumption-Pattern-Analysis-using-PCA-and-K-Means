@@ -4,7 +4,6 @@ const config: VercelConfiguration = {
   buildCommand: 'cd web && npm run build',
   outputDirectory: 'web/.next',
   framework: 'nextjs',
-  nodeVersion: '20.x',
   
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
