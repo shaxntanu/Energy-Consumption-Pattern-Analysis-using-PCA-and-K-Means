@@ -11,3 +11,4 @@ venv/
 # Claude Code local session state and preview config
 .claude/
 node_modules/ 
+dist/
