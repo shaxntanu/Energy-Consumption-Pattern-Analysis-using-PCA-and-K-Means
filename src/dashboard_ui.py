@@ -213,6 +213,7 @@ a:hover { text-decoration: underline; }
   font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.22em; color: var(--cyan);
   display: inline-block; margin-bottom: 0.6rem;
+  user-select: none;
 }
 
 /* Hero ------------------------------------------------------------------ */
@@ -220,13 +221,17 @@ a:hover { text-decoration: underline; }
 .hero h1 {
   font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 700; line-height: 1.03;
   margin: 0 0 0.9rem 0;
+  user-select: none;
 }
 .hero .lede { font-size: clamp(1rem, 1.6vw, 1.2rem); color: var(--mist); max-width: 62ch; margin: 0; }
 .hero .accent { color: var(--cyan); }
 
 /* Section headers ------------------------------------------------------- */
 .section { margin: 2.4rem 0 1.1rem 0; }
-.section h2 { font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 600; margin: 0.2rem 0 0.4rem 0; }
+.section h2 { 
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 600; margin: 0.2rem 0 0.4rem 0;
+  user-select: none;
+}
 .section .lede { color: var(--mist); max-width: 70ch; margin: 0; }
 
 /* Metric cards ---------------------------------------------------------- */
@@ -566,17 +571,18 @@ a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
 /* Custom 3D button style adapted to match the dashboard theme */
 [data-testid="stMain"] .stButton > button {
   position: relative;
-  padding: 0.1em 0.25em;
-  min-width: 11em;
-  height: 4.2em;
+  padding: 0.5em 1em;
+  min-width: fit-content;
+  height: auto;
   background-color: var(--midnight);
   border: 0.08em solid var(--cyan);
   border-radius: 0.3em;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   color: var(--ink);
   font-family: var(--body);
   font-weight: 600;
+  user-select: none;
 }
 
 [data-testid="stMain"] .stButton > button > div {
@@ -584,20 +590,22 @@ a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
   display: flex;
   justify-content: center;
   align-items: center;
-  bottom: 0.4em;
+  bottom: 0.3em;
   width: 100%;
-  height: 2.5em;
+  padding: 0.6em 1.2em;
   background-color: var(--panel-hi);
   border-radius: 0.2em;
-  font-size: 1.5em;
+  font-size: 1em;
   color: var(--cyan);
   border: 0.08em solid var(--cyan);
-  box-shadow: 0 0.4em 0.1em 0.019em var(--cyan);
+  box-shadow: 0 0.3em 0.1em 0.019em var(--cyan);
   transition: all 0.5s;
+  white-space: nowrap;
+  user-select: none;
 }
 
 [data-testid="stMain"] .stButton > button:hover > div {
-  transform: translate(0, 0.4em);
+  transform: translate(0, 0.3em);
   box-shadow: 0 0 0 0 var(--cyan);
   color: var(--ink);
   background-color: var(--cyan-deep);
