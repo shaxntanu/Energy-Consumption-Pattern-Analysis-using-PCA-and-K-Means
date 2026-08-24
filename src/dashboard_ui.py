@@ -563,14 +563,14 @@ a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
 [data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 12px; }
 .stRadio > label, .stSelectbox label, .stSlider label, .stMultiSelect label { color: var(--mist) !important; font-family: var(--mono); font-size: 0.8rem; }
 /* Calls to action ------------------------------------------------------- */
-/* Custom 3D button style from Uiverse.io by Web-Potato */
+/* Custom 3D button style adapted to match the dashboard theme */
 [data-testid="stMain"] .stButton > button {
   position: relative;
   padding: 0.1em 0.25em;
-  width: 13em;
+  min-width: 11em;
   height: 4.2em;
-  background-color: #212121;
-  border: 0.08em solid #fff;
+  background-color: var(--midnight);
+  border: 0.08em solid var(--cyan);
   border-radius: 0.3em;
   font-size: 12px;
   cursor: pointer;
@@ -587,18 +587,20 @@ a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
   bottom: 0.4em;
   width: 100%;
   height: 2.5em;
-  background-color: #212121;
+  background-color: var(--panel-hi);
   border-radius: 0.2em;
   font-size: 1.5em;
-  color: #fff;
-  border: 0.08em solid #fff;
-  box-shadow: 0 0.4em 0.1em 0.019em #fff;
+  color: var(--cyan);
+  border: 0.08em solid var(--cyan);
+  box-shadow: 0 0.4em 0.1em 0.019em var(--cyan);
   transition: all 0.5s;
 }
 
 [data-testid="stMain"] .stButton > button:hover > div {
   transform: translate(0, 0.4em);
-  box-shadow: 0 0 0 0 #fff;
+  box-shadow: 0 0 0 0 var(--cyan);
+  color: var(--ink);
+  background-color: var(--cyan-deep);
 }
 
 [data-testid="stMain"] .stButton > button:not(:hover) > div {
