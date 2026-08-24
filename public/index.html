@@ -7,18 +7,15 @@
   <meta name="description" content="A synthetic study that groups electricity consumers by the shape of their day, not how much they use. PCA and K-Means on 51 behavioural features." />
 
   <!--
-    This is a hand-authored static landing page (Vercel serves the /public
-    directory). It cannot run the Streamlit instrument itself; Streamlit is a
-    long-running server, not a serverless handler. The interactive dashboard is
-    hosted separately - see the "Run the instrument" section at the foot.
+    This is the static landing page served by Vercel from the /public directory.
+    It presents the study narrative, methodology, and results.
+    
+    The interactive simulator (Streamlit) is hosted separately and linked from
+    the "Explore the data" buttons.
 
-    Every number and every curve on this page comes from the committed run
-    artifacts (outputs/reports/analysis_summary.md, config hash 6dff8faaa470d418,
-    and outputs/metrics/cluster_load_shapes.csv). Nothing here is invented. The
-    data is SYNTHETIC and is stated as such throughout.
-
-    If you deploy the dashboard, put its public URL in LAUNCH_URL below and the
-    "Explore the data" buttons will point straight at it.
+    Every number and curve comes from the committed run artifacts
+    (outputs/reports/analysis_summary.md, config hash 6dff8faaa470d418).
+    Data is SYNTHETIC and labeled as such throughout.
   -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -214,7 +211,7 @@
         <a href="#clusters">Clusters</a>
         <a href="#validation">Validation</a>
         <a href="#reading">References</a>
-        <a href="#launch">Method</a>
+        <a href="#launch">Simulator</a>
       </div>
       <a class="launch" href="#launch">Explore the data</a>
     </div>
@@ -475,11 +472,11 @@
   <section class="launch-sec" id="launch">
     <div class="wrap reveal">
       <span class="kicker">Run the instrument</span>
-      <h2 style="font-size:clamp(1.7rem,3.6vw,2.5rem);margin:0.5rem 0 0.6rem">The interactive dashboard</h2>
+      <h2 style="font-size:clamp(1.7rem,3.6vw,2.5rem);margin:0.5rem 0 0.6rem">The interactive simulator</h2>
       <p style="color:var(--mist);max-width:66ch">
-        The full study is a Streamlit application: cluster explorer, PCA and K-selection
-        views, the stability check, and the evidence behind each observation. Vercel serves
-        this page but cannot run Streamlit, so the dashboard runs on a Python host or locally.
+        The full study is a Streamlit application: adjust parameters (consumers, days, feature set, random seed),
+        watch the analysis recompute, explore clusters, and see live charts update. The simulator runs separately
+        from this static page.
       </p>
       <div class="opts">
         <div class="opt"><div class="t">Streamlit Community Cloud</div><p>Deploy <code>streamlit_app.py</code> straight from the repository.</p></div>
