@@ -563,64 +563,46 @@ a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
 [data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 12px; }
 .stRadio > label, .stSelectbox label, .stSlider label, .stMultiSelect label { color: var(--mist) !important; font-family: var(--mono); font-size: 0.8rem; }
 /* Calls to action ------------------------------------------------------- */
-/* Every button in the main area is a call to action - go to the data, read the
-   method, open the references - so the treatment is scoped to that area rather
-   than applied per button. Sidebar navigation and the CSV download keep their own
-   quieter styling: this one asks to be clicked, and those two do not need to.
-
-   The face and the wash are pseudo-elements, so the label is never involved in
-   the movement: the slab settles down and out under the pointer while a small
-   cyan wash in the corner grows to fill it. Adapted from the reference component
-   with this project's graphite and cyan, and without its backdrop-filter, which
-   over a flat slab blurs nothing. */
+/* Custom 3D button style from Uiverse.io by Web-Potato */
 [data-testid="stMain"] .stButton > button {
-  position: relative; z-index: 1; overflow: visible;
-  background: transparent; border: none; border-radius: 10px;
-  color: var(--ink); font-family: var(--body); font-weight: 600;
-  font-size: 0.92rem; padding: 0.62rem 1.15rem;
-  transition: color 0.2s ease;
+  position: relative;
+  padding: 0.1em 0.25em;
+  width: 13em;
+  height: 4.2em;
+  background-color: #212121;
+  border: 0.08em solid #fff;
+  border-radius: 0.3em;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--body);
+  font-weight: 600;
 }
-[data-testid="stMain"] .stButton > button::before {
-  content: ""; position: absolute; inset: 0; z-index: -2;
-  background: var(--panel-hi); border: 1px solid var(--line); border-radius: 10px;
-  transition: transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1),
-              width 0.28s cubic-bezier(0.34, 1.4, 0.64, 1),
-              height 0.28s cubic-bezier(0.34, 1.4, 0.64, 1),
-              border-color 0.2s ease;
-  width: 100%; height: 100%; transform: translate(0, 0);
-}
-[data-testid="stMain"] .stButton > button::after {
-  content: ""; position: absolute; top: 0; left: 0; z-index: -1;
-  width: 28px; height: 28px; border-radius: 50px;
-  /* Faint glass at rest, the way the reference had it: any stronger and the
-     circle reads as a bullet behind the first letter of the label. The accent
-     arrives on hover, where it means something. */
-  background: rgba(255, 255, 255, 0.055);
-  transform: translate(8px, 8px);
-  transition: transform 0.28s ease, width 0.28s ease, height 0.28s ease,
-              border-radius 0.28s ease, background 0.28s ease;
-}
-[data-testid="stMain"] .stButton > button:hover::before {
-  transform: translate(3%, 14%); width: 106%; height: 108%;
-  border-color: var(--cyan-deep);
-}
-[data-testid="stMain"] .stButton > button:hover::after {
-  border-radius: 10px; transform: translate(0, 0); width: 100%; height: 100%;
-  background: rgba(59, 201, 222, 0.20);
-}
-[data-testid="stMain"] .stButton > button:hover { color: var(--ink); }
-[data-testid="stMain"] .stButton > button:active::after {
-  transition: 0s; transform: translate(0, 4%);
-}
-/* The label sits above both layers, so the growth never crosses it. */
-[data-testid="stMain"] .stButton > button > div { position: relative; z-index: 2; }
 
-@media (prefers-reduced-motion: reduce) {
-  [data-testid="stMain"] .stButton > button::before,
-  [data-testid="stMain"] .stButton > button::after { transition: none; }
-  [data-testid="stMain"] .stButton > button:hover::before {
-    transform: none; width: 100%; height: 100%;
-  }
+[data-testid="stMain"] .stButton > button > div {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  bottom: 0.4em;
+  width: 100%;
+  height: 2.5em;
+  background-color: #212121;
+  border-radius: 0.2em;
+  font-size: 1.5em;
+  color: #fff;
+  border: 0.08em solid #fff;
+  box-shadow: 0 0.4em 0.1em 0.019em #fff;
+  transition: all 0.5s;
+}
+
+[data-testid="stMain"] .stButton > button:hover > div {
+  transform: translate(0, 0.4em);
+  box-shadow: 0 0 0 0 #fff;
+}
+
+[data-testid="stMain"] .stButton > button:not(:hover) > div {
+  transition: all 1s;
 }
 
 /* Checkboxes ------------------------------------------------------------ */
