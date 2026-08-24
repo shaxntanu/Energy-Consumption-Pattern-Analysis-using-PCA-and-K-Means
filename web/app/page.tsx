@@ -1,6 +1,7 @@
 import React from 'react';
 import ClusterExplorer from './components/ClusterExplorer';
 import DatasetViewer from './components/DatasetViewer';
+import ProfilePlayback from './components/ProfilePlayback';
 
 export default function Home() {
   return (
@@ -182,6 +183,22 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section id="playback" className="py-20 px-6 border-b border-[#262E3D]">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-xs font-mono text-[#3BC9DE] font-semibold uppercase tracking-widest mb-4">
+              05 · PLAYBACK
+            </p>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-6 max-w-2xl">
+              Watch a day unfold
+            </h2>
+            <p className="text-lg text-[#8A93A6] max-w-2xl leading-relaxed mb-8">
+              Play through a 24-hour cycle to see how each cluster's consumption changes hour by hour. Adjust speed to see patterns clearly.
+            </p>
+            
+            <ProfilePlayback />
           </div>
         </section>
 
