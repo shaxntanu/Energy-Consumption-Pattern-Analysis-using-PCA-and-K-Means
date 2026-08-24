@@ -9,6 +9,11 @@ import numpy as np
 import pickle
 import os
 from pathlib import Path
+from plot_service import (
+    generate_cluster_profile_chart,
+    generate_comparison_chart,
+    generate_distribution_chart
+)
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -196,6 +201,36 @@ def analyze_data():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+@app.route('/api/plot/cluster-profile/<int:cluster_id>', methods=['GET'])
+def plot_cluster_profile(cluster_id):
+    """Get cluster hourly profile chart as base64 PNG."""
+    if cluster_id not in CLUSTER_INFO:
+        return jsonify({'error': 'Cluster not found'}), 404
+    
+    try:
+        img_base64 = generate_cluster_profile_chart(cluster_id)
+        return jsonify({'image': img_base64})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/plot/comparison', methods=['GET'])
+def plot_comparison():
+    """Get cluster comparison chart as base64 PNG."""
+    try:
+        img_base64 = generate_comparison_chart()
+        return jsonify({'image': img_base64})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/plot/distribution', methods=['GET'])
+def plot_distribution():
+    """Get cluster size distribution chart as base64 PNG."""
+    try:
+        img_base64 = generate_distribution_chart()
+        return jsonify({'image': img_base64})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.errorhandler(404)
 def not_found(e):
