@@ -470,63 +470,64 @@ a:hover { text-decoration: underline; }
 .foot .spacer { flex: 1 1 auto; }
 
 /* Star on GitHub ---------------------------------------------------------- */
-/* Black, because that is the button every reader already recognises from every
-   other repository page. It is chrome and a mouse target, so its label is not
-   selectable; the count beside it is a fact, and is. */
 .gh-star {
-  display: inline-flex; align-items: stretch; overflow: hidden;
-  background: #000; border: 1px solid var(--line); border-radius: 10px;
-  text-decoration: none; position: relative;
-  font-family: var(--body); font-size: 0.86rem; font-weight: 600;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border-radius: 100px;
+  font-weight: 800;
+  place-content: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.825rem;
+  line-height: 1rem;
+  background-color: rgba(0, 0, 0, 0.4);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
-/* Streamlit gives links inside a markdown block their own colour and underline
-   through a generated class, which outranks a single class of ours. The class is
-   repeated here to outrank it back: the emotion hash changes between Streamlit
-   versions and must not be named, and !important would be harder to override
-   later than this is to read. */
 a.gh-star.gh-star { color: var(--ink); text-decoration: none; }
-a.gh-star.gh-star:hover { color: var(--ink); text-decoration: none; }
-.gh-star:hover { border-color: var(--slate); transform: translateY(-1px); }
-.gh-star:active { transform: translateY(0); }
-
-/* The shine. A single pass of light across the face on hover, clipped by the
-   button's own overflow, sitting under the label so it never washes it out. */
-.gh-star::after {
-  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%;
-  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.13), transparent);
-  transform: skewX(-18deg); pointer-events: none;
-  transition: left 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
+.gh-star:hover {
+  box-shadow:
+    inset 0 1px 0 0 rgba(59, 201, 222, 0.12),
+    inset 0 0 0 1px rgba(59, 201, 222, 0.12);
+  color: var(--cyan);
+  transform: translate(0, -0.25rem);
+  background-color: rgba(0, 0, 0, 0.5);
 }
-.gh-star:hover::after { left: 130%; }
+.gh-star:active { transform: translateY(0); }
 
 .gh-star .gh-face {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.5rem 0.85rem; user-select: none; -webkit-user-select: none;
+  user-select: none; -webkit-user-select: none;
 }
-.gh-star .gh-mark { display: inline-flex; color: var(--ink); }
+.gh-star .gh-mark { display: inline-flex; color: var(--ink); transition: color 0.5s; }
 .gh-star .gh-mark svg { width: 17px; height: 17px; fill: currentColor; }
+.gh-star:hover .gh-mark { color: var(--cyan); }
 
-/* The count is separated the way GitHub's own social count is, so it reads as a
-   number the repository reported rather than part of the label. */
 .gh-star .gh-count {
   display: inline-flex; align-items: center; gap: 0.35rem;
-  padding: 0.5rem 0.8rem; border-left: 1px solid var(--line);
-  background: rgba(255,255,255,0.04);
+  padding: 0.1rem 0.55rem;
+  border-left: 1px solid rgba(255,255,255,0.08);
   font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums;
-  color: var(--mist); transition: color 0.2s ease, background 0.2s ease;
+  color: var(--mist); transition: color 0.5s;
 }
-.gh-star:hover .gh-count { color: var(--ink); background: rgba(255,255,255,0.07); }
+.gh-star:hover .gh-count { color: var(--cyan); }
 .gh-star .gh-count svg {
   width: 14px; height: 14px; fill: currentColor;
-  color: var(--slate); transition: color 0.2s ease, transform 0.25s ease;
+  color: var(--slate); transition: color 0.5s, transform 0.25s ease;
 }
-/* The one moment of colour: the star lights up under the pointer, which is the
-   only hint the button needs that clicking it is the point. */
-.gh-star:hover .gh-count svg { color: var(--amber); transform: rotate(-14deg) scale(1.12); }
+.gh-star:hover .gh-count svg { color: var(--cyan); transform: rotate(-14deg) scale(1.12); }
 
 @media (prefers-reduced-motion: reduce) {
-  .gh-star, .gh-star::after, .gh-star .gh-count svg { transition: none; }
+  .gh-star, .gh-star .gh-count svg { transition: none; }
   .gh-star:hover { transform: none; }
   .gh-star:hover::after { left: -60%; }
   .gh-star:hover .gh-count svg { transform: none; }
