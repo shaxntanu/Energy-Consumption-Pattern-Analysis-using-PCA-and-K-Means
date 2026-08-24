@@ -1,8 +1,8 @@
 import { VercelConfiguration } from '@vercel/config';
 
 const config: VercelConfiguration = {
-  buildCommand: 'cd web && npm run build',
-  outputDirectory: 'web/.next',
+  buildCommand: 'npm run build',
+  outputDirectory: '.next',
   framework: 'nextjs',
   
   env: {
