@@ -1,9 +1,83 @@
 {
   "version": 2,
-  "public": true,
-  "github": {
-    "silent": true
+  "buildCommand": "cd web && npm run build",
+  "outputDirectory": "web/.next",
+  "public": false,
+  "env": {
+    "NEXT_PUBLIC_API_URL": {
+      "description": "Public API URL for backend",
+      "type": "string",
+      "default": "http://localhost:5000"
+    },
+    "STREAMLIT_URL": {
+      "description": "URL to Streamlit simulator",
+      "type": "string",
+      "default": "http://localhost:8501"
+    }
   },
-  "cleanUrls": true,
-  "trailingSlash": false
+  "functions": {
+    "web/app/api/**": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "^/api/(.*)$",
+      "dest": "web/app/api/$1",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    },
+    {
+      "src": "/(.*)",
+      "dest": "web/app/$1"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/clusters",
+      "destination": "/#clusters",
+      "permanent": true
+    },
+    {
+      "source": "/comparison",
+      "destination": "/#comparison",
+      "permanent": true
+    },
+    {
+      "source": "/export",
+      "destination": "/#export",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, s-maxage=10, stale-while-revalidate=59"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+        }
+      ]
+    },
+    {
+      "source": "/fonts/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
 }
