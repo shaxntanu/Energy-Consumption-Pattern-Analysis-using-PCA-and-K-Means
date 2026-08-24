@@ -162,13 +162,13 @@ p {
 }
 
 .band {
-  padding: clamp(3rem, 6vw, 5.5rem) clamp(1rem, 4vw, 3rem);
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3rem);
   border-top: 1px solid rgba(148, 168, 180, 0.16);
 }
 
 .section-header {
   max-width: 780px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .stats-grid,
@@ -218,13 +218,13 @@ p {
 
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .chart-panel {
-  min-height: 320px;
-  padding: 1.1rem;
+  min-height: 245px;
+  padding: 0.8rem;
 }
 
 .chart-panel.wide {
@@ -232,16 +232,21 @@ p {
 }
 
 .chart-panel.tall {
-  min-height: 390px;
+  min-height: 330px;
 }
 
 .panel-heading {
-  margin-bottom: 1rem;
+  margin-bottom: 0.55rem;
+}
+
+.panel-heading h3 {
+  font-size: 1rem;
 }
 
 .panel-heading p {
   margin-bottom: 0;
-  font-size: 0.92rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .cluster-card {
@@ -327,7 +332,7 @@ p {
   }
 
   .chart-panel {
-    min-height: 300px;
+    min-height: 260px;
   }
 
   .cluster-card dl {
