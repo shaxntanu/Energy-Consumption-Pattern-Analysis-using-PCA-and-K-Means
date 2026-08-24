@@ -1,5 +1,6 @@
 /**
  * Performance monitoring utilities
+ * Last updated: deployment trigger
  */
 
 export interface PerformanceMetrics {
