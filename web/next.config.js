@@ -46,10 +46,7 @@ const nextConfig = {
   reactStrictMode: true,
 
   // Trailing slash configuration
-  trailingSlash: false,
-
-  // SWR configuration for API calls
-  swcMinify: true
+  trailingSlash: false
 };
 
 module.exports = nextConfig;
