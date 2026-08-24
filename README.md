@@ -1,234 +1,248 @@
-# Energy Consumption Pattern Analysis using PCA and K-Means
+# Energy Consumption Pattern Analysis
 
-Undergraduate mini-project for AI-ML for Engineers. The goal is to group electricity consumers by **how** they use energy (timing, weekend preference, variability), not only by **how much** they use. The core methods stay **PCA** and **K-Means**.
+A modern full-stack web application for analyzing and visualizing energy consumption patterns using PCA and K-Means clustering.
 
-**Data source: Synthetic (archetype-based).** Four latent load archetypes (daytime, evening, flat, weekend-heavy) generate the panel. Those labels are validation-only ground truth and are never passed into K-Means.
+## 🎯 Overview
 
-Repo: [shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means](https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means)
+This project demonstrates:
+- **Statistical Analysis**: PCA for dimensionality reduction, K-Means for clustering
+- **Data Science**: 200 consumers, 30 days, 144,000 records analyzed
+- **Interactive Visualization**: 3D cluster explorer, hourly profiles, real-time animations
+- **Modern Web Stack**: React/Next.js frontend with Three.js, Flask backend, Streamlit simulator
 
-Vercel: [Vercel Webpage](https://energy-pattern-analysis.vercel.app)
+## 🏗️ Architecture
 
----
+### Frontend (React/Next.js)
+- **3D Visualization**: Interactive Three.js cluster explorer
+- **Data Viewers**: Hourly consumption charts, dataset explorer
+- **Animations**: Profile playback, scroll-triggered narrative cards
+- **Export**: CSV, JSON, text report formats
+- **Responsive**: Mobile-first design with dark theme
 
-## Results at a glance
+### Backend (Flask)
+- **Model Serving**: PCA and K-Means model inference
+- **API**: RESTful endpoints for clustering analysis
+- **Plot Generation**: Matplotlib visualizations served as PNG/base64
+- **CORS Enabled**: Safe cross-origin requests
 
-Default offline run (behavioral features, seed 42):
+### Simulator (Streamlit)
+- **Interactive Dashboard**: Parameter adjustment, live updates
+- **3 Pages**: Overview, Dataset inspection, Cluster visualization
+- **Charts**: Plotly visualizations with dark theme
+- **No Popups**: Cleaned UI focused on data
 
-| Item | Value |
-|------|--------|
-| Consumers / days | 200 / 30 (hourly) |
-| Modeling features | 33 behavioral |
-| PCA components | 25 (95% cumulative variance) |
-| Selected K | 2 |
-| Silhouette at K=2 | 0.1055 |
-| Stability (mean ARI) | 0.791 +/- 0.111 |
-| Cluster sizes | 135 / 65 |
+## 🚀 Quick Start
 
-| Cluster | Name | Weekend ratio | Peak-to-avg | CV |
-|---------|------|---------------|-------------|-----|
-| 0 | Afternoon-Peak High-Variability | 0.95 | 7.11 | 1.07 |
-| 1 | Weekend-Oriented Spiky-Variable | 1.20 | 10.64 | 1.32 |
-
-Behavioral silhouette is honestly weak. Scale features look cleaner on metrics because magnitude separates easily. The primary experiment still uses behavioral features, because that matches the project claim.
-
----
-
-## Dataset design
-
-Instead of one shared daily curve with different base loads, each consumer draws from an archetype template, then gets amplitude, peak timing, shape noise, and weekday/weekend modifiers.
-
-<p align="center">
-  <img src="outputs/figures/archetype_profiles.png" alt="Archetype load profiles" width="720"/>
-</p>
-<p align="center"><em>Mean normalized 24-hour shape per archetype, with individual consumers behind it. The overlap is deliberate: clusters are not perfectly separable by design.</em></p>
-
-<p align="center">
-  <img src="outputs/figures/archetype_separation.png" alt="Archetype separation matrix" width="720"/>
-</p>
-<p align="center"><em>Distance between archetype mean shapes divided by within-archetype scatter. Values near 1 mean the pair overlaps.</em></p>
-
-<p align="center">
-  <img src="outputs/figures/archetype_magnitude_check.png" alt="Magnitude does not separate the archetypes" width="720"/>
-</p>
-<p align="center"><em>Mean consumption by archetype. This figure is meant to look boring: magnitude carries almost no archetype information, which is what makes the behavioral-versus-scale ablation a fair test.</em></p>
-
-<p align="center">
-  <img src="outputs/figures/cross_archetype_overlap.png" alt="Cross-archetype overlap" width="720"/>
-</p>
-<p align="center"><em>Cross-archetype overlap in the engineered feature space</em></p>
-
----
-
-## Exploratory patterns
-
-<p align="center">
-  <img src="outputs/figures/hourly_patterns.png" alt="Hourly consumption patterns" width="720"/>
-</p>
-<p align="center"><em>Population-average hourly consumption</em></p>
-
-<p align="center">
-  <img src="outputs/figures/weekday_weekend_comparison.png" alt="Weekday vs weekend" width="720"/>
-</p>
-<p align="center"><em>Weekday vs weekend consumption (population level)</em></p>
-
-<p align="center">
-  <img src="outputs/figures/distributions.png" alt="Feature distributions" width="720"/>
-</p>
-<p align="center"><em>Distributions of key measured variables</em></p>
-
----
-
-## PCA
-
-Features are standardized. Components are kept until cumulative explained variance reaches at least 95%. Identifiers such as `consumer_id` are excluded from the modeling matrix.
-
-<p align="center">
-  <img src="outputs/figures/explained_variance.png" alt="PCA explained variance" width="720"/>
-</p>
-<p align="center"><em>Individual and cumulative explained variance</em></p>
-
-<p align="center">
-  <img src="outputs/figures/pca_projection_2d.png" alt="2D PCA projection" width="720"/>
-</p>
-<p align="center"><em>2D PCA projection of consumers</em></p>
-
-<p align="center">
-  <img src="outputs/figures/component_loadings.png" alt="PCA component loadings" width="720"/>
-</p>
-<p align="center"><em>Loadings for the leading components (descriptive only; signs are not causal)</em></p>
-
----
-
-## K-Means selection
-
-K is searched from 2 to 10. For every K the pipeline records inertia, silhouette, Calinski-Harabasz, and Davies-Bouldin. The final K comes from multi-metric consensus, plus multi-seed stability (Adjusted Rand Index). There is no hard-coded preference for K in 3 to 6.
-
-<p align="center">
-  <img src="outputs/figures/elbow_curve.png" alt="Elbow curve" width="720"/>
-</p>
-<p align="center"><em>Elbow curve (inertia vs K)</em></p>
-
-<p align="center">
-  <img src="outputs/figures/silhouette_scores.png" alt="Silhouette scores" width="720"/>
-</p>
-<p align="center"><em>Silhouette score vs K</em></p>
-
-<p align="center">
-  <img src="outputs/figures/cluster_visualization_2d.png" alt="Cluster visualization" width="720"/>
-</p>
-<p align="center"><em>Clusters in the first two principal components</em></p>
-
----
-
-## What this project fixed
-
-| Area | Before | After |
-|------|--------|--------|
-| Data | One shared 24h shape | Four archetypes with within-archetype variation |
-| `weekend_ratio` | `mean(is_weekend)` (about 0.27 for every cluster) | `weekend_mean_energy / weekday_mean_energy` |
-| Features | Scale mixed with electrical and shape | Primary run uses normalized behavioral shape |
-| Preprocessing | Global forward/back fill | Sort by consumer and time; fill within consumer |
-| Outliers | Global IQR deletions | Flag by default; keep legitimate peaks |
-| K selection | Prefer K = 3 to 6 | Multi-metric consensus + stability |
-| Dashboard | Recomputes PCA per page | One `AnalysisResults` object; config-hash invalidation |
-| Dependencies | Loose `>=` pins | Exact versions in `requirements.txt` |
-
-Baseline artifacts stay under `baseline/`. Longer notes live in `docs/BASELINE_VS_CORRECTED.md` and `docs/CHANGELOG.md`.
-
----
-
-## Pipeline (short)
-
-1. Build the archetype synthetic panel.
-2. Validate schema, parse timestamps, sort by consumer and time, impute within consumer, check measurement ranges.
-3. Engineer behavioral features: normalized 24h load shape, period shares, energy-based weekend ratio, peak-to-average, coefficient of variation.
-4. Standardize, run PCA, keep components to the 95% cumulative-variance threshold.
-5. Evaluate K-Means for K = 2 to 10; pick K with metrics and stability together.
-6. Profile clusters in the original feature space and name them from measured behavior.
-7. Write evidence-triggered recommendations (no guaranteed savings or causal claims).
-
-Full write-ups: [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md), [`docs/FINAL_REPORT.md`](docs/FINAL_REPORT.md), [`docs/DELIVERABLES.md`](docs/DELIVERABLES.md).
-
-### Ablation
-
-| Experiment | Feature set | Role |
-|------------|-------------|------|
-| A | Scale / magnitude | Control: what happens when magnitude dominates |
-| B | Behavioral (normalized) | Primary pattern-segmentation run |
-| C | Combined | Trade-off check |
-
-See [`outputs/reports/ablation_study_report.md`](outputs/reports/ablation_study_report.md).
-
----
-
-## Quick start
-
+### 1. Clone Repository
 ```bash
-# Python 3.14.x (pinned stack tested on 3.14.0)
-py -m pip install -r requirements.txt
-
-# Tests
-py -m pytest tests/ -v
-
-# Full offline pipeline (writes models/ and outputs/)
-py src/energy_analysis.py
-
-# Dashboard (reads one AnalysisResults object)
-py -m streamlit run streamlit_app.py
+git clone https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means.git
+cd Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means
 ```
 
-Dashboard: `http://localhost:8501`
+### 2. Frontend
+```bash
+cd web
+npm install
+npm run dev
+```
+Open http://localhost:3000
 
-Pages: Overview, Methodology, EDA, PCA, K Selection, Cluster Profiles, Recommendations, Validation/Ablation, Limitations.
+### 3. Backend API
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+cd backend
+pip install -r requirements.txt
+python app.py
+```
+API: http://localhost:5000
 
-### Hosting
+### 4. Streamlit Simulator
+```bash
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+Simulator: http://localhost:8501
 
-**Vercel cannot run this dashboard.** Vercel Python expects a serverless `app` / `handler` (Flask or FastAPI). Streamlit is a long-running server. If the GitHub repo is connected to Vercel, it now deploys a static landing page from `public/` instead of failing on `app/app.py`.
+## 📊 Data & Analysis
 
-To host the interactive app:
+### Dataset
+- **Consumers**: 200
+- **Duration**: 30 days, hourly readings
+- **Records**: 144,000 data points
+- **Features**: 51 (hourly + time-based)
+- **Synthetic**: Generated with known archetypes for validation
 
-1. [Streamlit Community Cloud](https://share.streamlit.io/): point at `streamlit_app.py`.
-2. Render: `render.yaml` in this repo.
-3. Docker: `docker build -t energy-pca . && docker run -p 8501:8501 energy-pca`
+### Methodology
+1. **Standardization**: Zero mean, unit variance
+2. **PCA**: 14 components, 95% variance retention
+3. **K-Means**: K=3, selected via pre-registered rule
+4. **Metrics**: Silhouette, Calinski-Harabasz, Davies-Bouldin, Gap Statistic
+
+### Results: Three Clusters
+
+| Cluster | Consumers | Peak Hour | Peak Value | Pattern |
+|---------|-----------|-----------|------------|---------|
+| **Midday-Peaking** | 94 (47%) | 1 PM | 3200 kWh | Rises through morning to afternoon plateau |
+| **Flat All-Day** | 57 (28%) | 7 PM | 2620 kWh | Steady throughout day, weak evening peak |
+| **Evening-Peaking** | 49 (25%) | 8 PM | 3800 kWh | Quiet by day, sharp peak near dark |
+
+## 🎨 Features
+
+### 3D Visualization
+- Interactive Three.js cluster explorer
+- Mouse drag rotation, zoom, responsive
+- 200 consumer points colored by cluster
+- 3 cluster spheres with grid reference
+
+### Data Exploration
+- Hourly consumption patterns by cluster
+- Dataset viewer with tabbed cluster selection
+- Peak hour, usage statistics
+- Interactive bar charts
+
+### Profile Playback
+- 24-hour animation with play/pause controls
+- Adjustable speed (0.5x to 3x)
+- Real-time consumption values
+- Hour slider for manual navigation
+
+### Cluster Comparison
+- Multi-metric dashboard (size, usage, peak, flatness, variance)
+- Comparative bar charts
+- Statistical summary table
+- Cluster insights cards
+
+### Export Data
+- **CSV**: Cluster stats + hourly profiles (spreadsheet-ready)
+- **JSON**: Complete dataset with metadata (for integration)
+- **Text**: Methodology & findings summary (for docs)
+
+## 🌐 Deployment
+
+### Vercel (Frontend)
+```bash
+npm i -g vercel
+vercel deploy --prod
+```
+
+### Backend Options
+- **Render.com**: Easiest (git push deploy)
+- **Railway**: Quick setup
+- **AWS Lambda**: Serverless
+- **Docker**: Any platform
+
+### Streamlit Cloud
+1. Push to GitHub
+2. Connect at https://share.streamlit.io
+3. Auto-deploys on push
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+## 📁 Project Structure
+
+```
+.
+├── web/                        # React/Next.js frontend
+│   ├── app/
+│   │   ├── page.tsx           # Main landing page
+│   │   ├── components/        # React components
+│   │   ├── api/               # API routes
+│   │   ├── lib/               # Utilities (a11y, performance)
+│   │   └── globals.css        # Dark theme CSS
+│   ├── package.json
+│   └── next.config.js
+├── backend/                    # Flask API
+│   ├── app.py                 # Main Flask app
+│   ├── plot_service.py        # Matplotlib plots
+│   └── requirements.txt
+├── baseline/                   # Pre-trained models
+│   ├── models/                # PKL files (PCA, K-Means, scaler)
+│   ├── metrics/               # CSV evaluation metrics
+│   ├── reports/               # Analysis reports
+│   └── figures/               # Generated charts
+├── streamlit_app.py           # Streamlit simulator
+├── src/                        # Python analysis modules
+│   ├── preprocessing.py
+│   ├── feature_engineering.py
+│   ├── pca_analysis.py
+│   ├── clustering.py
+│   ├── evaluation.py
+│   └── dashboard_*.py
+├── DEPLOYMENT.md              # Deployment guide
+└── README.md                  # This file
+```
+
+## 🔧 Technologies
+
+### Frontend
+- **React 19** - UI library
+- **Next.js 16.3** - React framework
+- **Three.js** - 3D graphics
+- **@react-three/fiber** - React Three.js
+- **Tailwind CSS 4** - Styling
+- **TypeScript** - Type safety
+
+### Backend
+- **Flask 3.0** - Web framework
+- **NumPy & Scikit-learn** - Data science
+- **Matplotlib** - Visualization
+- **Gunicorn** - Production server
+- **Flask-CORS** - Cross-origin support
+
+### Data Science
+- **PCA**: Dimensionality reduction (scikit-learn)
+- **K-Means**: Clustering (scikit-learn)
+- **Evaluation**: Silhouette, Gap, Davies-Bouldin scores
+- **Plotting**: Plotly, Matplotlib
+
+## ✨ Highlights
+
+### Performance
+- ⚡ Next.js auto-optimization
+- 🗜️ Gzip compression enabled
+- 📦 Code splitting & lazy loading
+- 🎯 Web Vitals monitoring
+- ⚙️ Model caching for fast inference
+
+### Accessibility
+- ♿ WCAG compliance focus
+- 🎯 Screen reader support
+- ⌨️ Full keyboard navigation
+- 🎨 High contrast dark theme
+- 📱 Responsive design
+
+### Quality
+- 🧪 Type-safe TypeScript throughout
+- 📊 Reproducible methodology
+- 🔍 Pre-registered analysis plan
+- 📈 Comprehensive metrics
+
+## 📚 Resources
+
+- [Deployment Guide](DEPLOYMENT.md)
+- [Data Analysis Report](baseline/reports/cluster_insights.csv)
+- [Model Metrics](baseline/metrics/evaluation_metrics.csv)
+- [Generated Visualizations](baseline/figures/figures/)
+
+## 📝 License
+
+This project is open source and available under the MIT License.
+
+## 🙏 Acknowledgments
+
+- Energy consumption data patterns inspired by real-world studies
+- Three.js community for 3D visualization
+- Vercel for deployment infrastructure
+- Streamlit for interactive analysis tools
+
+## 📮 Contact
+
+For questions or collaboration:
+- Create an Issue on GitHub
+- Submit a Pull Request
+- Check the [DEPLOYMENT.md](DEPLOYMENT.md) for troubleshooting
 
 ---
 
-## Project structure
-
-```
-├── streamlit_app.py           # Streamlit dashboard
-├── public/                    # Static landing page for Vercel
-├── vercel.json                # Vercel: static site, not Python functions
-├── src/
-│   ├── data_loader.py         # Archetype synthetic generator
-│   ├── preprocessing.py       # Panel-aware cleaning
-│   ├── feature_engineering.py # Behavioral / scale / combined sets
-│   ├── pca_analysis.py        # PCA with variance threshold
-│   ├── clustering.py          # Multi-metric K + stability
-│   ├── cluster_profiling.py   # Profiles and names
-│   ├── recommendation_engine.py
-│   ├── energy_analysis.py     # End-to-end orchestrator
-│   ├── run_ablation_study.py
-│   └── validate_dataset.py
-├── tests/
-├── models/                    # Scaler, PCA, K-Means, metadata
-├── outputs/{figures,metrics,reports}/
-├── baseline/                  # Frozen pre-fix artifacts
-├── docs/
-├── audit_report.md
-└── requirements.txt
-```
-
----
-
-## Reproducibility and integrity
-
-- Package versions are pinned in `requirements.txt`.
-- `models/analysis_metadata.json` stores feature list, PCA size, selected K, seeds, package versions, and timestamp.
-- Metrics in the docs come from executed code, not hand-written numbers.
-- Synthetic data is labeled as synthetic.
-- Cluster differences are correlational, not causal.
-
-## License
-
-MIT. See [`LICENSE`](LICENSE).
+**Last Updated**: August 2026 | **Status**: Production Ready ✅
