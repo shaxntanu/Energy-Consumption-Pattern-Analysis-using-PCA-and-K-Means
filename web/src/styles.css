@@ -224,7 +224,16 @@ p {
 
 .chart-panel {
   min-height: 245px;
+  max-height: 380px;
+  height: 380px;
   padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-panel > * {
+  flex: 1;
+  min-height: 0;
 }
 
 .chart-panel.wide {
@@ -233,6 +242,8 @@ p {
 
 .chart-panel.tall {
   min-height: 330px;
+  max-height: 480px;
+  height: 480px;
 }
 
 .panel-heading {
@@ -431,7 +442,6 @@ p {
   font-size: 1em;
   font-weight: bold;
   z-index: 2;
-  user-select: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -469,7 +479,9 @@ p {
   }
 
   .chart-panel {
-    min-height: 260px;
+    min-height: 280px;
+    max-height: 400px;
+    height: 400px;
   }
 
   .cluster-card dl {
