@@ -138,32 +138,6 @@ Here's the step-by-step process:
 - Calinski-Harabasz Score: Measures cluster density (higher is better)
 - Gap Statistic: Confirms that 3 groups is the right number
 
-## Run It Yourself
-
-### Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means.git
-cd Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the Streamlit simulator
-streamlit run streamlit_app.py
-```
-
-### Web Dashboard (Local)
-
-```bash
-cd web
-npm install
-npm run dev
-```
-
-Open http://localhost:5173
-
 ## Project Structure
 
 ```
