@@ -336,8 +336,14 @@ function App() {
           <div className="reference-grid">
             {references.map((reference) => (
               <a className="reference-card" href={reference.url} key={reference.title}>
-                <strong>{reference.title}</strong>
-                <span>{reference.meta}</span>
+                <div className="ref-corner"></div>
+                <div className="ref-star">★</div>
+                <div className="ref-title-area">
+                  <strong>{reference.title}</strong>
+                </div>
+                <div className="ref-body">
+                  <span>{reference.meta}</span>
+                </div>
               </a>
             ))}
           </div>
