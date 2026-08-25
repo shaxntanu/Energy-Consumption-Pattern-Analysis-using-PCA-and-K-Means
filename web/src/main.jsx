@@ -249,7 +249,9 @@ function App() {
           </div>
         </div>
         <div className="hero-panel chart-panel tall">
-          <LoadShapeChart />
+          <div className="chart-container tall">
+            <LoadShapeChart />
+          </div>
         </div>
       </header>
 
@@ -281,28 +283,36 @@ function App() {
                 <h3>Average 24-hour load shape</h3>
                 <p>Each curve is normalized so timing matters more than total consumption.</p>
               </div>
-              <LoadShapeChart />
+              <div className="chart-container">
+                <LoadShapeChart />
+              </div>
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
                 <h3>K selection</h3>
                 <p>K=3 balances separation with stable, non-tiny clusters.</p>
               </div>
-              <KMetricsChart />
+              <div className="chart-container">
+                <KMetricsChart />
+              </div>
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
                 <h3>PCA variance</h3>
                 <p>Fourteen components keep just over 95% of the variation.</p>
               </div>
-              <PcaChart />
+              <div className="chart-container">
+                <PcaChart />
+              </div>
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
                 <h3>Cluster profile comparison</h3>
                 <p>Shares describe timing; variation describes how peaked the shape is.</p>
               </div>
-              <ClusterRadar />
+              <div className="chart-container">
+                <ClusterRadar />
+              </div>
             </article>
           </div>
         </section>
