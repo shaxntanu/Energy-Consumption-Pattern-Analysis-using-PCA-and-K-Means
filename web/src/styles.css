@@ -67,6 +67,47 @@ a {
   color: var(--text);
 }
 
+/* GitHub button styles */
+.nav-links .button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 15px;
+  gap: 10px;
+  background-color: #181717;
+  outline: 3px #181717 solid;
+  outline-offset: -3px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: 400ms;
+  color: white;
+}
+
+.nav-links .button .text {
+  color: white;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: 400ms;
+}
+
+.nav-links .button svg {
+  fill: white;
+  transition: 400ms;
+}
+
+.nav-links .button:hover {
+  background-color: transparent;
+}
+
+.nav-links .button:hover .text {
+  color: #181717;
+}
+
+.nav-links .button:hover svg {
+  fill: #181717;
+}
+
 .hero {
   min-height: calc(100vh - 58px);
   display: grid;

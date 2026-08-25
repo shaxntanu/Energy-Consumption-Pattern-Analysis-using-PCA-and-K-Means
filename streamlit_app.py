@@ -1117,7 +1117,7 @@ PAGE_FUNCS = {
 }
 
 MASTHEAD_LINKS = (
-    ("Repository", content.REPO_URL),
+    ("Webpage", "https://energy-consumption-pattern.vercel.app"),
 )
 
 
