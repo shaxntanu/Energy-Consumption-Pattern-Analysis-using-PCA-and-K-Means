@@ -5,6 +5,8 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://energy-consumption-pattern.vercel.app)
 [![Interactive Simulator](https://img.shields.io/badge/Simulator-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://energy-consumption-pattern-vqrh.streamlit.app/)
 
+![Energy Consumption Pattern Analysis](public/Energy_Consumption_Pattern_Analysis.png)
+
 ## What This Project Does
 
 Ever wondered if there are patterns in how people use electricity throughout the day? This project finds those patterns automatically using machine learning.
