@@ -4,6 +4,8 @@ A modern full-stack web application for analyzing and visualizing energy consump
 
 ## 🎯 Overview
 
+https://energy-consumption-pattern.vercel.app
+
 This project demonstrates:
 - **Statistical Analysis**: PCA for dimensionality reduction, K-Means for clustering
 - **Data Science**: 200 consumers, 30 days, 144,000 records analyzed
