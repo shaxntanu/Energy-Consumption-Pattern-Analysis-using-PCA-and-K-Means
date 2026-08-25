@@ -108,6 +108,47 @@ a {
   fill: #181717;
 }
 
+/* GitHub footer button */
+.github-footer-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 24px;
+  gap: 12px;
+  background-color: #181717;
+  outline: 3px #181717 solid;
+  outline-offset: -3px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: 400ms;
+  color: white;
+  font-size: 1rem;
+}
+
+.github-footer-button .text {
+  color: white;
+  font-weight: 700;
+  transition: 400ms;
+}
+
+.github-footer-button svg {
+  fill: white;
+  transition: 400ms;
+}
+
+.github-footer-button:hover {
+  background-color: transparent;
+}
+
+.github-footer-button:hover .text {
+  color: #181717;
+}
+
+.github-footer-button:hover svg {
+  fill: #181717;
+}
+
 .hero {
   min-height: calc(100vh - 58px);
   display: grid;
