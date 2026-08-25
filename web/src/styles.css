@@ -223,25 +223,40 @@ p {
 }
 
 .chart-panel {
-  min-height: 245px;
   padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-panel.wide {
-  grid-column: auto;
+  grid-column: span 2;
 }
 
 .chart-panel.tall {
-  min-height: 330px;
+  /* Taller variant - height controlled by chart-container */
 }
 
-/* Chart wrapper to constrain canvas */
-.chart-panel > *:not(.panel-heading) {
-  height: 200px;
+/* Dedicated chart container - CRITICAL for dimensional stability */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  min-height: 240px;
+  max-height: 240px;
+  overflow: hidden;
 }
 
-.chart-panel.tall > *:not(.panel-heading) {
-  height: 280px;
+.chart-container.tall {
+  height: 320px;
+  min-height: 320px;
+  max-height: 320px;
+}
+
+/* Force canvas to respect container */
+.chart-container canvas {
+  display: block !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
 }
 
 .panel-heading {
@@ -477,11 +492,19 @@ p {
   }
 
   .chart-panel {
-    min-height: 260px;
+    padding: 0.6rem;
   }
   
-  .chart-panel > *:not(.panel-heading) {
-    height: 200px;
+  .chart-container {
+    height: 220px;
+    min-height: 220px;
+    max-height: 220px;
+  }
+  
+  .chart-container.tall {
+    height: 280px;
+    min-height: 280px;
+    max-height: 280px;
   }
 
   .cluster-card dl {
