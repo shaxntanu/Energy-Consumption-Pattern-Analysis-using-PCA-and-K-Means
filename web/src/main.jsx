@@ -335,7 +335,13 @@ function App() {
           </SectionHeader>
           <div className="reference-grid">
             {references.map((reference) => (
-              <a className="reference-card" href={reference.url} key={reference.title}>
+              <a 
+                className="reference-card" 
+                href={reference.url} 
+                key={reference.title}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <div className="ref-corner"></div>
                 <div className="ref-star">★</div>
                 <div className="ref-title-area">
