@@ -32,13 +32,13 @@ Understanding these patterns helps electric companies serve customers better wit
 
 Three distinct energy usage patterns emerged from the data:
 
-![Hourly Load Patterns](outputs/figures/hourly_patterns.png)
+![Hourly Load Patterns](dark_mode_plots/figures/hourly_patterns.png)
 
 **What you're seeing:** Each line shows the average hourly electricity usage for one cluster. Notice how different groups peak at different times of day.
 
 ### Cluster Comparison
 
-![Weekday vs Weekend](outputs/figures/weekday_weekend_comparison.png)
+![Weekday vs Weekend](dark_mode_plots/figures/weekday_weekend_comparison.png)
 
 **What you're seeing:** How energy patterns change between weekdays and weekends for each cluster.
 
@@ -68,11 +68,11 @@ Three distinct energy usage patterns emerged from the data:
 
 ### Understanding the Data Better
 
-![Distribution of Values](outputs/figures/distributions.png)
+![Distribution of Values](dark_mode_plots/figures/distributions.png)
 
 **What you're seeing:** How different energy usage measurements are spread across all households.
 
-![Correlation Heatmap](outputs/figures/correlation_heatmap.png)
+![Correlation Heatmap](dark_mode_plots/figures/correlation_heatmap.png)
 
 **What you're seeing:** Which energy measurements tend to move together (darker colors = stronger relationship).
 
@@ -92,11 +92,11 @@ Three distinct energy usage patterns emerged from the data:
 
 ### Variability Analysis
 
-![Consumption Variability](outputs/figures/consumption_variability.png)
+![Consumption Variability](dark_mode_plots/figures/consumption_variability.png)
 
 **What you're seeing:** How much energy usage fluctuates throughout the day for each cluster.
 
-![Boxplots by Time](outputs/figures/boxplots_by_time.png)
+![Boxplots by Time](dark_mode_plots/figures/boxplots_by_time.png)
 
 **What you're seeing:** Statistical distribution of energy usage at different times of day.
 
