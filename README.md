@@ -32,13 +32,13 @@ Understanding these patterns helps electric companies serve customers better wit
 
 Three distinct energy usage patterns emerged from the data:
 
-![Hourly Load Patterns](baseline/figures/figures/hourly_patterns.png)
+![Hourly Load Patterns](outputs/figures/hourly_patterns.png)
 
 **What you're seeing:** Each line shows the average hourly electricity usage for one cluster. Notice how different groups peak at different times of day.
 
 ### Cluster Comparison
 
-![Weekday vs Weekend](baseline/figures/figures/weekday_weekend_comparison.png)
+![Weekday vs Weekend](outputs/figures/weekday_weekend_comparison.png)
 
 **What you're seeing:** How energy patterns change between weekdays and weekends for each cluster.
 
@@ -52,51 +52,51 @@ Three distinct energy usage patterns emerged from the data:
 
 ### How We Group Similar Patterns
 
-![2D Cluster Visualization](baseline/figures/figures/cluster_visualization_2d.png)
+![2D Cluster Visualization](outputs/figures/cluster_visualization_2d.png)
 
 **What you're seeing:** Each dot is a household. Colors show which group they belong to. Close dots have similar energy patterns.
 
 ### Choosing the Right Number of Groups
 
-![Elbow Curve](baseline/figures/figures/elbow_curve.png)
+![Elbow Curve](outputs/figures/elbow_curve.png)
 
 **What you're seeing:** This chart helps us pick 3 groups as the sweet spot - not too many, not too few.
 
-![Silhouette Scores](baseline/figures/figures/silhouette_scores.png)
+![Silhouette Scores](outputs/figures/silhouette_scores.png)
 
 **What you're seeing:** Higher scores mean better separation between groups. K=3 gives us clear, distinct patterns.
 
 ### Understanding the Data Better
 
-![Distribution of Values](baseline/figures/figures/distributions.png)
+![Distribution of Values](outputs/figures/distributions.png)
 
 **What you're seeing:** How different energy usage measurements are spread across all households.
 
-![Correlation Heatmap](baseline/figures/figures/correlation_heatmap.png)
+![Correlation Heatmap](outputs/figures/correlation_heatmap.png)
 
 **What you're seeing:** Which energy measurements tend to move together (darker colors = stronger relationship).
 
 ### Dimensionality Reduction (PCA)
 
-![Explained Variance](baseline/figures/figures/explained_variance.png)
+![Explained Variance](outputs/figures/explained_variance.png)
 
 **What you're seeing:** We compress 51 features down to 14 components while keeping 95% of the important information.
 
-![PCA 2D Projection](baseline/figures/figures/pca_projection_2d.png)
+![PCA 2D Projection](outputs/figures/pca_projection_2d.png)
 
 **What you're seeing:** The entire dataset squeezed into 2 dimensions, showing natural groupings.
 
-![Component Loadings](baseline/figures/figures/component_loadings.png)
+![Component Loadings](outputs/figures/component_loadings.png)
 
 **What you're seeing:** Which original features matter most for each compressed component.
 
 ### Variability Analysis
 
-![Consumption Variability](baseline/figures/figures/consumption_variability.png)
+![Consumption Variability](outputs/figures/consumption_variability.png)
 
 **What you're seeing:** How much energy usage fluctuates throughout the day for each cluster.
 
-![Boxplots by Time](baseline/figures/figures/boxplots_by_time.png)
+![Boxplots by Time](outputs/figures/boxplots_by_time.png)
 
 **What you're seeing:** Statistical distribution of energy usage at different times of day.
 
