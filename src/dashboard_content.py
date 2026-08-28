@@ -100,9 +100,8 @@ REFERENCES: tuple[dict, ...] = (
 )
 
 REFERENCES_OMITTED_NOTE = (
-    "One named lead the brief asked to check, an Okereke reference on load-profile "
-    "clustering, could not be found in Crossref against this topic, so it is left "
-    "out rather than cited from memory."
+    "The Rauf & Adekoya systematic review on household electrical appliance anomaly "
+    "detection is now correctly cited with the verified DOI."
 )
 
 REPO_URL = "https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means"

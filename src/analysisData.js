@@ -114,9 +114,9 @@ export const summaryStats = {
 
 export const references = [
   {
-    title: "K-means clustering of electricity consumers using time-domain features",
-    meta: "Okereke et al., 2023, Journal of Electrical Systems and Information Technology",
-    url: "https://doi.org/10.1186/s43067-023-00086-8",
+    title: "Systematic literature review of the techniques for household electrical appliance anomaly detections and knowledge extractions",
+    meta: "Rauf, S. A. A., & Adekoya, A. F., 2023, Journal of Electrical Systems and Information Technology, 10, 22",
+    url: "https://doi.org/10.1186/s43067-023-00086-1",
   },
   {
     title: "Electricity Pattern Analysis by Clustering Domestic Load Profiles Using DWT and PCA",
