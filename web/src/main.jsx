@@ -154,6 +154,387 @@ function LoadShapeCarousel({ tall = false }) {
   );
 }
 
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = React.useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
+
+function hourLabel(value) {
+  const hour = ((Math.round(value) % 24) + 24) % 24;
+  return `${String(hour).padStart(2, "0")}:00`;
+}
+
+// The same four committed series used by the load-shape chart. dimmed is the
+// overview strip variant: same curves, quieter styling. Values are untouched.
+function buildLoadSeries(dimmed) {
+  return [
+    {
+      label: "Population average",
+      data: populationShape,
+      borderColor: "#71808d",
+      borderDash: dimmed ? [4, 3] : [7, 4],
+      borderWidth: dimmed ? 1.1 : 2.2,
+      pointRadius: 0,
+      tension: 0.42,
+      fill: false,
+    },
+    ...clusters.map((cluster) => ({
+      label: cluster.name,
+      data: clusterShapes[cluster.id],
+      borderColor: cluster.color,
+      backgroundColor: dimmed ? "transparent" : `${cluster.color}1c`,
+      borderWidth: dimmed ? 1.1 : 2,
+      pointRadius: 0,
+      tension: 0.42,
+      fill: !dimmed,
+    })),
+  ];
+}
+
+function axisTickDefaults() {
+  return {
+    color: "#94a8b4",
+    font: { family: "Inter", size: 11 },
+    padding: 6,
+  };
+}
+
+function hourXScale(min, max) {
+  return {
+    type: "linear",
+    min,
+    max,
+    border: { display: false },
+    grid: { color: "rgba(141, 163, 176, 0.12)" },
+    ticks: {
+      ...axisTickDefaults(),
+      precision: 0,
+      autoSkip: true,
+      maxTicksLimit: 8,
+      callback: (value) => hourLabel(value),
+    },
+  };
+}
+
+function makeBrushMainOptions(selection, animate) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    animation: animate ? { duration: 220, easing: "easeOutQuart" } : false,
+    plugins: {
+      legend: {
+        position: "top",
+        align: "start",
+        labels: {
+          color: "#dbe7ec",
+          usePointStyle: true,
+          pointStyle: "line",
+          boxWidth: 16,
+          boxHeight: 6,
+          font: { family: "Inter", size: 12 },
+          padding: 12,
+        },
+      },
+      tooltip: {
+        backgroundColor: "rgba(16, 23, 34, 0.96)",
+        borderColor: "#2d3c4d",
+        borderWidth: 1,
+        titleColor: "#ffffff",
+        bodyColor: "#dbe7ec",
+        titleFont: { family: "Inter", size: 12, weight: "700" },
+        bodyFont: { family: "Inter", size: 12 },
+        padding: 10,
+        cornerRadius: 6,
+        boxPadding: 4,
+        usePointStyle: true,
+        callbacks: {
+          title: (items) => {
+            const value = items[0]?.parsed?.x;
+            return value == null ? "" : hourLabel(value);
+          },
+          label: (ctx) => ` ${ctx.dataset.label}: ${Number(ctx.parsed.y).toFixed(4)}`,
+        },
+      },
+    },
+    scales: {
+      x: hourXScale(selection[0], selection[1]),
+      y: {
+        border: { display: false },
+        grid: { color: "rgba(141, 163, 176, 0.12)" },
+        ticks: { ...axisTickDefaults(), maxTicksLimit: 5 },
+      },
+    },
+  };
+}
+
+const brushStripOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: false } },
+  scales: {
+    x: {
+      type: "linear",
+      min: 0,
+      max: 24,
+      border: { display: false },
+      grid: { display: false },
+      ticks: { display: false },
+    },
+    y: {
+      display: false,
+      border: { display: false },
+      grid: { display: false },
+      ticks: { display: false },
+    },
+  },
+};
+
+const BRUSH_MIN_WIDTH = 2;
+
+function LoadShapeBrushChart() {
+  const reduced = usePrefersReducedMotion();
+  const [selection, setSelection] = React.useState([0, 24]);
+  const [interacting, setInteracting] = React.useState(false);
+  const [hover, setHover] = React.useState("default");
+  const [geometry, setGeometry] = React.useState({ left: 0, right: 0 });
+
+  const wrapRef = React.useRef(null);
+  const stripChartRef = React.useRef(null);
+  const dragRef = React.useRef(null);
+
+  const mainData = React.useMemo(() => ({ datasets: buildLoadSeries(false) }), []);
+  const stripData = React.useMemo(() => ({ datasets: buildLoadSeries(true) }), []);
+  const mainOptions = React.useMemo(
+    () => makeBrushMainOptions(selection, !reduced && !interacting),
+    [selection, reduced, interacting],
+  );
+
+  const isFull = selection[0] <= 0 && selection[1] >= 24;
+
+  // Keep the strip's x-axis pixel bounds in step with layout/resize.
+  React.useEffect(() => {
+    const chart = stripChartRef.current?.chart;
+    if (!chart) return;
+    const measure = () => {
+      const x = chart.scales?.x;
+      if (!x || typeof x.left !== "number" || x.right - x.left < 10) return;
+      setGeometry((prev) =>
+        prev.left === x.left && prev.right === x.right ? prev : { left: x.left, right: x.right },
+      );
+    };
+    measure();
+    const canvas = chart.canvas;
+    const ro =
+      typeof ResizeObserver !== "undefined" && canvas?.parentElement
+        ? new ResizeObserver(() => measure())
+        : null;
+    if (ro) ro.observe(canvas.parentElement);
+    return () => ro && ro.disconnect();
+  }, []);
+
+  const valueFromClientX = (clientX) => {
+    if (!wrapRef.current) return null;
+    const rect = wrapRef.current.getBoundingClientRect();
+    const span = geometry.right - geometry.left;
+    if (span <= 0) return null;
+    const px = clientX - rect.left;
+    return Math.max(0, Math.min(24, ((px - geometry.left) / span) * 24));
+  };
+
+  const onPointerDown = (event) => {
+    if (geometry.right - geometry.left <= 0) return;
+    const value = valueFromClientX(event.clientX);
+    if (value == null) return;
+    const rect = wrapRef.current.getBoundingClientRect();
+    const span = geometry.right - geometry.left;
+    const px = event.clientX - rect.left;
+    const pxStart = geometry.left + (selection[0] / 24) * span;
+    const pxEnd = geometry.left + (selection[1] / 24) * span;
+    let mode = "draw";
+    if (px <= pxStart + 8) mode = "resizeL";
+    else if (px >= pxEnd - 8) mode = "resizeR";
+    // Moving is only meaningful when the window has room to slide. At full
+    // range the whole strip is "inside" the window, so fall through to draw
+    // and let a drag start a fresh, smaller window instead of doing nothing.
+    else if (!isFull && px > pxStart + 2 && px < pxEnd - 2) mode = "move";
+    dragRef.current = { mode, startValue: value, startSel: [selection[0], selection[1]], moved: false };
+    setInteracting(true);
+    if (wrapRef.current.setPointerCapture) wrapRef.current.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  const onPointerMove = (event) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const value = valueFromClientX(event.clientX);
+    if (value == null) return;
+    if (Math.abs(value - drag.startValue) > 0.02) drag.moved = true;
+
+    let next;
+    if (drag.mode === "resizeL") {
+      next = [Math.min(value, drag.startSel[1] - BRUSH_MIN_WIDTH), drag.startSel[1]];
+    } else if (drag.mode === "resizeR") {
+      next = [drag.startSel[0], Math.max(value, drag.startSel[0] + BRUSH_MIN_WIDTH)];
+    } else if (drag.mode === "move") {
+      const width = drag.startSel[1] - drag.startSel[0];
+      const start = Math.max(0, Math.min(24 - width, drag.startSel[0] + (value - drag.startValue)));
+      next = [start, start + width];
+    } else {
+      let start = Math.min(drag.startValue, value);
+      let end = Math.max(drag.startValue, value);
+      if (end - start < BRUSH_MIN_WIDTH) {
+        const anchor = Math.max(0, Math.min(24 - BRUSH_MIN_WIDTH, drag.startValue));
+        start = anchor;
+        end = anchor + BRUSH_MIN_WIDTH;
+      }
+      next = [start, end];
+    }
+    setSelection(next);
+  };
+
+  const onPointerUp = (event) => {
+    const drag = dragRef.current;
+    dragRef.current = null;
+    setInteracting(false);
+    if (wrapRef.current?.hasPointerCapture?.(event.pointerId)) {
+      wrapRef.current.releasePointerCapture(event.pointerId);
+    }
+    // A plain tap on the strip (no drag) returns to the full 24-hour view.
+    if (drag && drag.mode === "draw" && !drag.moved) setSelection([0, 24]);
+  };
+
+  const onPointerLeave = () => {
+    if (!dragRef.current) setHover("default");
+  };
+
+  const onHoverMove = (event) => {
+    if (dragRef.current) return;
+    const value = valueFromClientX(event.clientX);
+    if (value == null) return;
+    const rect = wrapRef.current.getBoundingClientRect();
+    const span = geometry.right - geometry.left;
+    const px = event.clientX - rect.left;
+    const pxStart = geometry.left + (selection[0] / 24) * span;
+    const pxEnd = geometry.left + (selection[1] / 24) * span;
+    if (px <= pxStart + 8) setHover("left");
+    else if (px >= pxEnd - 8) setHover("right");
+    else if (px > pxStart && px < pxEnd) setHover("window");
+    else setHover("track");
+  };
+
+  // Keyboard alternative to dragging (WCAG 2.2: not drag-only).
+  const onKeyDown = (event) => {
+    let [start, end] = selection;
+    const width = end - start;
+    switch (event.key) {
+      case "ArrowLeft":
+        event.preventDefault();
+        if (event.shiftKey) {
+          start = Math.max(0, start - 1);
+        } else {
+          start = Math.max(0, start - 1);
+          end = start + width;
+        }
+        break;
+      case "ArrowRight":
+        event.preventDefault();
+        if (event.shiftKey) {
+          end = Math.min(24, end + 1);
+        } else {
+          end = Math.min(24, end + 1);
+          start = end - width;
+        }
+        break;
+      case "Home":
+        event.preventDefault();
+        setSelection([0, 24]);
+        return;
+      default:
+        return;
+    }
+    setSelection([start, end]);
+  };
+
+  const span = geometry.right - geometry.left;
+  const pxStart = span > 0 ? geometry.left + (selection[0] / 24) * span : 0;
+  const pxWidth = span > 0 ? geometry.left + (selection[1] / 24) * span - pxStart : 0;
+
+  const cursor =
+    hover === "left" || hover === "right"
+      ? "ew-resize"
+      : hover === "window"
+        ? interacting
+          ? "grabbing"
+          : "grab"
+        : "default";
+
+  return (
+    <div className="load-chart">
+      <div className="load-chart-main">
+        <Line data={mainData} options={mainOptions} />
+      </div>
+      <div
+        ref={wrapRef}
+        className="load-chart-brush"
+        role="group"
+        aria-label="Time range brush. Drag the window to move it, drag its edges to resize it, or drag across the strip to draw a new window."
+        style={{ cursor }}
+        onPointerDown={onPointerDown}
+        onPointerMove={(event) => {
+          onPointerMove(event);
+          onHoverMove(event);
+        }}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onPointerLeave={onPointerLeave}
+        onDoubleClick={() => setSelection([0, 24])}
+      >
+        <Line ref={stripChartRef} data={stripData} options={brushStripOptions} />
+        {span > 0 && pxWidth > 0 && (
+          <div
+            className="brush-window"
+            style={{ left: pxStart, width: pxWidth }}
+            role="slider"
+            tabIndex={0}
+            aria-label="Selected time window"
+            aria-valuemin={0}
+            aria-valuemax={24}
+            aria-valuenow={Math.round(selection[0])}
+            aria-valuetext={`${hourLabel(selection[0])} to ${hourLabel(selection[1])}`}
+            aria-describedby="brush-help"
+            onKeyDown={onKeyDown}
+          >
+            <div className="brush-handle left" aria-hidden="true" />
+            <div className="brush-handle right" aria-hidden="true" />
+          </div>
+        )}
+      </div>
+      <div className="load-chart-footer" id="brush-help">
+        <span className="brush-hint">
+          {isFull
+            ? "Drag across the strip to zoom into a time window. Double-click or press Home to reset."
+            : `Showing ${hourLabel(selection[0])} – ${hourLabel(selection[1])}. Arrow keys move the window, Shift+arrows resize it.`}
+        </span>
+        {!isFull && (
+          <button type="button" className="brush-reset" onClick={() => setSelection([0, 24])}>
+            Reset to 24h
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function KMetricsChart() {
   const data = {
     labels: kMetrics.map((row) => `K=${row.k}`),
@@ -335,9 +716,7 @@ function App() {
                 <h3>Average 24-hour load shape</h3>
                 <p>Each curve is normalized so timing matters more than total consumption.</p>
               </div>
-              <div className="chart-container">
-                <LoadShapeChart />
-              </div>
+              <LoadShapeBrushChart />
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
