@@ -12,7 +12,7 @@ import {
   RadialLinearScale,
   Tooltip,
 } from "chart.js";
-import { Line, Radar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import { Legend, LegendItemComponent, LegendLabel, LegendMarker } from "./Legend";
 import {
   ChartTooltip,
@@ -24,6 +24,7 @@ import {
   YAxis,
   curveCatmullRom,
 } from "./ComposedChart";
+import { RadarChart, RadarGrid, RadarAxis, RadarLabels, RadarArea } from "./RadarChart";
 import "./styles.css";
 import {
   clusters,
@@ -779,42 +780,70 @@ function PcaVarianceChart() {
   );
 }
 
-function ClusterRadar() {
-  const labels = ["Morning", "Afternoon", "Evening", "Night", "Base load", "Variation"];
-  const data = {
-    labels,
-    datasets: clusters.map((cluster) => ({
+// The six behavioural dimensions shared by every cluster profile.
+const RADAR_METRICS = [
+  { key: "morning", label: "Morning" },
+  { key: "afternoon", label: "Afternoon" },
+  { key: "evening", label: "Evening" },
+  { key: "night", label: "Night" },
+  { key: "baseLoad", label: "Base Load" },
+  { key: "variation", label: "Variation" },
+];
+
+// Established archetype colour identity, bound to the app theme tokens.
+const ARCHETYPE_COLOR = {
+  "Midday-Peaking": "var(--amber)",
+  "Flat All-Day": "var(--cyan)",
+  "Evening-Peaking": "var(--violet)",
+};
+
+function ClusterRadarChart() {
+  // Map the committed analysis values into the radar's 0-100 scale. This happens
+  // only at the visualization boundary; the stored cluster data is untouched.
+  const radarData = clusters.map((cluster) => {
+    const values = {
+      morning: cluster.morningShare * 100,
+      afternoon: cluster.afternoonShare * 100,
+      evening: cluster.eveningShare * 100,
+      night: cluster.nightShare * 100,
+      baseLoad: cluster.baseLoadShare * 100,
+      variation: cluster.coefficientOfVariation * 100,
+    };
+    return {
       label: cluster.name,
-      data: [
-        cluster.morningShare,
-        cluster.afternoonShare,
-        cluster.eveningShare,
-        cluster.nightShare,
-        cluster.baseLoadShare,
-        cluster.coefficientOfVariation,
-      ],
-      borderColor: cluster.color,
-      backgroundColor: `${cluster.color}24`,
-      pointBackgroundColor: cluster.color,
-    })),
-  };
+      color: ARCHETYPE_COLOR[cluster.name] || cluster.color,
+      values,
+    };
+  });
+  const [legendHover, setLegendHover] = React.useState(null);
   return (
-    <Radar
-      data={data}
-      options={{
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: chartDefaults().plugins,
-        scales: {
-          r: {
-            angleLines: { color: "rgba(141, 163, 176, 0.18)" },
-            grid: { color: "rgba(141, 163, 176, 0.18)" },
-            pointLabels: { color: "#dbe7ec", font: { size: 12 } },
-            ticks: { color: "#94a8b4", backdropColor: "transparent" },
-          },
-        },
-      }}
-    />
+    <div className="radar-chart-inner">
+      <div className="radar-chart-top">
+        <Legend hoveredIndex={legendHover} onHoverChange={setLegendHover}>
+          {radarData.map((d) => (
+            <LegendItemComponent key={d.label} label={d.label}>
+              <LegendMarker color={d.color} variant="bar" />
+              <LegendLabel>{d.label}</LegendLabel>
+            </LegendItemComponent>
+          ))}
+        </Legend>
+      </div>
+      <RadarChart
+        data={radarData}
+        metrics={RADAR_METRICS}
+        levels={5}
+        animate
+        seriesDim={legendHover}
+        ariaLabel="Cluster profile comparison: three household archetypes across six load-shape dimensions"
+      >
+        <RadarGrid />
+        <RadarAxis />
+        <RadarLabels />
+        {radarData.map((d, i) => (
+          <RadarArea key={d.label} index={i} />
+        ))}
+      </RadarChart>
+    </div>
   );
 }
 
@@ -918,11 +947,11 @@ function App() {
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
-                <h3>Cluster profile comparison</h3>
+                <h3>Cluster Profile Comparison</h3>
                 <p>Shares describe timing; variation describes how peaked the shape is.</p>
               </div>
               <div className="chart-container">
-                <ClusterRadar />
+                <ClusterRadarChart />
               </div>
             </article>
           </div>
