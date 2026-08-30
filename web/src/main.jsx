@@ -109,7 +109,7 @@ const sampleProfiles = (() => {
 
 const rawFieldColors = clusters.map((cluster) => cluster.color);
 
-function RawDataFieldSlide() {
+function RawDataFieldSlide({ onRepActive }) {
   const reduced = usePrefersReducedMotion();
   const [state, setState] = React.useState(() => ({
     // Representative line is full strength; the rest emerge over time.
@@ -150,6 +150,12 @@ function RawDataFieldSlide() {
     };
   }, [reduced]);
 
+  // Tell the enclosing carousel when the representative (orange) line is shown,
+  // so it can update the caption to say what that line represents.
+  React.useEffect(() => {
+    onRepActive?.(state.highlighted);
+  }, [state.highlighted, onRepActive]);
+
   const options = React.useMemo(() => {
     const base = chartDefaults();
     // 12 transient lines would clutter the legend; hide just this slide's.
@@ -179,6 +185,7 @@ const loadShapeSlides = [RawDataFieldSlide];
 
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
+  const [repActive, setRepActive] = React.useState(false);
   const count = loadShapeSlides.length;
   const goTo = (index) => setSlide((index + count) % count);
 
@@ -187,9 +194,13 @@ function LoadShapeCarousel({ tall = false }) {
   return (
     <div className="carousel" role="group" aria-roledescription="carousel" aria-label="Daily load-shape data field">
       <div className="carousel-meta">
-        <h3 className="carousel-title">Daily load shapes</h3>
+        <h3 className="carousel-title">
+          {repActive ? "The orange line is the representative day" : "Daily load shapes"}
+        </h3>
         <p className="carousel-subtitle">
-          A field of raw daily consumption profiles — a single representative 24-hour rhythm emerges.
+          {repActive
+            ? "It is the midday-peaking rhythm, peaking around 1 pm."
+            : "Twelve raw daily profiles resolve into one representative 24-hour rhythm."}
         </p>
       </div>
       <div className="carousel-body">
@@ -205,7 +216,7 @@ function LoadShapeCarousel({ tall = false }) {
         </button>
         <div className="carousel-stage">
           <div className={`chart-container${tall ? " tall" : ""}`}>
-            <Slide />
+            <Slide onRepActive={setRepActive} />
           </div>
           <div className="carousel-dots">
             {loadShapeSlides.map((_, index) => (
