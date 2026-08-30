@@ -12,7 +12,7 @@ import {
   RadialLinearScale,
   Tooltip,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 import { Legend, LegendItemComponent, LegendLabel, LegendMarker } from "./Legend";
 import {
   ChartTooltip,
@@ -49,6 +49,10 @@ ChartJS.register(
 );
 
 const hours = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, "0")}:00`);
+
+// Every slide waits this long before its animation begins, so the reader has a
+// beat to absorb the caption before the chart starts building.
+const LEAD_IN_MS = 1500;
 
 function chartDefaults() {
   return {
@@ -131,7 +135,7 @@ function RawDataFieldSlide({ onRepActive }) {
             alpha[i] = 0.35;
             return { ...prev, alpha };
           });
-        }, 260 * i),
+        }, LEAD_IN_MS + 260 * i),
       );
     });
     // Then highlight the representative line and fade the field behind it.
@@ -142,7 +146,7 @@ function RawDataFieldSlide({ onRepActive }) {
           alpha: sampleProfiles.map((_, i) => (i === 0 ? 1 : 0.06)),
           highlighted: true,
         });
-      }, 260 * sampleProfiles.length + 700),
+      }, LEAD_IN_MS + 260 * sampleProfiles.length + 700),
     );
     return () => {
       cancel = true;
@@ -241,12 +245,12 @@ function RawDataAnnotatedSlide({ onRepActive }) {
         setTimeout(() => {
           if (cancel) return;
           setState((prev) => ({ ...prev, drawn: Math.max(prev.drawn, n) }));
-        }, 50 * n),
+        }, LEAD_IN_MS + 50 * n),
       );
     }
 
     // Then reveal each day-phase bracket in sequence.
-    const drawMs = 50 * total;
+    const drawMs = LEAD_IN_MS + 50 * total;
     DAY_PHASES.forEach((_, i) => {
       timers.push(
         setTimeout(() => {
@@ -336,6 +340,631 @@ function RawDataAnnotatedSlide({ onRepActive }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// "Behavioral Features" slide - Slide 3, ported from Scene 3 (features.js).
+// The six timing/behavioural descriptors are revealed as bars for the
+// representative (midday-peaking) cluster, then the 51-feature total appears.
+// Palette and reveal order follow the scene; values are the committed cluster
+// shares and base-load / variation fractions, so nothing is invented.
+// ---------------------------------------------------------------------------
+const representativeCluster = clusters[0];
+
+// Scene-3 marker palette: each feature keeps the scene's own colour identity.
+const FEATURE_ROWS = [
+  { key: "Morning share", color: "#22d3ee" },
+  { key: "Afternoon share", color: "#4ade80" },
+  { key: "Evening share", color: "#fbbf24" },
+  { key: "Night share", color: "#a78bfa" },
+  { key: "Base load", color: "#f87171" },
+  { key: "Variation (CV)", color: "#22d3ee" },
+];
+const FEATURE_VALUES = [
+  representativeCluster.morningShare,
+  representativeCluster.afternoonShare,
+  representativeCluster.eveningShare,
+  representativeCluster.nightShare,
+  representativeCluster.baseLoadShare,
+  representativeCluster.coefficientOfVariation,
+];
+
+function BehavioralFeaturesSlide({ onRepActive }) {
+  const reduced = usePrefersReducedMotion();
+  const [state, setState] = React.useState(() => ({
+    shown: reduced ? FEATURE_ROWS.length : 0,
+    countShown: reduced,
+  }));
+
+  React.useEffect(() => {
+    onRepActive?.(reduced);
+  }, [onRepActive, reduced]);
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    let cancel = false;
+    const timers = [];
+    FEATURE_ROWS.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, shown: Math.max(prev.shown, i + 1) }));
+        }, LEAD_IN_MS + 220 * i),
+      );
+    });
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
+        setState((prev) => ({ ...prev, countShown: true }));
+        onRepActive?.(true);
+      }, LEAD_IN_MS + 220 * FEATURE_ROWS.length + 320),
+    );
+    return () => {
+      cancel = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced, onRepActive]);
+
+  const options = React.useMemo(() => {
+    const base = chartDefaults();
+    return {
+      ...base,
+      indexAxis: "y",
+      plugins: { ...base.plugins, legend: { display: false } },
+      scales: {
+        x: { ...base.scales.x, beginAtZero: true, suggestedMax: 1 },
+        y: { ...base.scales.y, grid: { display: false } },
+      },
+    };
+  }, []);
+
+  const data = {
+    labels: FEATURE_ROWS.slice(0, state.shown).map((row) => row.key),
+    datasets: [
+      {
+        label: `Share for ${representativeCluster.name}`,
+        data: FEATURE_VALUES.slice(0, state.shown),
+        backgroundColor: FEATURE_ROWS.slice(0, state.shown).map((row) => row.color),
+        borderColor: "rgba(255,255,255,0)",
+        borderWidth: 0,
+        borderRadius: 3,
+        barThickness: 8,
+      },
+    ],
+  };
+
+  return (
+    <div className="features-slide" style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}>
+      <div style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
+        <Bar data={data} options={options} />
+      </div>
+      <div
+        className="features-count"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          paddingTop: 4,
+          opacity: state.countShown ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        <span
+          style={{
+            color: "#a78bfa",
+            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+            fontSize: "0.7rem",
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+          }}
+        >
+          {summaryStats.features} FEATURES
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// "K-Means clustering" slide - Slide 4, ported from Scene 4 (kmeans.js).
+// Silhouette per candidate K is revealed in order, then the selected K=3 is
+// highlighted (cyan) with its real value, matching the scene's K=3 / 0.312
+// conclusion without inventing anything.
+// ---------------------------------------------------------------------------
+function KMeansSlide({ onRepActive }) {
+  const reduced = usePrefersReducedMotion();
+  const rows = kMetrics;
+  const [state, setState] = React.useState(() => ({
+    shown: reduced ? rows.length : 0,
+    done: reduced,
+  }));
+
+  React.useEffect(() => {
+    onRepActive?.(reduced);
+  }, [onRepActive, reduced]);
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    let cancel = false;
+    const timers = [];
+    rows.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, shown: Math.max(prev.shown, i + 1) }));
+        }, LEAD_IN_MS + 240 * i),
+      );
+    });
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
+        setState((prev) => ({ ...prev, done: true }));
+        onRepActive?.(true);
+      }, LEAD_IN_MS + 240 * rows.length + 320),
+    );
+    return () => {
+      cancel = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced, rows, onRepActive]);
+
+  const selected = rows.find((row) => row.selected);
+  const visible = rows.slice(0, state.shown);
+
+  const options = React.useMemo(() => {
+    const base = chartDefaults();
+    return {
+      ...base,
+      plugins: { ...base.plugins, legend: { display: false } },
+      scales: {
+        x: { ...base.scales.x, grid: { display: false } },
+        y: { ...base.scales.y, beginAtZero: true, suggestedMax: 0.45 },
+      },
+    };
+  }, []);
+
+  const data = {
+    labels: visible.map((row) => `K=${row.k}`),
+    datasets: [
+      {
+        label: "Silhouette",
+        data: visible.map((row) => row.silhouette),
+        backgroundColor: visible.map((row) =>
+          row.selected ? "#22d3ee" : "#fbbf24",
+        ),
+        borderColor: "rgba(255,255,255,0)",
+        borderRadius: 3,
+        barThickness: 12,
+        maxBarThickness: 22,
+      },
+    ],
+  };
+
+  return (
+    <div className="kmeans-slide" style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}>
+      <div style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
+        <Bar data={data} options={options} />
+      </div>
+      <div
+        className="kmeans-tag"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          paddingTop: 4,
+          opacity: state.done ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        <span
+          style={{
+            color: "#fbbf24",
+            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+            fontSize: "0.7rem",
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+          }}
+        >
+          K={selected?.k} SELECTED · SILHOUETTE {Number(selected?.silhouette).toFixed(3)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// "PCA" slide - Slide 5, ported from Scene 5 (pca.js).
+// The 14 retained components reveal as explained-variance bars (#6c8cff), the
+// cumulative line (#48d7c2) then draws across them, and the retained-variance
+// total appears once the cumulative line settles on the committed 95.3%.
+// ---------------------------------------------------------------------------
+const PCA_COMPONENTS = pcaComponents; // PC1..PC14, real committed values
+const PCA_LABELS = pcaComponents.map((row) => `PC${row.component}`);
+const PCA_RETAINED = pcaComponents[pcaComponents.length - 1].cumulativeVariance; // 0.9526
+
+function PcaSlide({ onRepActive }) {
+  const reduced = usePrefersReducedMotion();
+  const total = PCA_COMPONENTS.length;
+  const [state, setState] = React.useState(() => ({
+    bars: reduced ? total : 0,
+    line: reduced ? total : 0,
+    done: reduced,
+  }));
+
+  React.useEffect(() => {
+    onRepActive?.(reduced);
+  }, [onRepActive, reduced]);
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    let cancel = false;
+    const timers = [];
+    // Bars pop in one at a time.
+    PCA_COMPONENTS.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, bars: Math.max(prev.bars, i + 1) }));
+        }, LEAD_IN_MS + 160 * i),
+      );
+    });
+    // Cumulative line draws across after the bars finish.
+    const barsDone = LEAD_IN_MS + 160 * total;
+    for (let j = 0; j < total; j++) {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, line: Math.max(prev.line, j + 1) }));
+        }, barsDone + 110 * j),
+      );
+    }
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
+        setState((prev) => ({ ...prev, done: true }));
+        onRepActive?.(true);
+      }, barsDone + 110 * total + 320),
+    );
+    return () => {
+      cancel = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced, total, onRepActive]);
+
+  const options = React.useMemo(() => {
+    const base = chartDefaults();
+    return {
+      ...base,
+      plugins: { ...base.plugins, legend: { display: false } },
+      scales: {
+        x: { ...base.scales.x, grid: { display: false } },
+        y: {
+          ...base.scales.y,
+          beginAtZero: true,
+          max: 1,
+          ticks: {
+            ...base.scales?.y?.ticks,
+            maxTicksLimit: 5,
+            callback: (value) => `${Math.round(value * 100)}%`,
+          },
+        },
+      },
+    };
+  }, []);
+
+  const data = {
+    labels: PCA_LABELS,
+    datasets: [
+      {
+        type: "bar",
+        label: "Explained variance",
+        data: PCA_COMPONENTS.slice(0, state.bars).map((row) => row.explainedVariance),
+        backgroundColor: "#6c8cff",
+        borderColor: "rgba(255,255,255,0)",
+        borderRadius: 3,
+        barThickness: 8,
+        maxBarThickness: 18,
+      },
+      {
+        type: "line",
+        label: "Cumulative variance",
+        data: PCA_COMPONENTS.slice(0, state.line).map((row) => row.cumulativeVariance),
+        borderColor: "#48d7c2",
+        backgroundColor: "transparent",
+        borderWidth: 2.2,
+        pointRadius: 0,
+        tension: 0.3,
+        fill: false,
+        spanGaps: false,
+      },
+    ],
+  };
+
+  return (
+    <div className="pca-slide" style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}>
+      <div style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
+        <Bar data={data} options={options} />
+      </div>
+      <div
+        className="pca-tag"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          paddingTop: 4,
+          opacity: state.done ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        <span
+          style={{
+            color: "#fbbf24",
+            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+            fontSize: "0.7rem",
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+          }}
+        >
+          {(PCA_RETAINED * 100).toFixed(1)}% VARIANCE RETAINED
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// "Behavioral Archetypes" slide - Slide 6, ported from Scene 6
+// (behavioralArchetypes.js). The three cluster profiles reveal one at a time
+// as 24-hour curves, each tagged with its consumer count, preserving the
+// scene's card-sequential rhythm and archetype colour identity.
+// ---------------------------------------------------------------------------
+const ARCHETYPE_COLORS = {
+  "Midday-Peaking": "#fbbf24",
+  "Flat All-Day": "#22d3ee",
+  "Evening-Peaking": "#a78bfa",
+};
+
+function BehavioralArchetypesSlide({ onRepActive }) {
+  const reduced = usePrefersReducedMotion();
+  const [state, setState] = React.useState(() => ({
+    shown: reduced ? clusters.length : 0,
+    done: reduced,
+  }));
+
+  React.useEffect(() => {
+    onRepActive?.(reduced);
+  }, [onRepActive, reduced]);
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    let cancel = false;
+    const timers = [];
+    clusters.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, shown: Math.max(prev.shown, i + 1) }));
+        }, LEAD_IN_MS + 280 * i),
+      );
+    });
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
+        setState((prev) => ({ ...prev, done: true }));
+        onRepActive?.(true);
+      }, LEAD_IN_MS + 280 * clusters.length + 320),
+    );
+    return () => {
+      cancel = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced, onRepActive]);
+
+  const shown = clusters.slice(0, state.shown);
+
+  const options = React.useMemo(() => {
+    const base = chartDefaults();
+    return {
+      ...base,
+      plugins: { ...base.plugins, legend: { display: false } },
+      scales: {
+        x: { ...base.scales.x, grid: { display: false } },
+        y: { ...base.scales.y, beginAtZero: true },
+      },
+    };
+  }, []);
+
+  const data = {
+    labels: hours,
+    datasets: shown.map((cluster) => ({
+      label: cluster.name,
+      data: clusterShapes[cluster.id],
+      borderColor: ARCHETYPE_COLORS[cluster.name] || cluster.color,
+      backgroundColor: "transparent",
+      pointRadius: 0,
+      tension: 0.42,
+      fill: false,
+      borderWidth: 2.2,
+    })),
+  };
+
+  return (
+    <div
+      className="archetypes-slide"
+      style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}
+    >
+      <div style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
+        <Line data={data} options={options} />
+      </div>
+      <div
+        className="archetype-chips"
+        style={{ display: "flex", justifyContent: "center", gap: "1rem", paddingTop: 4, flexWrap: "wrap" }}
+      >
+        {clusters.map((cluster, i) => (
+          <span
+            key={cluster.id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              color: "#dbe7ec",
+              fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+              fontSize: "0.7rem",
+              letterSpacing: "0.05em",
+              opacity: i < state.shown ? 1 : 0,
+              transition: "opacity 0.3s ease",
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: 2,
+                background: ARCHETYPE_COLORS[cluster.name] || cluster.color,
+                flex: "none",
+              }}
+            />
+            {cluster.name}
+            <span aria-hidden="true" style={{ color: "#71808d" }}>
+              {cluster.size}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// "Validation & Robustness" slide - Slide 7, ported from Scene 7
+// (validationRobustness.js). Only committed figures are shown: the selected
+// K=3 silhouette and Davies-Bouldin from kMetrics, the cluster count, and the
+// dataset scale from summaryStats. Cards reveal in sequence (silhouette first,
+// scene-coloured), then the validation caption appears.
+// ---------------------------------------------------------------------------
+function ValidationRobustnessSlide({ onRepActive }) {
+  const reduced = usePrefersReducedMotion();
+  const selected = kMetrics.find((row) => row.selected);
+  const cards = [
+    { label: "Silhouette", value: Number(selected?.silhouette).toFixed(3), color: "#a78bfa", note: "within vs between separation" },
+    { label: "Davies-Bouldin", value: Number(selected?.daviesBouldin).toFixed(3), color: "#4ade80", note: "lower is better" },
+    { label: "Clusters", value: String(selected?.k ?? 3), color: "#22d3ee", note: "selected K" },
+  ];
+  const [state, setState] = React.useState(() => ({
+    shown: reduced ? cards.length : 0,
+    done: reduced,
+  }));
+
+  React.useEffect(() => {
+    onRepActive?.(reduced);
+  }, [onRepActive, reduced]);
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    let cancel = false;
+    const timers = [];
+    cards.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, shown: Math.max(prev.shown, i + 1) }));
+        }, LEAD_IN_MS + 260 * i),
+      );
+    });
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
+        setState((prev) => ({ ...prev, done: true }));
+        onRepActive?.(true);
+      }, LEAD_IN_MS + 260 * cards.length + 320),
+    );
+    return () => {
+      cancel = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced, cards, onRepActive]);
+
+  return (
+    <div
+      className="validation-slide"
+      style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}
+    >
+      <div style={{ flex: 1, minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div
+          className="validation-cards"
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            justifyContent: "center",
+            alignItems: "stretch",
+            flexWrap: "wrap",
+          }}
+        >
+          {cards.map((card, i) => (
+            <div
+              key={card.label}
+              className="validation-card"
+              style={{
+                flex: "1 1 120px",
+                maxWidth: 200,
+                textAlign: "center",
+                padding: "0.7rem 0.9rem",
+                border: `1px solid ${card.color}44`,
+                borderRadius: 10,
+                background: "var(--panel-strong)",
+                opacity: i < state.shown ? 1 : 0,
+                transform: i < state.shown ? "translateY(0)" : "translateY(6px)",
+                transition: "opacity 0.3s ease, transform 0.3s ease",
+              }}
+            >
+              <div
+                style={{
+                  color: card.color,
+                  fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.12em",
+                }}
+              >
+                {card.label}
+              </div>
+              <div
+                style={{
+                  color: "#ffffff",
+                  fontSize: "1.5rem",
+                  fontWeight: 700,
+                  lineHeight: 1.1,
+                  margin: "0.2rem 0 0.1rem",
+                }}
+              >
+                {card.value}
+              </div>
+              <div style={{ color: "#71808d", fontSize: "0.7rem" }}>{card.note}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div
+        className="validation-foot"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          paddingTop: 4,
+          opacity: state.done ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        <span
+          style={{
+            color: "#48d7c2",
+            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+            fontSize: "0.7rem",
+            letterSpacing: "0.12em",
+          }}
+        >
+          {summaryStats.records} READING · {summaryStats.consumers} CONSUMERS
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // Slides shown in the "Average 24-hour load shape" carousel, each with its own
 // caption (shown before and after its representative state). Arrows and dots
 // derive from the array length, so adding a slide updates navigation itself.
@@ -366,13 +995,80 @@ const loadShapeSlides = [
       },
     },
   },
+  {
+    component: BehavioralFeaturesSlide,
+    captions: {
+      idle: {
+        title: "Behavioral features",
+        subtitle: "Six timing and shape descriptors are extracted from every daily profile.",
+      },
+      rep: {
+        title: "Six shape features in the midday-peaking rhythm",
+        subtitle: "Morning and afternoon shares lead; base load and variation round out the shape.",
+      },
+    },
+  },
+  {
+    component: KMeansSlide,
+    captions: {
+      idle: {
+        title: "K-Means clustering",
+        subtitle: "Silhouette is compared across candidate numbers of clusters.",
+      },
+      rep: {
+        title: "K=3 is the selected model",
+        subtitle: "It scores a silhouette of 0.312, a modest but useful separation.",
+      },
+    },
+  },
+  {
+    component: PcaSlide,
+    captions: {
+      idle: {
+        title: "Principal component analysis",
+        subtitle: "Fourteen principal components capture the shape variation.",
+      },
+      rep: {
+        title: "Fourteen components retain 95.3% of the variance",
+        subtitle: "The cumulative line settles just past 95 percent.",
+      },
+    },
+  },
+  {
+    component: BehavioralArchetypesSlide,
+    captions: {
+      idle: {
+        title: "Behavioral archetypes",
+        subtitle: "The three clusters re-emerge as distinct household rhythm archetypes.",
+      },
+      rep: {
+        title: "Three household rhythms",
+        subtitle: "Midday peak, flat all-day, and evening peak, by consumer count.",
+      },
+    },
+  },
+  {
+    component: ValidationRobustnessSlide,
+    captions: {
+      idle: {
+        title: "Validation and robustness",
+        subtitle: "The selected model is checked on real, committed metrics.",
+      },
+      rep: {
+        title: "K=3 holds its shape across 144,000 readings",
+        subtitle: "Silhouette 0.312 with 200 consumers and 3 clusters.",
+      },
+    },
+  },
 ];
 
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
   const [repActive, setRepActive] = React.useState(false);
   const count = loadShapeSlides.length;
-  const goTo = (index) => setSlide((index + count) % count);
+  // Linear navigation: clamp instead of wrapping, so the prev arrow is disabled
+  // on the first slide and the next arrow is disabled on the last.
+  const goTo = (index) => setSlide(Math.max(0, Math.min(count - 1, index)));
 
   const { component: Slide, captions } = loadShapeSlides[slide];
   const caption = repActive ? captions.rep : captions.idle;
@@ -388,6 +1084,7 @@ function LoadShapeCarousel({ tall = false }) {
           className="carousel-arrow prev"
           type="button"
           aria-label="Previous visualization"
+          disabled={slide === 0}
           onClick={() => goTo(slide - 1)}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -415,6 +1112,7 @@ function LoadShapeCarousel({ tall = false }) {
           className="carousel-arrow next"
           type="button"
           aria-label="Next visualization"
+          disabled={slide === count - 1}
           onClick={() => goTo(slide + 1)}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
