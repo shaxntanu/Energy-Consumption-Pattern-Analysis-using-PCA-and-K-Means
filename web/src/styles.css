@@ -632,6 +632,15 @@ p {
   outline-offset: 2px;
 }
 
+.carousel-arrow:disabled,
+.carousel-arrow:disabled:hover {
+  color: var(--line);
+  border-color: var(--line);
+  background: var(--panel-strong);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .carousel-dots {
   display: flex;
   justify-content: center;
