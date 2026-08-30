@@ -569,7 +569,7 @@ p {
 }
 
 .carousel-meta {
-  text-align: left;
+  text-align: center;
 }
 
 .carousel-title {
@@ -584,7 +584,7 @@ p {
   font-size: 0.84rem;
   line-height: 1.5;
   color: var(--muted);
-  margin: 0;
+  margin: 0 auto;
   max-width: 60ch;
 }
 
