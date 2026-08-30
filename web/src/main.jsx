@@ -14,6 +14,16 @@ import {
 } from "chart.js";
 import { Bar, Line, Radar } from "react-chartjs-2";
 import { Legend, LegendItemComponent, LegendLabel, LegendMarker } from "./Legend";
+import {
+  ChartTooltip,
+  ComposedChart,
+  Grid,
+  Line as ComposedLine,
+  SeriesBar,
+  XAxis,
+  YAxis,
+  curveCatmullRom,
+} from "./ComposedChart";
 import "./styles.css";
 import {
   clusters,
@@ -631,39 +641,75 @@ function LoadShapeBrushChart() {
   );
 }
 
-function KMetricsChart() {
-  const data = {
-    labels: kMetrics.map((row) => `K=${row.k}`),
-    datasets: [
-      {
-        type: "bar",
-        label: "Silhouette",
-        data: kMetrics.map((row) => row.silhouette),
-        backgroundColor: kMetrics.map((row) => (row.selected ? "#48d7c2" : "#31465a")),
-        borderRadius: 7,
-        yAxisID: "y",
-      },
-      {
-        type: "line",
-        label: "Davies-Bouldin",
-        data: kMetrics.map((row) => row.daviesBouldin),
-        borderColor: "#f0a64b",
-        backgroundColor: "#f0a64b",
-        pointRadius: 4,
-        tension: 0.35,
-        yAxisID: "y1",
-      },
-    ],
-  };
-  const options = chartDefaults();
-  options.scales.y.title = { display: true, text: "Silhouette", color: "#94a8b4" };
-  options.scales.y1 = {
-    position: "right",
-    grid: { drawOnChartArea: false },
-    ticks: { color: "#f0c384" },
-    title: { display: true, text: "Davies-Bouldin", color: "#f0c384" },
-  };
-  return <Bar data={data} options={options} />;
+function KSelectionChart() {
+  const rows = kMetrics.map((row) => ({
+    k: `K=${row.k}`,
+    kNumber: row.k,
+    silhouette: row.silhouette,
+    daviesBouldin: row.daviesBouldin,
+  }));
+  const selectedIndex = kMetrics.findIndex((row) => row.selected);
+  const selectedK = kMetrics.find((row) => row.selected)?.k;
+  const [legendSeries, setLegendSeries] = React.useState(null); // "first" | "second"
+
+  return (
+    <div className="chart-container">
+      <div className="k-chart-inner">
+        <div className="k-chart-top">
+          <Legend
+            hoveredIndex={legendSeries === "first" ? 0 : legendSeries === "second" ? 1 : null}
+            onHoverChange={(i) => setLegendSeries(i === 0 ? "first" : i === 1 ? "second" : null)}
+          >
+            <LegendItemComponent label="Silhouette">
+              <LegendMarker color="var(--cyan)" variant="bar" />
+              <LegendLabel>Silhouette</LegendLabel>
+            </LegendItemComponent>
+            <LegendItemComponent label="Davies-Bouldin">
+              <LegendMarker color="var(--amber)" />
+              <LegendLabel>Davies-Bouldin</LegendLabel>
+            </LegendItemComponent>
+          </Legend>
+          {selectedK != null && (
+            <span className="k-selected-tag">Selected · K={selectedK}</span>
+          )}
+        </div>
+        <ComposedChart
+          data={rows}
+          xDataKey="k"
+          selectedIndex={selectedIndex}
+          seriesDim={legendSeries}
+          maxBarSize={26}
+          ariaLabel="K-selection chart: Silhouette bars and Davies-Bouldin line from K=2 to K=10"
+        >
+          <Grid horizontal />
+          <YAxis yAxisId="left" orientation="left" label="Silhouette" />
+          <YAxis yAxisId="right" orientation="right" label="Davies-Bouldin" />
+          <SeriesBar
+            yAxisId="left"
+            dataKey="silhouette"
+            label="Silhouette"
+            fill="var(--k-bar)"
+            selectedFill="var(--cyan)"
+            radius={4}
+            maxBarSize={22}
+            fadedOpacity={0.24}
+            format={(v) => Number(v).toFixed(3)}
+          />
+          <ComposedLine
+            yAxisId="right"
+            dataKey="daviesBouldin"
+            label="Davies-Bouldin"
+            stroke="var(--amber)"
+            strokeWidth={2.25}
+            curve={curveCatmullRom.alpha(0.42)}
+            format={(v) => Number(v).toFixed(3)}
+          />
+          <ChartTooltip showCrosshair={false} />
+          <XAxis numTicks={9} />
+        </ComposedChart>
+      </div>
+    </div>
+  );
 }
 
 function PcaChart() {
@@ -819,9 +865,7 @@ function App() {
                 <h3>K selection</h3>
                 <p>K=3 balances separation with stable, non-tiny clusters.</p>
               </div>
-              <div className="chart-container">
-                <KMetricsChart />
-              </div>
+              <KSelectionChart />
             </article>
             <article className="chart-panel">
               <div className="panel-heading">

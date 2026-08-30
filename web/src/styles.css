@@ -948,3 +948,133 @@ p {
     grid-template-columns: 1fr;
   }
 }
+
+/* K-selection composed chart (BKLIT-style ComposedChart) ------------------- */
+.k-chart-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  height: 100%;
+  min-width: 0;
+  /* Chart-local tokens derived from the global dark theme. */
+  --k-bar: #31465a;
+}
+
+.k-chart-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.k-selected-tag {
+  flex: none;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  border: 1px solid rgba(72, 215, 194, 0.35);
+  background: rgba(72, 215, 194, 0.08);
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+}
+
+.composed-chart {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  outline: none;
+  border-radius: 6px;
+}
+
+.composed-chart:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.composed-chart svg {
+  display: block;
+}
+
+.cc-fade {
+  transition: opacity 0.15s ease, fill 0.15s ease;
+}
+
+.k-tooltip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  min-width: 156px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  transform: translateY(4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.k-tooltip-title {
+  margin: 0 0 0.35rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.k-tooltip-row {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
+  margin-top: 0.22rem;
+  font-size: 0.76rem;
+}
+
+.k-tooltip-marker {
+  display: inline-block;
+  flex: none;
+}
+
+.k-tooltip-label {
+  color: var(--muted);
+}
+
+.k-tooltip-value {
+  color: var(--text);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+}
+
+/* Bar series in the legend read as small rounded tiles, not lines. */
+.legend-marker.is-bar {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+/* Off-screen live region for screen-reader chart readings. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-fade,
+  .k-tooltip {
+    transition: none;
+  }
+}
