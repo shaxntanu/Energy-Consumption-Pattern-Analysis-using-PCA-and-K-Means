@@ -1020,6 +1020,83 @@ p {
   display: block;
 }
 
+/* Cluster profile radar (BKLIT-style RadarChart) ---------------------------- */
+.radar-chart-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  height: 100%;
+  min-width: 0;
+}
+
+.radar-chart-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.radar-chart {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  outline: none;
+  border-radius: 6px;
+}
+
+.radar-chart:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.radar-chart svg {
+  display: block;
+}
+
+.radar-label {
+  fill: var(--text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+
+.radar-ring-label {
+  fill: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.58rem;
+  pointer-events: none;
+}
+
+/* Subtle multi-phase mount animation (scale + fade). transform-box: view-box
+   makes the px transform-origin follow the SVG user coordinates. Disabled for
+   reduced-motion below. */
+.radar-area-in {
+  transform-box: view-box;
+  animation: radar-area-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes radar-area-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-area-in {
+    animation: none !important;
+  }
+}
+
 .cc-fade {
   transition: opacity 0.15s ease, fill 0.15s ease;
 }
