@@ -324,96 +324,124 @@ function LoadShapeBrushChart() {
 
   const isFull = selection[0] <= 0 && selection[1] >= 24;
 
-  // Keep the strip's x-axis pixel bounds in step with layout/resize.
+  // The strip has no visible axes, so its plot area fills the container
+  // exactly: hour 0 maps to x=0 and hour 24 to the container's full width.
+  // We keep geometry in state only so the overlay re-positions on resize.
+  const readGeometry = () => {
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (!rect || rect.width < 10) return null;
+    return { left: 0, right: rect.width };
+  };
+
   React.useEffect(() => {
-    const chart = stripChartRef.current?.chart;
-    if (!chart) return;
-    const measure = () => {
-      const x = chart.scales?.x;
-      if (!x || typeof x.left !== "number" || x.right - x.left < 10) return;
-      setGeometry((prev) =>
-        prev.left === x.left && prev.right === x.right ? prev : { left: x.left, right: x.right },
-      );
+    const update = () => {
+      const g = readGeometry();
+      if (g) {
+        setGeometry((prev) => (prev.left === g.left && prev.right === g.right ? prev : g));
+      }
     };
-    measure();
-    const canvas = chart.canvas;
+    update();
     const ro =
-      typeof ResizeObserver !== "undefined" && canvas?.parentElement
-        ? new ResizeObserver(() => measure())
+      typeof ResizeObserver !== "undefined" && wrapRef.current
+        ? new ResizeObserver(update)
         : null;
-    if (ro) ro.observe(canvas.parentElement);
-    return () => ro && ro.disconnect();
+    if (ro) ro.observe(wrapRef.current);
+    window.addEventListener("resize", update);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
   }, []);
 
   const valueFromClientX = (clientX) => {
-    if (!wrapRef.current) return null;
-    const rect = wrapRef.current.getBoundingClientRect();
-    const span = geometry.right - geometry.left;
-    if (span <= 0) return null;
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (!rect || rect.width < 10) return null;
     const px = clientX - rect.left;
-    return Math.max(0, Math.min(24, ((px - geometry.left) / span) * 24));
+    return Math.max(0, Math.min(24, (px / rect.width) * 24));
   };
 
+  // Drag tracking runs on window-level listeners so the gesture keeps working
+  // even if the pointer leaves the small strip during a drag.
+  const dragMoveRef = React.useRef(null);
+  const dragUpRef = React.useRef(null);
+  React.useEffect(
+    () => () => {
+      if (dragMoveRef.current) window.removeEventListener("pointermove", dragMoveRef.current);
+      if (dragUpRef.current) window.removeEventListener("pointerup", dragUpRef.current);
+      if (dragUpRef.current) window.removeEventListener("pointercancel", dragUpRef.current);
+    },
+    [],
+  );
+
   const onPointerDown = (event) => {
-    if (geometry.right - geometry.left <= 0) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return; // left button only
     const value = valueFromClientX(event.clientX);
-    if (value == null) return;
-    const rect = wrapRef.current.getBoundingClientRect();
-    const span = geometry.right - geometry.left;
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (value == null || !rect || rect.width < 10) return;
     const px = event.clientX - rect.left;
-    const pxStart = geometry.left + (selection[0] / 24) * span;
-    const pxEnd = geometry.left + (selection[1] / 24) * span;
+    const width = rect.width;
+    const [s0, s1] = selection;
+    const pxStart = (s0 / 24) * width;
+    const pxEnd = (s1 / 24) * width;
+    const full = s0 <= 0 && s1 >= 24;
     let mode = "draw";
     if (px <= pxStart + 8) mode = "resizeL";
     else if (px >= pxEnd - 8) mode = "resizeR";
     // Moving is only meaningful when the window has room to slide. At full
     // range the whole strip is "inside" the window, so fall through to draw
     // and let a drag start a fresh, smaller window instead of doing nothing.
-    else if (!isFull && px > pxStart + 2 && px < pxEnd - 2) mode = "move";
-    dragRef.current = { mode, startValue: value, startSel: [selection[0], selection[1]], moved: false };
-    setInteracting(true);
-    if (wrapRef.current.setPointerCapture) wrapRef.current.setPointerCapture(event.pointerId);
-    event.preventDefault();
-  };
+    else if (!full && px > pxStart + 2 && px < pxEnd - 2) mode = "move";
+    dragRef.current = { mode, startValue: value, startSel: [s0, s1], moved: false };
 
-  const onPointerMove = (event) => {
-    const drag = dragRef.current;
-    if (!drag) return;
-    const value = valueFromClientX(event.clientX);
-    if (value == null) return;
-    if (Math.abs(value - drag.startValue) > 0.02) drag.moved = true;
-
-    let next;
-    if (drag.mode === "resizeL") {
-      next = [Math.min(value, drag.startSel[1] - BRUSH_MIN_WIDTH), drag.startSel[1]];
-    } else if (drag.mode === "resizeR") {
-      next = [drag.startSel[0], Math.max(value, drag.startSel[0] + BRUSH_MIN_WIDTH)];
-    } else if (drag.mode === "move") {
-      const width = drag.startSel[1] - drag.startSel[0];
-      const start = Math.max(0, Math.min(24 - width, drag.startSel[0] + (value - drag.startValue)));
-      next = [start, start + width];
-    } else {
-      let start = Math.min(drag.startValue, value);
-      let end = Math.max(drag.startValue, value);
-      if (end - start < BRUSH_MIN_WIDTH) {
-        const anchor = Math.max(0, Math.min(24 - BRUSH_MIN_WIDTH, drag.startValue));
-        start = anchor;
-        end = anchor + BRUSH_MIN_WIDTH;
+    dragMoveRef.current = (ev) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      const v = valueFromClientX(ev.clientX);
+      if (v == null) return;
+      if (Math.abs(v - drag.startValue) > 0.02) drag.moved = true;
+      let next;
+      if (drag.mode === "resizeL") {
+        next = [Math.min(v, drag.startSel[1] - BRUSH_MIN_WIDTH), drag.startSel[1]];
+      } else if (drag.mode === "resizeR") {
+        next = [drag.startSel[0], Math.max(v, drag.startSel[0] + BRUSH_MIN_WIDTH)];
+      } else if (drag.mode === "move") {
+        const w = drag.startSel[1] - drag.startSel[0];
+        const start = Math.max(0, Math.min(24 - w, drag.startSel[0] + (v - drag.startValue)));
+        next = [start, start + w];
+      } else {
+        let a = Math.min(drag.startValue, v);
+        let b = Math.max(drag.startValue, v);
+        if (b - a < BRUSH_MIN_WIDTH) {
+          const anchor = Math.max(0, Math.min(24 - BRUSH_MIN_WIDTH, drag.startValue));
+          a = anchor;
+          b = anchor + BRUSH_MIN_WIDTH;
+        }
+        next = [a, b];
       }
-      next = [start, end];
-    }
-    setSelection(next);
-  };
+      setSelection(next);
+    };
 
-  const onPointerUp = (event) => {
-    const drag = dragRef.current;
-    dragRef.current = null;
-    setInteracting(false);
-    if (wrapRef.current?.hasPointerCapture?.(event.pointerId)) {
-      wrapRef.current.releasePointerCapture(event.pointerId);
+    dragUpRef.current = () => {
+      const drag = dragRef.current;
+      dragRef.current = null;
+      if (dragMoveRef.current) window.removeEventListener("pointermove", dragMoveRef.current);
+      if (dragUpRef.current) window.removeEventListener("pointerup", dragUpRef.current);
+      if (dragUpRef.current) window.removeEventListener("pointercancel", dragUpRef.current);
+      // A plain tap on the strip (no drag) returns to the full 24-hour view.
+      if (drag && drag.mode === "draw" && !drag.moved) setSelection([0, 24]);
+      setInteracting(false);
+    };
+
+    window.addEventListener("pointermove", dragMoveRef.current);
+    window.addEventListener("pointerup", dragUpRef.current);
+    window.addEventListener("pointercancel", dragUpRef.current);
+    setInteracting(true);
+    try {
+      if (wrapRef.current.setPointerCapture) wrapRef.current.setPointerCapture(event.pointerId);
+    } catch {
+      /* capture is optional; window listeners still track the drag */
     }
-    // A plain tap on the strip (no drag) returns to the full 24-hour view.
-    if (drag && drag.mode === "draw" && !drag.moved) setSelection([0, 24]);
+    event.preventDefault();
   };
 
   const onPointerLeave = () => {
@@ -422,13 +450,13 @@ function LoadShapeBrushChart() {
 
   const onHoverMove = (event) => {
     if (dragRef.current) return;
-    const value = valueFromClientX(event.clientX);
-    if (value == null) return;
-    const rect = wrapRef.current.getBoundingClientRect();
-    const span = geometry.right - geometry.left;
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (!rect || rect.width < 10) return;
     const px = event.clientX - rect.left;
-    const pxStart = geometry.left + (selection[0] / 24) * span;
-    const pxEnd = geometry.left + (selection[1] / 24) * span;
+    const width = rect.width;
+    const [s0, s1] = selection;
+    const pxStart = (s0 / 24) * width;
+    const pxEnd = (s1 / 24) * width;
     if (px <= pxStart + 8) setHover("left");
     else if (px >= pxEnd - 8) setHover("right");
     else if (px > pxStart && px < pxEnd) setHover("window");
@@ -493,12 +521,7 @@ function LoadShapeBrushChart() {
         aria-label="Time range brush. Drag the window to move it, drag its edges to resize it, or drag across the strip to draw a new window."
         style={{ cursor }}
         onPointerDown={onPointerDown}
-        onPointerMove={(event) => {
-          onPointerMove(event);
-          onHoverMove(event);
-        }}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerMove={onHoverMove}
         onPointerLeave={onPointerLeave}
         onDoubleClick={() => setSelection([0, 24])}
       >
