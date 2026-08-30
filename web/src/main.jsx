@@ -671,8 +671,11 @@ function KMeansSlide({ onRepActive }) {
   const height = size.height;
   const px = (x) => pad + x * Math.max(0, width - 2 * pad);
   const py = (y) => pad + y * Math.max(0, height - 2 * pad);
-  const pointTransition = reduced ? undefined : "fill 0.18s ease";
-  const centroidTransition = reduced ? undefined : "cx 0.42s ease, cy 0.42s ease";
+  // React needs real style objects (a string here throws TypeError and unmounts
+  // the app). cx/cy and fill are CSS-animatable geometry/style properties, so a
+  // transition object gives the same smooth motion the scene gets from gsap.
+  const pointTransition = reduced ? undefined : { transition: "fill 0.18s ease" };
+  const centroidTransition = reduced ? undefined : { transition: "cx 0.42s ease, cy 0.42s ease" };
 
   return (
     <div className="kmeans-slide" style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}>
