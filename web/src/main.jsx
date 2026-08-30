@@ -100,6 +100,60 @@ function LoadShapeChart() {
   return <Line data={data} options={chartDefaults()} />;
 }
 
+// Slides shown in the "Average 24-hour load shape" carousel.
+// Add more slides here and the arrows/dots update automatically.
+const loadShapeSlides = [LoadShapeChart];
+
+function LoadShapeCarousel() {
+  const [slide, setSlide] = React.useState(0);
+  const count = loadShapeSlides.length;
+  const goTo = (index) => setSlide((index + count) % count);
+
+  const Slide = loadShapeSlides[slide];
+
+  return (
+    <div className="carousel" role="group" aria-roledescription="carousel" aria-label="Average 24-hour load shape visualizations">
+      <button
+        className="carousel-arrow prev"
+        type="button"
+        aria-label="Previous visualization"
+        onClick={() => goTo(slide - 1)}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" />
+        </svg>
+      </button>
+      <div className="carousel-stage">
+        <div className="chart-container">
+          <Slide />
+        </div>
+        <div className="carousel-dots">
+          {loadShapeSlides.map((_, index) => (
+            <button
+              key={index}
+              className={`carousel-dot${index === slide ? " active" : ""}`}
+              type="button"
+              aria-label={`Go to slide ${index + 1}`}
+              aria-current={index === slide ? "true" : undefined}
+              onClick={() => goTo(index)}
+            />
+          ))}
+        </div>
+      </div>
+      <button
+        className="carousel-arrow next"
+        type="button"
+        aria-label="Next visualization"
+        onClick={() => goTo(slide + 1)}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 function KMetricsChart() {
   const data = {
     labels: kMetrics.map((row) => `K=${row.k}`),
@@ -283,9 +337,7 @@ function App() {
                 <h3>Average 24-hour load shape</h3>
                 <p>Each curve is normalized so timing matters more than total consumption.</p>
               </div>
-              <div className="chart-container">
-                <LoadShapeChart />
-              </div>
+              <LoadShapeCarousel />
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
