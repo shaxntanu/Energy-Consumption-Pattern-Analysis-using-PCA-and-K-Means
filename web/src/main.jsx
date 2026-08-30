@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { Bar, Line, Radar } from "react-chartjs-2";
+import { Legend, LegendItemComponent, LegendLabel, LegendMarker } from "./Legend";
 import "./styles.css";
 import {
   clusters,
@@ -202,6 +203,48 @@ function buildLoadSeries(dimmed) {
   ];
 }
 
+function hexToRgba(hex, alpha) {
+  const value = hex.replace("#", "");
+  const n = parseInt(value, 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Four entries for the composable legend, in the same order as the datasets
+// (0 = population, then the three archetypes in cluster order) so indices line
+// up. Only the presentation is described here; values come from the data files.
+const legendItems = [
+  { key: "population", label: "Population average", color: "#71808d", dashed: true },
+  ...clusters.map((cluster) => ({
+    key: String(cluster.id),
+    label: cluster.name,
+    color: cluster.color,
+    dashed: false,
+  })),
+];
+
+// Emphasis applied when a legend item is hovered/focused: the selected series
+// gets a heavier line, the rest are thinned and faded. Scientific values are
+// untouched — only stroke weight/fill presentation changes.
+function buildMainData(active) {
+  const base = buildLoadSeries(false);
+  if (active == null) return base;
+  return base.map((dataset, index) => {
+    if (index === active) {
+      return { ...dataset, borderWidth: dataset.borderDash ? 2.8 : 2.5 };
+    }
+    return {
+      ...dataset,
+      borderWidth: 1.1,
+      borderColor: hexToRgba(dataset.borderColor, 0.32),
+      backgroundColor: "transparent",
+      fill: false,
+    };
+  });
+}
+
 function axisTickDefaults() {
   return {
     color: "#94a8b4",
@@ -227,26 +270,28 @@ function hourXScale(min, max) {
   };
 }
 
-function makeBrushMainOptions(selection, animate) {
+function makeBrushMainOptions(selection, animate, setChartHover) {
   return {
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: "index", intersect: false },
     animation: animate ? { duration: 220, easing: "easeOutQuart" } : false,
+    onHover: (event, elements) => {
+      // Reflect the chart crosshair in the legend: highlight the top series at
+      // the hovered hour, and clear once the pointer leaves the data area.
+      if (!Array.isArray(elements) || elements.length === 0) {
+        setChartHover(null);
+        return;
+      }
+      const top = elements.reduce(
+        (acc, item) => (item && item.element && item.element.y > acc.element.y ? item : acc),
+        elements[0],
+      );
+      setChartHover(top ? top.datasetIndex : null);
+    },
     plugins: {
-      legend: {
-        position: "top",
-        align: "start",
-        labels: {
-          color: "#dbe7ec",
-          usePointStyle: true,
-          pointStyle: "line",
-          boxWidth: 16,
-          boxHeight: 6,
-          font: { family: "Inter", size: 12 },
-          padding: 12,
-        },
-      },
+      // The composable Legend renders the series; hide Chart.js's own legend.
+      legend: { display: false },
       tooltip: {
         backgroundColor: "rgba(16, 23, 34, 0.96)",
         borderColor: "#2d3c4d",
@@ -259,6 +304,10 @@ function makeBrushMainOptions(selection, animate) {
         cornerRadius: 6,
         boxPadding: 4,
         usePointStyle: true,
+        // Flat All-Day is a real series in this dataset. Keep it (and every
+        // other series) in the crosshair listing instead of letting a default
+        // interaction filter drop a row at any hour.
+        filter: () => true,
         callbacks: {
           title: (items) => {
             const value = items[0]?.parsed?.x;
@@ -310,16 +359,29 @@ function LoadShapeBrushChart() {
   const [interacting, setInteracting] = React.useState(false);
   const [hover, setHover] = React.useState("default");
   const [geometry, setGeometry] = React.useState({ left: 0, right: 0 });
+  // legendActive = which legend row is highlighted (driven by the legend and by
+  // the chart crosshair). emphasized = which series the chart thickens (driven
+  // only by an explicit legend hover/focus, so the crosshair doesn't re-thin
+  // the curves while you are still reading the tooltip).
+  const [legendActive, setLegendActive] = React.useState(null);
+  const [emphasized, setEmphasized] = React.useState(null);
+  const handleLegendFocus = React.useCallback((index) => {
+    setLegendActive(index);
+    setEmphasized(index);
+  }, []);
 
   const wrapRef = React.useRef(null);
   const stripChartRef = React.useRef(null);
   const dragRef = React.useRef(null);
 
-  const mainData = React.useMemo(() => ({ datasets: buildLoadSeries(false) }), []);
   const stripData = React.useMemo(() => ({ datasets: buildLoadSeries(true) }), []);
+  const mainData = React.useMemo(() => ({ datasets: buildMainData(emphasized) }), [emphasized]);
+  // Pause the gentle series animation while an explicit legend hover is going
+  // on so the emphasise/thin switch feels immediate rather than animated.
+  const animate = !reduced && !interacting && emphasized == null;
   const mainOptions = React.useMemo(
-    () => makeBrushMainOptions(selection, !reduced && !interacting),
-    [selection, reduced, interacting],
+    () => makeBrushMainOptions(selection, animate, setLegendActive),
+    [selection, reduced, interacting, animate],
   );
 
   const isFull = selection[0] <= 0 && selection[1] >= 23;
@@ -511,6 +573,14 @@ function LoadShapeBrushChart() {
 
   return (
     <div className="load-chart">
+      <Legend hoveredIndex={legendActive} onHoverChange={handleLegendFocus}>
+        {legendItems.map((item) => (
+          <LegendItemComponent key={item.key} label={item.label}>
+            <LegendMarker color={item.color} dashed={item.dashed} />
+            <LegendLabel>{item.label}</LegendLabel>
+          </LegendItemComponent>
+        ))}
+      </Legend>
       <div className="load-chart-main">
         <Line data={mainData} options={mainOptions} />
       </div>
