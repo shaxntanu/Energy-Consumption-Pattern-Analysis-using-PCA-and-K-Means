@@ -112,9 +112,98 @@ function LoadShapeChart() {
   return <Line data={data} options={chartDefaults()} />;
 }
 
+// ---------------------------------------------------------------------------
+// "Raw Data Field" slide — Slide 1 of the load-shape carousel, ported from the
+// test animation's first scene (ml_pipeline_animation/src/stages/rawDataField.js).
+// A field of 12 sample consumer profiles emerges, then one line highlights as
+// the representative. Profiles are derived from the same real archetype shapes
+// the load-shape chart uses, adding only the same synthetic "consumer" noise the
+// animation applies — so it stays a faithful port without inventing new committed
+// data. It renders inside the same .chart-container area as the other slides and
+// keeps the defined footprint (responsive, no overflow/clip).
+// ---------------------------------------------------------------------------
+const sampleProfiles = (() => {
+  const bases = clusters.map((cluster) => clusterShapes[cluster.id]);
+  const profiles = [];
+  for (let i = 0; i < 12; i++) {
+    const base = bases[i % bases.length];
+    const noiseAmp = 0.15 + Math.random() * 0.1;
+    const profile = base.map((v) => Math.max(0, v + (Math.random() - 0.5) * noiseAmp * v));
+    const max = Math.max(...profile);
+    profiles.push(profile.map((v) => v / max));
+  }
+  return profiles;
+})();
+
+const rawFieldColors = clusters.map((cluster) => cluster.color);
+
+function RawDataFieldSlide() {
+  const reduced = usePrefersReducedMotion();
+  const [state, setState] = React.useState(() => ({
+    // Representative line is full strength; the rest emerge over time.
+    alpha: sampleProfiles.map((_, i) => (reduced ? (i === 0 ? 1 : 0.08) : 0)),
+    highlighted: reduced,
+  }));
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    let cancel = false;
+    const timers = [];
+    // Reveal each consumer line in sequence.
+    sampleProfiles.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => {
+            const alpha = [...prev.alpha];
+            alpha[i] = 0.35;
+            return { ...prev, alpha };
+          });
+        }, 260 * i),
+      );
+    });
+    // Then highlight the representative line and fade the field behind it.
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
+        setState({
+          alpha: sampleProfiles.map((_, i) => (i === 0 ? 1 : 0.06)),
+          highlighted: true,
+        });
+      }, 260 * sampleProfiles.length + 700),
+    );
+    return () => {
+      cancel = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced]);
+
+  const options = React.useMemo(() => {
+    const base = chartDefaults();
+    // 12 transient lines would clutter the legend; hide just this slide's.
+    return { ...base, plugins: { ...base.plugins, legend: { display: false } } };
+  }, []);
+
+  const data = {
+    labels: hours,
+    datasets: sampleProfiles.map((profile, i) => ({
+      label: `Consumer ${String(i + 1).padStart(3, "0")}`,
+      data: profile,
+      borderColor: hexToRgba(rawFieldColors[i % rawFieldColors.length], state.alpha[i]),
+      backgroundColor: "transparent",
+      pointRadius: 0,
+      tension: 0.42,
+      fill: false,
+      borderWidth: i === 0 && state.highlighted ? 2.4 : 1,
+    })),
+  };
+
+  return <Line data={data} options={options} />;
+}
+
 // Slides shown in the "Average 24-hour load shape" carousel.
 // Add more slides here and the arrows/dots update automatically.
-const loadShapeSlides = [LoadShapeChart];
+const loadShapeSlides = [RawDataFieldSlide, LoadShapeChart];
 
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
