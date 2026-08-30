@@ -179,9 +179,194 @@ function RawDataFieldSlide({ onRepActive }) {
   return <Line data={data} options={options} />;
 }
 
-// Slides shown in the "Average 24-hour load shape" carousel.
-// Add more slides here and the arrows/dots update automatically.
-const loadShapeSlides = [RawDataFieldSlide];
+// ---------------------------------------------------------------------------
+// "Raw Data: Annotated Profile" slide - Slide 2 of the load-shape carousel,
+// ported from the test animation's second scene
+// (ml_pipeline_animation/src/stages/rawDataProfile.js). It zooms into the same
+// representative day the field highlights (sampleProfiles[0]) and draws it as a
+// single clean 24-hour rhythm with green day-phase brackets (NIGHT / MORNING /
+// AFTERNOON / EVENING), preserving the scene's palette and timing. It only
+// appends to the existing .chart-container footprint (no overflow/clip) and
+// honors prefers-reduced-motion.
+// ---------------------------------------------------------------------------
+const DAY_PHASES = [
+  { name: "NIGHT", start: 0, end: 6 },
+  { name: "MORNING", start: 6, end: 12 },
+  { name: "AFTERNOON", start: 12, end: 18 },
+  { name: "EVENING", start: 18, end: 24 },
+];
+
+// Chart-axis value (higher = lower on screen) just above the peak consumption
+// of each phase in the representative profile, so each bracket hangs over its
+// own curve segment instead of the field's tallest line.
+function phaseBracketValue(start, end) {
+  const segment = sampleProfiles[0].slice(start, end + 1);
+  const peak = Math.max(...segment);
+  return Math.max(0.04, Math.min(1, 1 - peak + 0.07));
+}
+
+function buildPhaseBracketDataset(phase) {
+  const value = phaseBracketValue(phase.start, phase.end);
+  return {
+    label: `${phase.name} phase`,
+    data: hours.map((_, hour) => (hour >= phase.start && hour <= phase.end ? value : null)),
+    borderColor: "#4ade80",
+    backgroundColor: "transparent",
+    borderWidth: 1.4,
+    borderDash: [5, 4],
+    pointRadius: 0,
+    tension: 0,
+    fill: false,
+    spanGaps: false,
+  };
+}
+
+function RawDataAnnotatedSlide({ onRepActive }) {
+  const reduced = usePrefersReducedMotion();
+  const profile = sampleProfiles[0];
+  const [state, setState] = React.useState(() => ({
+    drawn: reduced ? profile.length : 2,
+    phaseShown: reduced ? DAY_PHASES.length : 0,
+  }));
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    let cancel = false;
+    const timers = [];
+
+    // Draw the clean representative profile from left to right.
+    const total = profile.length;
+    for (let n = 2; n <= total; n++) {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, drawn: Math.max(prev.drawn, n) }));
+        }, 50 * n),
+      );
+    }
+
+    // Then reveal each day-phase bracket in sequence.
+    const drawMs = 50 * total;
+    DAY_PHASES.forEach((_, i) => {
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, phaseShown: Math.max(prev.phaseShown, i + 1) }));
+        }, drawMs + 340 * i),
+      );
+    });
+
+    return () => {
+      cancel = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced]);
+
+  // The representative profile is present throughout this slide, so report it
+  // active to the carousel immediately to use the annotated caption.
+  React.useEffect(() => {
+    onRepActive?.(true);
+  }, [onRepActive]);
+
+  const options = React.useMemo(() => {
+    const base = chartDefaults();
+    return {
+      ...base,
+      plugins: { ...base.plugins, legend: { display: false } },
+      scales: {
+        ...base.scales,
+        y: {
+          ...base.scales.y,
+          suggestedMin: 0,
+          suggestedMax: 1,
+          ticks: { ...base.scales?.y?.ticks, maxTicksLimit: 5 },
+        },
+      },
+    };
+  }, []);
+
+  const data = {
+    labels: hours,
+    datasets: [
+      {
+        label: "Representative profile",
+        data: profile.slice(0, state.drawn),
+        borderColor: "#22d3ee",
+        backgroundColor: "transparent",
+        pointRadius: 0,
+        tension: 0.42,
+        fill: false,
+        borderWidth: 2.4,
+      },
+      ...DAY_PHASES.filter((_, i) => i < state.phaseShown).map((phase) =>
+        buildPhaseBracketDataset(phase),
+      ),
+    ],
+  };
+
+  return (
+    <div
+      className="annotated-slide"
+      style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}
+    >
+      <div
+        className="annotated-phases"
+        style={{ display: "flex", justifyContent: "space-between", padding: "2px 8px 4px" }}
+      >
+        {DAY_PHASES.map((phase, i) => (
+          <span
+            key={phase.name}
+            style={{
+              color: "#4ade80",
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              letterSpacing: "0.14em",
+              opacity: i < state.phaseShown ? 1 : 0,
+              transition: "opacity 0.3s ease",
+            }}
+          >
+            {phase.name}
+          </span>
+        ))}
+      </div>
+      <div style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
+        <Line data={data} options={options} />
+      </div>
+    </div>
+  );
+}
+
+// Slides shown in the "Average 24-hour load shape" carousel, each with its own
+// caption (shown before and after its representative state). Arrows and dots
+// derive from the array length, so adding a slide updates navigation itself.
+const loadShapeSlides = [
+  {
+    component: RawDataFieldSlide,
+    captions: {
+      idle: {
+        title: "Daily load shapes",
+        subtitle: "Twelve raw daily profiles resolve into one representative 24-hour rhythm.",
+      },
+      rep: {
+        title: "The orange line is the representative day",
+        subtitle: "It is the midday-peaking rhythm, peaking around 1 pm.",
+      },
+    },
+  },
+  {
+    component: RawDataAnnotatedSlide,
+    captions: {
+      idle: {
+        title: "Annotated representative profile",
+        subtitle: "A single clean 24-hour rhythm with day-phase brackets.",
+      },
+      rep: {
+        title: "Annotated representative profile",
+        subtitle: "Four phase brackets trace the day: night, morning, afternoon, evening.",
+      },
+    },
+  },
+];
 
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
@@ -189,19 +374,14 @@ function LoadShapeCarousel({ tall = false }) {
   const count = loadShapeSlides.length;
   const goTo = (index) => setSlide((index + count) % count);
 
-  const Slide = loadShapeSlides[slide];
+  const { component: Slide, captions } = loadShapeSlides[slide];
+  const caption = repActive ? captions.rep : captions.idle;
 
   return (
     <div className="carousel" role="group" aria-roledescription="carousel" aria-label="Daily load-shape data field">
       <div className="carousel-meta">
-        <h3 className="carousel-title">
-          {repActive ? "The orange line is the representative day" : "Daily load shapes"}
-        </h3>
-        <p className="carousel-subtitle">
-          {repActive
-            ? "It is the midday-peaking rhythm, peaking around 1 pm."
-            : "Twelve raw daily profiles resolve into one representative 24-hour rhythm."}
-        </p>
+        <h3 className="carousel-title">{caption.title}</h3>
+        <p className="carousel-subtitle">{caption.subtitle}</p>
       </div>
       <div className="carousel-body">
         <button
