@@ -104,7 +104,7 @@ function LoadShapeChart() {
 // Add more slides here and the arrows/dots update automatically.
 const loadShapeSlides = [LoadShapeChart];
 
-function LoadShapeCarousel() {
+function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
   const count = loadShapeSlides.length;
   const goTo = (index) => setSlide((index + count) % count);
@@ -124,7 +124,7 @@ function LoadShapeCarousel() {
         </svg>
       </button>
       <div className="carousel-stage">
-        <div className="chart-container">
+        <div className={`chart-container${tall ? " tall" : ""}`}>
           <Slide />
         </div>
         <div className="carousel-dots">
@@ -303,9 +303,7 @@ function App() {
           </div>
         </div>
         <div className="hero-panel chart-panel tall">
-          <div className="chart-container tall">
-            <LoadShapeChart />
-          </div>
+          <LoadShapeCarousel tall />
         </div>
       </header>
 
@@ -337,7 +335,9 @@ function App() {
                 <h3>Average 24-hour load shape</h3>
                 <p>Each curve is normalized so timing matters more than total consumption.</p>
               </div>
-              <LoadShapeCarousel />
+              <div className="chart-container">
+                <LoadShapeChart />
+              </div>
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
