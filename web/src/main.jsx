@@ -589,7 +589,7 @@ function KMeansSlide({ onRepActive }) {
   const [state, setState] = React.useState(() => {
     if (reduced) {
       // Reduced motion: show the converged scatter immediately.
-      return { revealed: kmPointsData.length, spawned: true, assign: KM_FINAL.assign, cents: KM_FINAL.cents, done: true };
+      return { revealed: kmPointsData.length, spawned: true, assign: KM_FINAL.assign, cents: KM_FINAL.cents, done: true, rays: false };
     }
     return {
       revealed: 0,
@@ -597,6 +597,7 @@ function KMeansSlide({ onRepActive }) {
       assign: new Array(kmPointsData.length).fill(-1),
       cents: KM_INIT_CENTROIDS.map((c) => ({ x: c.x, y: c.y })),
       done: false,
+      rays: false,
     };
   });
 
@@ -638,13 +639,13 @@ function KMeansSlide({ onRepActive }) {
       timers.push(
         setTimeout(() => {
           if (cancel) return;
-          setState((prev) => ({ ...prev, assign }));
+          setState((prev) => ({ ...prev, assign, rays: true }));
         }, t),
       );
       timers.push(
         setTimeout(() => {
           if (cancel) return;
-          setState((prev) => ({ ...prev, cents: next }));
+          setState((prev) => ({ ...prev, cents: next, rays: false }));
         }, t + 430),
       );
       cents = next;
@@ -702,6 +703,26 @@ function KMeansSlide({ onRepActive }) {
                   style={pointTransition}
                 />
               ))}
+              {state.rays &&
+                state.spawned &&
+                kmPointsData.map((point, i) => {
+                  const c = state.assign[i];
+                  if (i >= state.revealed || c < 0) return null;
+                  return (
+                    <line
+                      key={`ray-${i}`}
+                      x1={px(point.x)}
+                      y1={py(point.y)}
+                      x2={px(state.cents[c].x)}
+                      y2={py(state.cents[c].y)}
+                      stroke={KM_COLORS[c]}
+                      strokeWidth={1}
+                      strokeDasharray="2,3"
+                      strokeOpacity={0.7}
+                      pointerEvents="none"
+                    />
+                  );
+                })}
               {state.spawned &&
                 KM_INIT_CENTROIDS.map((_, k) => (
                   <g key={k}>
