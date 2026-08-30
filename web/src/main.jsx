@@ -178,7 +178,10 @@ function buildLoadSeries(dimmed) {
   return [
     {
       label: "Population average",
-      data: populationShape,
+      // A linear x-axis needs explicit {x, y} points (x = hour index). A flat
+      // number array would only map to an x position on a category scale and
+      // would render blank here.
+      data: populationShape.map((y, i) => ({ x: i, y })),
       borderColor: "#71808d",
       borderDash: dimmed ? [4, 3] : [7, 4],
       borderWidth: dimmed ? 1.1 : 2.2,
@@ -188,7 +191,7 @@ function buildLoadSeries(dimmed) {
     },
     ...clusters.map((cluster) => ({
       label: cluster.name,
-      data: clusterShapes[cluster.id],
+      data: clusterShapes[cluster.id].map((y, i) => ({ x: i, y })),
       borderColor: cluster.color,
       backgroundColor: dimmed ? "transparent" : `${cluster.color}1c`,
       borderWidth: dimmed ? 1.1 : 2,
