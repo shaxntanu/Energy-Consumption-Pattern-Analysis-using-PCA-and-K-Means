@@ -464,17 +464,141 @@ function BehavioralFeaturesSlide({ onRepActive }) {
 
 // ---------------------------------------------------------------------------
 // "K-Means clustering" slide - Slide 4, ported from Scene 4 (kmeans.js).
-// Silhouette per candidate K is revealed in order, then the selected K=3 is
-// highlighted (cyan) with its real value, matching the scene's K=3 / 0.312
-// conclusion without inventing anything.
+// A 2D scatter of consumer points is drawn, three centroids spawn, and then
+// the algorithm iterates: every point is recoloured to its nearest centroid
+// ("captured"), and each centroid moves to the mean of its claimed points.
+// This is a live port of the scene's centroid-capture animation, using the
+// scene's palette (cyan / green / amber). The point cloud is a schematic at
+// the visualization boundary (the dashboard stores no raw 2D coordinates);
+// the assignment and update steps run the real K-means algorithm so the
+// motion is faithful. The concluding silhouette (0.312) is the committed
+// figure.
 // ---------------------------------------------------------------------------
+const KM_COLORS = ["#22d3ee", "#4ade80", "#fbbf24"];
+const KM_ITERS = 5;
+
+// Seeded PRNG so the schematic cloud is stable across renders and slide
+// switches (same approach as the source's SeededRandom).
+function mulberry32(seed) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Three well-separated blobs (one per real consumer archetype), normalized
+// coordinates in [0,1] x [0,1].
+const KM_BLOBS = [
+  { cx: 0.14, cy: 0.74, count: 20 },
+  { cx: 0.46, cy: 0.28, count: 19 },
+  { cx: 0.86, cy: 0.62, count: 18 },
+];
+const clamp01 = (v) => Math.max(0, Math.min(1, v));
+const kmPointsData = (() => {
+  const rand = mulberry32(7);
+  const pts = [];
+  KM_BLOBS.forEach((blob, bi) => {
+    for (let c = 0; c < blob.count; c++) {
+      const rx = (rand() * 2 - 1) * 0.15;
+      const ry = (rand() * 2 - 1) * 0.15;
+      pts.push({
+        x: clamp01(blob.cx + rx),
+        y: clamp01(blob.cy + ry),
+        trueCluster: bi,
+      });
+    }
+  });
+  return pts;
+})();
+
+// Deliberately offset from the blob centres so the centroids visibly migrate
+// while claiming points.
+const KM_INIT_CENTROIDS = [
+  { x: 0.05, y: 0.9 },
+  { x: 0.4, y: 0.06 },
+  { x: 0.94, y: 0.86 },
+];
+
+function kmNearestAssign(points, cents) {
+  return points.map((p) => {
+    let best = 0;
+    let bestDist = Infinity;
+    for (let k = 0; k < cents.length; k++) {
+      const dx = p.x - cents[k].x;
+      const dy = p.y - cents[k].y;
+      const d = dx * dx + dy * dy;
+      if (d < bestDist) {
+        bestDist = d;
+        best = k;
+      }
+    }
+    return best;
+  });
+}
+
+function kmStepCentroids(points, assign) {
+  const sums = cents => cents.map(() => ({ x: 0, y: 0, c: 0 }));
+  const acc = sums(KM_INIT_CENTROIDS);
+  points.forEach((p, i) => {
+    acc[assign[i]].x += p.x;
+    acc[assign[i]].y += p.y;
+    acc[assign[i]].c += 1;
+  });
+  return acc.map((a) => (a.c ? { x: a.x / a.c, y: a.y / a.c } : { x: 0.5, y: 0.5 }));
+}
+
+// Precomputed converged state (used by reduced-motion and as the final frame).
+const KM_FINAL = (() => {
+  let cents = KM_INIT_CENTROIDS.map((c) => ({ x: c.x, y: c.y }));
+  let assign = [];
+  for (let it = 0; it < KM_ITERS; it++) {
+    assign = kmNearestAssign(kmPointsData, cents);
+    cents = kmStepCentroids(kmPointsData, assign);
+  }
+  return { assign, cents };
+})();
+
+function useElementSize() {
+  const ref = React.useRef(null);
+  const [size, setSize] = React.useState({ width: 0, height: 0 });
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      setSize({ width: rect.width, height: rect.height });
+    };
+    update();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", update);
+      return () => window.removeEventListener("resize", update);
+    }
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, size];
+}
+
 function KMeansSlide({ onRepActive }) {
   const reduced = usePrefersReducedMotion();
-  const rows = kMetrics;
-  const [state, setState] = React.useState(() => ({
-    shown: reduced ? rows.length : 0,
-    done: reduced,
-  }));
+  const [wrapRef, size] = useElementSize();
+  const [state, setState] = React.useState(() => {
+    if (reduced) {
+      // Reduced motion: show the converged scatter immediately.
+      return { revealed: kmPointsData.length, spawned: true, assign: KM_FINAL.assign, cents: KM_FINAL.cents, done: true };
+    }
+    return {
+      revealed: 0,
+      spawned: false,
+      assign: new Array(kmPointsData.length).fill(-1),
+      cents: KM_INIT_CENTROIDS.map((c) => ({ x: c.x, y: c.y })),
+      done: false,
+    };
+  });
 
   React.useEffect(() => {
     onRepActive?.(reduced);
@@ -484,84 +608,151 @@ function KMeansSlide({ onRepActive }) {
     if (reduced) return undefined;
     let cancel = false;
     const timers = [];
-    rows.forEach((_, i) => {
+
+    // 1. Reveal the consumer points (grey) with the usual lead-in.
+    kmPointsData.forEach((_, i) => {
       timers.push(
         setTimeout(() => {
           if (cancel) return;
-          setState((prev) => ({ ...prev, shown: Math.max(prev.shown, i + 1) }));
-        }, LEAD_IN_MS + 240 * i),
+          setState((prev) => ({ ...prev, revealed: Math.max(prev.revealed, i + 1) }));
+        }, LEAD_IN_MS + 24 * i),
       );
     });
+
+    // 2. Spawn the three centroids.
+    const spawnAt = LEAD_IN_MS + 24 * kmPointsData.length + 300;
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
+        setState((prev) => ({ ...prev, spawned: true }));
+      }, spawnAt),
+    );
+
+    // 3. Iterate: assign points to the nearest centroid (capture), then move
+    //    each centroid to the mean of its claimed points.
+    let cents = KM_INIT_CENTROIDS.map((c) => ({ x: c.x, y: c.y }));
+    let t = spawnAt + 520;
+    for (let it = 0; it < KM_ITERS; it++) {
+      const assign = kmNearestAssign(kmPointsData, cents);
+      const next = kmStepCentroids(kmPointsData, assign);
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, assign }));
+        }, t),
+      );
+      timers.push(
+        setTimeout(() => {
+          if (cancel) return;
+          setState((prev) => ({ ...prev, cents: next }));
+        }, t + 430),
+      );
+      cents = next;
+      t += 860;
+    }
+
+    // 4. Done: reveal the conclusion and caption.
     timers.push(
       setTimeout(() => {
         if (cancel) return;
         setState((prev) => ({ ...prev, done: true }));
         onRepActive?.(true);
-      }, LEAD_IN_MS + 240 * rows.length + 320),
+      }, t + 200),
     );
+
     return () => {
       cancel = true;
       timers.forEach(clearTimeout);
     };
-  }, [reduced, rows, onRepActive]);
+  }, [reduced, onRepActive]);
 
-  const selected = rows.find((row) => row.selected);
-  const visible = rows.slice(0, state.shown);
-
-  const options = React.useMemo(() => {
-    const base = chartDefaults();
-    return {
-      ...base,
-      plugins: { ...base.plugins, legend: { display: false } },
-      scales: {
-        x: { ...base.scales.x, grid: { display: false } },
-        y: { ...base.scales.y, beginAtZero: true, suggestedMax: 0.45 },
-      },
-    };
-  }, []);
-
-  const data = {
-    labels: visible.map((row) => `K=${row.k}`),
-    datasets: [
-      {
-        label: "Silhouette",
-        data: visible.map((row) => row.silhouette),
-        backgroundColor: visible.map((row) =>
-          row.selected ? "#22d3ee" : "#fbbf24",
-        ),
-        borderColor: "rgba(255,255,255,0)",
-        borderRadius: 3,
-        barThickness: 12,
-        maxBarThickness: 22,
-      },
-    ],
-  };
+  const pad = 14;
+  const width = size.width;
+  const height = size.height;
+  const px = (x) => pad + x * Math.max(0, width - 2 * pad);
+  const py = (y) => pad + y * Math.max(0, height - 2 * pad);
+  const pointTransition = reduced ? undefined : "fill 0.18s ease";
+  const centroidTransition = reduced ? undefined : "cx 0.42s ease, cy 0.42s ease";
 
   return (
     <div className="kmeans-slide" style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}>
-      <div style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
-        <Bar data={data} options={options} />
+      <div ref={wrapRef} style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
+        {width > 0 &&
+          height > 0 && (
+            <svg
+              width={width}
+              height={height}
+              viewBox={`0 0 ${width} ${height}`}
+              role="img"
+              aria-label="K-Means clustering scatter: three centroids claim the consumer points"
+            >
+              <title>K-Means clustering scatter</title>
+              {kmPointsData.map((point, i) => (
+                <circle
+                  key={i}
+                  cx={px(point.x)}
+                  cy={py(point.y)}
+                  r={3}
+                  fill={state.assign[i] >= 0 ? KM_COLORS[state.assign[i]] : "#9aa9b5"}
+                  fillOpacity={i < state.revealed ? (state.assign[i] >= 0 ? 0.92 : 0.5) : 0}
+                  stroke="none"
+                  style={pointTransition}
+                />
+              ))}
+              {state.spawned &&
+                KM_INIT_CENTROIDS.map((_, k) => (
+                  <g key={k}>
+                    <circle
+                      cx={px(state.cents[k].x)}
+                      cy={py(state.cents[k].y)}
+                      r={11}
+                      fill="none"
+                      stroke={KM_COLORS[k]}
+                      strokeWidth={2.5}
+                      style={centroidTransition}
+                    />
+                    <circle
+                      cx={px(state.cents[k].x)}
+                      cy={py(state.cents[k].y)}
+                      r={4}
+                      fill={KM_COLORS[k]}
+                      style={centroidTransition}
+                    />
+                    <text
+                      x={px(state.cents[k].x)}
+                      y={py(state.cents[k].y) - 17}
+                      textAnchor="middle"
+                      fill={KM_COLORS[k]}
+                      fontSize="11"
+                      fontWeight="600"
+                    >
+                      C{k + 1}
+                    </text>
+                  </g>
+                ))}
+            </svg>
+          )}
       </div>
       <div
         className="kmeans-tag"
         style={{
           display: "flex",
           justifyContent: "center",
+          gap: "0.5rem",
+          color: "#4ade80",
+          fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+          fontSize: "0.7rem",
+          fontWeight: 700,
+          letterSpacing: "0.12em",
           paddingTop: 4,
           opacity: state.done ? 1 : 0,
           transition: "opacity 0.3s ease",
+          flexWrap: "wrap",
         }}
       >
-        <span
-          style={{
-            color: "#fbbf24",
-            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-          }}
-        >
-          K={selected?.k} SELECTED · SILHOUETTE {Number(selected?.silhouette).toFixed(3)}
+        <span>3 DISTINCT CLUSTERS</span>
+        <span style={{ color: "#fbbf24" }}>
+          SILHOUETTE {Number(kMetrics.find((row) => row.selected)?.silhouette ?? 0.312).toFixed(3)}
         </span>
       </div>
     </div>
@@ -1013,7 +1204,7 @@ const loadShapeSlides = [
     captions: {
       idle: {
         title: "K-Means clustering",
-        subtitle: "Silhouette is compared across candidate numbers of clusters.",
+        subtitle: "Three centroids claim the consumer points, then move to their cluster means.",
       },
       rep: {
         title: "K=3 is the selected model",
