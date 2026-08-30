@@ -152,7 +152,7 @@ a {
 .hero {
   min-height: calc(100vh - 58px);
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+  grid-template-columns: minmax(0, 0.8fr) minmax(430px, 1.4fr);
   gap: clamp(1.5rem, 4vw, 4rem);
   align-items: center;
   padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 4vw, 3rem) 3rem;
@@ -556,9 +556,36 @@ p {
 /* Carousel arrows + dots for the load-shape card ----------------------- */
 .carousel {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
   margin-top: 0.75rem;
+}
+
+.carousel-body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.carousel-meta {
+  text-align: left;
+}
+
+.carousel-title {
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  margin: 0 0 0.2rem;
+}
+
+.carousel-subtitle {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+  max-width: 60ch;
 }
 
 .carousel-stage {
