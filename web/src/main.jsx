@@ -561,6 +561,29 @@ const KM_FINAL = (() => {
   return { assign, cents };
 })();
 
+// Points glide toward their centroid on assignment (the "shoot"). KM_PULL is
+// how far a claimed point advances toward its centroid each iteration and
+// KM_GLIDE_MS is the CSS transition duration for that slide. The simulation is
+// precomputed deterministically at load so the animated and reduced-motion
+// paths show the same converged clusters.
+const KM_PULL = 0.62;
+const KM_GLIDE_MS = 380;
+const kmLerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+const KM_SIM = (() => {
+  let cents = KM_INIT_CENTROIDS.map((c) => ({ x: c.x, y: c.y }));
+  let pts = kmPointsData.map((p) => ({ x: p.x, y: p.y }));
+  const frames = [];
+  for (let it = 0; it < KM_ITERS; it++) {
+    const assign = kmNearestAssign(pts, cents);
+    const pulled = pts.map((p, i) => kmLerp(p, cents[assign[i]], KM_PULL));
+    const move = kmStepCentroids(pulled, assign);
+    frames.push({ assign, pts: pulled, cents: cents.map((c) => ({ x: c.x, y: c.y })), move });
+    pts = pulled;
+    cents = move;
+  }
+  return { frames, finalCents: cents };
+})();
+
 function useElementSize() {
   const ref = React.useRef(null);
   const [size, setSize] = React.useState({ width: 0, height: 0 });
@@ -589,12 +612,21 @@ function KMeansSlide({ onRepActive }) {
   const [state, setState] = React.useState(() => {
     if (reduced) {
       // Reduced motion: show the converged scatter immediately.
-      return { revealed: kmPointsData.length, spawned: true, assign: KM_FINAL.assign, cents: KM_FINAL.cents, done: true, rays: false };
+      return {
+        revealed: kmPointsData.length,
+        spawned: true,
+        assign: KM_SIM.frames[KM_SIM.frames.length - 1].assign,
+        pts: KM_SIM.frames[KM_SIM.frames.length - 1].pts,
+        cents: KM_SIM.frames[KM_SIM.frames.length - 1].move,
+        done: true,
+        rays: false,
+      };
     }
     return {
       revealed: 0,
       spawned: false,
       assign: new Array(kmPointsData.length).fill(-1),
+      pts: kmPointsData.map((p) => ({ x: p.x, y: p.y })),
       cents: KM_INIT_CENTROIDS.map((c) => ({ x: c.x, y: c.y })),
       done: false,
       rays: false,
@@ -629,27 +661,24 @@ function KMeansSlide({ onRepActive }) {
       }, spawnAt),
     );
 
-    // 3. Iterate: assign points to the nearest centroid (capture), then move
-    //    each centroid to the mean of its claimed points.
-    let cents = KM_INIT_CENTROIDS.map((c) => ({ x: c.x, y: c.y }));
+    // 3. Iterate: glide each claimed point toward its centroid (the shoot),
+    //    then move each centroid to the mean of its claimed points.
     let t = spawnAt + 520;
     for (let it = 0; it < KM_ITERS; it++) {
-      const assign = kmNearestAssign(kmPointsData, cents);
-      const next = kmStepCentroids(kmPointsData, assign);
+      const frame = KM_SIM.frames[it];
       timers.push(
         setTimeout(() => {
           if (cancel) return;
-          setState((prev) => ({ ...prev, assign, rays: true }));
+          setState((prev) => ({ ...prev, assign: frame.assign, pts: frame.pts, cents: frame.cents, rays: true }));
         }, t),
       );
       timers.push(
         setTimeout(() => {
           if (cancel) return;
-          setState((prev) => ({ ...prev, cents: next, rays: false }));
-        }, t + 430),
+          setState((prev) => ({ ...prev, cents: frame.move, rays: false }));
+        }, t + KM_GLIDE_MS + 60),
       );
-      cents = next;
-      t += 860;
+      t += KM_GLIDE_MS + 470;
     }
 
     // 4. Done: reveal the conclusion and caption.
@@ -675,7 +704,11 @@ function KMeansSlide({ onRepActive }) {
   // React needs real style objects (a string here throws TypeError and unmounts
   // the app). cx/cy and fill are CSS-animatable geometry/style properties, so a
   // transition object gives the same smooth motion the scene gets from gsap.
-  const pointTransition = reduced ? undefined : { transition: "fill 0.18s ease" };
+  const pointTransition = reduced
+    ? undefined
+    : {
+        transition: `cx ${KM_GLIDE_MS}ms cubic-bezier(0.33, 0.9, 0.25, 1), cy ${KM_GLIDE_MS}ms cubic-bezier(0.33, 0.9, 0.25, 1), fill 0.18s ease`,
+      };
   const centroidTransition = reduced ? undefined : { transition: "cx 0.42s ease, cy 0.42s ease" };
 
   return (
@@ -694,8 +727,8 @@ function KMeansSlide({ onRepActive }) {
               {kmPointsData.map((point, i) => (
                 <circle
                   key={i}
-                  cx={px(point.x)}
-                  cy={py(point.y)}
+                  cx={px(state.pts[i].x)}
+                  cy={py(state.pts[i].y)}
                   r={3}
                   fill={state.assign[i] >= 0 ? KM_COLORS[state.assign[i]] : "#9aa9b5"}
                   fillOpacity={i < state.revealed ? (state.assign[i] >= 0 ? 0.92 : 0.5) : 0}
@@ -711,8 +744,8 @@ function KMeansSlide({ onRepActive }) {
                   return (
                     <line
                       key={`ray-${i}`}
-                      x1={px(point.x)}
-                      y1={py(point.y)}
+                      x1={px(state.pts[i].x)}
+                      y1={py(state.pts[i].y)}
                       x2={px(state.cents[c].x)}
                       y2={py(state.cents[c].y)}
                       stroke={KM_COLORS[c]}
