@@ -84,34 +84,6 @@ function chartDefaults() {
   };
 }
 
-function LoadShapeChart() {
-  const data = {
-    labels: hours,
-    datasets: [
-      {
-        label: "Population average",
-        data: populationShape,
-        borderColor: "#71808d",
-        backgroundColor: "transparent",
-        borderDash: [5, 5],
-        pointRadius: 0,
-        tension: 0.42,
-      },
-      ...clusters.map((cluster) => ({
-        label: cluster.name,
-        data: clusterShapes[cluster.id],
-        borderColor: cluster.color,
-        backgroundColor: `${cluster.color}22`,
-        pointRadius: 0,
-        tension: 0.42,
-        fill: true,
-      })),
-    ],
-  };
-
-  return <Line data={data} options={chartDefaults()} />;
-}
-
 // ---------------------------------------------------------------------------
 // "Raw Data Field" slide — Slide 1 of the load-shape carousel, ported from the
 // test animation's first scene (ml_pipeline_animation/src/stages/rawDataField.js).
@@ -203,7 +175,7 @@ function RawDataFieldSlide() {
 
 // Slides shown in the "Average 24-hour load shape" carousel.
 // Add more slides here and the arrows/dots update automatically.
-const loadShapeSlides = [RawDataFieldSlide, LoadShapeChart];
+const loadShapeSlides = [RawDataFieldSlide];
 
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
@@ -213,44 +185,52 @@ function LoadShapeCarousel({ tall = false }) {
   const Slide = loadShapeSlides[slide];
 
   return (
-    <div className="carousel" role="group" aria-roledescription="carousel" aria-label="Average 24-hour load shape visualizations">
-      <button
-        className="carousel-arrow prev"
-        type="button"
-        aria-label="Previous visualization"
-        onClick={() => goTo(slide - 1)}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 5l-7 7 7 7" />
-        </svg>
-      </button>
-      <div className="carousel-stage">
-        <div className={`chart-container${tall ? " tall" : ""}`}>
-          <Slide />
-        </div>
-        <div className="carousel-dots">
-          {loadShapeSlides.map((_, index) => (
-            <button
-              key={index}
-              className={`carousel-dot${index === slide ? " active" : ""}`}
-              type="button"
-              aria-label={`Go to slide ${index + 1}`}
-              aria-current={index === slide ? "true" : undefined}
-              onClick={() => goTo(index)}
-            />
-          ))}
-        </div>
+    <div className="carousel" role="group" aria-roledescription="carousel" aria-label="Daily load-shape data field">
+      <div className="carousel-meta">
+        <h3 className="carousel-title">Daily load shapes</h3>
+        <p className="carousel-subtitle">
+          A field of raw daily consumption profiles — a single representative 24-hour rhythm emerges.
+        </p>
       </div>
-      <button
-        className="carousel-arrow next"
-        type="button"
-        aria-label="Next visualization"
-        onClick={() => goTo(slide + 1)}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+      <div className="carousel-body">
+        <button
+          className="carousel-arrow prev"
+          type="button"
+          aria-label="Previous visualization"
+          onClick={() => goTo(slide - 1)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
+        </button>
+        <div className="carousel-stage">
+          <div className={`chart-container${tall ? " tall" : ""}`}>
+            <Slide />
+          </div>
+          <div className="carousel-dots">
+            {loadShapeSlides.map((_, index) => (
+              <button
+                key={index}
+                className={`carousel-dot${index === slide ? " active" : ""}`}
+                type="button"
+                aria-label={`Go to slide ${index + 1}`}
+                aria-current={index === slide ? "true" : undefined}
+                onClick={() => goTo(index)}
+              />
+            ))}
+          </div>
+        </div>
+        <button
+          className="carousel-arrow next"
+          type="button"
+          aria-label="Next visualization"
+          onClick={() => goTo(slide + 1)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
