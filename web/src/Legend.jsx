@@ -68,11 +68,12 @@ function LegendItemComponent({ index, hoveredIndex, onHoverChange, label, childr
 }
 
 // Series swatch. `dashed` keeps the distinct line treatment so a series that is
-// plotted dashed in the chart reads the same way in the legend (never color-only).
-function LegendMarker({ color, dashed = false }) {
+// plotted dashed in the chart reads the same way in the legend (never color-only);
+// `variant="bar"` renders a small rounded tile for bar series.
+function LegendMarker({ color, dashed = false, variant = "line" }) {
   return (
     <span
-      className={`legend-marker${dashed ? " is-dashed" : ""}`}
+      className={`legend-marker${dashed ? " is-dashed" : ""}${variant === "bar" ? " is-bar" : ""}`}
       style={{ "--marker-color": color }}
       aria-hidden="true"
     />
