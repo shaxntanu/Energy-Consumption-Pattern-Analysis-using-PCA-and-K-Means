@@ -288,7 +288,7 @@ const brushStripOptions = {
     x: {
       type: "linear",
       min: 0,
-      max: 24,
+      max: 23,
       border: { display: false },
       grid: { display: false },
       ticks: { display: false },
@@ -306,7 +306,7 @@ const BRUSH_MIN_WIDTH = 2;
 
 function LoadShapeBrushChart() {
   const reduced = usePrefersReducedMotion();
-  const [selection, setSelection] = React.useState([0, 24]);
+  const [selection, setSelection] = React.useState([0, 23]);
   const [interacting, setInteracting] = React.useState(false);
   const [hover, setHover] = React.useState("default");
   const [geometry, setGeometry] = React.useState({ left: 0, right: 0 });
@@ -322,10 +322,10 @@ function LoadShapeBrushChart() {
     [selection, reduced, interacting],
   );
 
-  const isFull = selection[0] <= 0 && selection[1] >= 24;
+  const isFull = selection[0] <= 0 && selection[1] >= 23;
 
   // The strip has no visible axes, so its plot area fills the container
-  // exactly: hour 0 maps to x=0 and hour 24 to the container's full width.
+  // exactly: hour 0 maps to x=0 and hour 23 to the container's full width.
   // We keep geometry in state only so the overlay re-positions on resize.
   const readGeometry = () => {
     const rect = wrapRef.current?.getBoundingClientRect();
@@ -357,7 +357,7 @@ function LoadShapeBrushChart() {
     const rect = wrapRef.current?.getBoundingClientRect();
     if (!rect || rect.width < 10) return null;
     const px = clientX - rect.left;
-    return Math.max(0, Math.min(24, (px / rect.width) * 24));
+    return Math.max(0, Math.min(23, (px / rect.width) * 23));
   };
 
   // Drag tracking runs on window-level listeners so the gesture keeps working
@@ -381,9 +381,9 @@ function LoadShapeBrushChart() {
     const px = event.clientX - rect.left;
     const width = rect.width;
     const [s0, s1] = selection;
-    const pxStart = (s0 / 24) * width;
-    const pxEnd = (s1 / 24) * width;
-    const full = s0 <= 0 && s1 >= 24;
+    const pxStart = (s0 / 23) * width;
+    const pxEnd = (s1 / 23) * width;
+    const full = s0 <= 0 && s1 >= 23;
     let mode = "draw";
     if (px <= pxStart + 8) mode = "resizeL";
     else if (px >= pxEnd - 8) mode = "resizeR";
@@ -406,13 +406,13 @@ function LoadShapeBrushChart() {
         next = [drag.startSel[0], Math.max(v, drag.startSel[0] + BRUSH_MIN_WIDTH)];
       } else if (drag.mode === "move") {
         const w = drag.startSel[1] - drag.startSel[0];
-        const start = Math.max(0, Math.min(24 - w, drag.startSel[0] + (v - drag.startValue)));
+        const start = Math.max(0, Math.min(23 - w, drag.startSel[0] + (v - drag.startValue)));
         next = [start, start + w];
       } else {
         let a = Math.min(drag.startValue, v);
         let b = Math.max(drag.startValue, v);
         if (b - a < BRUSH_MIN_WIDTH) {
-          const anchor = Math.max(0, Math.min(24 - BRUSH_MIN_WIDTH, drag.startValue));
+          const anchor = Math.max(0, Math.min(23 - BRUSH_MIN_WIDTH, drag.startValue));
           a = anchor;
           b = anchor + BRUSH_MIN_WIDTH;
         }
@@ -428,7 +428,7 @@ function LoadShapeBrushChart() {
       if (dragUpRef.current) window.removeEventListener("pointerup", dragUpRef.current);
       if (dragUpRef.current) window.removeEventListener("pointercancel", dragUpRef.current);
       // A plain tap on the strip (no drag) returns to the full 24-hour view.
-      if (drag && drag.mode === "draw" && !drag.moved) setSelection([0, 24]);
+      if (drag && drag.mode === "draw" && !drag.moved) setSelection([0, 23]);
       setInteracting(false);
     };
 
@@ -455,8 +455,8 @@ function LoadShapeBrushChart() {
     const px = event.clientX - rect.left;
     const width = rect.width;
     const [s0, s1] = selection;
-    const pxStart = (s0 / 24) * width;
-    const pxEnd = (s1 / 24) * width;
+    const pxStart = (s0 / 23) * width;
+    const pxEnd = (s1 / 23) * width;
     if (px <= pxStart + 8) setHover("left");
     else if (px >= pxEnd - 8) setHover("right");
     else if (px > pxStart && px < pxEnd) setHover("window");
@@ -480,15 +480,15 @@ function LoadShapeBrushChart() {
       case "ArrowRight":
         event.preventDefault();
         if (event.shiftKey) {
-          end = Math.min(24, end + 1);
+          end = Math.min(23, end + 1);
         } else {
-          end = Math.min(24, end + 1);
+          end = Math.min(23, end + 1);
           start = end - width;
         }
         break;
       case "Home":
         event.preventDefault();
-        setSelection([0, 24]);
+        setSelection([0, 23]);
         return;
       default:
         return;
@@ -497,8 +497,8 @@ function LoadShapeBrushChart() {
   };
 
   const span = geometry.right - geometry.left;
-  const pxStart = span > 0 ? geometry.left + (selection[0] / 24) * span : 0;
-  const pxWidth = span > 0 ? geometry.left + (selection[1] / 24) * span - pxStart : 0;
+  const pxStart = span > 0 ? geometry.left + (selection[0] / 23) * span : 0;
+  const pxWidth = span > 0 ? geometry.left + (selection[1] / 23) * span - pxStart : 0;
 
   const cursor =
     hover === "left" || hover === "right"
@@ -523,7 +523,7 @@ function LoadShapeBrushChart() {
         onPointerDown={onPointerDown}
         onPointerMove={onHoverMove}
         onPointerLeave={onPointerLeave}
-        onDoubleClick={() => setSelection([0, 24])}
+        onDoubleClick={() => setSelection([0, 23])}
       >
         <Line ref={stripChartRef} data={stripData} options={brushStripOptions} />
         {span > 0 && pxWidth > 0 && (
@@ -534,7 +534,7 @@ function LoadShapeBrushChart() {
             tabIndex={0}
             aria-label="Selected time window"
             aria-valuemin={0}
-            aria-valuemax={24}
+            aria-valuemax={23}
             aria-valuenow={Math.round(selection[0])}
             aria-valuetext={`${hourLabel(selection[0])} to ${hourLabel(selection[1])}`}
             aria-describedby="brush-help"
@@ -552,7 +552,7 @@ function LoadShapeBrushChart() {
             : `Showing ${hourLabel(selection[0])} – ${hourLabel(selection[1])}. Arrow keys move the window, Shift+arrows resize it.`}
         </span>
         {!isFull && (
-          <button type="button" className="brush-reset" onClick={() => setSelection([0, 24])}>
+          <button type="button" className="brush-reset" onClick={() => setSelection([0, 23])}>
             Reset to 24h
           </button>
         )}
