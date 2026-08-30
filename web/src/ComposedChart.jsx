@@ -223,7 +223,7 @@ function ComposedChart({
   const xCenter = (i) => plotLeft + (i + 0.5) * band;
 
   // Build per-axis linear scales from the series bound to that yAxisId.
-  const buildAxis = (axisSeries, fromZero, tickCount) => {
+  const buildAxis = (axisSeries, fromZero, tickCount, domain) => {
     if (axisSeries.length === 0) return null;
     const values = data
       .map((row) => row[axisSeries[0].props.dataKey])
@@ -233,7 +233,10 @@ function ComposedChart({
     const max = Math.max(...values);
     let domainMin;
     let domainMax;
-    if (fromZero) {
+    if (domain) {
+      domainMin = domain[0];
+      domainMax = domain[1];
+    } else if (fromZero) {
       domainMin = 0;
       domainMax = max * 1.12;
     } else {
@@ -253,8 +256,49 @@ function ComposedChart({
     (s) => (s.props.yAxisId || "left") === "left",
   );
   const rightSeries = series.filter((s) => s.props.yAxisId === "right");
-  const leftAxis = buildAxis(leftSeries, true, 4);
-  const rightAxis = buildAxis(rightSeries, false, 4);
+  const leftYAxis =
+    yAxisChildren.find((y) => (y.props.yAxisId || "left") === "left") || null;
+  const rightYAxis =
+    yAxisChildren.find((y) => y.props.yAxisId === "right") || null;
+  // A from-zero scale is the default when a left axis holds bars (their natural
+  // baseline), but an explicit domain ("domain" prop on the YAxis) wins — used
+  // for a single shared percentage axis such as PCA variance (0% → 100%).
+  const leftAxis = buildAxis(
+    leftSeries,
+    leftYAxis ? leftYAxis.props.fromZero ?? true : true,
+    (leftYAxis && leftYAxis.props.tickCount) || 4,
+    (leftYAxis && leftYAxis.props.domain) || null,
+  );
+  const rightAxis = buildAxis(
+    rightSeries,
+    rightYAxis ? rightYAxis.props.fromZero ?? false : false,
+    (rightYAxis && rightYAxis.props.tickCount) || 4,
+    (rightYAxis && rightYAxis.props.domain) || null,
+  );
+  // A line is drawn against the axis it is bound to. Most charts put bars on
+  // the left (from-zero) axis and the line on the right (padded) axis, but a
+  // single-shared-percentage-axis chart binds both bar and line to "left".
+  const leftLine = leftSeries.find((s) => s.type === Line) || null;
+  const rightLine = rightSeries.find((s) => s.type === Line) || null;
+
+  // Human label for a data row ("PC3", "K = 3", …) used in titles and tooltips.
+  const rowLabel = (row, i) =>
+    row.label ||
+    (row.kNumber != null
+      ? `K = ${row.kNumber}`
+      : `${row[xDataKey] ?? i + 1}`);
+
+  const leftTickFmt =
+    leftYAxis && typeof leftYAxis.props.tickFormat === "function"
+      ? leftYAxis.props.tickFormat
+      : formatTick;
+  const rightTickFmt =
+    rightYAxis && typeof rightYAxis.props.tickFormat === "function"
+      ? rightYAxis.props.tickFormat
+      : formatTick;
+
+  // Minimum x-label gap; keeps PC1/PC14 readable while thinning middle labels.
+  const MIN_X_GAP = 30;
 
   const showPlot = width > 0 && height > 0 && plotW > 20 && plotH > 20;
 
@@ -320,19 +364,27 @@ function ComposedChart({
   // ---- derived series rendering config -----------------------------------
 
   const bars = leftSeries
+    .filter((s) => s.type === SeriesBar)
     .map((s) => ({
       ...s.props,
       dataKey: s.props.dataKey,
       isBarSeries: true,
+      axis: leftAxis,
     }))
-    .filter((s) => leftAxis && s.dataKey in (data[0] || {}));
-  const line = rightSeries[0]
+    .filter((s) => s.axis && s.dataKey in (data[0] || {}));
+  const line = leftLine
     ? {
-        ...rightSeries[0].props,
-        dataKey: rightSeries[0].props.dataKey,
-        yScale: rightAxis ? rightAxis.scale : null,
+        ...leftLine.props,
+        dataKey: leftLine.props.dataKey,
+        axis: leftAxis,
       }
-    : null;
+    : rightLine
+      ? {
+          ...rightLine.props,
+          dataKey: rightLine.props.dataKey,
+          axis: rightAxis,
+        }
+      : null;
 
   const formatSeriesValue = (conf) => (value) =>
     typeof conf.format === "function" ? conf.format(value) : Number(value).toFixed(2);
@@ -378,9 +430,7 @@ function ComposedChart({
     );
   }
 
-  const activeTitle = currentRow
-    ? `K = ${currentRow.kNumber ?? currentRow[xDataKey] ?? active}`
-    : "";
+  const activeTitle = currentRow ? rowLabel(currentRow, active) : "";
 
   return (
     <div
@@ -452,14 +502,14 @@ function ComposedChart({
                 opacity={opacity}
                 pointerEvents="none"
               >
-                <title>{`K = ${row.kNumber ?? i + 1}, ${s.label || s.dataKey}: ${formatSeriesValue(s)(value)}`}</title>
+                <title>{`${rowLabel(row, i)}, ${s.label || s.dataKey}: ${formatSeriesValue(s)(value)}`}</title>
               </path>
             );
           }),
         )}
 
         {/* line + points */}
-        {line && rightAxis && (
+        {line && line.axis && (
           <g opacity={lineDimmedByLegend}>
             <path
               className="cc-fade"
@@ -468,7 +518,7 @@ function ComposedChart({
                   ? line.curve(
                       data.map((row, i) => ({
                         x: xCenter(i),
-                        y: rightAxis.scale(row[line.dataKey]),
+                        y: line.axis.scale(row[line.dataKey]),
                       })),
                     )
                   : ""
@@ -482,7 +532,7 @@ function ComposedChart({
             />
             {data.map((row, i) => {
               const cx = xCenter(i);
-              const cy = rightAxis.scale(row[line.dataKey]);
+              const cy = line.axis.scale(row[line.dataKey]);
               const isActive = active === i;
               return (
                 <g key={`${line.dataKey}-pt-${i}`} className="cc-fade" opacity={active == null || isActive ? 1 : 0.6}>
@@ -503,7 +553,7 @@ function ComposedChart({
                     style={{ fill: line.stroke }}
                     pointerEvents="none"
                   >
-                    <title>{`K = ${row.kNumber ?? i + 1}, ${line.label || line.dataKey}: ${formatSeriesValue(line)(row[line.dataKey])}`}</title>
+                    <title>{`${rowLabel(row, i)}, ${line.label || line.dataKey}: ${formatSeriesValue(line)(row[line.dataKey])}`}</title>
                   </circle>
                 </g>
               );
@@ -535,7 +585,7 @@ function ComposedChart({
                     fontSize={9.5}
                     fontFamily='"IBM Plex Mono", ui-monospace, monospace'
                   >
-                    {formatTick(tick)}
+                    {leftTickFmt(tick)}
                   </text>
                 </g>
               );
@@ -582,7 +632,7 @@ function ComposedChart({
                     fontSize={9.5}
                     fontFamily='"IBM Plex Mono", ui-monospace, monospace'
                   >
-                    {formatTick(tick)}
+                    {rightTickFmt(tick)}
                   </text>
                 </g>
               );
@@ -606,29 +656,33 @@ function ComposedChart({
           </g>
         )}
 
-        {/* x axis labels */}
+        {/* x axis labels (ends always shown; middles thinned only when crowded) */}
         <g>
-          {data.map((row, i) => {
-            const showTick = !xAxisChild || !xAxisChild.props.numTicks || xAxisChild.props.numTicks >= n
-              ? true
-              : i % Math.ceil(n / xAxisChild.props.numTicks) === 0;
-            if (!showTick) return null;
-            const isSelected = i === selectedIndex;
-            return (
-              <text
-                key={`x-${i}`}
-                x={xCenter(i)}
-                y={plotBottom + 16}
-                textAnchor="middle"
-                style={{ fill: isSelected ? "var(--cyan)" : "var(--muted)" }}
-                fontSize={9.5}
-                fontFamily='"IBM Plex Mono", ui-monospace, monospace'
-                fontWeight={isSelected ? 700 : 400}
-              >
-                {row[xDataKey] ?? i}
-              </text>
-            );
-          })}
+          {(() => {
+            let prevX = -Infinity;
+            return data.map((row, i) => {
+              const x = xCenter(i);
+              const first = i === 0;
+              const last = i === n - 1;
+              if (!first && !last && x - prevX < MIN_X_GAP) return null;
+              if (!last) prevX = x;
+              const isSelected = i === selectedIndex;
+              return (
+                <text
+                  key={`x-${i}`}
+                  x={x}
+                  y={plotBottom + 16}
+                  textAnchor="middle"
+                  style={{ fill: isSelected ? "var(--cyan)" : "var(--muted)" }}
+                  fontSize={9.5}
+                  fontFamily='"IBM Plex Mono", ui-monospace, monospace'
+                  fontWeight={isSelected ? 700 : 400}
+                >
+                  {row[xDataKey] ?? i}
+                </text>
+              );
+            });
+          })()}
         </g>
       </svg>
 

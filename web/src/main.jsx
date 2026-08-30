@@ -12,7 +12,7 @@ import {
   RadialLinearScale,
   Tooltip,
 } from "chart.js";
-import { Bar, Line, Radar } from "react-chartjs-2";
+import { Line, Radar } from "react-chartjs-2";
 import { Legend, LegendItemComponent, LegendLabel, LegendMarker } from "./Legend";
 import {
   ChartTooltip,
@@ -712,31 +712,71 @@ function KSelectionChart() {
   );
 }
 
-function PcaChart() {
-  const data = {
-    labels: pcaComponents.map((row) => `PC${row.component}`),
-    datasets: [
-      {
-        label: "Explained variance",
-        data: pcaComponents.map((row) => row.explainedVariance * 100),
-        backgroundColor: "#6c8cff",
-        borderRadius: 7,
-      },
-      {
-        type: "line",
-        label: "Cumulative variance",
-        data: pcaComponents.map((row) => row.cumulativeVariance * 100),
-        borderColor: "#48d7c2",
-        backgroundColor: "#48d7c2",
-        pointRadius: 3,
-        tension: 0.35,
-      },
-    ],
-  };
-  const options = chartDefaults();
-  options.scales.y.ticks.callback = (value) => `${value}%`;
-  options.scales.y.suggestedMax = 100;
-  return <Bar data={data} options={options} />;
+function PcaVarianceChart() {
+  const rows = pcaComponents.map((row) => ({
+    component: `PC${row.component}`,
+    label: `PC${row.component}`,
+    explainedVariance: row.explainedVariance,
+    cumulativeVariance: row.cumulativeVariance,
+  }));
+  const [legendSeries, setLegendSeries] = React.useState(null); // "first" | "second"
+  const pct = (v) => `${(v * 100).toFixed(1)}%`;
+  return (
+    <div className="chart-container">
+      <div className="pca-chart-inner">
+        <div className="pca-chart-top">
+          <Legend
+            hoveredIndex={legendSeries === "first" ? 0 : legendSeries === "second" ? 1 : null}
+            onHoverChange={(i) => setLegendSeries(i === 0 ? "first" : i === 1 ? "second" : null)}
+          >
+            <LegendItemComponent label="Explained variance">
+              <LegendMarker color="var(--blue)" variant="bar" />
+              <LegendLabel>Explained variance</LegendLabel>
+            </LegendItemComponent>
+            <LegendItemComponent label="Cumulative variance">
+              <LegendMarker color="var(--cyan)" />
+              <LegendLabel>Cumulative variance</LegendLabel>
+            </LegendItemComponent>
+          </Legend>
+        </div>
+        <ComposedChart
+          data={rows}
+          xDataKey="component"
+          seriesDim={legendSeries}
+          maxBarSize={28}
+          ariaLabel="PCA variance: explained variance bars and cumulative variance line from PC1 to PC14"
+        >
+          <Grid horizontal />
+          <YAxis
+            orientation="left"
+            label="Variance (%)"
+            domain={[0, 1]}
+            tickCount={6}
+            tickFormat={(v) => `${Math.round(v * 100)}%`}
+          />
+          <SeriesBar
+            dataKey="explainedVariance"
+            label="Explained variance"
+            fill="var(--blue)"
+            radius={3}
+            maxBarSize={20}
+            fadedOpacity={0.24}
+            format={pct}
+          />
+          <ComposedLine
+            dataKey="cumulativeVariance"
+            label="Cumulative variance"
+            stroke="var(--cyan)"
+            strokeWidth={2.25}
+            curve={curveCatmullRom.alpha(0.42)}
+            format={pct}
+          />
+          <ChartTooltip showCrosshair={false} />
+          <XAxis />
+        </ComposedChart>
+      </div>
+    </div>
+  );
 }
 
 function ClusterRadar() {
@@ -869,11 +909,11 @@ function App() {
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
-                <h3>PCA variance</h3>
+                <h3>PCA Variance</h3>
                 <p>Fourteen components keep just over 95% of the variation.</p>
               </div>
               <div className="chart-container">
-                <PcaChart />
+                <PcaVarianceChart />
               </div>
             </article>
             <article className="chart-panel">
