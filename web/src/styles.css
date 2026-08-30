@@ -657,6 +657,114 @@ p {
   }
 }
 
+/* Composable legend (Legend / LegendItemComponent / Legend / Value) ----- */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.legend-title {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.legend-items {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend-item {
+  margin: 0;
+  transition: opacity 0.15s ease;
+}
+
+.legend-item.is-dimmed {
+  opacity: 0.45;
+}
+
+.legend-item-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.legend-item-button:hover {
+  background: rgba(21, 33, 49, 0.7);
+  border-color: var(--line);
+}
+
+.legend-item.is-active .legend-item-button {
+  background: rgba(21, 33, 49, 0.9);
+  border-color: var(--line);
+}
+
+.legend-item-button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.legend-marker {
+  display: inline-block;
+  flex: none;
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--marker-color);
+}
+
+.legend-marker.is-dashed {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--marker-color) 0 5px,
+    transparent 5px 8px
+  );
+}
+
+.legend-label {
+  white-space: nowrap;
+}
+
+.legend-value {
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+}
+
+/* Larger tap targets on touch devices (skill: not hover-only). */
+@media (pointer: coarse) {
+  .legend-item-button {
+    padding: 0.5rem 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legend-item,
+  .legend-item-button {
+    transition: none;
+  }
+}
+
 /* Brush load chart (Average 24-hour load shape) ------------------------- */
 .load-chart {
   display: flex;
