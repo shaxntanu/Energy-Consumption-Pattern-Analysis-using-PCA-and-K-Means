@@ -657,6 +657,149 @@ p {
   }
 }
 
+/* Brush load chart (Average 24-hour load shape) ------------------------- */
+.load-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.load-chart-main {
+  position: relative;
+  height: 250px;
+  min-height: 250px;
+  max-height: 250px;
+}
+
+.load-chart-main canvas {
+  display: block !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.load-chart-brush {
+  position: relative;
+  height: 62px;
+  min-height: 62px;
+  max-height: 62px;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.brush-window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  border: 1px solid rgba(108, 140, 255, 0.55);
+  border-radius: 6px;
+  background: rgba(108, 140, 255, 0.12);
+  pointer-events: none;
+}
+
+.brush-window:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.brush-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+}
+
+.brush-handle.left {
+  left: 0;
+}
+
+.brush-handle.right {
+  right: 0;
+}
+
+.brush-handle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px;
+  height: 56%;
+  min-height: 14px;
+  border-radius: 2px;
+  background: rgba(108, 140, 255, 0.9);
+}
+
+.load-chart-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  min-height: 22px;
+}
+
+.brush-hint {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.brush-reset {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 0.32rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.brush-reset:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background-color: rgba(72, 215, 194, 0.08);
+}
+
+.brush-reset:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brush-window,
+  .brush-reset {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .load-chart-main {
+    height: 220px;
+    min-height: 220px;
+    max-height: 220px;
+  }
+
+  .load-chart-brush {
+    height: 54px;
+    min-height: 54px;
+    max-height: 54px;
+  }
+
+  .load-chart-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+}
+
 @media (max-width: 920px) {
   .hero,
   .chart-grid {
