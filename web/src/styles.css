@@ -595,6 +595,25 @@ p {
   flex-direction: column;
 }
 
+/* Smooth slide switches: the stage box is fixed-size, so on each slide key
+   change the incoming slide fades and settles with pure opacity/transform —
+   no layout shift, and the canvas remount no longer reads as a hard swap. */
+.carousel-stage .chart-container,
+.carousel-meta {
+  animation: carousel-enter 0.4s ease both;
+}
+
+@keyframes carousel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .carousel-arrow {
   flex: 0 0 auto;
   display: inline-flex;
@@ -672,7 +691,10 @@ p {
 
 @media (prefers-reduced-motion: reduce) {
   .carousel-arrow,
-  .carousel-dot {
+  .carousel-dot,
+  .carousel-stage .chart-container,
+  .carousel-meta {
+    animation: none;
     transition: none;
   }
 }
