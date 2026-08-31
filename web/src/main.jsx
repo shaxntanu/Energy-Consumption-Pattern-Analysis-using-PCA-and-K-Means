@@ -426,9 +426,11 @@ function BehavioralFeaturesSlide({ onRepActive }) {
           ticks: {
             ...base.scales.y.ticks,
             // Only revealed features are labelled, so name and bar arrive as one
-            // synced step while the layout stays fixed.
+            // synced step while the layout stays fixed. Chart.js hands a category
+            // scale its row INDEX here, not the label — read the feature name
+            // straight from FEATURE_ROWS so the axis never shows counting.
             callback(value, index) {
-              return index < state.shown ? value : "";
+              return index < state.shown ? FEATURE_ROWS[index].key : "";
             },
             color(ctx) {
               return ctx.index < state.shown ? base.scales.y.ticks.color : "transparent";
@@ -1346,7 +1348,9 @@ function LoadShapeCarousel({ tall = false }) {
 
   return (
     <div className="carousel" role="group" aria-roledescription="carousel" aria-label="Daily load-shape data field">
-      <div className="carousel-meta">
+      {/* keyed by slide so the fade (styles.css carousel-enter) replays on
+          every switch and the hard remount reads as one eased entry. */}
+      <div key={slide} className="carousel-meta">
         <h3 className="carousel-title">{caption.title}</h3>
         <p className="carousel-subtitle">{caption.subtitle}</p>
       </div>
@@ -1363,7 +1367,7 @@ function LoadShapeCarousel({ tall = false }) {
           </svg>
         </button>
         <div className="carousel-stage">
-          <div className={`chart-container${tall ? " tall" : ""}`}>
+          <div key={slide} className={`chart-container${tall ? " tall" : ""}`}>
             <Slide onRepActive={setRepActive} />
           </div>
           <div className="carousel-dots">
