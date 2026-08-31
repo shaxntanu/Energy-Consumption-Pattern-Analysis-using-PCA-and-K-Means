@@ -656,23 +656,31 @@ function ComposedChart({
           </g>
         )}
 
-        {/* x axis labels (ends always shown; middles thinned only when crowded) */}
+        {/* x axis labels. Horizontal labels thin the crowded middles; a
+            tickRotation (e.g. -90 for vertical) gives every label a tiny
+            horizontal footprint, so instead each tick is labelled — no clash. */}
         <g>
           {(() => {
+            const rotation =
+              typeof xAxisChild?.props.tickRotation === "number"
+                ? xAxisChild.props.tickRotation
+                : 0;
             let prevX = -Infinity;
             return data.map((row, i) => {
               const x = xCenter(i);
               const first = i === 0;
               const last = i === n - 1;
-              if (!first && !last && x - prevX < MIN_X_GAP) return null;
+              if (rotation === 0 && !first && !last && x - prevX < MIN_X_GAP) return null;
               if (!last) prevX = x;
               const isSelected = i === selectedIndex;
+              const y = plotBottom + 16;
               return (
                 <text
                   key={`x-${i}`}
                   x={x}
-                  y={plotBottom + 16}
+                  y={y}
                   textAnchor="middle"
+                  transform={rotation ? `rotate(${rotation} ${x} ${y})` : undefined}
                   style={{ fill: isSelected ? "var(--cyan)" : "var(--muted)" }}
                   fontSize={9.5}
                   fontFamily='"IBM Plex Mono", ui-monospace, monospace'

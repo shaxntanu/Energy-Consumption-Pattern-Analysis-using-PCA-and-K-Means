@@ -229,7 +229,10 @@ function RawDataAnnotatedSlide({ onRepActive }) {
   const reduced = usePrefersReducedMotion();
   const profile = sampleProfiles[0];
   const [state, setState] = React.useState(() => ({
-    drawn: reduced ? profile.length : 2,
+    // Start with nothing drawn so no partial line ("tail") shows during the
+    // lead-in before the draw animation begins. Reduced motion still shows the
+    // full profile immediately.
+    drawn: reduced ? profile.length : 0,
     phaseShown: reduced ? DAY_PHASES.length : 0,
   }));
 
@@ -1979,7 +1982,9 @@ function PcaVarianceChart() {
             format={pct}
           />
           <ChartTooltip showCrosshair={false} />
-          <XAxis />
+          {/* 14 PCs would crowd as horizontal ticks; vertical labels keep every
+              component readable without clashing (see ComposedChart). */}
+          <XAxis tickRotation={-90} />
         </ComposedChart>
       </div>
     </div>
