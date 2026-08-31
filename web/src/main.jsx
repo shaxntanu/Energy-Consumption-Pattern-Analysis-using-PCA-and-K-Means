@@ -406,26 +406,46 @@ function BehavioralFeaturesSlide({ onRepActive }) {
     };
   }, [reduced, onRepActive]);
 
+  // Stable six-category layout: every reveal keeps the same band positions, so
+  // each feature's label and bar pop in together instead of the axis reflowing
+  // and the already-visible bars shuffling out of step with the reveal order.
   const options = React.useMemo(() => {
     const base = chartDefaults();
     return {
       ...base,
       indexAxis: "y",
+      // Short per-reveal pop so a bar settles right around when its label lands
+      // (220ms reveal cadence); reduced motion draws the final frame instantly.
+      animation: reduced ? false : { duration: 240 },
       plugins: { ...base.plugins, legend: { display: false } },
       scales: {
         x: { ...base.scales.x, beginAtZero: true, suggestedMax: 1 },
-        y: { ...base.scales.y, grid: { display: false } },
+        y: {
+          ...base.scales.y,
+          grid: { display: false },
+          ticks: {
+            ...base.scales.y.ticks,
+            // Only revealed features are labelled, so name and bar arrive as one
+            // synced step while the layout stays fixed.
+            callback(value, index) {
+              return index < state.shown ? value : "";
+            },
+            color(ctx) {
+              return ctx.index < state.shown ? base.scales.y.ticks.color : "transparent";
+            },
+          },
+        },
       },
     };
-  }, []);
+  }, [reduced, state.shown]);
 
   const data = {
-    labels: FEATURE_ROWS.slice(0, state.shown).map((row) => row.key),
+    labels: FEATURE_ROWS.map((row) => row.key),
     datasets: [
       {
         label: `Share for ${representativeCluster.name}`,
-        data: FEATURE_VALUES.slice(0, state.shown),
-        backgroundColor: FEATURE_ROWS.slice(0, state.shown).map((row) => row.color),
+        data: FEATURE_VALUES.map((value, i) => (i < state.shown ? value : 0)),
+        backgroundColor: FEATURE_ROWS.map((row) => row.color),
         borderColor: "rgba(255,255,255,0)",
         borderWidth: 0,
         borderRadius: 3,
