@@ -588,6 +588,24 @@ p {
   max-width: 60ch;
 }
 
+/* Banner: the title+subtitle text inside .carousel-meta. Keyed by caption
+   identity, it remounts on each idle→rep (or rep→idle) swap and runs the
+   small rise animation below — no layout shift, no abrupt pop. */
+.carousel-caption {
+  animation: caption-in 0.34s ease both;
+}
+
+@keyframes caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .carousel-stage {
   flex: 1 1 auto;
   min-width: 0;
@@ -693,7 +711,8 @@ p {
   .carousel-arrow,
   .carousel-dot,
   .carousel-stage .chart-container,
-  .carousel-meta {
+  .carousel-meta,
+  .carousel-caption {
     animation: none;
     transition: none;
   }
@@ -712,6 +731,95 @@ p {
   .carousel-arrow svg {
     width: 17px;
     height: 17px;
+  }
+}
+
+/* Behavioral features slide: six short axis labels + a legend to the right
+   that spells out the full forms, revealing in step with each bar. The short
+   labels render from frame one so the y-axis gutter never resizes while bars
+   grow (no plot shift); the legend and count fade in instead. */
+.features-main {
+  display: flex;
+  gap: 1rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.features-legend {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.42rem;
+  min-width: 0;
+  padding-right: 0.1rem;
+}
+
+.features-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.features-legend-item > span {
+  flex: none;
+}
+
+.features-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.features-short {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  min-width: 2.8rem;
+  text-align: right;
+}
+
+.features-full {
+  color: var(--muted);
+}
+
+.features-count {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding-top: 4px;
+  min-height: 1.1rem;
+  transition: opacity 0.4s ease;
+}
+
+.features-count-in span {
+  animation: count-pop 0.5s ease both;
+}
+
+@keyframes count-pop {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .features-legend-item,
+  .features-count,
+  .features-count-in span {
+    transition: none;
+    animation: none;
   }
 }
 
@@ -1039,6 +1147,68 @@ p {
   background: rgba(72, 215, 194, 0.08);
   border-radius: 999px;
   padding: 0.18rem 0.55rem;
+}
+
+/* Validation slide K-sweep: fills the panel under the metric cards with the
+   silhouette / Davies-Bouldin sweep across K=2..10. Fades up after the last
+   card lands; owns its chart-local --k-bar token (the cards are not inside
+   .k-chart-inner, which is where that token otherwise lives). */
+.validation-sweep {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  margin-top: 0.9rem;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  --k-bar: #31465a;
+}
+
+.validation-sweep.is-shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.validation-sweep-top {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.validation-sweep-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.validation-sweep-dot,
+.validation-sweep-line {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.validation-sweep-line {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .validation-sweep {
+    transition: none;
+  }
 }
 
 /* PCA variance composed chart (BKLIT-style, single shared % axis) ---------- */
