@@ -370,6 +370,12 @@ const FEATURE_VALUES = [
   representativeCluster.coefficientOfVariation,
 ];
 
+// Compact y-axis labels for the six descriptors; the full names go in the
+// legend beside the bars. Short, similar-width labels are all present from
+// frame one, so the axis gutter never changes width and the plot area cannot
+// shift sideways as bars reveal.
+const SHORT_FEATURE_LABELS = ["Morn", "Aft", "Eve", "Night", "Base", "CV"];
+
 function BehavioralFeaturesSlide({ onRepActive }) {
   const reduced = usePrefersReducedMotion();
   const [state, setState] = React.useState(() => ({
@@ -409,8 +415,12 @@ function BehavioralFeaturesSlide({ onRepActive }) {
   // Stable six-category layout: every reveal keeps the same band positions, so
   // each feature's label and bar pop in together instead of the axis reflowing
   // and the already-visible bars shuffling out of step with the reveal order.
+  // Every short label is rendered from frame one (in a dimmer grey until its
+  // own reveal), so the y-axis gutter width never changes and the plot area
+  // cannot shift right as text appears.
   const options = React.useMemo(() => {
     const base = chartDefaults();
+    const muted = "rgba(148, 168, 180, 0.35)";
     return {
       ...base,
       indexAxis: "y",
@@ -425,15 +435,14 @@ function BehavioralFeaturesSlide({ onRepActive }) {
           grid: { display: false },
           ticks: {
             ...base.scales.y.ticks,
-            // Only revealed features are labelled, so name and bar arrive as one
-            // synced step while the layout stays fixed. Chart.js hands a category
-            // scale its row INDEX here, not the label — read the feature name
-            // straight from FEATURE_ROWS so the axis never shows counting.
+            // Chart.js hands a category scale the row INDEX here, not the label
+            // — read the short name straight from SHORT_FEATURE_LABELS so the
+            // axis never shows counting.
             callback(value, index) {
-              return index < state.shown ? FEATURE_ROWS[index].key : "";
+              return SHORT_FEATURE_LABELS[index] ?? "";
             },
             color(ctx) {
-              return ctx.index < state.shown ? base.scales.y.ticks.color : "transparent";
+              return ctx.index < state.shown ? base.scales.y.ticks.color : muted;
             },
           },
         },
@@ -447,9 +456,15 @@ function BehavioralFeaturesSlide({ onRepActive }) {
       {
         label: `Share for ${representativeCluster.name}`,
         data: FEATURE_VALUES.map((value, i) => (i < state.shown ? value : 0)),
-        backgroundColor: FEATURE_ROWS.map((row) => row.color),
+        // Hidden rows stay fully transparent and minBarLength is off, so no
+        // coloured sliver peeks out of the axis during the lead-in or between
+        // reveals — the pause stays clean until each bar's own turn.
+        backgroundColor: FEATURE_ROWS.map((row, i) =>
+          i < state.shown ? row.color : "rgba(0,0,0,0)",
+        ),
         borderColor: "rgba(255,255,255,0)",
         borderWidth: 0,
+        minBarLength: 0,
         borderRadius: 3,
         barThickness: 8,
       },
@@ -458,18 +473,34 @@ function BehavioralFeaturesSlide({ onRepActive }) {
 
   return (
     <div className="features-slide" style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}>
-      <div style={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0 }}>
-        <Bar data={data} options={options} />
+      <div className="features-main">
+        <div style={{ position: "relative", flex: "1 1 auto", minHeight: 0, minWidth: 0 }}>
+          <Bar data={data} options={options} />
+        </div>
+        {/* Legend to the right of the bars: short axis label, full form, and
+            the row's colour, fading in in step with the matching bar. */}
+        <div className="features-legend" aria-label="Feature legend: full forms of the axis abbreviations">
+          {FEATURE_ROWS.map((row, i) => (
+            <div
+              className="features-legend-item"
+              key={row.key}
+              style={{
+                opacity: i < state.shown ? 1 : 0,
+                transform: i < state.shown ? "translateY(0)" : "translateY(3px)",
+              }}
+            >
+              <span className="features-swatch" style={{ background: row.color }} aria-hidden="true" />
+              <span className="features-short" style={{ color: row.color }}>
+                {SHORT_FEATURE_LABELS[i]}
+              </span>
+              <span className="features-full">{row.key}</span>
+            </div>
+          ))}
+        </div>
       </div>
       <div
-        className="features-count"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          paddingTop: 4,
-          opacity: state.countShown ? 1 : 0,
-          transition: "opacity 0.3s ease",
-        }}
+        className={`features-count${state.countShown ? " features-count-in" : ""}`}
+        style={{ opacity: state.countShown ? 1 : 0 }}
       >
         <span
           style={{
@@ -501,6 +532,11 @@ function BehavioralFeaturesSlide({ onRepActive }) {
 // ---------------------------------------------------------------------------
 const KM_COLORS = ["#22d3ee", "#4ade80", "#fbbf24"];
 const KM_ITERS = 5;
+
+// Scatter-chart scaffolding for the K-Means slide: stay in normalized [0,1]
+// space (matching the points), shared by both the faint grid/frame lines and
+// the 0.0–1.0 tick labels.
+const KM_GRID_STEPS = [0, 0.2, 0.4, 0.6, 0.8, 1];
 
 // Seeded PRNG so the schematic cloud is stable across renders and slide
 // switches (same approach as the source's SeededRandom).
@@ -721,11 +757,16 @@ function KMeansSlide({ onRepActive }) {
     };
   }, [reduced, onRepActive]);
 
-  const pad = 14;
+  // Asymmetric plot inset: extra room on the left/bottom holds the added axis
+  // tick labels outside the frame instead of clipping them at the SVG edge.
+  const padL = 38;
+  const padR = 16;
+  const padT = 18;
+  const padB = 30;
   const width = size.width;
   const height = size.height;
-  const px = (x) => pad + x * Math.max(0, width - 2 * pad);
-  const py = (y) => pad + y * Math.max(0, height - 2 * pad);
+  const px = (x) => padL + x * Math.max(0, width - padL - padR);
+  const py = (y) => padT + y * Math.max(0, height - padT - padB);
   // React needs real style objects (a string here throws TypeError and unmounts
   // the app). cx/cy and fill are CSS-animatable geometry/style properties, so a
   // transition object gives the same smooth motion the scene gets from gsap.
@@ -749,6 +790,62 @@ function KMeansSlide({ onRepActive }) {
               aria-label="K-Means clustering scatter: three centroids claim the consumer points"
             >
               <title>K-Means clustering scatter</title>
+              {/* Graph-like scaffolding behind the points: a faint Cartesian
+                  grid with a framed axis and compact 0.0–1.0 ticks, so the
+                  cluster claims read against a real scatter chart — not a
+                  blank panel. */}
+              {KM_GRID_STEPS.map((f) => (
+                <line
+                  key={`grid-v-${f}`}
+                  x1={px(f)}
+                  y1={py(0)}
+                  x2={px(f)}
+                  y2={py(1)}
+                  stroke={
+                    f === 0 || f === 1
+                      ? "rgba(148, 168, 180, 0.30)"
+                      : "rgba(141, 163, 176, 0.10)"
+                  }
+                  strokeWidth={1}
+                />
+              ))}
+              {KM_GRID_STEPS.map((f) => (
+                <line
+                  key={`grid-h-${f}`}
+                  x1={px(0)}
+                  y1={py(f)}
+                  x2={px(1)}
+                  y2={py(f)}
+                  stroke={
+                    f === 0 || f === 1
+                      ? "rgba(148, 168, 180, 0.30)"
+                      : "rgba(141, 163, 176, 0.10)"
+                  }
+                  strokeWidth={1}
+                />
+              ))}
+              {KM_GRID_STEPS.map((f) => (
+                <g key={`tick-${f}`}>
+                  <text
+                    x={px(f)}
+                    y={py(1) + 15}
+                    textAnchor="middle"
+                    fill="rgba(148, 168, 180, 0.55)"
+                    fontSize="9"
+                  >
+                    {f.toFixed(1)}
+                  </text>
+                  <text
+                    x={px(0) - 8}
+                    y={py(f) + 3}
+                    textAnchor="end"
+                    fill="rgba(148, 168, 180, 0.55)"
+                    fontSize="9"
+                  >
+                    {f.toFixed(1)}
+                  </text>
+                </g>
+              ))}
               {kmPointsData.map((point, i) => (
                 <circle
                   key={i}
@@ -1108,9 +1205,19 @@ function BehavioralArchetypesSlide({ onRepActive }) {
 // "Validation & Robustness" slide - Slide 7, ported from Scene 7
 // (validationRobustness.js). Only committed figures are shown: the selected
 // K=3 silhouette and Davies-Bouldin from kMetrics, the cluster count, and the
-// dataset scale from summaryStats. Cards reveal in sequence (silhouette first,
-// scene-coloured), then the validation caption appears.
+// dataset scale from summaryStats.
+//
+// The three cards reveal fast and tight, then a compact K-sweep (silhouette
+// bars + Davies-Bouldin line across K=2..10, K=3 highlighted) fades in below
+// to fill the panel with the actual evidence that picked K=3.
 // ---------------------------------------------------------------------------
+// Cards lead the default beat so all three land well before the old ~1.3s
+// lag; the sweep follows right after the last card, then the caption.
+const VALIDATION_CARDS_AT = 900;
+const VALIDATION_CARD_STAGGER = 150;
+const VALIDATION_SWEEP_AT = VALIDATION_CARDS_AT + VALIDATION_CARD_STAGGER * 3 + 260;
+const VALIDATION_DONE_AT = VALIDATION_SWEEP_AT + 420;
+
 function ValidationRobustnessSlide({ onRepActive }) {
   const reduced = usePrefersReducedMotion();
   const selected = kMetrics.find((row) => row.selected);
@@ -1121,6 +1228,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
   ];
   const [state, setState] = React.useState(() => ({
     shown: reduced ? cards.length : 0,
+    sweepShown: reduced,
     done: reduced,
   }));
 
@@ -1137,15 +1245,21 @@ function ValidationRobustnessSlide({ onRepActive }) {
         setTimeout(() => {
           if (cancel) return;
           setState((prev) => ({ ...prev, shown: Math.max(prev.shown, i + 1) }));
-        }, LEAD_IN_MS + 260 * i),
+        }, VALIDATION_CARDS_AT + VALIDATION_CARD_STAGGER * i),
       );
     });
     timers.push(
       setTimeout(() => {
         if (cancel) return;
+        setState((prev) => ({ ...prev, sweepShown: true }));
+      }, VALIDATION_SWEEP_AT),
+    );
+    timers.push(
+      setTimeout(() => {
+        if (cancel) return;
         setState((prev) => ({ ...prev, done: true }));
         onRepActive?.(true);
-      }, LEAD_IN_MS + 260 * cards.length + 320),
+      }, VALIDATION_DONE_AT),
     );
     return () => {
       cancel = true;
@@ -1153,66 +1267,121 @@ function ValidationRobustnessSlide({ onRepActive }) {
     };
   }, [reduced, cards, onRepActive]);
 
+  // Compact K = 2..10 sweep reusing the composed chart family. Same data and
+  // series as the full K-selection chart, but sized for the carousel panel.
+  const sweepRows = kMetrics.map((row) => ({
+    k: `K${row.k}`,
+    kNumber: row.k,
+    silhouette: row.silhouette,
+    daviesBouldin: row.daviesBouldin,
+  }));
+  const sweepSelected = kMetrics.findIndex((row) => row.selected);
+
   return (
     <div
       className="validation-slide"
       style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}
     >
-      <div style={{ flex: 1, minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div
-          className="validation-cards"
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            justifyContent: "center",
-            alignItems: "stretch",
-            flexWrap: "wrap",
-          }}
-        >
-          {cards.map((card, i) => (
+      <div
+        className="validation-cards"
+        style={{
+          display: "flex",
+          gap: "0.75rem",
+          justifyContent: "center",
+          alignItems: "stretch",
+          flexWrap: "wrap",
+        }}
+      >
+        {cards.map((card, i) => (
+          <div
+            key={card.label}
+            className="validation-card"
+            style={{
+              flex: "1 1 120px",
+              maxWidth: 200,
+              textAlign: "center",
+              padding: "0.7rem 0.9rem",
+              border: `1px solid ${card.color}44`,
+              borderRadius: 10,
+              background: "var(--panel-strong)",
+              opacity: i < state.shown ? 1 : 0,
+              transform: i < state.shown ? "translateY(0)" : "translateY(6px)",
+              transition: "opacity 0.3s ease, transform 0.3s ease",
+            }}
+          >
             <div
-              key={card.label}
-              className="validation-card"
               style={{
-                flex: "1 1 120px",
-                maxWidth: 200,
-                textAlign: "center",
-                padding: "0.7rem 0.9rem",
-                border: `1px solid ${card.color}44`,
-                borderRadius: 10,
-                background: "var(--panel-strong)",
-                opacity: i < state.shown ? 1 : 0,
-                transform: i < state.shown ? "translateY(0)" : "translateY(6px)",
-                transition: "opacity 0.3s ease, transform 0.3s ease",
+                color: card.color,
+                fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
               }}
             >
-              <div
-                style={{
-                  color: card.color,
-                  fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
-                  fontSize: "0.7rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.12em",
-                }}
-              >
-                {card.label}
-              </div>
-              <div
-                style={{
-                  color: "#ffffff",
-                  fontSize: "1.5rem",
-                  fontWeight: 700,
-                  lineHeight: 1.1,
-                  margin: "0.2rem 0 0.1rem",
-                }}
-              >
-                {card.value}
-              </div>
-              <div style={{ color: "#71808d", fontSize: "0.7rem" }}>{card.note}</div>
+              {card.label}
             </div>
-          ))}
-        </div>
+            <div
+              style={{
+                color: "#ffffff",
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                lineHeight: 1.1,
+                margin: "0.2rem 0 0.1rem",
+              }}
+            >
+              {card.value}
+            </div>
+            <div style={{ color: "#71808d", fontSize: "0.7rem" }}>{card.note}</div>
+          </div>
+        ))}
       </div>
+
+      <div className={`validation-sweep${state.sweepShown ? " is-shown" : ""}`}>
+        <div className="validation-sweep-top" aria-hidden="true">
+          <span className="validation-sweep-key">
+            <span className="validation-sweep-dot" style={{ background: "var(--cyan)" }} />
+            Silhouette
+          </span>
+          <span className="validation-sweep-key">
+            <span className="validation-sweep-line" style={{ background: "var(--amber)" }} />
+            Davies-Bouldin
+          </span>
+        </div>
+        <ComposedChart
+          data={sweepRows}
+          xDataKey="k"
+          selectedIndex={sweepSelected}
+          maxBarSize={26}
+          ariaLabel="K-sweep validation chart: Silhouette bars and Davies-Bouldin line from K=2 to K=10, with K=3 highlighted"
+        >
+          <Grid horizontal />
+          <YAxis yAxisId="left" orientation="left" label="Silhouette" tickCount={4} />
+          <YAxis yAxisId="right" orientation="right" label="DB index" tickCount={4} />
+          <SeriesBar
+            yAxisId="left"
+            dataKey="silhouette"
+            label="Silhouette"
+            fill="var(--k-bar)"
+            selectedFill="var(--cyan)"
+            radius={4}
+            maxBarSize={22}
+            fadedOpacity={0.24}
+            format={(v) => Number(v).toFixed(3)}
+          />
+          <ComposedLine
+            yAxisId="right"
+            dataKey="daviesBouldin"
+            label="Davies-Bouldin"
+            stroke="var(--amber)"
+            strokeWidth={2.25}
+            curve={curveCatmullRom.alpha(0.42)}
+            format={(v) => Number(v).toFixed(3)}
+          />
+          <ChartTooltip showCrosshair={false} />
+          <XAxis numTicks={9} />
+        </ComposedChart>
+      </div>
+
       <div
         className="validation-foot"
         style={{
@@ -1340,19 +1509,39 @@ function LoadShapeCarousel({ tall = false }) {
   const [repActive, setRepActive] = React.useState(false);
   const count = loadShapeSlides.length;
   // Linear navigation: clamp instead of wrapping, so the prev arrow is disabled
-  // on the first slide and the next arrow is disabled on the last.
-  const goTo = (index) => setSlide(Math.max(0, Math.min(count - 1, index)));
+  // on the first slide and the next arrow is disabled on the last. A fresh
+  // slide always starts in its idle caption state — resetting the flag here
+  // stops the previous slide's rep title from flashing for a frame.
+  const goTo = (index) => {
+    setSlide(Math.max(0, Math.min(count - 1, index)));
+    setRepActive(false);
+  };
 
   const { component: Slide, captions } = loadShapeSlides[slide];
   const caption = repActive ? captions.rep : captions.idle;
+
+  // Replay the caption entrance whenever the text itself changes (idle → rep),
+  // so the swap is a small eased rise instead of an abrupt text pop. Keying an
+  // inner wrapper by this tick remounts just the caption, leaving the slide's
+  // own carousel-enter fade (which plays on slide switch) untouched.
+  const [captionKey, setCaptionKey] = React.useState(0);
+  const prevCaptionRef = React.useRef(caption);
+  React.useEffect(() => {
+    if (prevCaptionRef.current !== caption) {
+      prevCaptionRef.current = caption;
+      setCaptionKey((key) => key + 1);
+    }
+  }, [caption]);
 
   return (
     <div className="carousel" role="group" aria-roledescription="carousel" aria-label="Daily load-shape data field">
       {/* keyed by slide so the fade (styles.css carousel-enter) replays on
           every switch and the hard remount reads as one eased entry. */}
       <div key={slide} className="carousel-meta">
-        <h3 className="carousel-title">{caption.title}</h3>
-        <p className="carousel-subtitle">{caption.subtitle}</p>
+        <div className="carousel-caption" key={captionKey}>
+          <h3 className="carousel-title">{caption.title}</h3>
+          <p className="carousel-subtitle">{caption.subtitle}</p>
+        </div>
       </div>
       <div className="carousel-body">
         <button
