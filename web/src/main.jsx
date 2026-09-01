@@ -1211,23 +1211,33 @@ function BehavioralArchetypesSlide({ onRepActive }) {
 // bars + Davies-Bouldin line across K=2..10, K=3 highlighted) fades in below
 // to fill the panel with the actual evidence that picked K=3.
 // ---------------------------------------------------------------------------
-// Cards lead the default beat so all three land well before the old ~1.3s
-// lag; the sweep follows right after the last card, then the caption.
-const VALIDATION_CARDS_AT = 900;
-const VALIDATION_CARD_STAGGER = 150;
-const VALIDATION_SWEEP_AT = VALIDATION_CARDS_AT + VALIDATION_CARD_STAGGER * 3 + 260;
-const VALIDATION_DONE_AT = VALIDATION_SWEEP_AT + 420;
+// Cards lead the beat so all three land well before the old ~1.3s lag; the
+// sweep follows right after the last card, then the caption.
+//
+// VALIDATION_CARDS must live at module scope: the reveal effect schedules one
+// timer per card, and with referentially-stable inputs ([reduced, onRepActive])
+// it runs exactly once and every timer survives for its full duration. If the
+// card array were built inside the component (as it once was), each render
+// would mint a fresh identity, the effect would re-run on every setState,
+// clearTimeout all pending timers, and restart the clock — so each card reveal
+// cancelled the later cards' timers and only the first card ever appeared.
+const VALIDATION_CARDS_AT = 800;
+const VALIDATION_CARD_STAGGER = 120;
+const VALIDATION_SWEEP_AT = VALIDATION_CARDS_AT + VALIDATION_CARD_STAGGER * 3 + 240;
+const VALIDATION_DONE_AT = VALIDATION_SWEEP_AT + 360;
+
+const VALIDATION_SELECTED = kMetrics.find((row) => row.selected);
+
+const VALIDATION_CARDS = [
+  { label: "Silhouette", value: Number(VALIDATION_SELECTED?.silhouette).toFixed(3), color: "#a78bfa", note: "within vs between separation" },
+  { label: "Davies-Bouldin", value: Number(VALIDATION_SELECTED?.daviesBouldin).toFixed(3), color: "#4ade80", note: "lower is better" },
+  { label: "Clusters", value: String(VALIDATION_SELECTED?.k ?? 3), color: "#22d3ee", note: "selected K" },
+];
 
 function ValidationRobustnessSlide({ onRepActive }) {
   const reduced = usePrefersReducedMotion();
-  const selected = kMetrics.find((row) => row.selected);
-  const cards = [
-    { label: "Silhouette", value: Number(selected?.silhouette).toFixed(3), color: "#a78bfa", note: "within vs between separation" },
-    { label: "Davies-Bouldin", value: Number(selected?.daviesBouldin).toFixed(3), color: "#4ade80", note: "lower is better" },
-    { label: "Clusters", value: String(selected?.k ?? 3), color: "#22d3ee", note: "selected K" },
-  ];
   const [state, setState] = React.useState(() => ({
-    shown: reduced ? cards.length : 0,
+    shown: reduced ? VALIDATION_CARDS.length : 0,
     sweepShown: reduced,
     done: reduced,
   }));
@@ -1240,7 +1250,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
     if (reduced) return undefined;
     let cancel = false;
     const timers = [];
-    cards.forEach((_, i) => {
+    VALIDATION_CARDS.forEach((_, i) => {
       timers.push(
         setTimeout(() => {
           if (cancel) return;
@@ -1265,7 +1275,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
       cancel = true;
       timers.forEach(clearTimeout);
     };
-  }, [reduced, cards, onRepActive]);
+  }, [reduced, onRepActive]);
 
   // Compact K = 2..10 sweep reusing the composed chart family. Same data and
   // series as the full K-selection chart, but sized for the carousel panel.
@@ -1292,7 +1302,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
           flexWrap: "wrap",
         }}
       >
-        {cards.map((card, i) => (
+        {VALIDATION_CARDS.map((card, i) => (
           <div
             key={card.label}
             className="validation-card"
