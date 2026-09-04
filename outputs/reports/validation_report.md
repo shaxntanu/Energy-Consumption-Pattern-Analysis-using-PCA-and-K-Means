@@ -6,42 +6,33 @@ before preprocessing and never reaches the scaler, PCA or K-Means.
 
 ## What the numbers say
 
-The generator drew consumers from 4 archetypes. The pipeline selected K=3 using internal indices only, and at that K the Adjusted Rand Index against the archetypes is 0.6140.
+The generator drew consumers from 4 archetypes. The pipeline selected K=4 using internal indices only, and at that K the Adjusted Rand Index against the archetypes is 0.8127.
 
-Recovery is highest at K=4 (ARI 0.8713), while the silhouette score is highest at K=3.
+Recovery is highest at K=4 (ARI 0.8127), while the silhouette score is highest at K=5.
 
-The two disagree, and that disagreement is the result rather than a problem to hide. Internal indices reward compact, well-separated clusters. They have no way to know how many groups the data was built from, so when two archetypes differ along a direction that occupies a small part of the feature space, merging them raises the silhouette score even though it loses a real distinction.
-
-At the selected K each archetype falls out as follows:
-
-- daytime -> cluster 0 (100%)
-- evening -> cluster 2 (94%)
-- flat -> cluster 1 (100%)
-- weekend -> cluster 0 (82%)
-
-The practical reading: on this dataset the internal indices under-count the groups. On a real dataset there would be no way to detect that, which is a limit of unsupervised clustering and not of this implementation.
+The pipeline's choice of K matches the number of archetypes, so on this dataset the internal indices agree with the ground truth. That agreement is not guaranteed in general and should not be assumed for other data.
 
 ## Recovery by K
 
 | K | Adjusted Rand Index | Normalized Mutual Information | Silhouette |
 | - | ------------------- | ----------------------------- | ---------- |
-| 2 | 0.3243 | 0.5421 | 0.2582 |
-| 3 (selected) | 0.6140 | 0.7029 | 0.3124 |
-| 4 | 0.8713 | 0.8507 | 0.2916 |
-| 5 | 0.8078 | 0.8273 | 0.3005 |
-| 6 | 0.7508 | 0.7812 | 0.2888 |
-| 7 | 0.7031 | 0.7427 | 0.2726 |
-| 8 | 0.6859 | 0.7495 | 0.2702 |
-| 9 | 0.5331 | 0.6948 | 0.2136 |
-| 10 | 0.5166 | 0.6828 | 0.2179 |
+| 2 | 0.2875 | 0.4565 | 0.2939 |
+| 3 | 0.6017 | 0.6801 | 0.3305 |
+| 4 (selected) | 0.8127 | 0.8284 | 0.3283 |
+| 5 | 0.7653 | 0.8021 | 0.3352 |
+| 6 | 0.7528 | 0.7816 | 0.3238 |
+| 7 | 0.7347 | 0.7768 | 0.3164 |
+| 8 | 0.6915 | 0.7534 | 0.3072 |
+| 9 | 0.6760 | 0.7543 | 0.3111 |
+| 10 | 0.5978 | 0.7301 | 0.2760 |
 
 ## Cluster against archetype at the selected K
 
 ```
-cluster     0   1   2
-archetype            
-daytime    50   0   0
-evening     3   0  47
-flat        0  50   0
-weekend    41   7   2
+cluster     0   1   2   3
+archetype                
+daytime    39   1   0  10
+evening     0   0  47   3
+flat        0  50   0   0
+weekend     0   1   0  49
 ```

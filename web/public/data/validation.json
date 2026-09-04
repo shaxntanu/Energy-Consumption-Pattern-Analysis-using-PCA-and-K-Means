@@ -1,6 +1,6 @@
 {
   "available": true,
-  "reason": "Synthetic data only: comparing clusters with the generator’s hidden archetypes is an independent check that a real dataset cannot offer.",
+  "reason": "Synthetic data only: comparing clusters with the generator's hidden archetypes is an independent check that a real dataset cannot offer.",
   "recovery_by_k": [
     {
       "K": 2,

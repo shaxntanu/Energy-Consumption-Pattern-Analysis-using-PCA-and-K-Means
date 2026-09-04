@@ -11,85 +11,99 @@ evidence about real-world household behaviour.
 ## Run configuration
 
 - Experiment: behavioral_primary
-- Config hash: 6dff8faaa470d418
+- Config hash: 99c7a6631340d301
 - Consumers: 200
-- Days: 30
-- Records after preprocessing: 144,000
+- Days: 365
+- Observation window: 2024-01-01 to 2024-12-30 (365 days)
+- Records after preprocessing: 1,752,000
 - Feature set: behavioral
 - Random seed: 42
 - Package versions: pandas 3.0.0, numpy 2.3.5, scikit-learn 1.9.0, scipy 1.18.0, matplotlib 3.10.8, seaborn 0.13.2, plotly 6.5.2, streamlit 1.62.0, joblib 1.5.3
-- Generated: 2026-08-23T11:56:05.838638+00:00
+- Generated: 2026-09-04T05:55:49.143226+00:00
 
 ## Dimensionality reduction
 
 - Features into PCA: 51
-- Components retained: 14 (target 95% cumulative variance)
-- Cumulative variance retained: 0.9526
+- Components retained: 10 (target 95% cumulative variance)
+- Cumulative variance retained: 0.9505
 
 ## Choice of K
 
 - Candidates evaluated: K = 2 to 10
-- Selected K: 3
-- Silhouette at selected K: 0.3124
-- Cluster sizes: [94, 57, 49]
-- Stability across 10 restarts: mean pairwise ARI 0.9884 (sd 0.0175), assignment agreement 0.996
+- Selected K: 4
+- Silhouette at selected K: 0.3283
+- Cluster sizes: [39, 52, 47, 62]
+- Stability across 10 restarts: mean pairwise ARI 0.9947 (sd 0.0071), assignment agreement 0.998
 - Inertia elbow, reported for comparison: K=4
-- Rejected for producing a cluster below 5% of consumers: K=[6, 7, 8, 9, 10]
+- Rejected for producing a cluster below 5% of consumers: K=[7, 8, 9, 10]
 
 ### Full sweep
 
 | K | Inertia | Silhouette | Calinski-Harabasz | Davies-Bouldin | Stability ARI |
 | - | ------- | ---------- | ----------------- | -------------- | ------------- |
-| 2 | 7219.5 | 0.2582 | 68.5 | 1.1727 | 1.0000 |
-| 3 (selected) | 5176.8 | 0.3124 | 86.4 | 1.2541 | 0.9884 |
-| 4 | 4208.3 | 0.2916 | 85.5 | 1.2099 | 0.9882 |
-| 5 | 3818.5 | 0.3005 | 75.3 | 1.3914 | 0.9269 |
-| 6 | 3458.2 | 0.2888 | 70.2 | 1.3912 | 0.9123 |
-| 7 | 3220.9 | 0.2726 | 64.9 | 1.3342 | 0.8330 |
-| 8 | 3026.3 | 0.2702 | 60.6 | 1.3246 | 0.8551 |
-| 9 | 2875.0 | 0.2136 | 56.8 | 1.4585 | 0.8108 |
-| 10 | 2686.7 | 0.2179 | 55.2 | 1.4115 | 0.8382 |
+| 2 | 7083.5 | 0.2939 | 73.0 | 1.3823 | 0.9958 |
+| 3 | 4968.5 | 0.3305 | 93.7 | 1.1957 | 0.9852 |
+| 4 (selected) | 3911.1 | 0.3283 | 96.6 | 1.1691 | 0.9947 |
+| 5 | 3466.1 | 0.3352 | 87.6 | 1.2023 | 0.9587 |
+| 6 | 3072.5 | 0.3238 | 83.6 | 1.2326 | 0.9909 |
+| 7 | 2844.6 | 0.3164 | 77.5 | 1.2094 | 0.8931 |
+| 8 | 2670.3 | 0.3072 | 72.2 | 1.2950 | 0.8651 |
+| 9 | 2490.6 | 0.3111 | 69.1 | 1.2015 | 0.8156 |
+| 10 | 2361.6 | 0.2760 | 65.6 | 1.3180 | 0.7581 |
 
 ## Cluster profiles
 
-### Cluster 0: Midday-Peaking
+### Cluster 0: Midday-Peaking Weekday-Heavy
 
-- Size: 94 consumers (47.0%)
+- Size: 39 consumers (19.5%)
 - Peak hour of the mean load shape: 13
-- Evening share of daily energy: 0.2593 (population 0.2906)
-- Afternoon share: 0.3335 (population 0.2902)
-- Morning share: 0.2715 (population 0.2611)
-- Night share: 0.1357 (population 0.1581)
-- Weekend to weekday energy ratio: 1.0547 (population 1.0363)
-- Peak-to-average ratio: 5.8785 (population 5.5016)
-- Coefficient of variation: 0.5729 (population 0.5109)
-- Mean kWh per record (context only): 1.3333 (population 1.3487)
+- Evening share of daily energy: 0.2118 (population 0.2900)
+- Afternoon share: 0.3567 (population 0.2898)
+- Morning share: 0.3057 (population 0.2589)
+- Night share: 0.1258 (population 0.1613)
+- Weekend to weekday energy ratio: 0.7466 (population 1.0413)
+- Peak-to-average ratio: 8.8321 (population 8.5918)
+- Coefficient of variation: 0.6203 (population 0.5501)
+- Mean kWh per record (context only): 1.2999 (population 1.3473)
 
 ### Cluster 1: Flat All-Day
 
-- Size: 57 consumers (28.5%)
+- Size: 52 consumers (26.0%)
 - Peak hour of the mean load shape: 19
-- Evening share of daily energy: 0.2635 (population 0.2906)
-- Afternoon share: 0.2705 (population 0.2902)
-- Morning share: 0.2593 (population 0.2611)
-- Night share: 0.2068 (population 0.1581)
-- Weekend to weekday energy ratio: 1.0006 (population 1.0363)
-- Peak-to-average ratio: 3.5249 (population 5.5016)
-- Coefficient of variation: 0.2737 (population 0.5109)
-- Mean kWh per record (context only): 1.3706 (population 1.3487)
+- Evening share of daily energy: 0.2576 (population 0.2900)
+- Afternoon share: 0.2710 (population 0.2898)
+- Morning share: 0.2613 (population 0.2589)
+- Night share: 0.2101 (population 0.1613)
+- Weekend to weekday energy ratio: 0.9521 (population 1.0413)
+- Peak-to-average ratio: 4.9204 (population 8.5918)
+- Coefficient of variation: 0.3020 (population 0.5501)
+- Mean kWh per record (context only): 1.3811 (population 1.3473)
 
 ### Cluster 2: Evening-Peaking
 
-- Size: 49 consumers (24.5%)
+- Size: 47 consumers (23.5%)
 - Peak hour of the mean load shape: 20
-- Evening share of daily energy: 0.3823 (population 0.2906)
-- Afternoon share: 0.2300 (population 0.2902)
-- Morning share: 0.2430 (population 0.2611)
-- Night share: 0.1447 (population 0.1581)
-- Weekend to weekday energy ratio: 1.0426 (population 1.0363)
-- Peak-to-average ratio: 7.0779 (population 5.5016)
-- Coefficient of variation: 0.6677 (population 0.5109)
-- Mean kWh per record (context only): 1.3527 (population 1.3487)
+- Evening share of daily energy: 0.3795 (population 0.2900)
+- Afternoon share: 0.2288 (population 0.2898)
+- Morning share: 0.2395 (population 0.2589)
+- Night share: 0.1521 (population 0.1613)
+- Weekend to weekday energy ratio: 1.0264 (population 1.0413)
+- Peak-to-average ratio: 11.3222 (population 8.5918)
+- Coefficient of variation: 0.7055 (population 0.5501)
+- Mean kWh per record (context only): 1.3793 (population 1.3473)
+
+### Cluster 3: Evening-Peaking Weekend-Heavy
+
+- Size: 62 consumers (31.0%)
+- Peak hour of the mean load shape: 19
+- Evening share of daily energy: 0.2987 (population 0.2900)
+- Afternoon share: 0.3096 (population 0.2898)
+- Morning share: 0.2421 (population 0.2589)
+- Night share: 0.1496 (population 0.1613)
+- Weekend to weekday energy ratio: 1.3127 (population 1.0413)
+- Peak-to-average ratio: 9.4502 (population 8.5918)
+- Coefficient of variation: 0.5962 (population 0.5501)
+- Mean kWh per record (context only): 1.3246 (population 1.3473)
 
 ## Validation against the hidden archetypes
 
@@ -101,31 +115,67 @@ real dataset.
 
 | K | Adjusted Rand Index | Normalized Mutual Information |
 | - | ------------------- | ----------------------------- |
-| 2 | 0.3243 | 0.5421 |
-| 3 (selected) | 0.6140 | 0.7029 |
-| 4 | 0.8713 | 0.8507 |
-| 5 | 0.8078 | 0.8273 |
-| 6 | 0.7508 | 0.7812 |
-| 7 | 0.7031 | 0.7427 |
-| 8 | 0.6859 | 0.7495 |
-| 9 | 0.5331 | 0.6948 |
-| 10 | 0.5166 | 0.6828 |
+| 2 | 0.2875 | 0.4565 |
+| 3 | 0.6017 | 0.6801 |
+| 4 (selected) | 0.8127 | 0.8284 |
+| 5 | 0.7653 | 0.8021 |
+| 6 | 0.7528 | 0.7816 |
+| 7 | 0.7347 | 0.7768 |
+| 8 | 0.6915 | 0.7534 |
+| 9 | 0.6760 | 0.7543 |
+| 10 | 0.5978 | 0.7301 |
 
-At the selected K=3 the Adjusted Rand Index against the archetypes is 0.6140.
+At the selected K=4 the Adjusted Rand Index against the archetypes is 0.8127.
 
 ### Cluster against archetype
 
 ```
-cluster     0   1   2
-archetype            
-daytime    50   0   0
-evening     3   0  47
-flat        0  50   0
-weekend    41   7   2
+cluster     0   1   2   3
+archetype                
+daytime    39   1   0  10
+evening     0   0  47   3
+flat        0  50   0   0
+weekend     0   1   0  49
 ```
+
+## Explainability (XAI / SHAP)
+
+The clustering is unsupervised and has no feature importance. A small
+post-hoc surrogate forest predicts the recovered cluster labels from the
+same behavioural features the pipeline used, and the surrogate is then
+explained in feature units. The surrogate never feeds back into PCA or
+K-Means, so it cannot change any cluster.
+
+- Method: shap
+- Cross-validated balanced accuracy of the surrogate: 0.985 (the honest ceiling on how much of the grouping the features can be said to explain)
+- Details: reports/explainability_report.md, outputs/metrics/explainability.json
+
+## Seasonal analysis (Improvement 2)
+
+The seasonal model has two separately-estimated channels, both drawn per
+consumer independently of archetype. Estimates below are made from the data
+alone; when the hidden seasonal_phase column is present it is used only as
+an independent check.
+
+- Mean daily kWh by season: {'winter': 26.571, 'spring': 35.1668, 'summer': 38.0142, 'autumn': 29.433}
+- Estimated magnitude amplitude (fractional daily swing): 0.2018
+- Mean peak hour by season: {'autumn': 19, 'spring': 20, 'summer': 20, 'winter': 19}
+- Seasonal phase recovery: Pearson r = 0.6781, peak-season agreement 0.885 (hidden seasonal_phase used as ground truth, available only because the data is synthetic).
+- The magnitude channel is mean-corrected over the window, so it cannot inflate or create a spurious cluster from scale differences. The timing channel shifts the daily peak hours and is what changes the normalized load shape across seasons.
+
+## Longitudinal analysis (Improvement 1)
+
+The observation window was split into time segments; behavioural features were
+re-engineered and re-clustered within each segment, and the recovered labels were
+compared with the full-window labels.
+
+- Segments: 4 (window 2024-01-01 to 2024-12-30 (365 days))
+- Temporal cluster stability (mean ARI of segment labels vs full window): 0.8817
+- Per-segment ARI: [0.837784535882258, 0.8923577410330173, 0.945638839182731, 0.8509767826476764]
+- Mean daily kWh by month: {'2024-01': 26.0673, '2024-02': 28.4168, '2024-03': 31.8832, '2024-04': 35.4481, '2024-05': 38.1782, '2024-06': 39.4064, '2024-07': 38.5487, '2024-08': 36.1325, '2024-09': 32.6794, '2024-10': 29.1507, '2024-11': 26.4783, '2024-12': 25.3073}
 
 ## Recommendations
 
-- Rows generated: 7
+- Rows generated: 11
 - See reports/recommendations_report.md. No savings figures and no causal
   claims are made anywhere in that file.
