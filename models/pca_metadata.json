@@ -54,18 +54,18 @@
     "weekend_cv_ratio"
   ],
   "variance_threshold": 0.95,
-  "n_components_retained": 14,
-  "cumulative_variance_retained": 0.9526428075184418,
+  "n_components_retained": 10,
+  "cumulative_variance_retained": 0.9504940204193212,
   "component_count_by_criterion": {
-    "variance_threshold": 14,
-    "kaiser": 8,
+    "variance_threshold": 10,
+    "kaiser": 7,
     "scree_elbow": 7
   },
   "component_descriptions": [
-    "PC1: profile_ramp +0.95, peak_concentration +0.94, coefficient_of_variation +0.93, p90_median_ratio +0.92, shape_gini +0.92",
-    "PC2: afternoon_share +0.90, hour_13_shape +0.89, hour_14_shape +0.87, hour_12_shape +0.86, night_day_ratio -0.83",
-    "PC3: hour_8_shape +0.81, hour_7_shape +0.79, morning_share +0.75, hour_6_shape +0.67, hour_9_shape +0.56",
-    "PC4: hour_17_shape +0.58, hour_6_shape +0.52, hour_18_shape +0.48, hour_5_shape +0.45, hour_10_shape -0.42",
-    "PC5: skewness +0.94, kurtosis +0.93, peak_to_avg_ratio +0.59, daily_total_cv +0.31, weekend_ratio +0.17"
+    "PC1: profile_ramp +0.92, peak_concentration +0.88, harmonic_2_amplitude +0.88, p90_median_ratio +0.87, coefficient_of_variation +0.87",
+    "PC2: night_day_ratio +0.92, afternoon_share -0.87, hour_0_shape +0.84, hour_14_shape -0.84, hour_13_shape -0.84",
+    "PC3: hour_7_shape +0.87, hour_8_shape +0.87, hour_6_shape +0.74, morning_share +0.74, hour_9_shape +0.58",
+    "PC4: hour_17_shape +0.56, hour_18_shape +0.54, hour_6_shape +0.50, hour_5_shape +0.47, hour_23_shape -0.43",
+    "PC5: haar_detail_l3 +0.54, weekend_ratio -0.51, kurtosis -0.38, skewness -0.38, weekend_cv_ratio -0.37"
   ]
 }
