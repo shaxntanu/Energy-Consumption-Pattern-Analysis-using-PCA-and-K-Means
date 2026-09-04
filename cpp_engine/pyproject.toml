@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=64", "pybind11>=2.12"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "energy-cpp-engine"
+version = "1.0.0"
+description = "C++ performance engine for PCA and K-Means (pybind11)."
+dynamic = ["readme"]
+requires-python = ">=3.12"

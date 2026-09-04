@@ -25,6 +25,12 @@ import {
   curveCatmullRom,
 } from "./ComposedChart";
 import { RadarChart, RadarGrid, RadarAxis, RadarLabels, RadarArea } from "./RadarChart";
+import VantaNetBackground from "./VantaNetBackground";
+import ParticleText from "./components/ParticleText";
+import GlowCursor from "./components/GlowCursor";
+import LogoLoop from "./components/LogoLoop";
+import DriftWall from "./components/DriftWall";
+import MorphSlider from "./components/MorphSlider";
 import "./styles.css";
 import {
   clusters,
@@ -2465,6 +2471,244 @@ function ScienceHighlights() {
   );
 }
 
+// The optional C++ performance engine (Phase: HPC). The browser never executes
+// C++: this section consumes the offline benchmark report committed to
+// /data/benchmark.json by `py src/run_cpp_benchmark.py`. When the engine is
+// unbuilt the report exists with status "not_executed" and this section shows
+// that state honestly instead of inventing speedups.
+function PerformanceSection() {
+  const [bench, setBench] = React.useState(null);
+  const [state, setState] = React.useState("loading"); // loading | error | ready
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch("/data/benchmark.json")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setBench(data);
+          setState("ready");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const engine = bench?.engine || {};
+  const info = engine.compile_info || {};
+  const executed = state === "ready" && bench.status === "executed";
+
+  // Per-dataset speedup from the flat rows (one entry per engine).
+  const rowsByKey = {};
+  (bench?.rows || []).forEach((r) => {
+    rowsByKey[`${r.dataset}:${r.stage}:${r.engine}`] = r;
+  });
+  const stages = executed
+    ? [...new Set((bench.rows || []).map((r) => `${r.dataset}·${r.stage}`))].map((key) => {
+        const [dataset, stage] = key.split("·");
+        const py = rowsByKey[`${dataset}:${stage}:python`];
+        const cpp = rowsByKey[`${dataset}:${stage}:cpp`];
+        return { dataset, stage, py, cpp };
+      })
+    : [];
+
+  return (
+    <section className="band" id="performance">
+      <SectionHeader
+        eyebrow="High-performance computing engine"
+        title="The same two kernels, compiled to native code"
+      >
+        PCA and K-Means also ship as an optional C++ engine (energy_cpp). The
+        Python/scikit-learn implementation remains the scientific reference for every
+        result on this page; C++ is a performance-oriented alternative, validated
+        against that reference and compared offline. The frontend only renders the
+        committed benchmark report — it never executes C++ in the browser.
+      </SectionHeader>
+
+      {state === "loading" && (
+        <div className="highlight-card">
+          <p>Reading the committed benchmark report…</p>
+        </div>
+      )}
+
+      {state === "error" && (
+        <div className="highlight-card">
+          <div className="highlight-head">
+            <h3>Benchmark report unavailable</h3>
+            <span className="availability is-false">not found</span>
+          </div>
+          <p>
+            No <code>/data/benchmark.json</code> is committed. Run{" "}
+            <code>py src/run_cpp_benchmark.py</code> after building the engine to
+            generate it. No timing or agreement numbers are shown in the meantime.
+          </p>
+        </div>
+      )}
+
+      {state === "ready" && (
+        <>
+          <div className="highlights-grid">
+            <article className="highlight-card">
+              <div className="highlight-head">
+                <h3>Engine state</h3>
+                <span className={`availability${engine.available ? " is-true" : " is-false"}`}>
+                  {engine.available ? "built" : "not built"}
+                </span>
+              </div>
+              <p>
+                Whether <code>energy_cpp</code> was importable when the offline
+                benchmark ran. The Python pipeline works either way — the module is
+                strictly optional.
+              </p>
+              <div className="chip-row">
+                <span className="chip">compiler {info.compiler || "-"}</span>
+                <span className="chip">OpenMP {String(info.openmp ?? "-")}</span>
+                <span className="chip">C++{info.cxx_standard || "-"}</span>
+              </div>
+              {!engine.available && (
+                <p>
+                  <code>{engine.build_command || "py -m pip install ./cpp_engine"}</code>
+                </p>
+              )}
+            </article>
+
+            <article className="highlight-card">
+              <div className="highlight-head">
+                <h3>Kernel agreement</h3>
+                <span className={`availability${executed ? " is-true" : " is-false"}`}>
+                  {executed ? "benchmarked" : "not executed"}
+                </span>
+              </div>
+              <p>
+                The two engines are compared on identical matrices. PCA components are
+                sign-aligned (sklearn svd_flip); K-Means labels are compared
+                permutation-invariantly with ARI/AMI.
+              </p>
+              {!executed ? (
+                <p>
+                  The committed report says status <code>not_executed</code>
+                  {bench.reason ? ` — ${bench.reason}` : ""}. No speedups or agreement
+                  numbers are fabricated here.
+                </p>
+              ) : (
+                <BenchmarkAgreement bench={bench} />
+              )}
+            </article>
+          </div>
+
+          {executed && (
+            <>
+              <div className="bench-table-wrap">
+                <table className="bench-table">
+                  <thead>
+                    <tr>
+                      <th>dataset</th>
+                      <th>stage</th>
+                      <th>samples</th>
+                      <th>features</th>
+                      <th>python (ms)</th>
+                      <th>c++ (ms)</th>
+                      <th>speedup</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stages.map((s) => {
+                      const speedup =
+                        s.py && s.cpp && s.cpp.time_ms > 0
+                          ? (s.py.time_ms / s.cpp.time_ms).toFixed(2)
+                          : "-";
+                      return (
+                        <tr key={`${s.dataset}:${s.stage}`}>
+                          <td>{s.dataset}</td>
+                          <td>{s.stage}</td>
+                          <td>{s.py ? s.py.n_samples : "-"}</td>
+                          <td>{s.py ? s.py.n_features : "-"}</td>
+                          <td>{s.py ? s.py.time_ms.toFixed(2) : "-"}</td>
+                          <td>{s.cpp ? s.cpp.time_ms.toFixed(2) : "-"}</td>
+                          <td className={speedup !== "-" && Number(speedup) > 1 ? "bench-fast" : ""}>
+                            {speedup}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <p className="bench-note">
+                Best-of-3 wall times after one warmup, on the identical matrix for both
+                engines; K-Means runs on the same PCA scores. Dataset provenance is
+                recorded in the report — medium/large are bootstrap resamples of the
+                flagship matrix, wide is a synthetic feature-scaling probe.
+              </p>
+            </>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+// The agreement chips for an executed benchmark report.
+function BenchmarkAgreement({ bench }) {
+  const pca = bench.agreement?.pca_small;
+  const km = bench.agreement?.kmeans_small;
+  const e2e = bench.end_to_end;
+  return (
+    <div className="mini-bars">
+      {pca && (
+        <MiniBar
+          label="component diff"
+          value={pca.max_abs_component_diff}
+          max={1e-6}
+          color="var(--cyan)"
+          format={(v) => v.toExponential(1)}
+        />
+      )}
+      {km && (
+        <>
+          <MiniBar
+            label="k-means ARI"
+            value={km.ari}
+            max={1}
+            color="var(--blue)"
+            format={(v) => v.toFixed(4)}
+          />
+          <MiniBar
+            label="k-means AMI"
+            value={km.ami}
+            max={1}
+            color="var(--blue)"
+            format={(v) => v.toFixed(4)}
+          />
+          <MiniBar
+            label="inertia rel. diff"
+            value={km.inertia_relative_diff}
+            max={1e-3}
+            color="var(--amber)"
+            format={(v) => v.toExponential(1)}
+          />
+        </>
+      )}
+      {e2e && (
+        <MiniBar
+          label="e2e speedup"
+          value={e2e.speedup_x}
+          max={Math.max(1, e2e.speedup_x)}
+          color="var(--violet)"
+          format={(v) => `${v.toFixed(2)}x`}
+        />
+      )}
+    </div>
+  );
+}
+
 function StatCard({ label, value, note }) {
   return (
     <div className="stat-card">
@@ -2493,6 +2737,7 @@ function App() {
         <div className="nav-links">
           <a href="#about">About</a>
           <a href="#charts">Charts</a>
+          <a href="#performance">Performance</a>
           <a href="#references">References</a>
           <a href="https://energy-consumption-pattern-vqrh.streamlit.app/" target="_blank" rel="noopener noreferrer">Simulator</a>
         </div>
@@ -2500,18 +2745,84 @@ function App() {
 
       <header className="hero" id="top">
         <div className="hero-copy">
+          <VantaNetBackground />
           <span className="eyebrow">PCA plus K-Means energy clustering</span>
-          <h1>Energy use is a pattern, not just a number.</h1>
-          <p>
-            This project simulates a full year of household electricity readings, turns
-            each day into a load shape, compresses the features with PCA, and uses K-Means
-            to find daily rhythms that are easier to explain — then checks how the clusters
-            hold up across seasons, over time, and on a real-world demo panel.
-          </p>
-          <div className="hero-actions">
-            <a className="button primary" href="#charts">Explore the charts</a>
-            <a className="button secondary" href="#about">What is this project about?</a>
-          </div>
+          <GlowCursor
+            color="#48d7c2"
+            secondaryColor="#b78cff"
+            trailLength={40}
+            trailWidth={8}
+            trailTaper={0.8}
+            followSpeed={0.16}
+            glowIntensity={1.9}
+            glowSpread={1.2}
+            hotspot={0.65}
+            brightness={1.25}
+            opacity={1}
+            pulseSpeed={1.1}
+            noiseStrength={0.035}
+            idleFade
+            idleTimeout={700}
+            fadeDuration={900}
+            blendMode="screen"
+          >
+            <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <ParticleText
+                  text="Energy use is a pattern, not just a number."
+                  particleSize={2.2}
+                  density={4}
+                  color="#48d7c2"
+                  highlight="#b78cff"
+                  scatter={190}
+                  gatherDuration={1600}
+                  stagger={420}
+                  pointerRepel={42}
+                  repelRadius={120}
+                  idleDrift={0.8}
+                  trigger="mount"
+                  fontSize="clamp(2.5rem, 8vw, 6rem)"
+                  fontWeight={800}
+                />
+              </div>
+              <aside style={{ width: "100%", maxWidth: 400, flexShrink: 0 }}>
+                <MorphSlider
+                  items={[
+                    { image: "/results/load_shapes.png", caption: "Load Shapes" },
+                    { image: "/results/pca_variance.png", caption: "PCA Variance" },
+                    { image: "/results/k_selection.png", caption: "K-Selection" },
+                    { image: "/results/cluster_radar.png", caption: "Cluster Radar" },
+                    { image: "/results/validation_sweep.png", caption: "Validation" },
+                  ]}
+                  transition="melt"
+                  intensity={0.55}
+                  aberration={0.35}
+                  drift={0.4}
+                  autoplay={false}
+                  overlayColor="#05060a"
+                  duration={1.1}
+                  ease="power2.inOut"
+                  scale={2.4}
+                  autoplayDelay={4}
+                  loop
+                  radius={16}
+                  showCaptions
+                  showControls
+                  showIndicators
+                />
+              </aside>
+            </div>
+            <p>
+              This project simulates a full year of household electricity readings, turns
+              each day into a load shape, compresses the features with PCA, and uses K-Means
+              to find daily rhythms that are easier to explain — then checks how the clusters
+              hold up across seasons, over time, and on a real-world demo panel.
+            </p>
+            <div className="hero-actions">
+              <a className="button primary" href="#charts">Explore the charts</a>
+              <a className="button secondary" href="#about">What is this project about?</a>
+            </div>
+          </GlowCursor>
         </div>
         <div className="hero-panel chart-panel tall">
           <LoadShapeCarousel tall />
@@ -2602,6 +2913,77 @@ function App() {
         </section>
 
         <ScienceHighlights />
+
+        <PerformanceSection />
+
+        {/* DriftWall — Matplotlib gallery presentation */}
+        <section className="band" id="gallery">
+          <SectionHeader eyebrow="Results gallery" title="Matplotlib analysis outputs">
+            The following images are generated by the Python pipeline and committed to
+            <code>/web/public/results/</code>. They show the full analytical picture:
+            load shapes, PCA variance, K-selection, cluster profiles, validation sweeps,
+            seasonal stability, longitudinal agreement, explainability, real-world demo,
+            and C++ benchmarks.
+          </SectionHeader>
+          <div style={{ height: 560 }}>
+            <DriftWall
+              items={[
+                { image: '/results/load_shapes.png', title: 'Average Load Shapes', href: '#charts' },
+                { image: '/results/pca_variance.png', title: 'PCA Explained Variance', href: '#charts' },
+                { image: '/results/k_selection.png', title: 'K-Selection Metrics', href: '#charts' },
+                { image: '/results/cluster_radar.png', title: 'Cluster Profiles Radar', href: '#charts' },
+                { image: '/results/cluster_0_profile.png', title: 'Cluster 0: Night Owls', href: '#charts' },
+                { image: '/results/cluster_1_profile.png', title: 'Cluster 1: Early Birds', href: '#charts' },
+                { image: '/results/cluster_2_profile.png', title: 'Cluster 2: Day Workers', href: '#charts' },
+                { image: '/results/cluster_3_profile.png', title: 'Cluster 3: Evening Peak', href: '#charts' },
+                { image: '/results/seasonal_stability.png', title: 'Seasonal Stability', href: '#charts' },
+                { image: '/results/longitudinal_ari.png', title: 'Longitudinal ARI', href: '#charts' },
+                { image: '/results/validation_sweep.png', title: 'Validation Sweep', href: '#charts' },
+                { image: '/results/explainability.png', title: 'Feature Importance', href: '#charts' },
+                { image: '/results/real_world.png', title: 'Real-World Demo', href: '#charts' },
+                { image: '/results/benchmark.png', title: 'C++ Benchmark', href: '#performance' },
+                { image: '/results/pipeline.png', title: 'Pipeline Flow', href: '#about' },
+              ]}
+              columns={5}
+              tileWidth={200}
+              tileHeight={132}
+              gap={18}
+              tilt={16}
+              turn={-14}
+              perspective={1200}
+              depth={120}
+              speed={42}
+              direction="up"
+              variance={0.45}
+              parallax={0.6}
+              lift={64}
+              fade={0.6}
+              dim={0.55}
+              overlayColor="#060010"
+              radius={14}
+              roll={0}
+              pauseOnHover={false}
+              grayscale={false}
+            />
+          </div>
+        </section>
+
+        {/* LogoLoop — Tech stack scroller */}
+        <section className="band" style={{ paddingTop: 0, paddingBottom: 2 }}>
+          <div style={{ height: 140, position: 'relative', overflow: 'hidden' }}>
+            <LogoLoop
+              speed={100}
+              direction="left"
+              logoHeight={60}
+              gap={60}
+              hoverSpeed={0}
+              scaleOnHover
+              fadeOut
+              fadeOutColor="#070b10"
+              ariaLabel="Technology stack"
+            />
+          </div>
+        </section>
 
         <section className="band references" id="references">
           <SectionHeader eyebrow="References" title="Research behind the method">

@@ -11,6 +11,7 @@ This simulator focuses purely on the interactive analysis.
 """
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 from pathlib import Path
@@ -202,6 +203,7 @@ NAV_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Analysis", ("Features", "PCA", "Choosing K", "Stability", "Validation")),
     ("Results", ("Insights", "Seasonal", "Longitudinal", "Explainability")),
     ("Method", ("How it works", "Research", "Limitations")),
+    ("Performance", ("C++ Engine",)),
 )
 
 HOME_PAGE = "Overview"
@@ -731,6 +733,159 @@ def page_overview(results: AnalysisResults):
         f"Config hash `{results.config.config_hash()}` &middot; "
         f"generated {results.metadata['timestamp_utc']}"
     )
+
+
+def page_cpp_engine(results: AnalysisResults):
+    """Improvement 5 - the optional high-performance C++ engine.
+
+    The scientific reference for every number on every other page is the
+    scikit-learn path. This page is about the optional `energy_cpp` engine:
+    whether it is built, what the benchmark measured, and how the offline
+    Python/C++ pipeline feeds the Vercel frontend. All numbers come from the
+    committed `outputs/benchmarks/benchmark_results.json`, so an unbuilt engine
+    is reported honestly instead of being replaced by invented speedups.
+    """
+    import cpp_bridge
+
+    ui.kicker("High-performance computing engine")
+    ui.section(
+        "A C++ alternative for the two compute kernels",
+        "The same PCA and K-Means, compiled to native code. The Python/scikit-learn "
+        "path remains the reference; C++ is a performance-oriented alternative and "
+        "is strictly optional.",
+        eyebrow="Performance",
+    )
+    ui.note(
+        "<strong>The reference is unchanged.</strong> Every number elsewhere in this "
+        "simulator comes from the scikit-learn pipeline. The C++ engine implements the "
+        "same two algorithms (Jacobi eigen-decomposition for PCA, Lloyd + K-Means++ for "
+        "K-Means) and is validated against that reference - it does not replace it, and "
+        "it does not claim higher mathematical accuracy."
+    )
+
+    status = cpp_bridge.module_status()
+    available = status["available"]
+    ui.metric_cards([
+        {"label": "Engine state", "value": "built" if available else "not built",
+         "accent": available, "sub": "energy_cpp module"},
+        {"label": "Compiler", "value": (status["compile_info"].get("compiler") or "-")
+         if available else "-"},
+        {"label": "OpenMP", "value": str(status["compile_info"].get("openmp", "-"))
+         if available else "-"},
+        {"label": "C++ standard", "value": (status["compile_info"].get("cxx_standard") or "-")
+         if available else "-"},
+    ])
+    if not available:
+        ui.note(
+            "<strong>The C++ engine is not built in this environment.</strong> "
+            "The Python pipeline keeps working regardless - this page, the benchmark "
+            "report and the Vercel frontend all fall back to the honest unbuilt state. "
+            f"Reason: <code>{status['reason']}</code>. Build it with "
+            "<code>py -m pip install ./cpp_engine</code>, then rerun the benchmark.",
+            warn=True,
+        )
+    else:
+        ui.note(
+            "<strong>The C++ engine is importable.</strong> The pipeline still defaults "
+            "to scikit-learn; the benchmark below is where the two are compared."
+        )
+
+    ui.hairline()
+    ui.section(
+        "How the two engines relate",
+        "One pipeline, one switchable compute kernel, and honest comparison.",
+        eyebrow="Architecture",
+    )
+    ui.pipeline([
+        ("Generate", "The synthetic panel - identical for both engines."),
+        ("Preprocess + engineer", "Identical Python code; the C++ module never touches this."),
+        ("PCA / K-Means",
+         "Python uses scikit-learn; C++ uses energy_cpp. Selected by resolve_engine()."),
+        ("Compare", "Same matrices, ARI/AMI for K-Means labels, sign-aligned components for PCA."),
+        ("Report", "benchmark_results.json feeds this page and the Vercel frontend."),
+    ])
+    ui.note(
+        "The C++ module is optional at every level: if it is missing or fails to build, "
+        "<code>cpp_bridge</code> reports <code>available=False</code>, the benchmark "
+        "writes an honest <code>not_executed</code> report, and no Python code path "
+        "changes."
+    )
+
+    ui.section(
+        "Benchmark results",
+        "Best-of-3 wall times on identical matrices, with agreement metrics.",
+        eyebrow="Python vs C++",
+    )
+    bench_path = ROOT / "outputs" / "benchmarks" / "benchmark_results.json"
+    if not bench_path.exists():
+        ui.note(
+            "No benchmark report is committed yet. Run "
+            "<code>py src/run_cpp_benchmark.py</code> (after building the engine) to "
+            "generate <code>outputs/benchmarks/benchmark_results.json</code>.",
+            warn=True,
+        )
+        return
+    try:
+        bench = json.loads(bench_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        ui.note(f"Benchmark report exists but could not be read: <code>{exc}</code>",
+                warn=True)
+        return
+
+    if bench.get("status") != "executed":
+        reason = bench.get("reason") or "engine unavailable"
+        ui.note(
+            f"<strong>Benchmark not executed.</strong> {reason} The report exists so "
+            "the state is visible, but no timing or agreement numbers are fabricated.",
+            warn=True,
+        )
+        return
+
+    # Handle K-Means crash case
+        kmeans_agreement = bench["agreement"].get("kmeans_small", {})
+        kmeans_crashed = kmeans_agreement.get("status") == "cpp_crashed"
+
+        ui.metric_cards([
+            {"label": "PCA speedup (small)", "value": f"{bench['speedups']['pca'].get('small', float('nan')):.2f}x"},
+            {"label": "K-Means speedup (small)", "value": f"{bench['speedups']['kmeans'].get('small', float('nan')):.2f}x" if not kmeans_crashed else "N/A (C++ crashed)"},
+            {"label": "Component agreement", "value": _num(
+                bench["agreement"]["pca_small"]["max_abs_component_diff"], 2),
+             "sub": "max abs component diff (sign-aligned)"},
+            {"label": "K-Means ARI (small)", "value": _num(
+                kmeans_agreement["ari"], 4) if not kmeans_crashed else "N/A (C++ crashed)",
+             "sub": "labels are permutation-invariant" if not kmeans_crashed else kmeans_agreement.get("note", "")},
+        ])
+
+    rows = bench.get("rows", [])
+    if rows:
+        view = pd.DataFrame([{
+            "dataset": r["dataset"], "stage": r["stage"], "engine": r["engine"],
+            "samples": r["n_samples"], "features": r["n_features"],
+            "time_ms": round(r["time_ms"], 2),
+        } for r in rows])
+        st.dataframe(view, width="stretch", hide_index=True)
+        ui.note(
+            "Times are milliseconds, best-of-3 after a warmup, on the identical matrix "
+            "for both engines. K-Means runs on the same PCA scores in both cases; its "
+            "labels may be permuted, which is why agreement is reported as ARI/AMI."
+        )
+
+    e2e = bench.get("end_to_end")
+    if e2e:
+        ui.section("End-to-end pipeline run")
+        ui.metric_cards([
+            {"label": "Python total", "value": f"{e2e['python_seconds']:.2f}", "sub": "seconds"},
+            {"label": "C++ total", "value": f"{e2e['cpp_seconds']:.2f}", "sub": "seconds"},
+            {"label": "Speedup", "value": f"{e2e['speedup_x']:.2f}x", "accent": True},
+            {"label": "Labels ARI", "value": _num(e2e["labels_ari"], 4)},
+        ])
+        ui.note(
+            "The end-to-end run swaps only the two compute kernels; every other step "
+            "(generation, feature engineering, selection, validation, reporting) is the "
+            "same Python code in both runs."
+        )
+    _external_report("Benchmark report",
+                     ROOT / "outputs" / "benchmarks" / "benchmark_results.md")
 
 
 def page_how_it_works(results: AnalysisResults):
@@ -1306,6 +1461,7 @@ PAGE_FUNCS = {
     "How it works": page_how_it_works,
     "Research": page_research,
     "Limitations": page_limitations,
+    "C++ Engine": page_cpp_engine,
 }
 
 MASTHEAD_LINKS = (

@@ -60,7 +60,16 @@ def test_navigation_is_complete_and_unique():
     assert len(app.PAGES) == len(set(app.PAGES))
     assert set(app.PAGES) == set(app.PAGE_FUNCS)
     assert app.HOME_PAGE in app.PAGES
-    assert app.PAGES == ['Overview', 'Dataset', 'The clusters']
+    # PAGES is the flattening of NAV_GROUPS — the sidebar and the router must
+    # stay in lockstep with it. This is the concrete, documented list, so an
+    # accidental reorder or a dropped group fails here.
+    assert app.PAGES == [
+        'Overview', 'Dataset', 'The clusters',     # Simulator
+        'Features', 'PCA', 'Choosing K', 'Stability', 'Validation',  # Analysis
+        'Insights', 'Seasonal', 'Longitudinal', 'Explainability',   # Results
+        'How it works', 'Research', 'Limitations',  # Method
+        'C++ Engine',                              # Performance
+    ]
 
 
 def test_overview_draws_the_simulator_summary(booted):
