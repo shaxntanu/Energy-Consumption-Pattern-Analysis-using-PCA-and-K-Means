@@ -1,341 +1,348 @@
 """
-Generate Dark-Mode Versions of All Project Plots
+Generate Dark-Mode Versions of the Project Plots (core set)
 
-This script monkey-patches the original plotting modules to force dark theme,
-then regenerates all plots.
+Reuses presentation/dark_theme.py and re-renders the core chart producers in
+dark mode: EDA, PCA, clustering, and the per-feature-set ablation figures.
+
+How it works
+------------
+It monkey-patches sns.set_style / plt.style.use to a forcer before importing
+the chart modules (so each module's import-time plot default is the dark
+theme), then writes into dark_mode_plots/figures/ (and dark_mode_plots/ablation/
+... for the per-arm ablation set). Original light-mode charts in outputs/ are
+never touched.
+
+Faithfulness boundary (nothing is re-fitted, nothing is re-generated except the
+tiny illustrative EDA panel):
+
+  - EDA figures  : a small fresh 50x7 panel is generated (these are generic
+                   illustrations; no EDA panel is persisted). ~seconds.
+  - explained_variance.png   : re-rendered from the FITTED models/pca_model.pkl
+                   plus the pipeline's recorded variance_threshold.
+  - component_loadings.png   : re-rendered from outputs/metrics/pca_loadings.csv.
+  - elbow / silhouette / k_selection : re-rendered from
+                   outputs/metrics/clustering_metrics.csv + the recorded
+                   selected_k in models/analysis_metadata.json.
+  - per-arm ablation set     : the same three K figures from each arm's
+                   outputs/ablation/<arm>/metrics/clustering_metrics.csv, plus
+                   explained_variance from that arm's pca_results.csv and
+                   component_loadings from its pca_loadings.csv.
+  - pca_projection_2d.png and cluster_visualization_2d.png are SKIPPED with an
+                   honest log: they need the per-consumer score matrix, which
+                   the pipeline keeps in memory and never persists. Re-deriving
+                   it would mean re-running generation + feature engineering,
+                   which is out of scope for the dark-mode pass.
+
+Run via:  py presentation/generate_dark_plots.py
 """
 
+import os
 import sys
 from pathlib import Path
-import os
 
-# Set matplotlib to non-interactive backend FIRST
+# Non-interactive backend FIRST, before any chart module imports matplotlib.
 os.environ['MPLBACKEND'] = 'Agg'
 import matplotlib
 matplotlib.use('Agg', force=True)
 
-# Add paths
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
-sys.path.insert(0, str(Path(__file__).parent))
+# Add src/ (for the chart modules) and presentation/ (for dark_theme) to the path.
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'src'))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import json
 import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Import and apply dark theme
 from dark_theme import apply_dark_theme, COLORS
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-# MONKEY PATCH: Override sns.set_style and plt.style.use to force dark mode
+# MONKEY PATCH: force every downstream sns.set_style / plt.style.use to the dark theme.
 _original_set_style = sns.set_style
 _original_style_use = plt.style.use
 
+
 def force_dark_style(*args, **kwargs):
-    """Force dark background style."""
     apply_dark_theme()
+
 
 sns.set_style = force_dark_style
 plt.style.use = force_dark_style
-
-# Apply dark theme initially
 apply_dark_theme()
 
 logger.info("Dark theme force-applied via monkey patching")
 
-# Now import all modules AFTER patching
-import eda
-import pca_analysis  
+# Import the chart modules AFTER the patch so their import-time plot defaults
+# (e.g. clustering's sns.set_style('whitegrid')) land on the dark theme.
 import clustering
+import eda
+import pca_analysis
+
+OUTDIR = ROOT / 'dark_mode_plots' / 'figures'
+ABLATION_OUTDIR = ROOT / 'dark_mode_plots' / 'ablation'
+METRICS = ROOT / 'outputs' / 'metrics'
+MODELS = ROOT / 'models'
+ABLATION = ROOT / 'outputs' / 'ablation'
+
+FEATURE_SETS = ['scale', 'shape', 'summary', 'behavioral', 'combined']
+PCA_VARIANCE_THRESHOLD = 0.95  # the pipeline's configured threshold everywhere
+
+
+def _load_json(path):
+    if not Path(path).exists():
+        return None
+    try:
+        return json.loads(Path(path).read_text(encoding='utf-8'))
+    except Exception as exc:
+        logger.warning(f"Could not read {path}: {exc}")
+        return None
+
 
 def create_output_structure():
-    """Create output directories matching outputs/ structure."""
-    base = Path('presentation/dark_plots')
-    
-    # Main figures directory
-    (base / 'figures').mkdir(parents=True, exist_ok=True)
-    
-    # Ablation directories
-    for fs in ['scale', 'shape', 'summary', 'behavioral', 'combined']:
-        (base / 'ablation' / fs / 'figures').mkdir(parents=True, exist_ok=True)
-    
-    logger.info(f"Created output structure at {base}")
+    """Create the output directories (mirrors outputs/ structure)."""
+    (OUTDIR).mkdir(parents=True, exist_ok=True)
+    for fs in FEATURE_SETS:
+        (ABLATION_OUTDIR / fs / 'figures').mkdir(parents=True, exist_ok=True)
+    logger.info(f"Created output structure at {ROOT / 'dark_mode_plots'}")
 
-def copy_and_regenerate_plots():
-    """Copy existing plot outputs and apply dark theme."""
-    import shutil
-    
-    # Map: source -> destination
-    plot_map = {
-        'outputs/figures': 'presentation/dark_plots/main',
-        'outputs/ablation/scale/figures': 'presentation/dark_plots/ablation/scale/figures',
-        'outputs/ablation/shape/figures': 'presentation/dark_plots/ablation/shape/figures',
-        'outputs/ablation/summary/figures': 'presentation/dark_plots/ablation/summary/figures',
-        'outputs/ablation/behavioral/figures': 'presentation/dark_plots/ablation/behavioral/figures',
-        'outputs/ablation/combined/figures': 'presentation/dark_plots/ablation/combined/figures',
-    }
-    
-    for src, dst in plot_map.items():
-        src_path = Path(src)
-        dst_path = Path(dst)
-        
-        if not src_path.exists():
-            logger.warning(f"Source not found: {src}")
-            continue
-        
-        dst_path.mkdir(parents=True, exist_ok=True)
-        
-        # Copy all PNGs
-        copied = 0
-        for png in src_path.glob('*.png'):
-            shutil.copy2(png, dst_path / png.name)
-            copied += 1
-        
-        logger.info(f"Copied {copied} plots from {src} to {dst}")
 
-def regenerate_from_data():
-    """Regenerate ALL plots from CSV data with dark theme."""
-    logger.info("\n=== REGENERATING ALL PLOTS WITH DARK THEME ===\n")
-    
-    import pandas as pd
+# --------------------------------------------------------------------------- #
+# EDA figures (a small fresh panel - these are generic illustrations)
+# --------------------------------------------------------------------------- #
+def generate_eda_plots(output_dir):
+    from data_loader import generate_synthetic_data
+    from preprocessing import preprocess_pipeline
+
     import numpy as np
-    import shutil
-    from pathlib import Path
-    
-    # First, copy ALL original plots to a temp location for structure reference
-    original_figures = Path('outputs/figures')
-    original_ablation = Path('outputs/ablation')
-    
-    # Generate main plots
-    generate_main_plots()
-    
-    # Generate ablation plots for each feature set
-    generate_all_ablation_plots()
-    
-    logger.info("\n=== ALL PLOTS REGENERATED WITH DARK THEME ===")
 
-def generate_main_plots():
-    """Generate main figures plots in dark mode."""
-    logger.info("Generating main figures plots...")
-    
+    df = preprocess_pipeline(generate_synthetic_data(n_consumers=50, n_days=7))
+
+    apply_dark_theme()
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()[:6]
+    eda.plot_distributions(df, numeric_cols, output_dir)
+    logger.info("  distributions.png")
+
+    apply_dark_theme()
+    eda.plot_hourly_patterns(df, output_dir)
+    logger.info("  hourly_patterns.png")
+
+    apply_dark_theme()
+    eda.plot_weekday_weekend_comparison(df, output_dir)
+    logger.info("  weekday_weekend_comparison.png")
+
+    apply_dark_theme()
+    eda.plot_correlation_heatmap(df, output_dir)
+    logger.info("  correlation_heatmap.png")
+
+    apply_dark_theme()
+    eda.plot_consumption_variability(df, output_dir)
+    logger.info("  consumption_variability.png")
+
+    apply_dark_theme()
+    eda.plot_boxplots_by_time(df, output_dir)
+    logger.info("  boxplots_by_time.png")
+
+
+# --------------------------------------------------------------------------- #
+# PCA figures (re-rendered from the persisted fitted model + tables)
+# --------------------------------------------------------------------------- #
+def generate_pca_plots(output_dir):
+    import joblib
+
+    model_path = MODELS / 'pca_model.pkl'
+    if not model_path.exists():
+        logger.info("  skip explained_variance.png (no models/pca_model.pkl on disk)")
+        return
+
+    meta = _load_json(MODELS / 'pca_metadata.json') or {}
+    threshold = meta.get('variance_threshold', PCA_VARIANCE_THRESHOLD)
+
+    pca_model = joblib.load(str(model_path))
+
+    apply_dark_theme()
+    pca_analysis.plot_explained_variance(pca_model, threshold, output_dir)
+    logger.info("  explained_variance.png")
+
+    loadings_path = METRICS / 'pca_loadings.csv'
+    if loadings_path.exists():
+        import pandas as pd
+        loadings = pd.read_csv(loadings_path, index_col=0)
+        apply_dark_theme()
+        pca_analysis.plot_component_loadings(loadings, output_dir)
+        logger.info("  component_loadings.png")
+    else:
+        logger.info("  skip component_loadings.png (no pca_loadings.csv)")
+
+    # The score matrix is not persisted, so the projection scatter cannot be
+    # re-rendered faithfully without re-running generation + feature engineering.
+    logger.info("  skip pca_projection_2d.png (per-consumer score matrix is not "
+                "persisted; re-rendering would require re-running the pipeline)")
+
+
+# --------------------------------------------------------------------------- #
+# Clustering figures (re-rendered from the persisted K-sweep table)
+# --------------------------------------------------------------------------- #
+def generate_clustering_plots(output_dir):
+    metrics_path = METRICS / 'clustering_metrics.csv'
+    if not metrics_path.exists():
+        logger.info("  skip clustering figures (no clustering_metrics.csv)")
+        return
+
     import pandas as pd
+
+    metrics = pd.read_csv(metrics_path)
+    meta = _load_json(MODELS / 'analysis_metadata.json') or {}
+    selected_k = meta.get('selected_k')
+    if selected_k is None:
+        selected = metrics[metrics.get('selected', False)]['K']
+        selected_k = int(selected.iloc[0]) if len(selected) else None
+
+    k_values = metrics['K'].tolist()
+
+    apply_dark_theme()
+    clustering.plot_elbow_curve(k_values, metrics['inertia'].tolist(),
+                                selected_k, output_dir)
+    logger.info("  elbow_curve.png")
+
+    apply_dark_theme()
+    clustering.plot_silhouette_scores(k_values, metrics['silhouette'].tolist(),
+                                      selected_k, output_dir)
+    logger.info("  silhouette_scores.png")
+
+    apply_dark_theme()
+    clustering.plot_k_selection_metrics(metrics, selected_k, output_dir)
+    logger.info("  k_selection_metrics.png")
+
+    logger.info("  skip cluster_visualization_2d.png (per-consumer score matrix is "
+                "not persisted; re-rendering would require re-running the pipeline)")
+
+
+# --------------------------------------------------------------------------- #
+# Ablation figures (re-rendered from each arm's persisted tables)
+# --------------------------------------------------------------------------- #
+def _plot_explained_variance_from_table(pca_results, output_dir):
+    """Faithful per-arm explained-variance figure from the persisted table.
+
+    The per-arm PCA model is not persisted, only its numbers in pca_results.csv
+    (component, eigenvalue, explained_variance_ratio, cumulative_variance). This
+    draws the same two panels as pca_analysis.plot_explained_variance directly
+    from those stored numbers - nothing is re-fitted or changed.
+    """
     import numpy as np
-    
-    output_dir = 'presentation/dark_plots/figures'
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
-    
-    # EDA Plots
-    try:
-        from data_loader import generate_synthetic_data
-        from preprocessing import preprocess_pipeline
-        
-        df = preprocess_pipeline(generate_synthetic_data(n_consumers=50, n_days=7))
-        
-        apply_dark_theme()
-        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()[:6]
-        eda.plot_distributions(df, numeric_cols, output_dir)
-        logger.info("✓ distributions.png")
-        
-        apply_dark_theme()
-        eda.plot_hourly_patterns(df, output_dir)
-        logger.info("✓ hourly_patterns.png")
-        
-        apply_dark_theme()
-        eda.plot_weekday_weekend_comparison(df, output_dir)
-        logger.info("✓ weekday_weekend_comparison.png")
-        
-        apply_dark_theme()
-        eda.plot_correlation_heatmap(df, output_dir)
-        logger.info("✓ correlation_heatmap.png")
-        
-        apply_dark_theme()
-        eda.plot_consumption_variability(df, output_dir)
-        logger.info("✓ consumption_variability.png")
-        
-        apply_dark_theme()
-        eda.plot_boxplots_by_time(df, output_dir)
-        logger.info("✓ boxplots_by_time.png")
-        
-    except Exception as e:
-        logger.error(f"EDA plots error: {e}")
-    
-    # PCA Plots
-    try:
-        pca_results_path = Path('outputs/metrics/pca_results.csv')
-        if pca_results_path.exists():
-            pca_results = pd.read_csv(pca_results_path)
-            
-            apply_dark_theme()
-            pca_analysis.plot_explained_variance(pca_results, output_dir)
-            logger.info("✓ explained_variance.png")
-        
-        # PCA projection
-        try:
-            import joblib
-            pca_model = joblib.load('models/pca_model.pkl')
-            cluster_labels = np.load('models/cluster_labels.npy')
-            
-            from data_loader import load_final_features
-            X_scaled = load_final_features()['X_scaled']
-            X_pca = pca_model.transform(X_scaled)
-            
-            apply_dark_theme()
-            pca_analysis.plot_pca_projection(X_pca, cluster_labels, output_dir)
-            logger.info("✓ pca_projection_2d.png")
-        except Exception as e:
-            logger.warning(f"PCA projection skipped: {e}")
-        
-        # Component loadings
-        try:
-            loadings_path = Path('outputs/metrics/pca_loadings.csv')
-            if loadings_path.exists():
-                loadings = pd.read_csv(loadings_path)
-                apply_dark_theme()
-                pca_analysis.plot_component_loadings(loadings, output_dir)
-                logger.info("✓ component_loadings.png")
-        except Exception as e:
-            logger.warning(f"PCA loadings skipped: {e}")
-            
-    except Exception as e:
-        logger.error(f"PCA plots error: {e}")
-    
-    # Clustering Plots
-    try:
-        metrics_path = Path('outputs/metrics/clustering_metrics.csv')
-        if metrics_path.exists():
-            metrics = pd.read_csv(metrics_path)
-            
-            apply_dark_theme()
-            clustering.plot_elbow_curve(metrics, output_dir)
-            logger.info("✓ elbow_curve.png")
-            
-            apply_dark_theme()
-            clustering.plot_silhouette_analysis(metrics, output_dir)
-            logger.info("✓ silhouette_scores.png")
-            
-            apply_dark_theme()
-            clustering.plot_k_selection_metrics(metrics, output_dir)
-            logger.info("✓ k_selection_metrics.png")
-        
-        # Cluster visualization
-        try:
-            import joblib
-            pca_model = joblib.load('models/pca_model.pkl')
-            cluster_labels = np.load('models/cluster_labels.npy')
-            
-            from data_loader import load_final_features
-            X_scaled = load_final_features()['X_scaled']
-            X_pca = pca_model.transform(X_scaled)
-            
-            apply_dark_theme()
-            clustering.plot_cluster_visualization(X_pca, cluster_labels, output_dir)
-            logger.info("✓ cluster_visualization_2d.png")
-        except Exception as e:
-            logger.warning(f"Cluster visualization skipped: {e}")
-            
-    except Exception as e:
-        logger.error(f"Clustering plots error: {e}")
-    
-    # Additional plots from outputs/figures
-    logger.info("\nChecking for additional plots in outputs/figures...")
-    original_dir = Path('outputs/figures')
-    if original_dir.exists():
-        for png_file in original_dir.glob('*.png'):
-            plot_name = png_file.name
-            if not (Path(output_dir) / plot_name).exists():
-                logger.info(f"  Found additional plot: {plot_name} (copying as-is for now)")
+
+    ratios = pca_results['explained_variance_ratio'].to_numpy()
+    cumulative = np.cumsum(ratios)
+    components = np.arange(1, len(ratios) + 1)
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+    axes[0].bar(components, ratios, color='steelblue')
+    axes[0].set_xlabel('Principal component')
+    axes[0].set_ylabel('Share of total variance')
+    axes[0].set_title('Variance explained per component')
+
+    axes[1].plot(components, cumulative, marker='o', color='darkred')
+    axes[1].axhline(PCA_VARIANCE_THRESHOLD, color='green', linestyle='--',
+                    label=f'{PCA_VARIANCE_THRESHOLD:.0%} target')
+    axes[1].set_xlabel('Components retained')
+    axes[1].set_ylabel('Cumulative share of variance')
+    axes[1].set_title('Cumulative variance explained')
+    axes[1].set_ylim(0, 1.02)
+    axes[1].legend()
+
+    fig.tight_layout()
+    fig.savefig(Path(output_dir) / 'explained_variance.png', dpi=200,
+                bbox_inches='tight')
+    plt.close(fig)
+
 
 def generate_all_ablation_plots():
-    """Generate ablation plots for all feature sets in dark mode."""
-    logger.info("\nGenerating ablation feature-set plots...")
-    
     import pandas as pd
-    
-    feature_sets = ['scale', 'shape', 'summary', 'behavioral', 'combined']
-    
-    for fs in feature_sets:
+
+    for fs in FEATURE_SETS:
+        arm_metrics = ABLATION / fs / 'metrics'
+        out_dir = ABLATION_OUTDIR / fs / 'figures'
+        out_dir.mkdir(parents=True, exist_ok=True)
+        output_dir = str(out_dir)
+
+        metrics_path = arm_metrics / 'clustering_metrics.csv'
+        if not metrics_path.exists():
+            logger.info(f"  {fs}: skip (no clustering_metrics.csv)")
+            continue
+
         try:
-            metrics_path = Path(f'outputs/ablation/{fs}/metrics/clustering_metrics.csv')
-            pca_path = Path(f'outputs/ablation/{fs}/metrics/pca_results.csv')
-            output_dir = f'presentation/dark_plots/ablation/{fs}/figures'
-            
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
-            
-            if metrics_path.exists():
-                metrics = pd.read_csv(metrics_path)
-                
-                apply_dark_theme()
-                clustering.plot_elbow_curve(metrics, output_dir)
-                
-                apply_dark_theme()
-                clustering.plot_silhouette_analysis(metrics, output_dir)
-                
-                apply_dark_theme()
-                clustering.plot_k_selection_metrics(metrics, output_dir)
-                
-                logger.info(f"✓ {fs}: elbow, silhouette, k_selection")
-            
+            metrics = pd.read_csv(metrics_path)
+            selected = metrics[metrics.get('selected', False)]['K']
+            selected_k = int(selected.iloc[0]) if len(selected) else None
+            k_values = metrics['K'].tolist()
+
+            apply_dark_theme()
+            clustering.plot_elbow_curve(k_values, metrics['inertia'].tolist(),
+                                        selected_k, output_dir)
+            apply_dark_theme()
+            clustering.plot_silhouette_scores(k_values, metrics['silhouette'].tolist(),
+                                              selected_k, output_dir)
+            apply_dark_theme()
+            clustering.plot_k_selection_metrics(metrics, selected_k, output_dir)
+            logger.info(f"  {fs}: elbow_curve.png, silhouette_scores.png, "
+                        f"k_selection_metrics.png (K={selected_k})")
+
+            pca_path = arm_metrics / 'pca_results.csv'
             if pca_path.exists():
-                pca_results = pd.read_csv(pca_path)
                 apply_dark_theme()
-                pca_analysis.plot_explained_variance(pca_results, output_dir)
-                
-                logger.info(f"✓ {fs}: explained_variance")
-            
-            # Check for additional plots
-            original_ablation_dir = Path(f'outputs/ablation/{fs}/figures')
-            if original_ablation_dir.exists():
-                for png_file in original_ablation_dir.glob('*.png'):
-                    if not (Path(output_dir) / png_file.name).exists():
-                        logger.info(f"  {fs}: Found {png_file.name} (not regenerated yet)")
-                        
-        except Exception as e:
-            logger.warning(f"Ablation {fs} error: {e}")
+                _plot_explained_variance_from_table(pd.read_csv(pca_path), output_dir)
+                logger.info(f"  {fs}: explained_variance.png")
+
+            loadings_path = arm_metrics / 'pca_loadings.csv'
+            if loadings_path.exists():
+                loadings = pd.read_csv(loadings_path, index_col=0)
+                apply_dark_theme()
+                pca_analysis.plot_component_loadings(loadings, output_dir)
+                logger.info(f"  {fs}: component_loadings.png")
+
+            logger.info(f"  {fs}: skip pca_projection_2d.png, "
+                        f"cluster_visualization_2d.png (per-arm score matrix not "
+                        f"persisted)")
+        except Exception as exc:
+            logger.warning(f"Ablation {fs} error: {exc}")
+
 
 def main():
-    """Main execution."""
-    logger.info("="*70)
+    logger.info("=" * 70)
     logger.info("DARK-MODE PLOT GENERATION FOR ALL PLOTS")
-    logger.info("="*70)
-    
+    logger.info("=" * 70)
+
     create_output_structure()
-    
-    # Regenerate all plots with dark theme
-    logger.info("\nRegenerating ALL plots with dark theme...")
-    regenerate_from_data()
-    
-    # Rename presentation/dark_plots to dark_mode_plots
-    logger.info("\nRenaming output folder...")
-    try:
-        import shutil
-        old_path = Path('presentation/dark_plots')
-        new_path = Path('dark_mode_plots')
-        
-        # Remove old dark_mode_plots if exists
-        if new_path.exists():
-            shutil.rmtree(new_path)
-        
-        # Rename
-        shutil.move(str(old_path), str(new_path))
-        logger.info(f"✓ Renamed: presentation/dark_plots -> dark_mode_plots")
-        
-    except Exception as e:
-        logger.warning(f"Rename failed: {e}")
-        new_path = Path('presentation/dark_plots')
-    
-    logger.info("\n" + "="*70)
+
+    logger.info("\n=== REGENERATING ALL PLOTS WITH DARK THEME ===\n")
+
+    logger.info("Generating main figures plots...")
+    generate_eda_plots(str(OUTDIR))
+    generate_pca_plots(str(OUTDIR))
+    generate_clustering_plots(str(OUTDIR))
+
+    logger.info("\nGenerating ablation feature-set plots...")
+    generate_all_ablation_plots()
+
+    logger.info("\n=== ALL PLOTS REGENERATED WITH DARK THEME ===")
+
+    new_path = ROOT / 'dark_mode_plots'
+
+    logger.info("\n" + "=" * 70)
     logger.info("COMPLETE")
     logger.info(f"Output: {new_path}/")
     logger.info("Original plots untouched in outputs/figures/")
-    logger.info("="*70)
-    
-    # Count generated plots
+    logger.info("=" * 70)
+
     try:
         total_dark = sum(1 for _ in new_path.rglob('*.png'))
         logger.info(f"\nTotal dark-mode plots generated: {total_dark}")
-    except:
+    except Exception:
         pass
+
 
 if __name__ == '__main__':
     main()

@@ -1,0 +1,39 @@
+{
+  "seasonal": true,
+  "seasons_present": [
+    "winter",
+    "spring",
+    "summer",
+    "autumn"
+  ],
+  "mean_daily_kwh_by_season": {
+    "winter": 26.571,
+    "spring": 35.1668,
+    "summer": 38.0142,
+    "autumn": 29.433
+  },
+  "peak_hour_by_season": {
+    "autumn": 19,
+    "spring": 20,
+    "summer": 20,
+    "winter": 19
+  },
+  "amplitude_estimate": 0.20178864227863696,
+  "amplitude_estimate_q25": 0.1785855522965766,
+  "amplitude_estimate_q75": 0.2161481442491843,
+  "n_consumers_with_amplitude": 200,
+  "phase_recovery_corr": 0.6780669314235555,
+  "phase_accuracy": 0.885,
+  "n_truth_consumers": 185,
+  "cluster_amplitude_median": {
+    "0": 0.17516552646228636,
+    "1": 0.18243387245526,
+    "2": 0.1876786778035001,
+    "3": 0.16547529820722312
+  },
+  "figures": [
+    "outputs\\figures\\seasonal_mean_shape_by_season.png",
+    "outputs\\figures\\seasonal_daily_energy_and_peak_hour.png",
+    "outputs\\figures\\seasonal_phase_recovery.png"
+  ]
+}

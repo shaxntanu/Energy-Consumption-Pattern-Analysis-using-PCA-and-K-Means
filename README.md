@@ -574,7 +574,8 @@ npm run dev --prefix web
 The dark-mode system reuses one theme (`presentation/dark_theme.py`) and two generators; original light-mode charts in `outputs/` are never touched, and output lands in `dark_mode_plots/figures/`.
 
 ```bash
-# 1. Core set — EDA / PCA / clustering / per-feature-set ablation
+# 1. Core set — EDA / PCA / clustering / per-feature-set ablation.
+#    Re-renders faithfully from the persisted fitted models + metric tables.
 py presentation/generate_dark_plots.py
 
 # 2. Extended set — validation, seed robustness, ablation comparison,
@@ -582,6 +583,15 @@ py presentation/generate_dark_plots.py
 #    Re-runs nothing: it reads the tables and summary JSONs the pipeline persisted.
 py presentation/generate_dark_plots_extended.py
 ```
+
+Both generators re-render **only from persisted artifacts** (fitted models, metric
+tables, summary JSONs) — nothing is re-fitted and no pipeline step is re-run
+except the tiny 50×7 EDA illustration panel. One honest boundary: the two
+*scatter* figures (`pca_projection_2d.png`, `cluster_visualization_2d.png` — the
+per-consumer score plot and the cluster scatter) need the per-consumer score
+matrix, which the pipeline keeps in memory and never persists, so they are not
+part of the dark re-render; the light versions in `outputs/figures/` remain the
+source for those two, or re-run the analysis to regenerate them.
 
 The extended script is gated on persisted data: on the current 30-day outputs it draws the validation, seed-robustness and ablation-comparison figures and honestly skips the seasonal / longitudinal / explainability figures (their summary JSONs do not exist for a 30-day window). Re-run the flagship first (`py run_module.py energy_analysis -- --n_days 365 --n_consumers 200`), then re-run the extended script and all nine figures appear. The two seasonal figures that need the per-season 24-hour shape and per-consumer phase pairs regenerate only the generator panel (no PCA, no K sweep, no clustering) — see the script docstring for the exact boundary.
 
