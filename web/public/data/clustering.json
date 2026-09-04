@@ -1,0 +1,289 @@
+{
+  "k_range": [
+    2,
+    11
+  ],
+  "selected_k": 4,
+  "silhouette_at_selected_k": 0.3282866716821562,
+  "cluster_sizes": [
+    39,
+    52,
+    47,
+    62
+  ],
+  "cluster_names": [
+    "Midday-Peaking Weekday-Heavy",
+    "Flat All-Day",
+    "Evening-Peaking",
+    "Evening-Peaking Weekend-Heavy"
+  ],
+  "stability_at_selected_k": {
+    "n_clusters": 4,
+    "n_runs": 10,
+    "mean_ari": 0.9946825377900362,
+    "std_ari": 0.007081574699310825,
+    "min_ari": 0.9736152071869171,
+    "mean_agreement": 0.9979999999999998,
+    "mean_inertia": 3911.265733297244,
+    "std_inertia": 0.31660704832315845,
+    "min_cluster_share": 0.195
+  },
+  "k_selection_trace": {
+    "candidates": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "rules": {
+      "min_cluster_share": 0.05,
+      "min_stability_ari": 0.6,
+      "tolerance": 0.05
+    },
+    "relaxed_filters": [],
+    "after_balance_filter": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "after_stability_filter": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "composite_scores": {
+      "2": 0.0,
+      "3": 0.8793882016453002,
+      "4": 0.9444015542811052,
+      "5": 0.8209956423863121,
+      "6": 0.6257102103179556
+    },
+    "best_score": 0.9444015542811052,
+    "best_k_by_score": 4,
+    "within_tolerance": [
+      4
+    ],
+    "selected_k": 4,
+    "elbow_k": 4.0
+  },
+  "metrics_by_k": [
+    {
+      "K": 2,
+      "inertia": 7083.513908566277,
+      "silhouette": 0.2939437518225455,
+      "calinski_harabasz": 72.99794655833404,
+      "davies_bouldin": 1.3822966460504686,
+      "stability_mean_ari": 0.9958112799087424,
+      "stability_std_ari": 0.0083774401825152,
+      "assignment_agreement": 0.999,
+      "min_cluster_share": 0.265,
+      "selected": false
+    },
+    {
+      "K": 3,
+      "inertia": 4968.533979071766,
+      "silhouette": 0.3304803853115014,
+      "calinski_harabasz": 93.70183384832148,
+      "davies_bouldin": 1.1957217149422932,
+      "stability_mean_ari": 0.985237803141632,
+      "stability_std_ari": 0.0157814522628925,
+      "assignment_agreement": 0.9953333333333336,
+      "min_cluster_share": 0.265,
+      "selected": false
+    },
+    {
+      "K": 4,
+      "inertia": 3911.129183290933,
+      "silhouette": 0.3282866716821562,
+      "calinski_harabasz": 96.61713813497728,
+      "davies_bouldin": 1.1691088459670895,
+      "stability_mean_ari": 0.9946825377900362,
+      "stability_std_ari": 0.0070815746993108,
+      "assignment_agreement": 0.9979999999999998,
+      "min_cluster_share": 0.195,
+      "selected": true
+    },
+    {
+      "K": 5,
+      "inertia": 3466.0790320646347,
+      "silhouette": 0.3351616198820151,
+      "calinski_harabasz": 87.60960036721217,
+      "davies_bouldin": 1.2022910731297736,
+      "stability_mean_ari": 0.9586756976817278,
+      "stability_std_ari": 0.0309543727954203,
+      "assignment_agreement": 0.982777777777778,
+      "min_cluster_share": 0.055,
+      "selected": false
+    },
+    {
+      "K": 6,
+      "inertia": 3072.496701157153,
+      "silhouette": 0.3238272599743667,
+      "calinski_harabasz": 83.63056709531355,
+      "davies_bouldin": 1.2326497885903491,
+      "stability_mean_ari": 0.9909221905534588,
+      "stability_std_ari": 0.009444632184721,
+      "assignment_agreement": 0.9943333333333332,
+      "min_cluster_share": 0.055,
+      "selected": false
+    },
+    {
+      "K": 7,
+      "inertia": 2844.562669319039,
+      "silhouette": 0.3163754755774248,
+      "calinski_harabasz": 77.4660341569839,
+      "davies_bouldin": 1.2093826125596194,
+      "stability_mean_ari": 0.8930745813674256,
+      "stability_std_ari": 0.0724680105741188,
+      "assignment_agreement": 0.9038888888888889,
+      "min_cluster_share": 0.035,
+      "selected": false
+    },
+    {
+      "K": 8,
+      "inertia": 2670.294703023413,
+      "silhouette": 0.307163232659902,
+      "calinski_harabasz": 72.15634316539739,
+      "davies_bouldin": 1.2949651245042757,
+      "stability_mean_ari": 0.8651239227237868,
+      "stability_std_ari": 0.0737362449640817,
+      "assignment_agreement": 0.8665555555555555,
+      "min_cluster_share": 0.03,
+      "selected": false
+    },
+    {
+      "K": 9,
+      "inertia": 2490.5884478789544,
+      "silhouette": 0.3111422698892226,
+      "calinski_harabasz": 69.06249696773054,
+      "davies_bouldin": 1.2014875963732292,
+      "stability_mean_ari": 0.8155832245310195,
+      "stability_std_ari": 0.0881560172609801,
+      "assignment_agreement": 0.8337777777777775,
+      "min_cluster_share": 0.025,
+      "selected": false
+    },
+    {
+      "K": 10,
+      "inertia": 2361.6311889793874,
+      "silhouette": 0.275952781244082,
+      "calinski_harabasz": 65.55485378866058,
+      "davies_bouldin": 1.317966836217035,
+      "stability_mean_ari": 0.7581117047316975,
+      "stability_std_ari": 0.093246232604812,
+      "assignment_agreement": 0.7920000000000001,
+      "min_cluster_share": 0.02,
+      "selected": false
+    }
+  ],
+  "stability_by_k": [
+    {
+      "n_clusters": 2,
+      "n_runs": 10,
+      "mean_ari": 0.9958112799087424,
+      "std_ari": 0.0083774401825152,
+      "min_ari": 0.9790563995437118,
+      "mean_agreement": 0.999,
+      "mean_inertia": 7083.552484955649,
+      "std_inertia": 0.1157291681175593,
+      "min_cluster_share": 0.265
+    },
+    {
+      "n_clusters": 3,
+      "n_runs": 10,
+      "mean_ari": 0.985237803141632,
+      "std_ari": 0.0157814522628925,
+      "min_ari": 0.9683667210177828,
+      "mean_agreement": 0.9953333333333336,
+      "mean_inertia": 4968.546246103068,
+      "std_inertia": 0.0187381998305174,
+      "min_cluster_share": 0.265
+    },
+    {
+      "n_clusters": 4,
+      "n_runs": 10,
+      "mean_ari": 0.9946825377900362,
+      "std_ari": 0.0070815746993108,
+      "min_ari": 0.9736152071869172,
+      "mean_agreement": 0.9979999999999998,
+      "mean_inertia": 3911.265733297244,
+      "std_inertia": 0.3166070483231584,
+      "min_cluster_share": 0.195
+    },
+    {
+      "n_clusters": 5,
+      "n_runs": 10,
+      "mean_ari": 0.9586756976817278,
+      "std_ari": 0.0309543727954203,
+      "min_ari": 0.8916089499177126,
+      "mean_agreement": 0.982777777777778,
+      "mean_inertia": 3468.7535991958976,
+      "std_inertia": 5.15913544321623,
+      "min_cluster_share": 0.055
+    },
+    {
+      "n_clusters": 6,
+      "n_runs": 10,
+      "mean_ari": 0.9909221905534588,
+      "std_ari": 0.009444632184721,
+      "min_ari": 0.9762804448797044,
+      "mean_agreement": 0.9943333333333332,
+      "mean_inertia": 3071.643709529668,
+      "std_inertia": 0.5675741299730332,
+      "min_cluster_share": 0.055
+    },
+    {
+      "n_clusters": 7,
+      "n_runs": 10,
+      "mean_ari": 0.8930745813674256,
+      "std_ari": 0.0724680105741188,
+      "min_ari": 0.8032669275788407,
+      "mean_agreement": 0.9038888888888889,
+      "mean_inertia": 2868.6424416455257,
+      "std_inertia": 23.526689234030417,
+      "min_cluster_share": 0.035
+    },
+    {
+      "n_clusters": 8,
+      "n_runs": 10,
+      "mean_ari": 0.8651239227237868,
+      "std_ari": 0.0737362449640817,
+      "min_ari": 0.666393103391964,
+      "mean_agreement": 0.8665555555555555,
+      "mean_inertia": 2685.890698419519,
+      "std_inertia": 22.60016296683273,
+      "min_cluster_share": 0.03
+    },
+    {
+      "n_clusters": 9,
+      "n_runs": 10,
+      "mean_ari": 0.8155832245310195,
+      "std_ari": 0.0881560172609801,
+      "min_ari": 0.6361992287816873,
+      "mean_agreement": 0.8337777777777775,
+      "mean_inertia": 2523.654108996855,
+      "std_inertia": 28.902652731098133,
+      "min_cluster_share": 0.025
+    },
+    {
+      "n_clusters": 10,
+      "n_runs": 10,
+      "mean_ari": 0.7581117047316975,
+      "std_ari": 0.093246232604812,
+      "min_ari": 0.5814612646302838,
+      "mean_agreement": 0.7920000000000001,
+      "mean_inertia": 2371.881834621675,
+      "std_inertia": 24.523745369006267,
+      "min_cluster_share": 0.02
+    }
+  ]
+}

@@ -69,9 +69,20 @@ def build_config_from_sidebar() -> AnalysisConfig:
     )
 
     st.sidebar.markdown("### Simulation Controls")
-    
+    st.sidebar.caption(
+        "Longer windows reveal seasonal and longitudinal effects; short windows "
+        "honestly report `available: false` for those steps.",
+    )
+
+    horizon_choice = st.sidebar.select_slider(
+        "Observation window (days)",
+        options=[30, 90, 180, 365],
+        value=30,
+        help="30/90/180/365 are the validated horizons (data_loader.VALID_HORIZONS_DAYS). "
+             "Longitudinal analysis requires ≥ 180 days; the seasonal rhythm is visible at 365.",
+    )
+    n_days = int(horizon_choice)
     n_consumers = st.sidebar.slider("Consumers", 50, 500, 200, step=10)
-    n_days = st.sidebar.slider("Days", 7, 90, 30)
     feature_set = st.sidebar.selectbox(
         "Feature set", ["behavioral", "scale", "combined"], index=0,
         help="behavioral = shape patterns, scale = magnitude, combined = both",
@@ -118,7 +129,7 @@ def get_or_run_analysis(config: AnalysisConfig) -> AnalysisResults:
     return results
 
 
-REFERENCE_HASH = "6dff8faaa470d418"
+REFERENCE_HASH = "6896387297178841"
 
 
 # --- small helpers -----------------------------------------------------------
@@ -182,10 +193,15 @@ def _cluster_bullets(profile, results, n: int = 3) -> list:
 
 
 # --- navigation --------------------------------------------------------------
-# Simplified navigation - only simulator pages
+# Simulator pages plus the analysis steps and the honest scientific results.
+# Every name maps to a function in PAGE_FUNCS below; the grouped sidebar keeps
+# the read-this-first pages on top and the research pages below.
 
 NAV_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Simulator", ("Overview", "Dataset", "The clusters")),
+    ("Analysis", ("Features", "PCA", "Choosing K", "Stability", "Validation")),
+    ("Results", ("Insights", "Seasonal", "Longitudinal", "Explainability")),
+    ("Method", ("How it works", "Research", "Limitations")),
 )
 
 HOME_PAGE = "Overview"
@@ -235,9 +251,8 @@ def nav_button(label: str, page: str, key: str) -> None:
 def render_view_switcher(active: str) -> None:
     """Keep the simulator from becoming a one-way trip.
 
-    The app is intentionally just three working views now. This compact switcher
-    stays above every view so someone who opens the dataset or cluster details
-    always has a clear route back.
+    The whole project is one working analysis now, but the three core views stay
+    on top of the page as quick routes back. The sidebar carries the rest.
     """
     labels = ("Overview", "Dataset", "The clusters")
     cols = st.columns(len(labels))
@@ -702,7 +717,7 @@ def page_overview(results: AnalysisResults):
     ui.note(
         "Every consumer's 24 hourly values are scaled to sum to one before anything "
         "else, so what is grouped is the <strong>shape</strong> of the day, not its size. "
-        "The clusters below are three different daily rhythms, not big, medium and small."
+        "The clusters below are different daily rhythms, not big, medium and small."
     )
     
     ui.section("Explore the results")
@@ -888,7 +903,7 @@ def page_k(results: AnalysisResults):
 
 
 def page_clusters(results: AnalysisResults):
-    ui.section("The clusters", "Three daily rhythms, each named for its own characteristics.", eyebrow="Result")
+    ui.section("The clusters", "Each daily rhythm, named for its own characteristics.", eyebrow="Result")
     profiles = results.cluster_profiles.sort_values("cluster")
     cols = st.columns(len(profiles))
     for col, (_, prof) in zip(cols, profiles.iterrows()):
@@ -1016,12 +1031,13 @@ def page_validation(results: AnalysisResults):
         _plot(fig)
 
         ari = results.ari_for_k(results.optimal_k)
+        n_true = results.archetype_crosstab.shape[0] if results.archetype_crosstab is not None else "?"
         ui.note(
             f"At the selected K={results.optimal_k}, the Adjusted Rand Index against the "
             f"archetypes is {_num(ari, 4)}. That is moderate: the recovered clusters line up "
             f"with the built-in structure well above chance, but they are not the same "
-            f"partition. The four archetypes and three clusters do not map one to one, which "
-            f"the cross-tabulation below makes visible."
+            f"partition. The {n_true} archetypes and {results.optimal_k} clusters do not map "
+            f"one to one, which the cross-tabulation below makes visible."
         )
         if results.archetype_crosstab is not None:
             st.markdown("**Cluster against archetype**")
@@ -1109,11 +1125,187 @@ def page_limitations(results: AnalysisResults):
     )
 
 
-# Keyed by page name - only simulator pages remain
+def page_seasonal(results: AnalysisResults):
+    """Improvement 2 - the interpretable seasonal model (magnitude vs timing).
+
+    The seasonal rhythm is estimated from the data alone and scored against the
+    hidden seasonal_phase when that column is present (synthetic data only). At
+    short horizons there is only one season present, so the page reports the
+    honest `available: false` reason instead of inventing numbers.
+    """
+    ui.section(
+        "Seasonal analysis",
+        "Magnitude vs timing: how the daily total and the 24-hour shape move across the year.",
+        eyebrow="Improvement 2",
+    )
+    seasonal = results.seasonal_results or {}
+    if not seasonal.get("seasonal"):
+        reason = seasonal.get(
+            "reason", "Seasonal analysis did not run for this window."
+        )
+        ui.note(
+            f"<strong>Not available for this window.</strong> {reason} Pick the "
+            "365-day horizon to see the full seasonal rhythm; at 90 days only one "
+            "season is present, so the estimate cannot be made.",
+            warn=True,
+        )
+        return
+
+    s = seasonal
+    seasons = s.get("seasons_present", [])
+    means = s.get("mean_daily_kwh_by_season", {})
+    amplitude = s.get("amplitude_estimate")
+    peak_hours = s.get("peak_hour_by_season", {})
+    ui.metric_cards([
+        {"label": "Seasons present", "value": len(seasons), "sub": ", ".join(seasons)},
+        {"label": "Magnitude amplitude", "value": _num(amplitude, 3) if amplitude is not None else "-",
+         "sub": "fractional swing of daily totals"},
+        {"label": "Phase recovery r",
+         "value": _num(s["phase_recovery_corr"], 3) if s.get("phase_recovery_corr") is not None else "-",
+         "sub": "vs hidden seasonal_phase (synthetic)"},
+        {"label": "Peak-season agreement",
+         "value": _pct(s["phase_accuracy"]) if s.get("phase_accuracy") is not None else "-",
+         "sub": f"{s.get('n_truth_consumers', '-')} truth consumers"},
+    ])
+    if means:
+        _plot(ch.seasonal_daily_chart(results))
+        _plot(ch.seasonal_shape_chart(results))
+    ui.note(
+        "Two channels are estimated separately. The <strong>magnitude</strong> channel is the "
+        "swing in mean daily kWh between seasons (mean-corrected over the window, so it cannot "
+        "inflate or create a cluster from scale differences). The <strong>timing</strong> channel "
+        "is the movement of the peak hour in the normalized 24-hour shape. The cluster x season "
+        "cross-check in the report shows the seasonal swing is the same inside every cluster - "
+        "the phase is drawn independently of archetype, so seasonality does not leak into the grouping."
+    )
+    _external_report("Seasonal analysis", ROOT / "outputs" / "reports" / "seasonal_analysis_report.md")
+
+
+def page_longitudinal(results: AnalysisResults):
+    """Improvement 1 - temporal stability of the clusters across the window.
+
+    The window is split into segments; features are re-engineered and the whole
+    recipe re-fit inside each, then compared with the full-window partition by
+    permutation-invariant ARI. Needs a window of at least 180 days, so short
+    horizons report `available: false` honestly.
+    """
+    ui.section(
+        "Longitudinal analysis",
+        "Do the recovered groups still hold when you look at a longer period of time?",
+        eyebrow="Improvement 1",
+    )
+    longitudinal = results.longitudinal_results
+    if longitudinal is None:
+        ui.note(
+            "<strong>Not available for this window.</strong> Longitudinal analysis "
+            "needs a window of at least 180 days (two seasons), and re-fits the whole "
+            "standardize -> PCA -> K-Means recipe inside each segment. Pick the "
+            "365-day horizon to see it.",
+            warn=True,
+        )
+        return
+
+    seg_ari = longitudinal.get("segment_ari_vs_full", [])
+    mean = longitudinal.get("mean_temporal_stability_ari")
+    ui.metric_cards([
+        {"label": "Segments", "value": longitudinal.get("n_segments", "-"),
+         "sub": "non-overlapping windows"},
+        {"label": "Mean temporal ARI", "value": _num(mean, 3) if mean is not None else "-",
+         "accent": True, "sub": "segment labels vs full window"},
+        {"label": "Per-segment ARI", "value": ", ".join(f"{a:.2f}" if a is not None else "-" for a in seg_ari)},
+        {"label": "Consumers per segment",
+         "value": longitudinal.get("n_consumers_per_segment", "-")},
+    ])
+    _plot(ch.longitudinal_stability_chart(results))
+    monthly = longitudinal.get("monthly_mean_daily_kwh") or {}
+    if monthly:
+        _plot(ch.longitudinal_monthly_chart(results))
+    ui.note(
+        "Each segment re-fits the whole recipe from scratch, so this measures whether the "
+        "<strong>structure</strong> itself is stable across time, not whether one model gives "
+        "the same answer when asked twice. A high, flat ARI means the clusters describe the "
+        "consumer rather than the month or season."
+    )
+    _external_report("Longitudinal analysis", ROOT / "outputs" / "reports" / "longitudinal_analysis_report.md")
+
+
+def page_explainability(results: AnalysisResults):
+    """Bonus 4 - post-hoc SHAP / permutation explanation of the clusters.
+
+    The clustering is unsupervised and has no feature importance. A small post-hoc
+    surrogate forest predicts the recovered labels from the behavioural features,
+    and the surrogate is explained in feature units. The surrogate never feeds
+    back into PCA or K-Means.
+    """
+    ui.section(
+        "Explainability",
+        "Why does a consumer land in the cluster it lands in? A post-hoc surrogate, in feature units.",
+        eyebrow="XAI / SHAP",
+    )
+    explain = results.explainability_results
+    if not explain or explain.get("method") in (None, "not_run"):
+        reason = explain.get("reason", "Explainability did not run for this window.")
+        ui.note(
+            f"<strong>Not available for this run.</strong> {reason}",
+            warn=True,
+        )
+        return
+
+    method = explain.get("method")
+    ui.metric_cards([
+        {"label": "Method", "value": method, "sub": "shap or permutation fallback",
+         "accent": method == "shap"},
+        {"label": "Surrogate cv accuracy",
+         "value": _num(explain.get("cv_balanced_accuracy"), 3),
+         "sub": "the honest ceiling on feature-importance claims"},
+        {"label": "Features", "value": explain.get("n_features", "-")},
+        {"label": "Consumers explained", "value": explain.get("n_consumers", "-")},
+    ])
+    ui.note(
+        "The cross-validated balanced accuracy is the ceiling on what any importance reading "
+        "can claim: if the surrogate only predicts part of the grouping, the features only "
+        "explain that part - and the report says so. SHAP values and permutation importance "
+        "are different statistics; the method key above states which one produced this page."
+    )
+    for entry in explain.get("per_cluster", []):
+        cid = entry.get("cluster")
+        name = f"Cluster {cid}"
+        profile = results.cluster_profiles
+        if profile is not None and cid in set(profile["cluster"].tolist()):
+            name = str(profile.loc[profile["cluster"] == cid, "cluster_name"].iloc[0])
+        feats = entry.get("top_features", [])
+        with st.expander(f"{name}  -  {entry.get('n_rows', '?')} consumers"):
+            if not feats:
+                st.markdown("No features raised for this cluster.")
+                continue
+            for f in feats:
+                value = f.get("mean_abs_shap", f.get("importance", 0.0))
+                direction = f.get("direction")
+                line = f"- `{f['feature']}` importance {value:.4f}"
+                if direction:
+                    line += f" ({direction})"
+                st.markdown(line)
+    _external_report("Explainability", ROOT / "outputs" / "reports" / "explainability_report.md")
+
+
+# Keyed by page name. Each name is a full working page; sidebar navigation and
+# the quick switcher both resolve through this map.
 PAGE_FUNCS = {
     "Overview": page_overview,
     "Dataset": page_dataset,
     "The clusters": page_clusters,
+    "Features": page_features,
+    "PCA": page_pca,
+    "Choosing K": page_k,
+    "Stability": page_stability,
+    "Validation": page_validation,
+    "Insights": page_insights,
+    "Seasonal": page_seasonal,
+    "Longitudinal": page_longitudinal,
+    "Explainability": page_explainability,
+    "How it works": page_how_it_works,
+    "Research": page_research,
+    "Limitations": page_limitations,
 }
 
 MASTHEAD_LINKS = (

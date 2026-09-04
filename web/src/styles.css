@@ -11,6 +11,7 @@
   --blue: #6c8cff;
   --amber: #f2b04b;
   --violet: #b78cff;
+  --rose: #fb7185;
   font-family: Inter, system-ui, sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -820,6 +821,129 @@ p {
   .features-count-in span {
     transition: none;
     animation: none;
+  }
+}
+
+/* Science Highlights band ------------------------------------------------ */
+.highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.highlight-card {
+  padding: 1.15rem 1.25rem;
+  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
+  border: 1px solid rgba(148, 168, 180, 0.17);
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.highlight-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.highlight-head h3 {
+  margin-bottom: 0;
+}
+
+.availability {
+  flex: none;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+}
+
+.availability.is-true {
+  color: var(--cyan);
+  border: 1px solid rgba(72, 215, 194, 0.35);
+  background: rgba(72, 215, 194, 0.08);
+}
+
+.availability.is-false {
+  color: var(--muted);
+  border: 1px solid rgba(148, 168, 180, 0.3);
+  background: rgba(148, 168, 180, 0.08);
+}
+
+.highlight-card p {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: 0.55rem 0 0.75rem;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.chip {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-strong);
+  padding: 0.22rem 0.5rem;
+}
+
+.mini-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.mini-bar-row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) 3.5rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mini-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  text-transform: lowercase;
+}
+
+.mini-track {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(148, 168, 180, 0.14);
+  overflow: hidden;
+}
+
+.mini-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.mini-value {
+  text-align: right;
+  color: var(--text);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+}
+
+@media (max-width: 560px) {
+  .highlight-card {
+    padding: 0.9rem 1rem;
   }
 }
 

@@ -1,0 +1,113 @@
+{
+  "available": true,
+  "reason": "Synthetic data only: comparing clusters with the generator’s hidden archetypes is an independent check that a real dataset cannot offer.",
+  "recovery_by_k": [
+    {
+      "K": 2,
+      "ari": 0.2875439298657295,
+      "nmi": 0.4564908986382438,
+      "silhouette": 0.2939437518225455,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[54, 146]"
+    },
+    {
+      "K": 3,
+      "ari": 0.6016952123055279,
+      "nmi": 0.6800551348015285,
+      "silhouette": 0.3304803853115014,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[91, 55, 54]"
+    },
+    {
+      "K": 4,
+      "ari": 0.812671365105634,
+      "nmi": 0.8284123219399838,
+      "silhouette": 0.3282866716821562,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[39, 52, 47, 62]"
+    },
+    {
+      "K": 5,
+      "ari": 0.7653168396093563,
+      "nmi": 0.8021096786682899,
+      "silhouette": 0.3351616198820151,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[37, 52, 39, 61, 11]"
+    },
+    {
+      "K": 6,
+      "ari": 0.7527903149234796,
+      "nmi": 0.7815874440354218,
+      "silhouette": 0.3238272599743667,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[24, 51, 36, 28, 50, 11]"
+    },
+    {
+      "K": 7,
+      "ari": 0.7347222629022725,
+      "nmi": 0.7768311835850615,
+      "silhouette": 0.3163754755774248,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[45, 26, 50, 11, 36, 24, 8]"
+    },
+    {
+      "K": 8,
+      "ari": 0.6915092411345509,
+      "nmi": 0.7534137567591118,
+      "silhouette": 0.307163232659902,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[26, 50, 16, 24, 25, 6, 45, 8]"
+    },
+    {
+      "K": 9,
+      "ari": 0.6759769732427592,
+      "nmi": 0.7543037743102727,
+      "silhouette": 0.3111422698892226,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[18, 50, 8, 45, 11, 6, 24, 14, 24]"
+    },
+    {
+      "K": 10,
+      "ari": 0.5977988037924282,
+      "nmi": 0.7301482724655305,
+      "silhouette": 0.275952781244082,
+      "n_true_archetypes": 4,
+      "cluster_sizes": "[16, 24, 7, 50, 15, 13, 24, 5, 23, 23]"
+    }
+  ],
+  "crosstab": [
+    {
+      "archetype": "daytime",
+      "0": 39,
+      "1": 1,
+      "2": 0,
+      "3": 10
+    },
+    {
+      "archetype": "evening",
+      "0": 0,
+      "1": 0,
+      "2": 47,
+      "3": 3
+    },
+    {
+      "archetype": "flat",
+      "0": 0,
+      "1": 50,
+      "2": 0,
+      "3": 0
+    },
+    {
+      "archetype": "weekend",
+      "0": 0,
+      "1": 1,
+      "2": 0,
+      "3": 49
+    }
+  ],
+  "selected_k_ari": 0.812671365105634,
+  "n_true_archetypes": 4,
+  "best_recovery_k": 4,
+  "best_recovery_ari": 0.812671365105634,
+  "descriptive_paragraph": "The generator drew consumers from 4 archetypes. The pipeline selected K=4 using internal indices only, and at that K the Adjusted Rand Index against the archetypes is 0.8127."
+}
