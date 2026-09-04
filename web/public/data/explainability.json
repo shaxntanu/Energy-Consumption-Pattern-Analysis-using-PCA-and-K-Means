@@ -1,0 +1,163 @@
+{
+  "cluster_assignment_model": {
+    "available": true,
+    "method": "shap",
+    "test_config": {
+      "model": "RandomForestClassifier",
+      "n_estimators": 400,
+      "test_size": 0.2,
+      "random_state": 42,
+      "cv_folds": 5
+    },
+    "metrics": {
+      "cv_balanced_accuracy": 0.9846153846153846,
+      "cv_accuracy": 0.985,
+      "cv_f1_macro": 0.983836054421769,
+      "cv_report": "              precision    recall  f1-score   support\n\n           0       0.98      1.00      0.99        39\n           1       0.98      1.00      0.99        52\n           2       0.98      0.98      0.98        47\n           3       1.00      0.97      0.98        62\n\n    accuracy                           0.98       200\n   macro avg       0.98      0.99      0.98       200\nweighted avg       0.99      0.98      0.99       200\n"
+    },
+    "per_cluster_importance": [
+      {
+        "cluster": 0,
+        "top_features": [
+          {
+            "feature": "afternoon_share",
+            "importance": 0.14177001232514242
+          },
+          {
+            "feature": "hour_14_shape",
+            "importance": 0.10909560689146341
+          },
+          {
+            "feature": "hour_2_shape",
+            "importance": 0.07621359104127447
+          },
+          {
+            "feature": "harmonic_1_amplitude",
+            "importance": 0.05425837398373984
+          },
+          {
+            "feature": "profile_ramp",
+            "importance": 0.04595528455284553
+          }
+        ]
+      },
+      {
+        "cluster": 1,
+        "top_features": [
+          {
+            "feature": "base_load_share",
+            "importance": 0.175342966179636
+          },
+          {
+            "feature": "coefficient_of_variation",
+            "importance": 0.09066839443548387
+          },
+          {
+            "feature": "shape_entropy",
+            "importance": 0.06025211827956989
+          },
+          {
+            "feature": "shape_gini",
+            "importance": 0.05779838709677419
+          },
+          {
+            "feature": "hour_6_shape",
+            "importance": 0.050201612903225804
+          }
+        ]
+      },
+      {
+        "cluster": 2,
+        "top_features": [
+          {
+            "feature": "evening_share",
+            "importance": 0.12552777777777777
+          },
+          {
+            "feature": "peak_concentration",
+            "importance": 0.12286301369863012
+          },
+          {
+            "feature": "harmonic_2_amplitude",
+            "importance": 0.10664312757201645
+          },
+          {
+            "feature": "hour_20_shape",
+            "importance": 0.06860730593607306
+          },
+          {
+            "feature": "coefficient_of_variation",
+            "importance": 0.06278538812785388
+          }
+        ]
+      },
+      {
+        "cluster": 3,
+        "top_features": [
+          {
+            "feature": "weekend_ratio",
+            "importance": 0.2504965256797583
+          },
+          {
+            "feature": "peak_hour_cos",
+            "importance": 0.09108221705426356
+          },
+          {
+            "feature": "peak_hour_sin",
+            "importance": 0.04883720930232558
+          },
+          {
+            "feature": "evening_share",
+            "importance": 0.0375968992248062
+          },
+          {
+            "feature": "harmonic_1_amplitude",
+            "importance": 0.036891472868217054
+          }
+        ]
+      }
+    ],
+    "global_importance": [
+      {
+        "feature": "weekend_ratio",
+        "importance": 0.08958602150537633
+      },
+      {
+        "feature": "evening_share",
+        "importance": 0.05505376344086022
+      },
+      {
+        "feature": "base_load_share",
+        "importance": 0.04488172043010753
+      },
+      {
+        "feature": "hour_20_shape",
+        "importance": 0.041774193548387104
+      },
+      {
+        "feature": "harmonic_2_amplitude",
+        "importance": 0.0377741935483871
+      },
+      {
+        "feature": "hour_14_shape",
+        "importance": 0.03741935483870968
+      },
+      {
+        "feature": "afternoon_share",
+        "importance": 0.036021505376344086
+      },
+      {
+        "feature": "hour_2_shape",
+        "importance": 0.035806451612903226
+      },
+      {
+        "feature": "peak_concentration",
+        "importance": 0.03403225806451613
+      },
+      {
+        "feature": "hour_6_shape",
+        "importance": 0.03172043010752688
+      }
+    ]
+  }
+}

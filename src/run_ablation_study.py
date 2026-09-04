@@ -627,7 +627,10 @@ def run_ablation_study(n_consumers: int = 200,
     truth_by_consumer = None
     if 'archetype' in raw.columns:
         truth_by_consumer = raw.groupby('consumer_id')['archetype'].first()
-        raw = raw.drop(columns=['archetype'])
+        # Drop both hidden truth columns before preprocessing, mirroring
+        # energy_analysis: the archetype labels and the hidden seasonal_phase
+        # column must never reach the scaler, PCA or K-Means.
+        raw = raw.drop(columns=['archetype', 'seasonal_phase'], errors='ignore')
     else:
         logger.warning("No archetype column found, so the arms cannot be checked against ground truth")
 
