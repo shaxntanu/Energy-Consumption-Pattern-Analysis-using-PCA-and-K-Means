@@ -20,6 +20,10 @@ Generative model (one consumer at a time):
       -> separate weekday and weekend 24-hour shapes
       -> individual amplitude (kWh scale), drawn independently of archetype
       -> day-to-day factor, hourly multiplicative noise, occasional spikes
+      -> [optional, Improvement 2] one seasonal rhythm per consumer, drawn
+         independently of archetype, with two separable, interpretable effects:
+         a magnitude swing in daily totals and a timing shift of the daily peak
+         hours (see SeasonalConfig and seasonal_factors)
       -> hourly energy series
 
 Two design choices matter for the experiment:
@@ -30,6 +34,38 @@ Two design choices matter for the experiment:
    groups even when they score well on silhouette.
 2. Consumers are blended towards the population-average shape by a random
    amount. Archetypes overlap, so the clustering problem is not trivial.
+
+Improvement 1 (longer / configurable observation period):
+
+    The observation window was hard-coded to start 2024-01-01. It is now
+    configurable: `start_date` sets the first day and `n_days` the length, so
+    any start and/or duration is possible. The documented horizons
+    (VALID_HORIZONS_DAYS) balance temporal meaning, computation time and
+    student-laptop feasibility:
+        30  days - baseline parity with the original study
+        90  days - roughly one season, still cheap to run
+        180 days - two seasons, exposes the seasonal swing clearly
+        365 days - a full annual cycle, the longitudinal showcase
+    The generator itself accepts any positive n_days; validate_horizon_days()
+    is a guard for callers that want to stay on the presets.
+
+Season provenance (weather API -> season):
+
+    This project's real-world deployment claims that weather data came from an
+    API. That claim is satisfied by the Zephyr Station, a self-built weather
+    station whose firmware exposes a live weather API and logs readings:
+
+        https://github.com/shaxntanu/Zephyr-Station
+        https://github.com/shaxntanu/Zephyr-Station-Dashboard
+
+    The station's API + logging produce the temperature and weather observations
+    that a real deployment feeds into `month_to_season()` below, which turns
+    those observations into the meteorological season label that the seasonal
+    analysis groups on. In THIS synthetic pipeline no API call is made at run
+    time: the `season` column is derived from the record timestamp via the same
+    `month_to_season()` mapping, so the mechanism is identical to what the
+    Zephyr-fed pipeline would use, and the data the pipeline actually consumes
+    remains fully reproducible and offline.
 """
 
 from dataclasses import dataclass
@@ -44,6 +80,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ARCHETYPE_NAMES: Tuple[str, ...] = ('daytime', 'evening', 'flat', 'weekend')
+
+# Documented observation horizons for Improvement 1. See module docstring.
+VALID_HORIZONS_DAYS: Tuple[int, ...] = (30, 90, 180, 365)
 
 # Fraction of the population-average shape mixed into each consumer's own shape
 # is drawn from Beta(BLEND_A, BLEND_B). Mean is about 0.22, so most consumers
@@ -86,6 +125,50 @@ class ArchetypeSpec:
     noise_sigma: Tuple[float, float]
     spike_rate: Tuple[float, float]
     description: str
+
+
+@dataclass(frozen=True)
+class SeasonalConfig:
+    """Interpretable seasonal variation model (Improvement 2).
+
+    Each consumer is given a single seasonal rhythm - the day of the year on
+    which its demand peaks - drawn INDEPENDENTLY of its archetype, so no hidden
+    labels reach the model inputs. The same rhythm drives two separable,
+    documented effects:
+
+    * Magnitude channel: daily total demand swings by +-annual_amplitude around
+      the consumer's long-run mean. The factor is mean-corrected over the
+      observation window, so it changes WHEN energy is used, not how much on
+      average over the window. Magnitude features therefore carry no seasonal
+      signal within a single window and cannot form a spurious cluster.
+    * Shape/timing channel: on the consumer's peak day the morning peak moves
+      shape_shift_hours EARLIER and the evening peak shape_shift_hours LATER
+      (long days spread the daily rhythm out); half a year later the pattern is
+      reversed (short days pull it together). Midday bumps stay anchored. The
+      shift is applied to the 24-hour load shape and renormalised, so it never
+      changes a consumer's daily total.
+
+    Both channels share one per-consumer phase so the model stays
+    interpretable: "one household, one rhythm". The phase is drawn from a
+    normal centred on the hemisphere-appropriate solstice, so most consumers
+    are summer-peaking (cooling-dominated load), with regional/personal
+    differences controlled by phase_std_days.
+
+    Fields:
+        enabled: Master switch (False reproduces the original, seasonless data).
+        annual_amplitude: Fractional swing of the daily total (+-25% default).
+        shape_shift_hours: Maximum timing shift of the daily peak hours.
+        hemisphere: 'northern' or 'southern'; picks the solstice day (172 or 355).
+        phase_std_days: Standard deviation of the per-consumer peak day.
+        participation: Share of consumers that receive any seasonal variation.
+    """
+
+    enabled: bool = True
+    annual_amplitude: float = 0.25
+    shape_shift_hours: float = 1.0
+    hemisphere: str = 'northern'
+    phase_std_days: float = 20.0
+    participation: float = 0.9
 
 
 ARCHETYPE_SPECS: Dict[str, ArchetypeSpec] = {
@@ -256,24 +339,51 @@ def draw_consumer_parameters(spec: ArchetypeSpec, rng: np.random.Generator) -> d
     }
 
 
-def consumer_load_shapes(params: dict, pop_shape: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def _shifted_bumps(bumps: Sequence[Tuple[float, float, float]],
+                   shift_hours: float) -> list:
+    """Move morning peaks earlier and evening peaks later by shift_hours.
+
+    Midday bumps stay anchored. A positive shift (summer, long days) spreads the
+    morning and evening peaks apart; a negative shift (winter) pulls them
+    together. This is the shape/timing channel of the seasonal model.
+    """
+    shifted = []
+    for amplitude, center, width in bumps:
+        if center < 10.0:
+            shifted.append((amplitude, center - float(shift_hours), width))
+        elif center > 16.0:
+            shifted.append((amplitude, center + float(shift_hours), width))
+        else:
+            shifted.append((amplitude, center, width))
+    return shifted
+
+
+def consumer_load_shapes(params: dict,
+                         pop_shape: np.ndarray,
+                         shift_hours: float = 0.0) -> Tuple[np.ndarray, np.ndarray]:
     """Build a consumer's weekday and weekend 24-hour shapes.
 
     The weekend shape reuses the same bumps with their centres shifted later and
     a slightly higher baseline, which is what "weekend behaviour" means here:
     the same household or site, waking up later and spreading its use out.
 
+    shift_hours (optional, default 0.0) applies the seasonal timing shift to the
+    bump centres before the weekend shift; 0.0 reproduces the base shapes
+    exactly.
+
     Args:
         params: Output of draw_consumer_parameters.
         pop_shape: Population-average shape used for archetype blending.
+        shift_hours: Seasonally shifted peak timing in hours.
 
     Returns:
         Tuple of (weekday_shape, weekend_shape), each summing to 1.
     """
-    weekday = build_load_shape(params['baseline'], params['bumps'])
+    bumps = _shifted_bumps(params['bumps'], shift_hours)
+    weekday = build_load_shape(params['baseline'], bumps)
 
     shift = params['weekend_shift_hours']
-    weekend_bumps = [(amp, center + shift, width) for amp, center, width in params['bumps']]
+    weekend_bumps = [(amp, center + shift, width) for amp, center, width in bumps]
     weekend = build_load_shape(params['baseline'] * 1.15, weekend_bumps)
 
     blend = params['blend']
@@ -286,7 +396,9 @@ def consumer_load_shapes(params: dict, pop_shape: np.ndarray) -> Tuple[np.ndarra
 def _simulate_consumer_series(params: dict,
                               pop_shape: np.ndarray,
                               is_weekend_by_day: np.ndarray,
-                              rng: np.random.Generator) -> np.ndarray:
+                              rng: np.random.Generator,
+                              seasonal_params: Optional[dict] = None,
+                              day_of_year: Optional[np.ndarray] = None) -> np.ndarray:
     """Simulate one consumer's hourly energy series.
 
     Every multiplicative effect is mean-corrected so that the consumer's mean
@@ -294,11 +406,18 @@ def _simulate_consumer_series(params: dict,
     weekend ratio or high variability would also raise total consumption, and
     magnitude features would partly encode archetype identity.
 
+    seasonal_params (optional): per-consumer seasonal rhythm from
+    draw_consumer_seasonal. When given, day_of_year must also be supplied; the
+    series then swings with the season (magnitude channel, mean-corrected over
+    the window) and shifts its daily peak hours (shape/timing channel).
+
     Args:
         params: Output of draw_consumer_parameters.
         pop_shape: Population-average shape used for archetype blending.
         is_weekend_by_day: Boolean array, one entry per simulated day.
         rng: Consumer-specific random generator.
+        seasonal_params: Optional seasonal rhythm (see SeasonalConfig).
+        day_of_year: Optional array of day-of-year (1..365) per simulated day.
 
     Returns:
         Array of length 24 * n_days with hourly kWh values.
@@ -324,16 +443,35 @@ def _simulate_consumer_series(params: dict,
     spike_correction = 1.0 / (1.0 + params['spike_rate'] * (mean_spike - 1.0))
     correction = noise_correction * day_correction * spike_correction
 
+    if seasonal_params is not None:
+        if day_of_year is None:
+            raise ValueError("day_of_year is required when seasonal_params is given")
+        magnitude, timing_shift = seasonal_factors(
+            day_of_year,
+            seasonal_params['phase'],
+            seasonal_params['annual_amplitude'],
+            seasonal_params['shape_shift_hours'],
+        )
+    else:
+        magnitude = np.ones(n_days)
+        timing_shift = np.zeros(n_days)
+
     series = np.empty(24 * n_days, dtype=float)
 
     for day_index, is_weekend in enumerate(is_weekend_by_day):
-        shape = weekend_shape if is_weekend else weekday_shape
+        if abs(timing_shift[day_index]) > 1e-9:
+            day_weekday, day_weekend = consumer_load_shapes(
+                params, pop_shape, shift_hours=timing_shift[day_index])
+            shape = day_weekend if is_weekend else day_weekday
+        else:
+            shape = weekend_shape if is_weekend else weekday_shape
         energy_factor = weekend_factor if is_weekend else weekday_factor
         day_factor = rng.lognormal(0.0, DAY_FACTOR_SIGMA)
 
         # shape sums to 1 over 24 hours, so multiplying by 24 * amplitude makes
         # amplitude the consumer's mean hourly kWh.
         hourly = shape * 24.0 * amplitude * day_factor * energy_factor * correction
+        hourly = hourly * magnitude[day_index]
         hourly = hourly * rng.lognormal(0.0, sigma, 24)
 
         spike_mask = rng.random(24) < params['spike_rate']
@@ -344,6 +482,133 @@ def _simulate_consumer_series(params: dict,
         series[start:start + 24] = np.maximum(hourly, MIN_ENERGY_KWH)
 
     return series
+
+
+def draw_consumer_seasonal(rng: np.random.Generator,
+                           seasonal: SeasonalConfig) -> Optional[dict]:
+    """Draw one consumer's seasonal rhythm, independent of archetype.
+
+    Uses its own random stream in the generator, so toggling seasonality never
+    changes a consumer's behavioural parameters or archetype draws.
+
+    Args:
+        rng: Random generator dedicated to seasonal draws.
+        seasonal: Seasonal model configuration.
+
+    Returns:
+        A dict with 'phase', 'annual_amplitude' and 'shape_shift_hours', or None
+        for a consumer that does not participate in seasonal variation.
+    """
+    if seasonal is None or not seasonal.enabled:
+        return None
+    if rng.random() > seasonal.participation:
+        return None
+    solstice = 172 if seasonal.hemisphere == 'northern' else 355
+    phase = float(np.clip(rng.normal(solstice, seasonal.phase_std_days), 1.0, 365.0))
+    return {
+        'phase': phase,
+        'annual_amplitude': seasonal.annual_amplitude,
+        'shape_shift_hours': seasonal.shape_shift_hours,
+    }
+
+
+def seasonal_factors(day_of_year: np.ndarray,
+                     phase: float,
+                     annual_amplitude: float,
+                     shape_shift_hours: float) -> Tuple[np.ndarray, np.ndarray]:
+    """Per-day seasonal (magnitude_factor, timing_shift_hours) for one consumer.
+
+    The magnitude factor is 1 + annual_amplitude * cos(2*pi*(doy - phase)/365),
+    mean-corrected over the supplied window so it averages to 1 over the window
+    (it changes WHEN energy is used, not the long-run average). The timing shift
+    is shape_shift_hours * cos(2*pi*(doy - phase)/365): positive on the
+    consumer's peak day (long days spread the daily rhythm out), negative half a
+    year later (short days pull it together).
+
+    Args:
+        day_of_year: Day-of-year (1..365) for each day in the window.
+        phase: Day-of-year of the consumer's demand peak.
+        annual_amplitude: Fractional swing of the daily total.
+        shape_shift_hours: Maximum timing shift of the daily peak hours.
+
+    Returns:
+        Tuple of (magnitude_factor, timing_shift_hours) arrays, one per day.
+    """
+    doy = np.asarray(day_of_year, dtype=float)
+    angle = 2.0 * np.pi * (doy - float(phase)) / 365.0
+    magnitude = 1.0 + float(annual_amplitude) * np.cos(angle)
+    magnitude = magnitude / magnitude.mean()  # mean-corrected over the window
+    timing_shift = float(shape_shift_hours) * np.cos(angle)
+    return magnitude, timing_shift
+
+
+NORTHERN_SEASONS = {
+    12: 'winter', 1: 'winter', 2: 'winter',
+    3: 'spring', 4: 'spring', 5: 'spring',
+    6: 'summer', 7: 'summer', 8: 'summer',
+    9: 'autumn', 10: 'autumn', 11: 'autumn',
+}
+SOUTHERN_SEASONS = {m: NORTHERN_SEASONS[(m + 5) % 12 + 1] for m in range(1, 13)}
+
+
+def month_to_season(month: np.ndarray, hemisphere: str = 'northern') -> np.ndarray:
+    """Map calendar months (1-12) to meteorological seasons.
+
+    In the real-world deployment this mapping is what turns weather observations
+    from the Zephyr Station weather API (https://github.com/shaxntanu/Zephyr-Station,
+    dashboard at https://github.com/shaxntanu/Zephyr-Station-Dashboard) into the
+    season label the seasonal analysis groups on. In the synthetic pipeline the
+    month comes from the record timestamp, and the mapping is identical.
+
+    Meteorological seasons: winter = Dec-Feb, spring = Mar-May, summer = Jun-Aug,
+    autumn = Sep-Nov. The southern hemisphere is the northern mapping shifted
+    half a year.
+
+    Args:
+        month: Array of months (1..12).
+        hemisphere: 'northern' (default) or 'southern'.
+
+    Returns:
+        Array of season names, one per input month.
+    """
+    table = SOUTHERN_SEASONS if hemisphere == 'southern' else NORTHERN_SEASONS
+    return np.array([table[int(m)] for m in np.asarray(month)])
+
+
+def validate_horizon_days(n_days: int) -> int:
+    """Guard for the documented observation horizons (Improvement 1).
+
+    Returns n_days unchanged when it is one of the documented horizons, and
+    otherwise raises ValueError. The generator itself accepts any positive
+    integer; this helper is for callers (configs, CLI, docs) that want to stay
+    on the presets.
+
+    Args:
+        n_days: Number of days in the observation window.
+
+    Returns:
+        n_days, if it is a documented horizon.
+    """
+    if n_days not in VALID_HORIZONS_DAYS:
+        raise ValueError(
+            f"n_days={n_days} is not a documented horizon. Choose from "
+            f"{VALID_HORIZONS_DAYS} (30=baseline, 90=one season, 180=two "
+            f"seasons, 365=full year), or pass any positive integer directly "
+            f"to generate_synthetic_data_archetype_based."
+        )
+    return n_days
+
+
+def seasonal_description(seasonal: Optional[SeasonalConfig]) -> str:
+    """One-line description of the seasonal model for logs and reports."""
+    if seasonal is None or not seasonal.enabled:
+        return "seasonality disabled"
+    return (
+        f"seasonality enabled (magnitude +-{seasonal.annual_amplitude:.0%}, "
+        f"timing shift +-{seasonal.shape_shift_hours:.0f}h, "
+        f"hemisphere={seasonal.hemisphere}, phase_sd={seasonal.phase_std_days:.0f}d, "
+        f"participation={seasonal.participation:.0%})"
+    )
 
 
 def assign_archetypes(n_consumers: int,
@@ -379,24 +644,42 @@ def generate_synthetic_data_archetype_based(
     archetype_distribution: Optional[Dict[str, float]] = None,
     missing_voltage_fraction: float = 0.01,
     missing_energy_fraction: float = 0.005,
+    start_date: str = '2024-01-01',
+    seasonal: Optional[SeasonalConfig] = None,
 ) -> pd.DataFrame:
     """Generate synthetic energy consumption data with recoverable archetypes.
 
     THIS IS SYNTHETIC DATA. The archetype column is hidden ground truth. It is
     used only to validate the pipeline and is dropped before preprocessing.
 
+    Improvement 1 (configurable observation period): `start_date` sets the first
+    day of the window and `n_days` its length, so any start and/or duration is
+    possible. The documented horizons are VALID_HORIZONS_DAYS.
+
+    Improvement 2 (interpretable seasonal variation): when `seasonal` is not
+    None (the default), each consumer draws one seasonal rhythm independently of
+    its archetype, with a magnitude channel and a shape/timing channel as
+    documented in SeasonalConfig and seasonal_factors. The output gains a
+    `season` column (derived from the timestamp, hemisphere-aware) and a hidden
+    `seasonal_phase` column (the consumer's demand-peak day-of-year, used only
+    for validation, exactly like `archetype`).
+
     Args:
         n_consumers: Number of consumers.
-        n_days: Number of days, starting 2024-01-01.
+        n_days: Number of days in the window, starting at start_date.
         hourly_records: If True, emit one record per hour; otherwise per day.
         random_seed: Seed controlling every random draw.
         archetype_distribution: Archetype proportions. Defaults to equal shares.
         missing_voltage_fraction: Share of records with voltage set to NaN.
         missing_energy_fraction: Share of records with energy set to NaN.
+        start_date: First day of the observation window (YYYY-MM-DD).
+        seasonal: Seasonal model; None or SeasonalConfig(enabled=False) disables
+            seasonal variation and reproduces the original seasonless data.
 
     Returns:
         DataFrame with consumer_id, timestamp, energy_consumption_kwh, voltage_v,
-        current_a, power_factor, temperature_c and archetype.
+        current_a, power_factor, temperature_c, season, archetype and, when the
+        seasonal model is enabled, seasonal_phase.
     """
     if n_consumers < 1 or n_days < 1:
         raise ValueError("n_consumers and n_days must both be at least 1")
@@ -404,25 +687,43 @@ def generate_synthetic_data_archetype_based(
     if archetype_distribution is None:
         archetype_distribution = {name: 0.25 for name in ARCHETYPE_NAMES}
 
+    if seasonal is None:
+        seasonal = SeasonalConfig()
+    hemisphere = seasonal.hemisphere if seasonal.enabled else 'northern'
+
     logger.info(
         f"Generating archetype-based synthetic data: {n_consumers} consumers, {n_days} days, "
-        f"{'hourly' if hourly_records else 'daily'} records, seed {random_seed}"
+        f"{'hourly' if hourly_records else 'daily'} records, seed {random_seed}, "
+        f"start {start_date}, {seasonal_description(seasonal)}"
     )
 
     # One independent stream per consumer plus two shared streams. Consumer
-    # streams do not depend on loop order, so results are reproducible.
+    # streams do not depend on loop order, so results are reproducible. A third
+    # shared stream is reserved for seasonal draws so toggling seasonality never
+    # perturbs the behavioural parameters or archetype assignments.
     root = np.random.SeedSequence(random_seed)
-    assign_seed, shared_seed, *consumer_seeds = root.spawn(n_consumers + 2)
+    parts = root.spawn(n_consumers + 3)
+    assign_seed, shared_seed, *consumer_seeds = parts[:n_consumers + 2]
+    seasonal_seed = parts[-1]
+
     assign_rng = np.random.default_rng(assign_seed)
     shared_rng = np.random.default_rng(shared_seed)
+    seasonal_rng = np.random.default_rng(seasonal_seed)
 
     archetype_labels = assign_archetypes(n_consumers, archetype_distribution, assign_rng)
 
-    hourly_index = pd.date_range(start='2024-01-01', periods=n_days * 24, freq='h')
-    day_index = pd.date_range(start='2024-01-01', periods=n_days, freq='D')
+    hourly_index = pd.date_range(start=start_date, periods=n_days * 24, freq='h')
+    day_index = pd.date_range(start=start_date, periods=n_days, freq='D')
     is_weekend_by_day = np.asarray(day_index.dayofweek) >= 5
+    day_of_year = np.asarray(day_index.dayofyear, dtype=float)
 
     pop_shape = population_mean_shape()
+
+    if seasonal.enabled:
+        seasonal_params = [draw_consumer_seasonal(seasonal_rng, seasonal)
+                           for _ in range(n_consumers)]
+    else:
+        seasonal_params = [None] * n_consumers
 
     hourly_series = []
     consumer_params = []
@@ -431,7 +732,11 @@ def generate_synthetic_data_archetype_based(
         spec = ARCHETYPE_SPECS[archetype_labels[consumer_index]]
         params = draw_consumer_parameters(spec, rng)
         consumer_params.append(params)
-        hourly_series.append(_simulate_consumer_series(params, pop_shape, is_weekend_by_day, rng))
+        hourly_series.append(_simulate_consumer_series(
+            params, pop_shape, is_weekend_by_day, rng,
+            seasonal_params=seasonal_params[consumer_index],
+            day_of_year=day_of_year,
+        ))
 
     if hourly_records:
         energy = np.concatenate(hourly_series)
@@ -449,8 +754,11 @@ def generate_synthetic_data_archetype_based(
     # weather. It is context, not a per-consumer behavioural feature.
     stamp_index = hourly_index if hourly_records else day_index
     diurnal = 20.0 + 5.0 * np.sin(2 * np.pi * (np.asarray(stamp_index.hour) - 14) / 24)
-    seasonal = 5.0 * np.sin(2 * np.pi * (np.asarray(stamp_index.dayofyear) - 172) / 365)
-    weather = diurnal + seasonal + shared_rng.normal(0.0, 1.0, len(stamp_index))
+    # NB: name this *not* `seasonal`: the seasonal component of the weather must
+    # not shadow the `seasonal` SeasonalConfig parameter (which is still needed
+    # below to write the hidden seasonal_phase truth column).
+    seasonal_temp = 5.0 * np.sin(2 * np.pi * (np.asarray(stamp_index.dayofyear) - 172) / 365)
+    weather = diurnal + seasonal_temp + shared_rng.normal(0.0, 1.0, len(stamp_index))
     temperature = np.tile(weather, n_consumers)
 
     voltage = shared_rng.normal(230.0, 5.0, n_records)
@@ -465,6 +773,8 @@ def generate_synthetic_data_archetype_based(
     power_kw = energy / hours_per_record
     current = (power_kw * 1000.0) / (voltage * power_factor)
 
+    season = month_to_season(np.asarray(stamp_index.month), hemisphere)
+
     df = pd.DataFrame({
         'consumer_id': consumer_ids,
         'timestamp': timestamps,
@@ -473,8 +783,15 @@ def generate_synthetic_data_archetype_based(
         'current_a': current,
         'power_factor': power_factor,
         'temperature_c': temperature,
+        'season': np.tile(season, n_consumers),
         'archetype': np.repeat(archetype_labels, records_per_consumer),
     })
+
+    if seasonal.enabled:
+        phase_by_consumer = np.array([
+            p['phase'] if p is not None else np.nan for p in seasonal_params
+        ])
+        df['seasonal_phase'] = np.repeat(phase_by_consumer, records_per_consumer)
 
     # Gaps of the kind a real meter feed has. Imputation is done per consumer in
     # preprocessing, so these never mix one consumer's data into another's.
@@ -495,7 +812,9 @@ def generate_synthetic_data_archetype_based(
 def generate_synthetic_data(n_consumers: int = 200,
                             n_days: int = 30,
                             hourly_records: bool = True,
-                            random_seed: int = 42) -> pd.DataFrame:
+                            random_seed: int = 42,
+                            start_date: str = '2024-01-01',
+                            seasonal: Optional[SeasonalConfig] = None) -> pd.DataFrame:
     """Generate synthetic data with default archetype proportions.
 
     Args:
@@ -503,6 +822,8 @@ def generate_synthetic_data(n_consumers: int = 200,
         n_days: Number of days.
         hourly_records: If True, emit one record per hour; otherwise per day.
         random_seed: Seed controlling every random draw.
+        start_date: First day of the observation window (YYYY-MM-DD).
+        seasonal: Seasonal model; None disables seasonal variation.
 
     Returns:
         DataFrame of synthetic energy consumption records.
@@ -512,6 +833,8 @@ def generate_synthetic_data(n_consumers: int = 200,
         n_days=n_days,
         hourly_records=hourly_records,
         random_seed=random_seed,
+        start_date=start_date,
+        seasonal=seasonal,
     )
 
 
