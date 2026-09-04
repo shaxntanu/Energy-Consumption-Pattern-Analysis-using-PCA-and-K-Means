@@ -10,5 +10,15 @@ venv/
 
 # Claude Code local session state and preview config
 .claude/
-node_modules/ 
+node_modules/
 dist/
+
+# C++ engine build artifacts (optional module; never commit binaries)
+build/
+*.obj
+*.o
+*.pyd
+*.so
+*.dll
+*.lib
+"Prompt UI Changes/" 

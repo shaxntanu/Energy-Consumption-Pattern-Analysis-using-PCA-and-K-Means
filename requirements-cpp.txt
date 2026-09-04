@@ -1,0 +1,14 @@
+# Build-time dependencies for the optional C++ engine (energy_cpp).
+#
+# The C++ engine is strictly optional: the Python/scikit-learn pipeline runs
+# without it. Install these only if you want to build the pybind11 module and
+# run the Python-vs-C++ benchmark:
+#
+#     py -m pip install -r requirements-cpp.txt
+#     py -m pip install ./cpp_engine
+#
+# A C++ compiler is also required (MSVC on Windows, g++/clang on macOS/Linux).
+# OpenMP is used automatically when available; set ENERGY_CPP_NO_OPENMP=1 to
+# build single-threaded.
+
+pybind11>=2.12,<4

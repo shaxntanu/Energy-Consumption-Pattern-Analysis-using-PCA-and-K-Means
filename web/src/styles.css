@@ -160,7 +160,20 @@ a {
 }
 
 .hero-copy {
+  position: relative;
+  isolation: isolate;
   max-width: 720px;
+}
+
+/* VANTA.NET background, confined to the hero copy column only.
+   isolation:isolate keeps the z-index:-1 canvas inside this box, so it sits
+   behind the hero text but never behind the chart carousel in the neighbouring
+   column, and never bleeds into any chart, table or dense section below. */
+.vanta-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .eyebrow {
@@ -939,6 +952,59 @@ p {
   color: var(--text);
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 0.68rem;
+}
+
+.bench-table-wrap {
+  margin-top: 1.25rem;
+  overflow-x: auto;
+  border: 1px solid rgba(148, 168, 180, 0.17);
+  border-radius: 8px;
+  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
+}
+
+.bench-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  min-width: 640px;
+}
+
+.bench-table th,
+.bench-table td {
+  text-align: right;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid rgba(148, 168, 180, 0.12);
+  white-space: nowrap;
+}
+
+.bench-table th {
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+}
+
+.bench-table td:first-child,
+.bench-table th:first-child {
+  text-align: left;
+}
+
+.bench-table tr:last-child td {
+  border-bottom: none;
+}
+
+.bench-table .bench-fast {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.bench-note {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  margin-top: 0.75rem;
 }
 
 @media (max-width: 560px) {

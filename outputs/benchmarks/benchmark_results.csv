@@ -1,0 +1,5 @@
+dataset,stage,engine,n_samples,n_features,time_ms,n_components,variance_retained,k,inertia
+small,pca,python,200,51,2.929600013885647,10,0.9504940204193212,,
+small,pca,cpp,200,51,7.195100013632327,10,0.950494020419321,,
+small,kmeans,python,200,10,38.35160000016913,,,4,3911.129183290934
+small,kmeans,cpp,200,10,nan,,,4,nan
