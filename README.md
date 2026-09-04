@@ -494,12 +494,19 @@ Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
 │  ├─ run_seed_robustness.py
 │  ├─ validate_dataset.py         # data validation layer
 │  ├─ project_paths.py            # anchor_to_project_root() + relative I/O
+│  ├─ cpp_bridge.py               # Python <-> energy_cpp bridge (lazy, optional)
+│  ├─ run_cpp_benchmark.py        # fair Python-vs-C++ benchmark harness
 │  └─ dashboard_*.py              # Streamlit UI, charts, content, GitHub, zoom
+├─ cpp_engine/                    # OPTIONAL C++ performance engine (pybind11)
+│  ├─ include/   utilities.hpp · pca.hpp · kmeans.hpp
+│  ├─ src/       pca.cpp · kmeans.cpp · bindings.cpp
+│  ├─ benchmarks/bench_main.cpp   # standalone energy_bench (no Python)
+│  ├─ CMakeLists.txt · setup.py · pyproject.toml
 ├─ web/                           # Vercel explorer (Vite 7 + React 19 + Chart.js 4)
-│  ├─ src/   main.jsx · analysisData.js · ComposedChart.jsx · Legend.jsx · RadarChart.jsx · styles.css
-│  ├─ public/data/   manifest · pca · clustering · profiles · validation · seasonal · longitudinal · explainability
+│  ├─ src/   main.jsx · VantaNetBackground.jsx · analysisData.js · ComposedChart.jsx · Legend.jsx · RadarChart.jsx · styles.css
+│  ├─ public/data/   manifest · pca · clustering · profiles · validation · seasonal · longitudinal · explainability · benchmark
 │  └─ vercel.json
-├─ streamlit_app.py               # 15-page interactive simulator (4 groups)
+├─ streamlit_app.py               # 16-page interactive simulator (5 groups)
 ├─ presentation/
 │  ├─ dark_theme.py               # dark-mode Matplotlib theme (COLORS, apply_dark_theme)
 │  ├─ generate_dark_plots.py      # dark figures: EDA / PCA / clustering / per-arm ablation
@@ -568,6 +575,69 @@ py -m streamlit run streamlit_app.py
 # Vercel web app (Vite dev server; build with `npm run build` in web/)
 npm run dev --prefix web
 ```
+
+---
+
+## 23. C++ performance engine — the optional native kernels (`energy_cpp`)
+
+The scikit-learn pipeline is the **scientific reference** — C++ never changes
+the math, only the runtime. The engine re-implements the two compute kernels in
+C++17 behind a pybind11 module (`energy_cpp`), so a large-matrix run can be
+benchmarked or executed natively while every number stays comparable to the
+reference. It is **strictly optional**: if it is absent, fails to build, or is
+not installed, the Python pipeline (sections 4–15) is untouched — `src/cpp_bridge.py`
+imports it lazily and falls back to scikit-learn.
+
+**What the engine contains**
+
+| Kernel | C++ implementation | Parity with the reference |
+|--------|--------------------|---------------------------|
+| PCA | Centered covariance + symmetric **Jacobi eigendecomposition** (classical, stable; no hand-rolled unstable math), `svd_flip` sign convention, cumulative-variance threshold (0.95) + Kaiser + scree-elbow selection rules | Components, variance and scores match `sklearn.decomposition.PCA(svd_solver='full')`; component directions aligned to ~1e-9 by the benchmark |
+| K-Means | **Lloyd's algorithm** with K-Means++ (or uniform random) init, `n_init` restarts, `tol` on max centroid shift, empty-cluster relocation, OpenMP-parallel assignment under `#ifdef _OPENMP`, deterministic per-restart seeded RNG | Labels/inertia match `sklearn.cluster.KMeans` (same seed, k-means++): ARI > 0.99, inertia relative diff < 1e-3 in tests |
+
+**Module surface** (`energy_cpp`): `pca_fit(X, n_rows, n_cols, threshold, max_components)`,
+`kmeans_fit(X, n_rows, n_cols, k, max_iter, tol, n_init, init, seed)`,
+`compile_info()`. The bridge (`src/cpp_bridge.py`) wraps these in sklearn-shaped
+objects (`cpp_pca_object`, `CppKMeans`) and offers `resolve_engine("python" | "cpp" | "auto")`
+and an opt-in `patch_pipeline_kernels(True/False)` that swaps the pipeline's
+`.KMeans`/`perform_pca` for the native kernels (restored via `importlib.reload`).
+
+**Benchmarking** — `src/run_cpp_benchmark.py` is a *fair* comparison: identical
+matrices, `svd_solver='full'` on both sides, same seed / `n_init=10` /
+k-means++ on both sides, best-of-3 after warmup, K-Means measured on the same
+sklearn-PCA scores, labels compared by ARI/AMI (permutation-invariant), PCA
+components compared sign-aligned. It writes
+`outputs/benchmarks/benchmark_results.{json,csv,md}` plus the
+`web/public/data/benchmark.json` mirror. When `energy_cpp` is **not** installed
+it writes an honest `not_executed` report (with the build command) instead of
+fabricating numbers.
+
+**Build (optional) — one of two routes:**
+
+```bash
+# Route A — pip (recommended; auto-compiles with the active Python)
+py -m pip install -r requirements-cpp.txt
+py -m pip install ./cpp_engine
+
+# Route B — CMake (standalone energy_bench binary, no Python build)
+cmake -S cpp_engine -B cpp_engine/build -DENERGY_CPP_BUILD_BENCH=ON
+cmake --build cpp_engine/build --config Release
+```
+
+Build with OpenMP when the compiler has it (MSVC `/openmp`, gcc/clang `-fopenmp`);
+set `ENERGY_CPP_NO_OPENMP=1` to build single-threaded. Build artifacts
+(`build/`, `*.obj`, `*.pyd`, …) are git-ignored and never committed.
+
+**Run the benchmark after building:**
+
+```bash
+py src/run_cpp_benchmark.py          # PCA + K-Means speedups on small/medium/large/wide
+py src/run_cpp_benchmark.py --e2e    # + end-to-end pipeline comparison (patches then restores kernels)
+```
+
+The benchmark report (`outputs/benchmarks/benchmark_results.json`) always states
+`executed` or `not_executed` and is the authoritative record — see section 3 of
+`PROJECT_FEATURES_AND_PIPELINE.md` for the live status of each item.
 
 ### 22.3 Dark-mode Matplotlib charts
 
