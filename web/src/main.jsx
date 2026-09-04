@@ -29,10 +29,14 @@ import "./styles.css";
 import {
   clusters,
   clusterShapes,
+  explainabilityStats,
   kMetrics,
+  longitudinalStats,
   pcaComponents,
   populationShape,
+  realWorldStats,
   references,
+  seasonalStats,
   summaryStats,
 } from "./analysisData";
 
@@ -154,7 +158,7 @@ function RawDataFieldSlide({ onRepActive }) {
     };
   }, [reduced]);
 
-  // Tell the enclosing carousel when the representative (orange) line is shown,
+  // Tell the enclosing carousel when the representative (amber) line is shown,
   // so it can update the caption to say what that line represents.
   React.useEffect(() => {
     onRepActive?.(state.highlighted);
@@ -520,17 +524,17 @@ function BehavioralFeaturesSlide({ onRepActive }) {
 
 // ---------------------------------------------------------------------------
 // "K-Means clustering" slide - Slide 4, ported from Scene 4 (kmeans.js).
-// A 2D scatter of consumer points is drawn, three centroids spawn, and then
+// A 2D scatter of consumer points is drawn, four centroids spawn, and then
 // the algorithm iterates: every point is recoloured to its nearest centroid
 // ("captured"), and each centroid moves to the mean of its claimed points.
 // This is a live port of the scene's centroid-capture animation, using the
-// scene's palette (cyan / green / amber). The point cloud is a schematic at
-// the visualization boundary (the dashboard stores no raw 2D coordinates);
-// the assignment and update steps run the real K-means algorithm so the
-// motion is faithful. The concluding silhouette (0.312) is the committed
-// figure.
+// scene's palette (cyan / green / amber / rose). The point cloud is a
+// schematic at the visualization boundary (the dashboard stores no raw 2D
+// coordinates); the assignment and update steps run the real K-means
+// algorithm so the motion is faithful. The concluding silhouette (0.328) is
+// the committed figure.
 // ---------------------------------------------------------------------------
-const KM_COLORS = ["#22d3ee", "#4ade80", "#fbbf24"];
+const KM_COLORS = ["#22d3ee", "#4ade80", "#fbbf24", "#fb7185"];
 const KM_ITERS = 5;
 
 // Scatter-chart scaffolding for the K-Means slide: stay in normalized [0,1]
@@ -550,12 +554,13 @@ function mulberry32(seed) {
   };
 }
 
-// Three well-separated blobs (one per real consumer archetype), normalized
+// Four well-separated blobs (one per real consumer archetype), normalized
 // coordinates in [0,1] x [0,1].
 const KM_BLOBS = [
   { cx: 0.14, cy: 0.74, count: 20 },
   { cx: 0.46, cy: 0.28, count: 19 },
   { cx: 0.86, cy: 0.62, count: 18 },
+  { cx: 0.24, cy: 0.18, count: 17 },
 ];
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const kmPointsData = (() => {
@@ -581,6 +586,7 @@ const KM_INIT_CENTROIDS = [
   { x: 0.05, y: 0.9 },
   { x: 0.4, y: 0.06 },
   { x: 0.94, y: 0.86 },
+  { x: 0.16, y: 0.3 },
 ];
 
 function kmNearestAssign(points, cents) {
@@ -787,7 +793,7 @@ function KMeansSlide({ onRepActive }) {
               height={height}
               viewBox={`0 0 ${width} ${height}`}
               role="img"
-              aria-label="K-Means clustering scatter: three centroids claim the consumer points"
+              aria-label="K-Means clustering scatter: four centroids claim the consumer points"
             >
               <title>K-Means clustering scatter</title>
               {/* Graph-like scaffolding behind the points: a faint Cartesian
@@ -929,9 +935,9 @@ function KMeansSlide({ onRepActive }) {
           flexWrap: "wrap",
         }}
       >
-        <span>3 DISTINCT CLUSTERS</span>
+        <span>4 DISTINCT CLUSTERS</span>
         <span style={{ color: "#fbbf24" }}>
-          SILHOUETTE {Number(kMetrics.find((row) => row.selected)?.silhouette ?? 0.312).toFixed(3)}
+          SILHOUETTE {Number(kMetrics.find((row) => row.selected)?.silhouette ?? 0.328).toFixed(3)}
         </span>
       </div>
     </div>
@@ -940,13 +946,13 @@ function KMeansSlide({ onRepActive }) {
 
 // ---------------------------------------------------------------------------
 // "PCA" slide - Slide 5, ported from Scene 5 (pca.js).
-// The 14 retained components reveal as explained-variance bars (#6c8cff), the
+// The 10 retained components reveal as explained-variance bars (#6c8cff), the
 // cumulative line (#48d7c2) then draws across them, and the retained-variance
-// total appears once the cumulative line settles on the committed 95.3%.
+// total appears once the cumulative line settles on the committed 95.0%.
 // ---------------------------------------------------------------------------
-const PCA_COMPONENTS = pcaComponents; // PC1..PC14, real committed values
+const PCA_COMPONENTS = pcaComponents; // PC1..PC10, real committed values
 const PCA_LABELS = pcaComponents.map((row) => `PC${row.component}`);
-const PCA_RETAINED = pcaComponents[pcaComponents.length - 1].cumulativeVariance; // 0.9526
+const PCA_RETAINED = pcaComponents[pcaComponents.length - 1].cumulativeVariance; // 0.9505
 
 function PcaSlide({ onRepActive }) {
   const reduced = usePrefersReducedMotion();
@@ -1079,14 +1085,15 @@ function PcaSlide({ onRepActive }) {
 
 // ---------------------------------------------------------------------------
 // "Behavioral Archetypes" slide - Slide 6, ported from Scene 6
-// (behavioralArchetypes.js). The three cluster profiles reveal one at a time
+// (behavioralArchetypes.js). The four cluster profiles reveal one at a time
 // as 24-hour curves, each tagged with its consumer count, preserving the
 // scene's card-sequential rhythm and archetype colour identity.
 // ---------------------------------------------------------------------------
 const ARCHETYPE_COLORS = {
-  "Midday-Peaking": "#fbbf24",
-  "Flat All-Day": "#22d3ee",
-  "Evening-Peaking": "#a78bfa",
+  "Midday-Peaking Weekday-Heavy": "#f2b04b",
+  "Flat All-Day": "#48d7c2",
+  "Evening-Peaking": "#b78cff",
+  "Evening-Peaking Weekend-Heavy": "#fb7185",
 };
 
 function BehavioralArchetypesSlide({ onRepActive }) {
@@ -1204,12 +1211,12 @@ function BehavioralArchetypesSlide({ onRepActive }) {
 // ---------------------------------------------------------------------------
 // "Validation & Robustness" slide - Slide 7, ported from Scene 7
 // (validationRobustness.js). Only committed figures are shown: the selected
-// K=3 silhouette and Davies-Bouldin from kMetrics, the cluster count, and the
+// K=4 silhouette and Davies-Bouldin from kMetrics, the cluster count, and the
 // dataset scale from summaryStats.
 //
 // The three cards reveal fast and tight, then a compact K-sweep (silhouette
-// bars + Davies-Bouldin line across K=2..10, K=3 highlighted) fades in below
-// to fill the panel with the actual evidence that picked K=3.
+// bars + Davies-Bouldin line across K=2..10, K=4 highlighted) fades in below
+// to fill the panel with the actual evidence that picked K=4.
 // ---------------------------------------------------------------------------
 // Cards lead the beat so all three land well before the old ~1.3s lag; the
 // sweep follows right after the last card, then the caption.
@@ -1362,7 +1369,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
           xDataKey="k"
           selectedIndex={sweepSelected}
           maxBarSize={26}
-          ariaLabel="K-sweep validation chart: Silhouette bars and Davies-Bouldin line from K=2 to K=10, with K=3 highlighted"
+          ariaLabel="K-sweep validation chart: Silhouette bars and Davies-Bouldin line from K=2 to K=10, with K=4 highlighted"
         >
           <Grid horizontal />
           <YAxis yAxisId="left" orientation="left" label="Silhouette" tickCount={4} />
@@ -1410,7 +1417,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
             letterSpacing: "0.12em",
           }}
         >
-          {summaryStats.records} READING · {summaryStats.consumers} CONSUMERS
+          {summaryStats.records} READING · {summaryStats.consumers} CONSUMERS · RECOVERY ARI {summaryStats.recovery}
         </span>
       </div>
     </div>
@@ -1429,8 +1436,8 @@ const loadShapeSlides = [
         subtitle: "Twelve raw daily profiles resolve into one representative 24-hour rhythm.",
       },
       rep: {
-        title: "The orange line is the representative day",
-        subtitle: "It is the midday-peaking rhythm, peaking around 1 pm.",
+        title: "The highlighted line is the representative day",
+        subtitle: "It is the midday-peaking weekday-heavy rhythm, peaking around 1 pm.",
       },
     },
   },
@@ -1465,11 +1472,11 @@ const loadShapeSlides = [
     captions: {
       idle: {
         title: "K-Means clustering",
-        subtitle: "Three centroids claim the consumer points, then move to their cluster means.",
+        subtitle: "Four centroids claim the consumer points, then move to their cluster means.",
       },
       rep: {
-        title: "K=3 is the selected model",
-        subtitle: "It scores a silhouette of 0.312, a modest but useful separation.",
+        title: "K=4 is the selected model",
+        subtitle: "It scores a silhouette of 0.328, a modest but useful separation.",
       },
     },
   },
@@ -1478,10 +1485,10 @@ const loadShapeSlides = [
     captions: {
       idle: {
         title: "Principal component analysis",
-        subtitle: "Fourteen principal components capture the shape variation.",
+        subtitle: "Ten principal components capture the shape variation.",
       },
       rep: {
-        title: "Fourteen components retain 95.3% of the variance",
+        title: "Ten components retain 95.0% of the variance",
         subtitle: "The cumulative line settles just past 95 percent.",
       },
     },
@@ -1491,11 +1498,11 @@ const loadShapeSlides = [
     captions: {
       idle: {
         title: "Behavioral archetypes",
-        subtitle: "The three clusters re-emerge as distinct household rhythm archetypes.",
+        subtitle: "The four clusters re-emerge as distinct household rhythm archetypes.",
       },
       rep: {
-        title: "Three household rhythms",
-        subtitle: "Midday peak, flat all-day, and evening peak, by consumer count.",
+        title: "Four household rhythms",
+        subtitle: "Midday peak, flat all-day, evening peak, and weekend-heavy evening peak, by consumer count.",
       },
     },
   },
@@ -1507,8 +1514,8 @@ const loadShapeSlides = [
         subtitle: "The selected model is checked on real, committed metrics.",
       },
       rep: {
-        title: "K=3 holds its shape across 144,000 readings",
-        subtitle: "Silhouette 0.312 with 200 consumers and 3 clusters.",
+        title: "K=4 holds its shape across 1.75 million readings",
+        subtitle: "Silhouette 0.328 with 200 consumers and 4 clusters.",
       },
     },
   },
@@ -1655,8 +1662,8 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-// Four entries for the composable legend, in the same order as the datasets
-// (0 = population, then the three archetypes in cluster order) so indices line
+// Five entries for the composable legend, in the same order as the datasets
+// (0 = population, then the four archetypes in cluster order) so indices line
 // up. Only the presentation is described here; values come from the data files.
 const legendItems = [
   { key: "population", label: "Population average", color: "#71808d", dashed: true },
@@ -2177,7 +2184,7 @@ function PcaVarianceChart() {
           xDataKey="component"
           seriesDim={legendSeries}
           maxBarSize={28}
-          ariaLabel="PCA variance: explained variance bars and cumulative variance line from PC1 to PC14"
+          ariaLabel="PCA variance: explained variance bars and cumulative variance line from PC1 to PC10"
         >
           <Grid horizontal />
           <YAxis
@@ -2205,7 +2212,7 @@ function PcaVarianceChart() {
             format={pct}
           />
           <ChartTooltip showCrosshair={false} />
-          {/* 14 PCs would crowd as horizontal ticks; vertical labels keep every
+          {/* 10 PCs would crowd as horizontal ticks; vertical labels keep every
               component readable without clashing (see ComposedChart). */}
           <XAxis tickRotation={-90} />
         </ComposedChart>
@@ -2226,9 +2233,10 @@ const RADAR_METRICS = [
 
 // Established archetype colour identity, bound to the app theme tokens.
 const ARCHETYPE_COLOR = {
-  "Midday-Peaking": "var(--amber)",
+  "Midday-Peaking Weekday-Heavy": "var(--amber)",
   "Flat All-Day": "var(--cyan)",
   "Evening-Peaking": "var(--violet)",
+  "Evening-Peaking Weekend-Heavy": "var(--rose)",
 };
 
 function ClusterRadarChart() {
@@ -2268,7 +2276,7 @@ function ClusterRadarChart() {
         levels={5}
         animate
         seriesDim={legendHover}
-        ariaLabel="Cluster profile comparison: three household archetypes across six load-shape dimensions"
+        ariaLabel="Cluster profile comparison: four household archetypes across six load-shape dimensions"
       >
         <RadarGrid />
         <RadarAxis />
@@ -2278,6 +2286,182 @@ function ClusterRadarChart() {
         ))}
       </RadarChart>
     </div>
+  );
+}
+
+// Small labelled bar used by the Science Highlights band. Values are genuine
+// contract figures; bars only rescale for presentation (never touch the data).
+function MiniBar({ label, value, max, color, format }) {
+  const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
+  return (
+    <div className="mini-bar-row">
+      <span className="mini-label">{label}</span>
+      <span className="mini-track">
+        <span className="mini-fill" style={{ width: `${pct}%`, background: color }} />
+      </span>
+      <span className="mini-value">{format(value)}</span>
+    </div>
+  );
+}
+
+// Honest availability chip: available: true on the flagship run; the pipeline
+// emits available: false + a reason at short horizons rather than inventing
+// numbers (this page shows the flagship run, so all threads are available).
+function AvailabilityChip({ available }) {
+  return (
+    <span className={`availability${available ? " is-true" : " is-false"}`} aria-hidden="true">
+      {available ? "available · true" : "available · false"}
+    </span>
+  );
+}
+
+// The four upgraded analysis threads, fed by the committed contract exports in
+// analysisData.js (sourced from web/public/data/*.json).
+function ScienceHighlights() {
+  const seasons = [
+    { label: "winter", value: seasonalStats.meanDailyKwhBySeason.winter },
+    { label: "spring", value: seasonalStats.meanDailyKwhBySeason.spring },
+    { label: "summer", value: seasonalStats.meanDailyKwhBySeason.summer },
+    { label: "autumn", value: seasonalStats.meanDailyKwhBySeason.autumn },
+  ];
+  const maxSeasonKwh = Math.max(...seasons.map((s) => s.value));
+  const maxImportance = Math.max(
+    ...explainabilityStats.globalImportance.map((f) => f.value),
+  );
+  return (
+    <section className="band" id="highlights">
+      <SectionHeader eyebrow="Beyond the base pipeline" title="Seasonal, longitudinal, explainability, and the real-world pathway">
+        The upgraded run adds four analysis threads on top of the core K-Means story. All
+        figures are the committed flagship outputs (contract_version 1.0.0, config
+        99c7a6631340d301). At shorter horizons the pipeline reports available: false with a
+        reason instead of inventing numbers.
+      </SectionHeader>
+      <div className="highlights-grid">
+        <article className="highlight-card">
+          <div className="highlight-head">
+            <h3>Seasonal model</h3>
+            <AvailabilityChip available={seasonalStats.available} />
+          </div>
+          <p>
+            Magnitude (annual amplitude of daily totals) is separated from timing (a phase
+            shift of the 24-hour profile), so the seasonal swing never changes a daily
+            total.
+          </p>
+          <div className="chip-row">
+            <span className="chip">amplitude 0.202</span>
+            <span className="chip">phase r 0.678</span>
+            <span className="chip">agreement 0.885</span>
+          </div>
+          <div className="mini-bars">
+            {seasons.map((s) => (
+              <MiniBar
+                key={s.label}
+                label={s.label}
+                value={s.value}
+                max={maxSeasonKwh}
+                color="var(--cyan)"
+                format={(v) => v.toFixed(1)}
+              />
+            ))}
+          </div>
+        </article>
+
+        <article className="highlight-card">
+          <div className="highlight-head">
+            <h3>Longitudinal stability</h3>
+            <AvailabilityChip available={longitudinalStats.available} />
+          </div>
+          <p>
+            Four non-overlapping quarterly windows re-run scaling → PCA → K selection
+            independently; agreement with the full-window partition is measured
+            permutation-invariantly.
+          </p>
+          <div className="chip-row">
+            <span className="chip">mean ARI 0.882</span>
+            <span className="chip">{longitudinalStats.nSegments} segments</span>
+          </div>
+          <div className="mini-bars">
+            {longitudinalStats.segments.map((seg) => (
+              <MiniBar
+                key={seg.label}
+                label={seg.label}
+                value={seg.ari}
+                max={1}
+                color="var(--blue)"
+                format={(v) => v.toFixed(3)}
+              />
+            ))}
+          </div>
+        </article>
+
+        <article className="highlight-card">
+          <div className="highlight-head">
+            <h3>Explainability</h3>
+            <AvailabilityChip available={explainabilityStats.available} />
+          </div>
+          <p>
+            A small surrogate random forest learns the recovered labels; attribution runs on
+            that surrogate (SHAP TreeExplainer, honest permutation fallback otherwise).
+          </p>
+          <div className="chip-row">
+            <span className="chip">method shap</span>
+            <span className="chip">cv acc 0.985</span>
+          </div>
+          <div className="mini-bars">
+            {explainabilityStats.globalImportance.map((f) => (
+              <MiniBar
+                key={f.feature}
+                label={f.feature}
+                value={f.value}
+                max={maxImportance}
+                color="var(--amber)"
+                format={(v) => v.toFixed(3)}
+              />
+            ))}
+          </div>
+        </article>
+
+        <article className="highlight-card">
+          <div className="highlight-head">
+            <h3>Real-world pathway</h3>
+            <AvailabilityChip available={realWorldStats.available} />
+          </div>
+          <p>
+            A documented adapter ingests an external long panel. The real branch reports
+            internal quality and stability only — never ARI/NMI against invented labels.
+          </p>
+          <div className="chip-row">
+            <span className="chip">{realWorldStats.meters} meters</span>
+            <span className="chip">K = {realWorldStats.selectedK}</span>
+            <span className="chip">silhouette 0.719</span>
+            <span className="chip">seed stability 1.0</span>
+          </div>
+          <div className="mini-bars">
+            <MiniBar
+              label="silhouette"
+              value={realWorldStats.silhouette}
+              max={1}
+              color="var(--violet)"
+              format={(v) => v.toFixed(3)}
+            />
+            <MiniBar
+              label="Calinski-Harabasz"
+              value={realWorldStats.ch}
+              max={realWorldStats.ch}
+              color="var(--violet)"
+              format={(v) => v.toFixed(1)}
+            />
+            <MiniBar
+              label="Davies-Bouldin"
+              value={realWorldStats.db}
+              max={realWorldStats.db}
+              color="var(--violet)"
+              format={(v) => v.toFixed(3)}
+            />
+          </div>
+        </article>
+      </div>
+    </section>
   );
 }
 
@@ -2319,9 +2503,10 @@ function App() {
           <span className="eyebrow">PCA plus K-Means energy clustering</span>
           <h1>Energy use is a pattern, not just a number.</h1>
           <p>
-            This project simulates household electricity readings, turns each day into a
-            load shape, compresses the features with PCA, and uses K-Means to find daily
-            rhythms that are easier to explain.
+            This project simulates a full year of household electricity readings, turns
+            each day into a load shape, compresses the features with PCA, and uses K-Means
+            to find daily rhythms that are easier to explain — then checks how the clusters
+            hold up across seasons, over time, and on a real-world demo panel.
           </p>
           <div className="hero-actions">
             <a className="button primary" href="#charts">Explore the charts</a>
@@ -2337,16 +2522,20 @@ function App() {
         <section className="band" id="about">
           <SectionHeader eyebrow="What is this project about" title="A simple way to find daily energy rhythms">
             The analysis asks whether consumers can be grouped by when they use power. It
-            uses synthetic data, so the result is a controlled demonstration of the method,
-            not a claim about real households.
+            uses a controlled synthetic year (200 households × 365 days, config
+            99c7a6631340d301) so the result is a reproducible demonstration of the method,
+            not a claim about real households. A separate adapter pathway ingests
+            real-world panels with honest, internal-only validation.
           </SectionHeader>
           <div className="stats-grid">
-            <StatCard label="Records" value={summaryStats.records} note="hourly synthetic readings" />
+            <StatCard label="Records" value={summaryStats.records} note="hourly synthetic readings · one year" />
             <StatCard label="Consumers" value={summaryStats.consumers} />
             <StatCard label="Features" value={summaryStats.features} note="behavioural shape descriptors" />
-            <StatCard label="PCA components" value={summaryStats.pcaComponents} note="95.3% variance retained" />
+            <StatCard label="PCA components" value={summaryStats.pcaComponents} note={`${summaryStats.variance} variance retained`} />
             <StatCard label="Selected clusters" value={summaryStats.clusters} />
             <StatCard label="Silhouette" value={summaryStats.silhouette} note="modest but useful separation" />
+            <StatCard label="Archetype recovery" value={summaryStats.recovery} note="ARI vs hidden archetypes at K=4" />
+            <StatCard label="Temporal stability" value={summaryStats.temporalStability} note="mean ARI across 4 quarterly windows" />
           </div>
         </section>
 
@@ -2366,14 +2555,14 @@ function App() {
             <article className="chart-panel">
               <div className="panel-heading">
                 <h3>K selection</h3>
-                <p>K=3 balances separation with stable, non-tiny clusters.</p>
+                <p>K=4 wins the composite rule — silhouette 0.328, stability ARI 0.995.</p>
               </div>
               <KSelectionChart />
             </article>
             <article className="chart-panel">
               <div className="panel-heading">
                 <h3>PCA Variance</h3>
-                <p>Fourteen components keep just over 95% of the variation.</p>
+                <p>Ten components keep just over 95% of the variation.</p>
               </div>
               <div className="chart-container">
                 <PcaVarianceChart />
@@ -2392,7 +2581,7 @@ function App() {
         </section>
 
         <section className="band">
-          <SectionHeader eyebrow="Cluster stories" title="Three readable patterns">
+          <SectionHeader eyebrow="Cluster stories" title="Four readable patterns">
             The names are intentionally plain. They describe the daily curve rather than
             implying anything about household identity.
           </SectionHeader>
@@ -2411,6 +2600,8 @@ function App() {
             ))}
           </div>
         </section>
+
+        <ScienceHighlights />
 
         <section className="band references" id="references">
           <SectionHeader eyebrow="References" title="Research behind the method">

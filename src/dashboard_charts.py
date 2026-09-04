@@ -515,3 +515,108 @@ def eda_weekend_chart(results) -> go.Figure:
     fig.update_layout(title="Weekday vs weekend (context only, kWh)", yaxis_title="Mean kWh per record",
                       xaxis_title="", height=340, showlegend=False)
     return fig
+
+
+# --- Improvement 2: seasonal analysis ----------------------------------------
+# The seasonal model separates magnitude (the swing in daily totals) from timing
+# (the movement of the 24-hour shape). The figures below read the estimates the
+# pipeline already produced; the shape figure re-derives the same per-season mean
+# day the seasonal_analysis module computes, from the same panel, so the two
+# never disagree.
+
+SEASON_ORDER = ["winter", "spring", "summer", "autumn"]
+SEASON_COLORS = {
+    "winter": ui.INDIGO,
+    "spring": ui.GREEN,
+    "summer": ui.ROSE,
+    "autumn": ui.AMBER,
+}
+
+
+def seasonal_daily_chart(results) -> go.Figure:
+    """Mean daily kWh by season (the magnitude channel)."""
+    means = (results.seasonal_results or {}).get("mean_daily_kwh_by_season", {})
+    if not means:
+        raise ValueError("no seasonal magnitude data")
+    seasons = [s for s in SEASON_ORDER if s in means]
+    fig = go.Figure(go.Bar(
+        x=seasons, y=[means[s] for s in seasons],
+        marker_color=[SEASON_COLORS.get(s, ui.CYAN) for s in seasons],
+        text=[f"{means[s]:.2f}" for s in seasons], textposition="outside",
+        textfont=dict(color=ui.INK),
+        hovertemplate="%{x}<br>%{y:.2f} kWh per day<extra></extra>"))
+    fig.update_layout(title="Mean daily energy by season (magnitude channel)",
+                      xaxis_title="", yaxis_title="Mean kWh per day", height=360,
+                      showlegend=False)
+    return fig
+
+
+def seasonal_shape_chart(results) -> go.Figure:
+    """Normalized mean 24-hour load shape per season (the timing channel)."""
+    pp = results.preprocessed_data
+    if "season" not in pp.columns:
+        raise ValueError("no season column in the panel")
+    fig = go.Figure()
+    for season, group in pp.groupby("season"):
+        if season not in SEASON_COLORS:
+            continue
+        by_hour = (group.groupby("hour")["energy_consumption_kwh"].mean()
+                   .reindex(HOURS, fill_value=0.0))
+        shape = by_hour / by_hour.sum()
+        fig.add_trace(go.Scatter(
+            x=HOURS, y=shape, name=season.title(), mode="lines+markers",
+            line=dict(color=SEASON_COLORS[season], width=2.4),
+            marker=dict(size=4, color=SEASON_COLORS[season]),
+            hovertemplate=f"{season.title()}<br>%{{x}}:00 &middot; %{{y:.1%}}<extra></extra>"))
+    ui.add_time_of_day_bands(fig)
+    fig.update_layout(
+        title="Normalized load shape by season (timing channel)",
+        xaxis=dict(title="Hour of day", tickvals=[0, 6, 12, 18, 23], range=[0, 23]),
+        yaxis=dict(title="Share of daily energy", tickformat=".0%"),
+        height=420,
+        legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
+        margin=dict(l=54, r=24, t=60, b=80))
+    return fig
+
+
+# --- Improvement 1: longitudinal analysis ------------------------------------
+
+def longitudinal_stability_chart(results) -> go.Figure:
+    """Segment ARI vs the full-window labels, with the mean line."""
+    lon = results.longitudinal_results or {}
+    seg_ari = lon.get("segment_ari_vs_full", [])
+    if not seg_ari:
+        raise ValueError("no longitudinal segment data")
+    mean = lon.get("mean_temporal_stability_ari")
+    colors = [ui.GREEN if (a is not None and not np.isnan(a)) else ui.AMBER
+              for a in seg_ari]
+    fig = go.Figure(go.Bar(
+        x=[f"Segment {i + 1}" for i in range(len(seg_ari))], y=seg_ari,
+        marker_color=colors,
+        text=[f"{a:.3f}" if a is not None else "-" for a in seg_ari],
+        textposition="outside", textfont=dict(color=ui.INK),
+        hovertemplate="%{x}<br>ARI vs full window: %{y:.3f}<extra></extra>"))
+    if mean is not None:
+        fig.add_hline(y=mean, line_dash="dash", line_color=ui.CYAN,
+                      annotation_text=f"mean {mean:.3f}", annotation_font_color=ui.CYAN)
+    fig.update_layout(title="Temporal cluster stability across segments",
+                      xaxis_title="", yaxis=dict(title="ARI vs full-window labels", range=[0, 1.05]),
+                      height=360, showlegend=False)
+    return fig
+
+
+def longitudinal_monthly_chart(results) -> go.Figure:
+    """Mean daily kWh per month across the window (the temporal trend)."""
+    lon = results.longitudinal_results or {}
+    monthly = lon.get("monthly_mean_daily_kwh", {})
+    if not monthly:
+        raise ValueError("no longitudinal monthly data")
+    labels = list(monthly)
+    fig = go.Figure(go.Scatter(
+        x=labels, y=[monthly[m] for m in labels], mode="lines+markers",
+        line=dict(color=ui.CYAN, width=2.4), marker=dict(size=5, color=ui.CYAN),
+        hovertemplate="%{x}<br>%{y:.2f} kWh per day<extra></extra>"))
+    fig.update_layout(title="Mean daily energy by month (temporal trend)",
+                      xaxis_title="Month", yaxis_title="Mean kWh per day",
+                      height=360, showlegend=False)
+    return fig

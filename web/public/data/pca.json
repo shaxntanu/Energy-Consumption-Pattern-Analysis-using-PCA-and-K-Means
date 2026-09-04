@@ -1,0 +1,332 @@
+{
+  "n_input_features": 51,
+  "variance_threshold": 0.95,
+  "n_components_retained": 10,
+  "cumulative_variance_retained": 0.9504940204193212,
+  "component_count_by_criterion": {
+    "variance_threshold": 10,
+    "kaiser": 7,
+    "scree_elbow": 7
+  },
+  "component_descriptions": [
+    "PC1: profile_ramp +0.92, peak_concentration +0.88, harmonic_2_amplitude +0.88, p90_median_ratio +0.87, coefficient_of_variation +0.87",
+    "PC2: night_day_ratio +0.92, afternoon_share -0.87, hour_0_shape +0.84, hour_14_shape -0.84, hour_13_shape -0.84",
+    "PC3: hour_7_shape +0.87, hour_8_shape +0.87, hour_6_shape +0.74, morning_share +0.74, hour_9_shape +0.58",
+    "PC4: hour_17_shape +0.56, hour_18_shape +0.54, hour_6_shape +0.50, hour_5_shape +0.47, hour_23_shape -0.43",
+    "PC5: haar_detail_l3 +0.54, weekend_ratio -0.51, kurtosis -0.38, skewness -0.38, weekend_cv_ratio -0.37"
+  ],
+  "variance_curve": [
+    {
+      "component": 1,
+      "eigenvalue": 17.394279050404936,
+      "explained_variance_ratio": 0.3393589736304491,
+      "cumulative_variance": 0.3393589736304491
+    },
+    {
+      "component": 2,
+      "eigenvalue": 14.845740663796915,
+      "explained_variance_ratio": 0.2896374894211358,
+      "cumulative_variance": 0.628996463051585
+    },
+    {
+      "component": 3,
+      "eigenvalue": 5.905855651156586,
+      "explained_variance_ratio": 0.1152220857431529,
+      "cumulative_variance": 0.7442185487947379
+    },
+    {
+      "component": 4,
+      "eigenvalue": 3.227889822275394,
+      "explained_variance_ratio": 0.0629754975130199,
+      "cumulative_variance": 0.8071940463077578
+    },
+    {
+      "component": 5,
+      "eigenvalue": 2.2620341171731404,
+      "explained_variance_ratio": 0.0441318420899465,
+      "cumulative_variance": 0.8513258883977044
+    },
+    {
+      "component": 6,
+      "eigenvalue": 1.8815173594959325,
+      "explained_variance_ratio": 0.0367080347587931,
+      "cumulative_variance": 0.8880339231564975
+    },
+    {
+      "component": 7,
+      "eigenvalue": 1.043871975031198,
+      "explained_variance_ratio": 0.0203657375520792,
+      "cumulative_variance": 0.9083996607085768
+    },
+    {
+      "component": 8,
+      "eigenvalue": 0.8915079810229323,
+      "explained_variance_ratio": 0.0173931459042709,
+      "cumulative_variance": 0.9257928066128476
+    },
+    {
+      "component": 9,
+      "eigenvalue": 0.6526791250352686,
+      "explained_variance_ratio": 0.012733641753139,
+      "cumulative_variance": 0.9385264483659868
+    },
+    {
+      "component": 10,
+      "eigenvalue": 0.6134132409246791,
+      "explained_variance_ratio": 0.0119675720533344,
+      "cumulative_variance": 0.9504940204193212
+    }
+  ],
+  "top_loadings_per_component": [
+    {
+      "component": "PC1",
+      "top_loadings": [
+        {
+          "feature": "profile_ramp",
+          "loading": 0.9232873712885472
+        },
+        {
+          "feature": "peak_concentration",
+          "loading": 0.8845149377125063
+        },
+        {
+          "feature": "harmonic_2_amplitude",
+          "loading": 0.8837066167278251
+        },
+        {
+          "feature": "p90_median_ratio",
+          "loading": 0.8736736551032416
+        },
+        {
+          "feature": "coefficient_of_variation",
+          "loading": 0.8731546900839809
+        }
+      ]
+    },
+    {
+      "component": "PC2",
+      "top_loadings": [
+        {
+          "feature": "night_day_ratio",
+          "loading": 0.9239610092526328
+        },
+        {
+          "feature": "afternoon_share",
+          "loading": -0.8695294357712036
+        },
+        {
+          "feature": "hour_0_shape",
+          "loading": 0.8385439463189016
+        },
+        {
+          "feature": "hour_14_shape",
+          "loading": -0.8380087105489301
+        },
+        {
+          "feature": "hour_13_shape",
+          "loading": -0.8376885729764625
+        }
+      ]
+    },
+    {
+      "component": "PC3",
+      "top_loadings": [
+        {
+          "feature": "hour_7_shape",
+          "loading": 0.8749286618679458
+        },
+        {
+          "feature": "hour_8_shape",
+          "loading": 0.8664313960771256
+        },
+        {
+          "feature": "hour_6_shape",
+          "loading": 0.7417956541318266
+        },
+        {
+          "feature": "morning_share",
+          "loading": 0.7352264468555341
+        },
+        {
+          "feature": "hour_9_shape",
+          "loading": 0.5810690162054858
+        }
+      ]
+    },
+    {
+      "component": "PC4",
+      "top_loadings": [
+        {
+          "feature": "hour_17_shape",
+          "loading": 0.5566171956731325
+        },
+        {
+          "feature": "hour_18_shape",
+          "loading": 0.5371664139976873
+        },
+        {
+          "feature": "hour_6_shape",
+          "loading": 0.4979086398594965
+        },
+        {
+          "feature": "hour_5_shape",
+          "loading": 0.4682214805918362
+        },
+        {
+          "feature": "hour_23_shape",
+          "loading": -0.4273873972807246
+        }
+      ]
+    },
+    {
+      "component": "PC5",
+      "top_loadings": [
+        {
+          "feature": "haar_detail_l3",
+          "loading": 0.5353059637148765
+        },
+        {
+          "feature": "weekend_ratio",
+          "loading": -0.5135061533219033
+        },
+        {
+          "feature": "kurtosis",
+          "loading": -0.3827572575111453
+        },
+        {
+          "feature": "skewness",
+          "loading": -0.3822882350230605
+        },
+        {
+          "feature": "weekend_cv_ratio",
+          "loading": -0.369291066755931
+        }
+      ]
+    },
+    {
+      "component": "PC6",
+      "top_loadings": [
+        {
+          "feature": "kurtosis",
+          "loading": 0.7363425656903634
+        },
+        {
+          "feature": "skewness",
+          "loading": 0.6545485571724474
+        },
+        {
+          "feature": "peak_to_avg_ratio",
+          "loading": 0.3646324438416424
+        },
+        {
+          "feature": "haar_detail_l3",
+          "loading": 0.3559610034270503
+        },
+        {
+          "feature": "weekend_cv_ratio",
+          "loading": 0.2700560446445718
+        }
+      ]
+    },
+    {
+      "component": "PC7",
+      "top_loadings": [
+        {
+          "feature": "daily_total_cv",
+          "loading": 0.7032440617114788
+        },
+        {
+          "feature": "weekend_ratio",
+          "loading": 0.399594207472725
+        },
+        {
+          "feature": "kurtosis",
+          "loading": -0.2541190988807759
+        },
+        {
+          "feature": "hour_5_shape",
+          "loading": 0.2351066967614655
+        },
+        {
+          "feature": "hour_6_shape",
+          "loading": 0.2178094978411472
+        }
+      ]
+    },
+    {
+      "component": "PC8",
+      "top_loadings": [
+        {
+          "feature": "weekend_cv_ratio",
+          "loading": 0.8242173431552421
+        },
+        {
+          "feature": "kurtosis",
+          "loading": -0.2048374300093964
+        },
+        {
+          "feature": "skewness",
+          "loading": -0.1997268435210778
+        },
+        {
+          "feature": "p90_median_ratio",
+          "loading": 0.10732052519619
+        },
+        {
+          "feature": "hour_1_shape",
+          "loading": 0.101402046536211
+        }
+      ]
+    },
+    {
+      "component": "PC9",
+      "top_loadings": [
+        {
+          "feature": "peak_hour_sin",
+          "loading": 0.4560338172306183
+        },
+        {
+          "feature": "peak_hour_cos",
+          "loading": -0.3746953467892726
+        },
+        {
+          "feature": "hour_8_shape",
+          "loading": -0.1921026715350371
+        },
+        {
+          "feature": "hour_7_shape",
+          "loading": -0.1679422352834851
+        },
+        {
+          "feature": "haar_detail_l3",
+          "loading": -0.1674168107691629
+        }
+      ]
+    },
+    {
+      "component": "PC10",
+      "top_loadings": [
+        {
+          "feature": "harmonic_3_amplitude",
+          "loading": 0.3274259976030053
+        },
+        {
+          "feature": "weekend_cv_ratio",
+          "loading": 0.2324635415089539
+        },
+        {
+          "feature": "peak_hour_sin",
+          "loading": -0.2286545745230361
+        },
+        {
+          "feature": "hour_17_shape",
+          "loading": -0.1826955695080841
+        },
+        {
+          "feature": "hour_8_shape",
+          "loading": -0.1712452194153472
+        }
+      ]
+    }
+  ]
+}
