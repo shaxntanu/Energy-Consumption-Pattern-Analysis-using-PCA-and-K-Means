@@ -167,7 +167,7 @@ def add_time_of_day_bands(fig: go.Figure) -> go.Figure:
 def _fonts_and_variables() -> str:
     """Font import and CSS custom properties shared by every rule below."""
     return f"""
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 :root {{
   --midnight: {MIDNIGHT}; --panel: {PANEL}; --panel-hi: {PANEL_HI};
   --line: {LINE}; --ink: {INK}; --mist: {MIST}; --slate: {SLATE};
@@ -714,6 +714,125 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 }
 @media (prefers-reduced-motion: reduce) { .metric-card { transition: none; } }
 @media (max-width: 640px) { .block-container { padding-left: 1rem; padding-right: 1rem; } .insight .row { grid-template-columns: 1fr; gap: 0.2rem; } }
+
+/* Simulator controls: the "toast" button (tirth_5172 reference). ---------- */
+/* Every control button shares one visual language from the reference: a light
+   #D4EDF9 accent with corner border ticks, an uppercase label, a soft drop
+   shadow, and a flat bar that sweeps across on hover as the sheet flips from
+   fill to outline. The reference is a Tailwind component, so Streamlit — which
+   cannot run Tailwind utilities — gets the same rules written out as plain CSS
+   against the buttons Streamlit actually renders, and the sweeping-bar <span>
+   is re-implemented as an ::after pseudo-element.
+
+   Two tiers preserve navigation semantics. Standalone actions (main-area CTAs,
+   downloads) and the currently-active page sit at the reference's filled
+   resting state: light fill, dark ink. Inactive sidebar items stay on the
+   outline tier so the active page stays recognisable while every button still
+   carries the same accent, tick and sweep. */
+[data-testid="stSidebar"] .stButton > button,
+[data-testid="stMain"] .stButton > button,
+[data-testid="stDownloadButton"] button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+  border-left: 4px solid #D4EDF9;
+  border-right: 4px solid transparent;
+  min-width: fit-content;
+  height: auto;
+  padding: 0.6em 1.4em;
+  font-family: 'Barlow', var(--body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #D4EDF9;
+  background-color: transparent;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65);
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
+}
+/* Filled resting state: main-area CTAs, downloads, and the active page. */
+[data-testid="stMain"] .stButton > button,
+[data-testid="stDownloadButton"] button,
+[data-testid="stSidebar"] .stButton > button[kind="primary"],
+[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
+  background-color: #D4EDF9;
+  color: #252525;
+}
+/* Hover: the sheet flips to outline, the right tick grows in, the shine sweeps. */
+[data-testid="stSidebar"] .stButton > button:hover,
+[data-testid="stMain"] .stButton > button:hover,
+[data-testid="stDownloadButton"] button:hover {
+  border-right-color: #D4EDF9;
+  background-color: transparent;
+  color: #D4EDF9;
+  box-shadow: 0 18px 40px -16px rgba(212, 237, 249, 0.28);
+}
+/* The sweeping shine bar — the reference's "effect after" span. */
+[data-testid="stSidebar"] .stButton > button::after,
+[data-testid="stMain"] .stButton > button::after,
+[data-testid="stDownloadButton"] button::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 110%;
+  width: 22%;
+  transform: translate(-50%, -50%) rotate(3deg);
+  background: rgba(255, 255, 255, 0.45);
+  transition: left 1s ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+[data-testid="stSidebar"] .stButton > button:hover::after,
+[data-testid="stMain"] .stButton > button:hover::after,
+[data-testid="stDownloadButton"] button:hover::after { left: 125%; }
+/* The label rides above the shine bar. */
+[data-testid="stButton"] button :is(div, span, p),
+[data-testid="stDownloadButton"] button :is(div, span, p) {
+  position: relative;
+  z-index: 1;
+}
+/* Strip the older 3D-plate sheet off main-area CTAs so it cannot fight the
+   label; the accent, fill and sweep now carry the whole control. */
+[data-testid="stMain"] .stButton > button > div {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-size: inherit;
+  color: inherit;
+  white-space: nowrap;
+}
+[data-testid="stMain"] .stButton > button:hover > div,
+[data-testid="stMain"] .stButton > button:not(:hover) > div {
+  transform: none;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+/* Sidebar items stay full-width rows so the navigation reads as a list. */
+[data-testid="stSidebar"] .stButton > button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="stSidebar"] .stButton > button,
+  [data-testid="stMain"] .stButton > button,
+  [data-testid="stDownloadButton"] button,
+  [data-testid="stSidebar"] .stButton > button::after,
+  [data-testid="stMain"] .stButton > button::after,
+  [data-testid="stDownloadButton"] button::after { transition: none; }
+}
 """
 
 
