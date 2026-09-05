@@ -1,34 +1,31 @@
-chore: remove dead legacy files, fix stale references, add complete project explanation
+feat(companion): Sunee mascot with fact bubbles; AGPL avatar runtime vendored
 
-- Delete the superseded root Vite app (index.html, package.json,
-  package-lock.json, vercel.json, src/main.jsx, src/styles.css,
-  src/analysisData.js, public/index.html). Vercel's Root Directory is web/,
-  so those were dead copies of the live web/ app.
-- Delete commit scratch files: COMMIT_MESSAGE.md, commit.bat, commit_msg.txt,
-  commit-msg.txt (their messages are already recorded in git history).
-- web/package.json: drop unused three@^0.160.0 and vanta@^0.5.24 (zero
-  imports in web/src; the earlier remove of VantaNetBackground.jsx left them
-  orphaned). web/package-lock.json root block now matches package.json
-  (missing react-icons entry added).
-- README: on-disk outputs are the 365-day flagship (99c7a6631340d301,
-  generated 2026-09-04), not the 30-day default; simulator has 16 pages, not
-  15; repository tree rows match reality; extended dark-plot script note
-  reflects the existing seasonal/longitudinal/explainability reports;
-  K-selection narrative fixed (K=5 has the highest silhouette at 0.3352,
-  K=4 wins the composite at 0.9444).
-- requirements.txt: drop comment claims about .python-version and
-  tests/test_deployment_config.py, neither of which exists (the Dockerfile
-  pins python:3.14-slim).
-- docs/DELIVERABLES.md: app/app.py -> streamlit_app.py; phase-11 key results
-  labeled as the historical snapshot with a pointer to the flagship summary;
-  test row updated (138 test functions in 13 files).
-- src/dashboard_content.py: docstring no longer cites the deleted
-  public/index.html.
-- docs/CXX_ENGINE_UPGRADE_REPORT.md: note that its three/vanta and root-app
-  claims are the point-in-time upgrade record, superseded by this cleanup.
-- docs/COMPLETE_PROJECT_EXPLANATION.md: new professor-level 28-section
-  document. Every number verified against on-disk artifacts
-  (outputs/reports/analysis_summary.md, models/analysis_metadata.json,
-  web/public/data/*.json, outputs/benchmarks/benchmark_results.json).
+- web/src/vendor/bible-strong/: runtime vendored from the
+  bible-strong-avatar-lab repo (@bible-strong/avatar-core: geometry,
+  surfaces, body, scene, ambient-motion, playback state machine + the
+  Avatar renderer), TypeScript stripped, ajv replaced by a dependency-free
+  validation shim. LICENSE (verbatim AGPL-3.0) and NOTICE.md (provenance,
+  section-13 consequence) included.
+- web/src/companion/sunee.avatar.json: Sunee's body, 14 expressions and 8
+  animations (idle, talking, happy, curious, proud, surprised, shy, sleepy)
+  transcribed verbatim from the lab's studio library.
+- web/src/companion/projectFacts.js: 14 facts derived live from
+  web/src/analysisData.js (1,752,000 records, PCA 10 components at 95.0%,
+  K=4 composite 0.944, cluster sizes, stability/recovery ARI, seasonal,
+  longitudinal, SHAP and real-world results when available). No invented
+  statistics; a fact silently drops out if its data is unavailable.
+- web/src/companion/ProjectCompanion.jsx + companion.css: bottom-right
+  mascot that idles, pops a fact every 30-60s (interval doubled under
+  prefers-reduced-motion), animates while the bubble shows, then returns
+  to idle. Click for an instant fact (10s cooldown). Hidden-tab
+  suppression, role=status bubble, keyboard-accessible button; error
+  boundary renders null on failure so the dashboard is never affected.
+- web/src/main.jsx: import + ENABLE_PROJECT_COMPANION flag + mount beside
+  <App />; the dashboard itself is untouched.
+
+The combined web app must be distributed under AGPL-3.0 while the
+companion is present. Deleting web/src/companion/ and
+web/src/vendor/bible-strong/ and reverting the main.jsx edit restores the
+pure-MIT project.
 
 Co-Authored-By: Claude Code <noreply@anthropic.com>

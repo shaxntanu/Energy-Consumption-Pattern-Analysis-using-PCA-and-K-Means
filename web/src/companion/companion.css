@@ -1,0 +1,84 @@
+/* Sunee companion chrome. Uses the app's design tokens with local fallbacks
+   so it stays self-contained. The fixed container lets clicks fall through
+   except on the avatar button itself. */
+
+.project-companion {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.companion-avatar-button {
+  pointer-events: auto;
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 0;
+}
+
+.companion-avatar-button:focus-visible {
+  outline: 2px solid var(--cyan, #48d7c2);
+  outline-offset: 3px;
+}
+
+.companion-bubble {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 14px);
+  max-width: min(640px, calc(100vw - 40px));
+  background: var(--panel-strong, #152131);
+  border: 1px solid var(--line, #263545);
+  color: var(--text, #f5f8fa);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  animation: companion-bubble-in 260ms ease-out;
+}
+
+.companion-bubble::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  border-right: 1px solid var(--line, #263545);
+  border-bottom: 1px solid var(--line, #263545);
+  transform: rotate(45deg);
+}
+
+@keyframes companion-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .project-companion {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companion-bubble {
+    animation: none;
+  }
+}
