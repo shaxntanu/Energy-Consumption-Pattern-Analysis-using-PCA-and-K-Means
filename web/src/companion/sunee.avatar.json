@@ -1,0 +1,312 @@
+{
+  "schema": "bible-strong/avatar-definition",
+  "schemaVersion": 1,
+  "name": "Sunee",
+  "colors": {
+    "body": "#e69a5c",
+    "eyes": "#111316"
+  },
+  "body": {
+    "primary": {
+      "type": "sphere",
+      "width": 182.95728256225593,
+      "height": 185.5484375,
+      "depth": 100.01221191461767,
+      "roundness": 1
+    },
+    "nodes": [
+      {
+        "surface": { "type": "sphere", "width": 60, "height": 60, "depth": 24.375287224264703, "roundness": 1 },
+        "position": [-94.48309236361106, -95.44637036124786, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "surface": { "type": "sphere", "width": 59.57851562500001, "height": 59.57851562500001, "depth": 24.204057179245304, "roundness": 1 },
+        "position": [-6.440040491385305, -133.984012454223, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "surface": { "type": "sphere", "width": 81.60000000000001, "height": 81.60000000000001, "depth": 33.150390625, "roundness": 1 },
+        "position": [89.09066821815593, -114.30101031028101, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "surface": { "type": "sphere", "width": 70.12148437500001, "height": 70.12148437500001, "depth": 28.487188703873578, "roundness": 1 },
+        "position": [132.2484739833418, -11.704819633353354, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "surface": { "type": "sphere", "width": 61.89843750000001, "height": 61.89843750000001, "depth": 25.146536546594966, "roundness": 1 },
+        "position": [-138.13379284351342, -1.1847860044189815, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "surface": { "type": "sphere", "width": 61.11328125000001, "height": 61.11328125000001, "depth": 24.827563061433676, "roundness": 1 },
+        "position": [-103.29429634246448, 92.4041125555865, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "surface": { "type": "sphere", "width": 61.726171875000006, "height": 61.726171875000006, "depth": 25.076552811790915, "roundness": 1 },
+        "position": [-2.4878844479075983, 133.06983674233183, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "surface": { "type": "sphere", "width": 64.116796875, "height": 64.116796875, "depth": 26.047755662132705, "roundness": 1 },
+        "position": [109.54168183067505, 83.98361858650364, -10.398419675330803],
+        "rotation": [0, 0, 0]
+      }
+    ]
+  },
+  "expressions": {
+    "neutral": {
+      "head": { "x": 0, "y": 0, "z": 0 },
+      "eyes": {
+        "left": { "width": 20, "height": 50, "x": 0, "y": -7, "angle": 0 },
+        "right": { "width": 20, "height": 50, "x": 0, "y": -7, "angle": 0 },
+        "spacing": 35
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "upward-side-glance": {
+      "head": { "x": 7.3, "y": 27.8, "z": -16.1 },
+      "eyes": {
+        "left": { "width": 22.501171874999997, "height": 42.377734374999996, "x": 0, "y": -20.5, "angle": 0 },
+        "right": { "width": 22.501171874999997, "height": 42.377734374999996, "x": 0, "y": -20.5, "angle": 0 },
+        "spacing": 54.3
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "joyful-down-right": {
+      "head": { "x": -15.287109375000002, "y": 15.006640625, "z": 12.787890625 },
+      "eyes": {
+        "left": { "width": 31.253906249999996, "height": 76.720703125, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 31.253906249999996, "height": 76.720703125, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 68.7
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "surprised-left": {
+      "head": { "x": 2.9468749999999986, "y": -16.051171875, "z": -20.916015625 },
+      "eyes": {
+        "left": { "width": 51.68336723153048, "height": 51.74054108796297, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 51.68336723153048, "height": 51.74054108796297, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 70.9
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "sleepy-squint": {
+      "head": { "x": 3.4, "y": 13.22578125, "z": 8.976953125 },
+      "eyes": {
+        "left": { "width": 51.775, "height": 13.02734375, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 51.775, "height": 13.02734375, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 63.872265625
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "curious-left": {
+      "head": { "x": -12.303515625, "y": -17.601171875, "z": 5.9109375 },
+      "eyes": {
+        "left": { "width": 20.605859374999994, "height": 47.769921874999994, "x": 0, "y": 0, "angle": 23.523046875000002 },
+        "right": { "width": 20.605859374999994, "height": 47.769921874999994, "x": 0, "y": 0, "angle": -24.042578125000002 },
+        "spacing": 54.9
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "joyful-wide": {
+      "head": { "x": -2.092968750000001, "y": -15.899609374999999, "z": -14.469921875 },
+      "eyes": {
+        "left": { "width": 34.20086765973213, "height": 85.330859375, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 34.20086765973213, "height": 83.17775668160692, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 59.414453125
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "eyes-closed": {
+      "head": { "x": -8.752343750000001, "y": -8.743359375, "z": -10.773828125000001 },
+      "eyes": {
+        "left": { "width": 56.133984375, "height": 15.5, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 56.133984375, "height": 15.15546875, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 69.276171875
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "far-right-glance": {
+      "head": { "x": 0.31914062500000184, "y": 35.307421874999996, "z": -10.904296875 },
+      "eyes": {
+        "left": { "width": 22.4609375, "height": 39.820703125, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 22.4609375, "height": 39.820703125, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 53.9
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "playful-right": {
+      "head": { "x": -4.3953125, "y": 14.07265625, "z": -16.126171874999997 },
+      "eyes": {
+        "left": { "width": 19.045145681988206, "height": 43.370703125, "x": 0, "y": 0, "angle": 26.2921875 },
+        "right": { "width": 19.045145681988206, "height": 43.370703125, "x": 0, "y": 0, "angle": -20.249218750000004 },
+        "spacing": 51.731249999999996
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "gentle-downward-gaze": {
+      "head": { "x": -6.077734375000001, "y": -11.03515625, "z": -13.965625000000001 },
+      "eyes": {
+        "left": { "width": 23.045703125, "height": 58.68515625, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 23.045703125, "height": 58.68515625, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 56.2
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "surprised-wide-left": {
+      "head": { "x": -5.428125, "y": -11.71328125, "z": -13.472265625000002 },
+      "eyes": {
+        "left": { "width": 51.4, "height": 50.1, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 50.5, "height": 49.4, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 69
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "drowsy-closed": {
+      "head": { "x": 10.292578125, "y": 3.39921875, "z": 7.583203125 },
+      "eyes": {
+        "left": { "width": 55.672265625, "height": 14.616015625, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 55.672265625, "height": 14.616015625, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 68.416796875
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "shy-downward": {
+      "head": { "x": 7.131640624999998, "y": 7.7828124999999995, "z": 3.935546874999999 },
+      "eyes": {
+        "left": { "width": 21.5, "height": 32, "x": 0, "y": 40, "angle": 0 },
+        "right": { "width": 23.2, "height": 33.5, "x": 0, "y": 40, "angle": 0 },
+        "spacing": 51.2
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    }
+  },
+  "expressionOrder": [
+    "neutral",
+    "upward-side-glance",
+    "joyful-down-right",
+    "surprised-left",
+    "sleepy-squint",
+    "curious-left",
+    "joyful-wide",
+    "eyes-closed",
+    "far-right-glance",
+    "playful-right",
+    "gentle-downward-gaze",
+    "surprised-wide-left",
+    "drowsy-closed",
+    "shy-downward"
+  ],
+  "animations": {
+    "idle": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "upward-side-glance", "holdMs": 5200, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "curious-left", "holdMs": 5200, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 2600, "minIntervalMs": 3400, "maxIntervalMs": 6200, "durationMs": 280 },
+      "metadata": { "label": "Idle", "description": "Slow micro-movements, rare blinking.", "group": "Lifecycle" }
+    },
+    "talking": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "joyful-down-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "playful-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "surprised-wide-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "surprised-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "joyful-wide", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 1200, "minIntervalMs": 1800, "maxIntervalMs": 3600, "durationMs": 220 },
+      "metadata": { "label": "Talking", "description": "Lively bounce while sharing a fact.", "group": "Reactions" }
+    },
+    "happy": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "joyful-down-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "joyful-wide", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "playful-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "gentle-downward-gaze", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 2100, "minIntervalMs": 2800, "maxIntervalMs": 5000, "durationMs": 260 },
+      "metadata": { "label": "Happy", "description": "Joyful loop for upbeat facts.", "group": "Reactions" }
+    },
+    "curious": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "surprised-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "surprised-wide-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "upward-side-glance", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "far-right-glance", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 2100, "minIntervalMs": 2800, "maxIntervalMs": 5000, "durationMs": 260 },
+      "metadata": { "label": "Curious", "description": "Tilts and asymmetry for surprising facts.", "group": "Reactions" }
+    },
+    "proud": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "far-right-glance", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "curious-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "joyful-down-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 2100, "minIntervalMs": 2800, "maxIntervalMs": 5000, "durationMs": 260 },
+      "metadata": { "label": "Proud", "description": "Accomplished look for project highlights.", "group": "Reactions" }
+    },
+    "surprised": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "surprised-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "surprised-wide-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 1200, "minIntervalMs": 1800, "maxIntervalMs": 3600, "durationMs": 220 },
+      "metadata": { "label": "Surprised", "description": "Wide eyes for eye-catching numbers.", "group": "Reactions" }
+    },
+    "shy": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "upward-side-glance", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "shy-downward", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "eyes-closed", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 2100, "minIntervalMs": 2800, "maxIntervalMs": 5000, "durationMs": 260 },
+      "metadata": { "label": "Shy", "description": "Modest glance for humble-brag facts.", "group": "Reactions" }
+    },
+    "sleepy": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "sleepy-squint", "holdMs": 3600, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "drowsy-closed", "holdMs": 3600, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "eyes-closed", "holdMs": 3600, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 4800, "minIntervalMs": 6500, "maxIntervalMs": 9500, "durationMs": 420 },
+      "metadata": { "label": "Sleepy", "description": "Drowsy loop for late-night data thoughts.", "group": "Lifecycle" }
+    }
+  },
+  "animationOrder": [
+    "idle",
+    "talking",
+    "happy",
+    "curious",
+    "proud",
+    "surprised",
+    "shy",
+    "sleepy"
+  ]
+}
