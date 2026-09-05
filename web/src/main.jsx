@@ -25,7 +25,6 @@ import {
   curveCatmullRom,
 } from "./ComposedChart";
 import { RadarChart, RadarGrid, RadarAxis, RadarLabels, RadarArea } from "./RadarChart";
-import GlowCursor from "./components/GlowCursor";
 import LogoLoop from "./components/LogoLoop";
 import DriftWall from "./components/DriftWall";
 import "./styles.css";
@@ -1605,10 +1604,13 @@ function LoadShapeCarousel({ tall = false }) {
               title="Restart animation"
               onClick={restartAnimation}
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M17.65 6.35A8 8 0 1 0 19.73 14" />
-                <path d="M21 3v6h-6" />
-              </svg>
+              <span className="carousel-replay__text">Restart animation</span>
+              <span className="carousel-replay__icon">
+                <svg className="carousel-replay__svg" height="48" viewBox="0 0 48 48" width="48" aria-hidden="true">
+                  <path d="M35.3 12.7c-2.89-2.9-6.88-4.7-11.3-4.7-8.84 0-15.98 7.16-15.98 16s7.14 16 15.98 16c7.45 0 13.69-5.1 15.46-12h-4.16c-1.65 4.66-6.07 8-11.3 8-6.63 0-12-5.37-12-12s5.37-12 12-12c3.31 0 6.28 1.38 8.45 3.55l-6.45 6.45h14v-14l-4.7 4.7z" />
+                  <path d="M0 0h48v48h-48z" fill="none" />
+                </svg>
+              </span>
             </button>
           </div>
         </div>
@@ -2763,11 +2765,10 @@ function App() {
       <header className="hero" id="top">
         <div className="hero-copy">
           <span className="eyebrow">PCA plus K-Means energy clustering</span>
-          <GlowCursor color="#48d7c2" secondaryColor="#b78cff" opacity={0.5}>
+          <div className="hero-text">
             {/* hero-text: title, then subtitle, then actions, one above the other.
                 The slideshow sits below this whole block as the next hero child. */}
-            <div className="hero-text">
-              <h1>Energy use is a pattern, not just a number.</h1>
+            <h1>Energy use is a pattern, not just a number.</h1>
               <p className="hero-subtitle">
                 This project simulates a full year of household electricity readings, turns
                 each day into a load shape, compresses the features with PCA, and uses K-Means
@@ -2779,7 +2780,7 @@ function App() {
                 <a className="button secondary" href="#about">What is this project about?</a>
               </div>
             </div>
-          </GlowCursor>
+          </div>
         </div>
         <div className="hero-panel chart-panel tall">
           <LoadShapeCarousel tall />
@@ -2932,23 +2933,6 @@ function App() {
           </div>
         </section>
 
-        {/* LogoLoop, the tech stack scroller */}
-        <section className="band" style={{ paddingTop: 0, paddingBottom: 2 }}>
-          <div style={{ height: 140, position: 'relative', overflow: 'hidden' }}>
-            <LogoLoop
-              speed={100}
-              direction="left"
-              logoHeight={60}
-              gap={60}
-              hoverSpeed={0}
-              scaleOnHover
-              fadeOut
-              fadeOutColor="#070b10"
-              ariaLabel="Technology stack"
-            />
-          </div>
-        </section>
-
         <section className="band references" id="references">
           <SectionHeader eyebrow="References" title="Research behind the method">
             These sources guided the feature engineering, PCA step, K-Means validation,
@@ -2983,6 +2967,23 @@ function App() {
             </svg>
             <span className="text">View on GitHub</span>
           </a>
+        </section>
+
+        {/* LogoLoop, the tech stack scroller: closes the page */}
+        <section className="band" style={{ paddingTop: 0, paddingBottom: 2 }}>
+          <div style={{ height: 140, position: 'relative', overflow: 'hidden' }}>
+            <LogoLoop
+              speed={100}
+              direction="left"
+              logoHeight={60}
+              gap={60}
+              hoverSpeed={0}
+              scaleOnHover
+              fadeOut
+              fadeOutColor="#070b10"
+              ariaLabel="Technology stack"
+            />
+          </div>
         </section>
       </main>
     </div>

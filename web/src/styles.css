@@ -734,43 +734,91 @@ p {
 }
 
 /* Restart button: sits beside the dots and re-runs the current slide's reveal
-   animation by remounting it. Same visual language as the arrows, smaller. */
+   animation by remounting it. A port of the Uiverse "Refresh" button
+   (https://uiverse.io/andrew-demchenk0/...), themed: the reference's grey
+   main colour becomes the site cyan so the control speaks the accent
+   language of the page. The mechanics are unchanged - resting state shows
+   the label with the icon waiting on the right; hover fades the label and
+   grows the icon tile across the whole face; press sits the button down by
+   the shadow.
+
+   Two numbers differ from the reference because this button's label is
+   "Restart animation", nearly twice as long as "Refresh": the face widens
+   from 150px to 200px, and the two icon positions are re-derived the same
+   way the reference derives them - rest sits flush to the right edge
+   (200 - 39 width - 2 border = 159), hover grows to the full inner width
+   (200 - 2 border = 198). */
 .carousel-replay {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  margin-left: 0.5rem;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
+  --main-focus: #2d8cf0;
+  --font-color: #f5f8fa;
+  --bg-color-sub: #152131;
+  --bg-color: #101722;
+  --main-color: #48d7c2;
+  position: relative;
+  width: 200px;
+  height: 40px;
+  margin-left: 1rem;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--main-color);
+  box-shadow: 4px 4px var(--main-color);
+  background-color: var(--bg-color);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.carousel-replay svg {
-  width: 13px;
-  height: 13px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.carousel-replay,
+.carousel-replay__icon,
+.carousel-replay__text {
+  transition: all 0.3s;
+}
+
+.carousel-replay .carousel-replay__text {
+  transform: translateX(33px);
+  color: var(--font-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.carousel-replay .carousel-replay__icon {
+  position: absolute;
+  transform: translateX(159px);
+  height: 100%;
+  width: 39px;
+  background-color: var(--bg-color-sub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-replay .carousel-replay__svg {
+  width: 20px;
+  fill: var(--main-color);
 }
 
 .carousel-replay:hover {
-  color: var(--cyan);
-  border-color: var(--cyan);
-  background-color: rgba(72, 215, 194, 0.08);
+  background: var(--bg-color);
+}
+
+.carousel-replay:hover .carousel-replay__text {
+  color: transparent;
+}
+
+.carousel-replay:hover .carousel-replay__icon {
+  width: 198px;
+  transform: translateX(0);
+}
+
+.carousel-replay:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px var(--main-color);
 }
 
 .carousel-replay:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
+  outline: 2px solid var(--main-focus);
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
