@@ -1407,8 +1407,24 @@ def page_explainability(results: AnalysisResults):
         return
 
     method = explain.get("method")
+    # Turn the machine method key into a human-facing label and a one-line
+    # explanation of what that method actually is, so a reader never has to
+    # guess and never sees the raw key on its own.
+    method_labels = {
+        "shap": "SHAP (TreeExplainer)",
+        "permutation_fallback": "Permutation importance",
+    }
+    method_subs = {
+        "shap": "TreeExplainer on the post-hoc surrogate forest",
+        "permutation_fallback": "one-vs-rest permutation importance (shap not installed)",
+    }
+    stat_labels = {
+        "shap": "mean |SHAP| per feature",
+        "permutation_fallback": "mean drop in accuracy per feature",
+    }
     ui.metric_cards([
-        {"label": "Method", "value": method, "sub": "shap or permutation fallback",
+        {"label": "Method", "value": method_labels.get(method, method),
+         "sub": method_subs.get(method, "post-hoc surrogate explanation"),
          "accent": method == "shap"},
         {"label": "Surrogate cv accuracy",
          "value": _num(explain.get("cv_balanced_accuracy"), 3),
@@ -1417,10 +1433,12 @@ def page_explainability(results: AnalysisResults):
         {"label": "Consumers explained", "value": explain.get("n_consumers", "-")},
     ])
     ui.note(
-        "The cross-validated balanced accuracy is the ceiling on what any importance reading "
-        "can claim: if the surrogate only predicts part of the grouping, the features only "
-        "explain that part - and the report says so. SHAP values and permutation importance "
-        "are different statistics; the method key above states which one produced this page."
+        f"The cross-validated balanced accuracy is the ceiling on what any importance reading "
+        f"can claim: if the surrogate only predicts part of the grouping, the features only "
+        f"explain that part - and the report says so. This run used "
+        f"<strong>{method_labels.get(method, method)}</strong>, so the numbers below are "
+        f"{stat_labels.get(method, 'feature importance')} - a different statistic from the "
+        f"other method, and the two must never be compared directly."
     )
     for entry in explain.get("per_cluster", []):
         cid = entry.get("cluster")

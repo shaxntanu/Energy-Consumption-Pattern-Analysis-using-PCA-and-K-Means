@@ -222,7 +222,7 @@ export default function LogoLoop({
     "--logoloop-gap": `${gap}px`,
     "--logoloop-logo-height": `${logoHeight}px`,
     "--logoloop-fade-color": fadeOutColor,
-  } as React.CSSProperties;
+  };
 
   const rootClasses = "logoloop";
   const trackClasses = "logoloop-track";
