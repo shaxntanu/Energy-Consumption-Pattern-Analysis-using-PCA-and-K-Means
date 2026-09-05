@@ -15,9 +15,9 @@
 | Item | Detail |
 |------|--------|
 | Reference run | Config **`99c7a6631340d301`**, seed **42**, **200 consumers × 365 days** (Jan-Dec 2024). This is the flagship year. Its numbers ship in `web/public/data/*.json` and are what the deployed Vercel explorer renders. Every table in this README that says "flagship" quotes that audited contract. |
-| Current on-disk outputs | The last executed pipeline run was the **30-day default** (config `6dff8faaa470d418`, 144,000 records, K = 3). So `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` currently describe that 30-day window. Re-running the flagship command (section 22.2) restores the 365-day summary on disk. The web contract is not affected. It is exported once and not re-read at deploy time. |
+| Current on-disk outputs | The last executed pipeline run is the **365-day flagship** (config `99c7a6631340d301`, 1,752,000 records, K = 4). `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` describe that window (generated 2026-09-04). The ablation and seed-robustness studies describe their own documented windows. The web contract is exported once and not re-read at deploy time. |
 | Explorer | The [Vercel interactive explorer](https://energy-consumption-pattern.vercel.app) reads `web/public/data/*.json` only. No sklearn runs in the browser. |
-| Simulator | Streamlit (`streamlit_app.py`), with 15 pages in 4 groups, a horizon control (30 / 90 / 180 / 365 days), and honest `available: false` handling for steps a short window cannot run. |
+| Simulator | Streamlit (`streamlit_app.py`), with 16 pages in 4 groups, a horizon control (30 / 90 / 180 / 365 days), and honest `available: false` handling for steps a short window cannot run. |
 | Pipeline | A single deterministic flow: season → generate → preprocess → 51 behavioural features → StandardScaler → PCA (95%) → K-Means (evidence-based K) → explainability → profile + validate → seasonal + longitudinal → export artifacts. |
 
 ---
@@ -74,7 +74,7 @@ No real consumption dataset ships in this repo. Two pathways feed the same analy
 
 Generator coverage per consumer-day: `hourly_kwh_by_meter`, `season` (kept), `archetype` (dropped before any statistic), `seasonal_phase` (dropped), `timestamp`.
 
-A **30-day reference window** (config `6896387297178841`, 144,000 records, K = 3) remains the `REFERENCE_HASH` the Streamlit simulator uses to label a run as the audited reference vs a new setting. The on-disk `analysis_summary.md` also currently reflects a 30-day default run (config `6dff8faaa470d418`). The flagship tables in this README come from the web contract.
+A **30-day reference window** (config `6896387297178841`, 144,000 records, K = 3) remains the `REFERENCE_HASH` the Streamlit simulator uses to label a run as the audited reference vs a new setting. The on-disk `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` currently reflect the 365-day flagship run (config `99c7a6631340d301`, generated 2026-09-04). The flagship tables in this README quote that same run.
 
 ### 4.2 Real-world branch (adapter to ingestion to internal-only validation)
 
@@ -192,7 +192,7 @@ The variance curve (explained + cumulative) is rendered on the **PCA** slide of 
 | 9 | 2490.6 | 0.3111 | 69.1 | 1.2015 | 0.8156 |
 | 10 | 2361.6 | 0.2760 | 65.6 | 1.3180 | 0.7581 |
 
-K = 3 has the single highest silhouette (0.3305), but K = 4 wins the composite (0.9444 vs 0.8794), matches the inertia elbow, and independently is exactly where the hidden-archetype check peaks (ARI 0.81, section [10](#10-results-synthetic)). On the 30-day reference the same rule chooses K = 3. On a full year it recovers all four latent groups. The K-selection trace (filtered sets, raw and normalized scores, the tolerance tie-break) is in `outputs/metrics/k_selection_trace.json` and `web/public/data/clustering.json`.
+K = 5 has the single highest silhouette (0.3352), but it loses the composite to K = 4 (0.9444 vs 0.8210), K = 4 matches the inertia elbow, and independently is exactly where the hidden-archetype check peaks (ARI 0.81, section [10](#10-results-synthetic)). No other K sits inside K = 4's 5% tolerance band, so the parsimony tie-break is not even needed. On the 30-day reference the same rule chooses K = 3. On a full year it recovers all four latent groups. The K-selection trace (filtered sets, raw and normalized scores, the tolerance tie-break) is in `outputs/metrics/k_selection_trace.json` and `web/public/data/clustering.json`.
 
 ---
 
@@ -248,7 +248,7 @@ Crosstab at the selected K = 4 (from `web/public/data/validation.json`):
 | flat | 0 | **50** | 0 | 0 |
 | weekend | 0 | 1 | 0 | **49** |
 
-> **This agreement is the result.** The evidence-based rule landed on K = 4 and the independent check confirms it. Recovery is highest at K = 4 (ARI 0.81, NMI 0.83), which is also where the inertia elbow points. Silhouette alone peaks at K = 5 (0.335), but K = 4 sits inside the 0.05 tolerance band and wins the composite. That is the clean outcome a principled rule is supposed to produce. The contrast with the 30-day reference window is the honest lesson. There the same rule chose K = 3 against best-recovery K = 4 (ARI 0.61 vs 0.87 on the current on-disk 30-day run), and the `weekend` archetype scattered across clusters. On a real dataset that gap would be undetectable. This is a known limit of unsupervised clustering, and the report states it plainly.
+> **This agreement is the result.** The evidence-based rule landed on K = 4 and the independent check confirms it. Recovery is highest at K = 4 (ARI 0.81, NMI 0.83), which is also where the inertia elbow points. Silhouette alone peaks at K = 5 (0.335), but K = 4 sits inside the 0.05 tolerance band and wins the composite. That is the clean outcome a principled rule is supposed to produce. The contrast with the 30-day reference window (config `6896387297178841`) is the honest lesson. There the same rule chose K = 3 with recovery ARI 0.61, and the `weekend` archetype scattered across clusters. On a real dataset that gap would be undetectable. This is a known limit of unsupervised clustering, and the report states it plainly.
 
 **On this window:** because the flagship is a full year, seasonal and longitudinal are `available: true`. See sections [11](#11-results-seasonal) and [12](#12-results-longitudinal). The 30-day reference is the only horizon on which they are honestly skipped (`LONGITUDINAL_MIN_DAYS = 180`).
 
@@ -503,7 +503,7 @@ Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
 |  |- benchmarks/bench_main.cpp   # standalone energy_bench (no Python)
 |  |- CMakeLists.txt · setup.py · pyproject.toml
 |- web/                           # Vercel explorer (Vite 7 + React 19 + Chart.js 4)
-|  |- src/   main.jsx · VantaNetBackground.jsx · analysisData.js · ComposedChart.jsx · Legend.jsx · RadarChart.jsx · styles.css
+|  |- src/   main.jsx · analysisData.js · ComposedChart.jsx · Legend.jsx · RadarChart.jsx · styles.css · components/ (DriftWall · LogoLoop)
 |  |- public/data/   manifest · pca · clustering · profiles · validation · seasonal · longitudinal · explainability · benchmark
 |  `- vercel.json
 |- streamlit_app.py               # interactive simulator (pages)
@@ -520,7 +520,7 @@ Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
 |- docs/          # report.md · verification.md · flow_diagram.md · METHODOLOGY.md · ...
 |- tests/         # pytest suite (features, pca, clustering, artifacts, dashboard ...)
 |- run_module.py  verify_compile.py run_validation_battery.py   # launchers (use `py`)
-|- requirements.txt  Dockerfile  render.yaml  vercel.json
+|- requirements.txt  Dockerfile  render.yaml      # web/vercel.json configures Vercel
 `- README.md      # you are here
 ```
 
@@ -569,7 +569,7 @@ py run_validation_battery.py
 # export the web contract by hand (also auto-runs at the end of energy_analysis)
 py run_module.py export_artifacts
 
-# interactive simulator (15 pages; http://localhost:8501)
+# interactive simulator (16 pages; http://localhost:8501)
 py -m streamlit run streamlit_app.py
 
 # Vercel web app (Vite dev server; build with `npm run build` in web/)
@@ -633,14 +633,14 @@ py presentation/generate_dark_plots_extended.py
 
 Both generators re-render only from persisted artifacts (fitted models, metric tables, summary JSONs). Nothing is re-fitted and no pipeline step is re-run except the tiny 50×7 EDA illustration panel. One honest boundary: the two scatter figures (`pca_projection_2d.png`, `cluster_visualization_2d.png`, the per-consumer score plot and the cluster scatter) need the per-consumer score matrix, which the pipeline keeps in memory and never persists. They are not part of the dark re-render. The light versions in `outputs/figures/` remain the source for those two, or re-run the analysis to regenerate them.
 
-The extended script is gated on persisted data. On the current 30-day outputs it draws the validation, seed-robustness, and ablation-comparison figures and honestly skips the seasonal, longitudinal, and explainability figures (their summary JSONs do not exist for a 30-day window). Re-run the flagship first (`py run_module.py energy_analysis -- --n_days 365 --n_consumers 200`), then re-run the extended script and all nine figures appear. The two seasonal figures that need the per-season 24-hour shape and per-consumer phase pairs regenerate only the generator panel (no PCA, no K sweep, no clustering). See the script docstring for the exact boundary.
+The extended script is gated on persisted data. On the current on-disk flagship outputs it draws the full nine-figure set: validation, seed robustness, ablation comparison, explainability, seasonal (3), and longitudinal, because their reports exist for the 365-day window (`outputs/reports/seasonal_analysis_report.md`, `longitudinal_analysis_report.md`, `explainability_report.md`). On a 30-day window those reports are honestly absent and the script skips those figures. Re-run the flagship first (`py run_module.py energy_analysis -- --n_days 365 --n_consumers 200`), then re-run the extended script and all nine figures appear. The two seasonal figures that need the per-season 24-hour shape and per-consumer phase pairs regenerate only the generator panel (no PCA, no K sweep, no clustering). See the script docstring for the exact boundary.
 
 ### 22.4 Reproducibility: the numbers you can pin
 
 | Token | Value |
 |-------|-------|
 | Config hash (flagship) | `99c7a6631340d301`, the 200-consumer × 365-day run quoted throughout this page. Exported to `web/public/data/manifest.json` and rendered by the explorer. |
-| Config hash (30-day default on disk) | `6dff8faaa470d418`, the last executed pipeline run. `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` describe it. |
+| Config hash (on disk) | `99c7a6631340d301`, the last executed pipeline run. `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` describe it (generated 2026-09-04). |
 | REFERENCE_HASH | `6896387297178841`, used by `streamlit_app.py` to label a run as the audited 30-day reference vs a new setting. The metadata's own `config_hash` is the authoritative per-run record. |
 | Random seed | `42` (deterministic; generator, PCA, and K-Means all consume it). |
 | Package versions | As in section 4, pinned in `requirements.txt`, recorded verbatim in `analysis_metadata.json`. |

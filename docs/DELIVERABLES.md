@@ -8,9 +8,9 @@ Engagement complete. All phases 0 to 11 executed. No pending human gates.
 py -m pip install -r requirements.txt
 py -m pytest tests/ -v
 py src/energy_analysis.py          # primary behavioral pipeline → models/ + outputs/
-py src/run_ablation_study.py       # A/B/C → outputs/reports/ablation_*
+py src/run_ablation_study.py       # 5 arms → outputs/reports/ablation_*
 py src/validate_dataset.py         # archetype validation figures/report
-py -m streamlit run app/app.py
+py -m streamlit run streamlit_app.py
 ```
 
 ## Definition of Done
@@ -30,7 +30,12 @@ py -m streamlit run app/app.py
 
 ## Key results (behavioral primary, seed=42)
 
-| Item | Value |
+The table below is the phase-11 snapshot (30-day window, pre-upgrade). The
+current authoritative numbers live in `outputs/reports/analysis_summary.md`
+(365-day flagship run, K=4) and are quoted in the README. Both states of the
+repo are kept so the comparison is auditable.
+
+| Item | Value (phase-11 snapshot) |
 |------|--------|
 | Data | Synthetic archetype-based (200×30×hourly) |
 | Features | 33 behavioral (24h shape + timing + variability) |
@@ -41,7 +46,7 @@ py -m streamlit run app/app.py
 | Stability ARI | **0.791 ± 0.111** (10 seeds) |
 | Cluster sizes | 135 / 65 |
 | Weekend ratios | 0.95 vs 1.20 (energy-based) |
-| Tests | **18 passed** |
+| Tests | 18 passed (then); 138 test functions in 13 files today |
 
 ## Ablation (executed)
 
@@ -78,7 +83,7 @@ Scale wins raw metrics; **behavioral** is the project answer.
 | Figures | `outputs/figures/*` |
 | Frozen baseline | `baseline/` |
 | Tests | `tests/` |
-| Dashboard | `app/app.py` |
+| Dashboard | `streamlit_app.py` (web app: `web/`) |
 
 ## Scientific honesty
 
