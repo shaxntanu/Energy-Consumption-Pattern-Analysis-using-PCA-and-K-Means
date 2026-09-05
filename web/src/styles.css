@@ -150,19 +150,31 @@ a {
   fill: #181717;
 }
 
+/* Hero is a strict vertical stack on every screen: eyebrow + title + subtitle
+   (hero-copy), then the slideshow band (hero-panel) below it. Nothing sits
+   side by side with the title. */
 .hero {
-  min-height: calc(100vh - 58px);
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(430px, 1.4fr);
-  gap: clamp(1.5rem, 4vw, 4rem);
-  align-items: center;
-  padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 4vw, 3rem) 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 3.5vw, 3rem);
+  padding: clamp(2.5rem, 5vw, 4.5rem) clamp(1rem, 4vw, 3rem) 3rem;
 }
 
 .hero-copy {
   position: relative;
   isolation: isolate;
   max-width: 720px;
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* The slideshow band: full span of the hero column, left-aligned like the copy. */
+.hero-panel {
+  width: min(100%, 1400px);
 }
 
 /* VANTA.NET background, full-page backdrop at 25% transparency.
@@ -1266,13 +1278,8 @@ p {
 }
 
 @media (max-width: 920px) {
-  .hero,
   .chart-grid {
     grid-template-columns: 1fr;
-  }
-
-  .hero {
-    min-height: auto;
   }
 
   .nav-links {
