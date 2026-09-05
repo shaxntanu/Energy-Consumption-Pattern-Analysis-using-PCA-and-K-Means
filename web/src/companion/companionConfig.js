@@ -1,9 +1,10 @@
 // Behavior configuration for the Sunee companion: one clean place for every
 // rule the advanced interaction system follows. All animation names here must
-// exist in sunee.avatar.json (which itself only contains sequences copied
-// verbatim from the Avatar Lab studio document, see the capability notes at
-// the bottom of this file). All section summaries are written from the actual
-// text rendered in main.jsx bands, not invented.
+// exist in sunee.avatar.json (lab sequences copied verbatim from the Avatar
+// Lab studio document, plus 'gaze-follow', the project's own hold loop that
+// powers the continuous gaze - see the capability notes at the bottom of
+// this file). All section summaries are written from the actual text rendered
+// in main.jsx bands, not invented.
 //
 // Message priority (higher wins when a bubble is already showing):
 //   navigation 100 > intro 90 > manual click 60 > random fact 50 > inactivity 10
@@ -26,29 +27,33 @@ export const INTRO_KEY = 'sunee-intro-shown'
 export const introMessage = {
   priority: MESSAGE_PRIORITY.intro,
   animation: 'happy',
-  text: "Hi! I'm Sunee 👋 I'll be your little guide through this project. Stick around — I'll show you some interesting things along the way!",
+  text: "Hi! I'm Sunee 👋 I'll be your little guide through this project. Stick around - I'll show you some interesting things along the way!",
 }
 
-// ---- Cursor gaze ---------------------------------------------------------
+// ---- Cursor gaze (continuous) --------------------------------------------
 // The Avatar Lab runtime has NO pointer/gaze tracking API (verified by
 // grepping avatar-core, avatar-react and the Studio app: pointer events only
 // drive the Studio's editor controls and 3D view orbit). So gaze-following is
-// APPROXIMATED here: a throttled mousemove listener maps the cursor's
-// quadrant around the avatar to a discrete lab glance expression via
-// setExpression(), which transitions with 420ms smooth easing. The avatar
-// only looks when the cursor is meaningfully close, and only when idle.
+// APPROXIMATED here, but continuously: while the cursor is close, a rAF loop
+// eases the cursor's position within the range circle and writes a blended
+// pose into the definition's 'gaze-live' expression slot (which the vendored
+// runtime samples live every frame). Any cursor angle maps to a blend of the
+// two nearest lab glance expressions, scaled by distance toward neutral - so
+// the gaze direction is a continuous field, not a fixed set of directions.
 export const gazeConfig = {
   enabled: true,
   // Distance from avatar center before Sunee pays attention.
   rangePx: 320,
-  // Minimum distance the cursor must travel before the expression changes
-  // (hysteresis: keeps it from fluttering on small jitters).
-  hysteresisPx: 60,
-  // Throttle between mousemove evaluations.
+  // Throttle between mousemove evaluations (the rAF loop eases between them).
   throttleMs: 200,
-  // How long to linger on the looks-eyes expression once the cursor stops.
-  lingerMs: 1_400,
-  quadrantExpressions: {
+  // Per-frame easing toward the target pose (0..1, higher = snappier).
+  easeFactor: 0.16,
+  // After the cursor has been still this long, Sunee looks away (idle).
+  steadyMs: 1_400,
+  // Autonomous micro-blinks while gazing (the gaze hold disables blink).
+  blink: { minMs: 2_600, maxMs: 6_200, durationMs: 170 },
+  // Real lab glance expressions used as the blending anchors.
+  guides: {
     up: 'upward-side-glance',
     down: 'downward-gaze',
     left: 'curious-left',
@@ -92,27 +97,27 @@ export const sectionSummaries = {
   about: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'About — 1,752,000 hourly readings from 200 synthetic consumers, distilled into 51 shape features and 4 archetypes. A simple way to find daily energy rhythms.',
+    text: 'About - 1,752,000 hourly readings from 200 synthetic consumers, distilled into 51 shape features and 4 archetypes. A simple way to find daily energy rhythms.',
   },
   charts: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'Charts — the matplotlib results rebuilt for the web: load-shape brush, K selection, PCA variance and cluster radar. K = 4 with a 0.328 silhouette.',
+    text: 'Charts - the matplotlib results rebuilt for the web: load-shape brush, K selection, PCA variance and cluster radar. K = 4 with a 0.328 silhouette.',
   },
   performance: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'Performance — the same PCA and K-Means kernels compiled to native C++ (optional engine), with scikit-learn kept as the scientific reference.',
+    text: 'Performance - the same PCA and K-Means kernels compiled to native C++ (optional engine), with scikit-learn kept as the scientific reference.',
   },
   references: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'curious',
-    text: 'References — the research behind the method: PCA (Abdi & Williams), silhouette (Rousseeuw), plus MacQueen, Davies-Bouldin and our Zephyr Station data weather API.',
+    text: 'References - the research behind the method: PCA (Abdi & Williams), silhouette (Rousseeuw), plus MacQueen, Davies-Bouldin and our Zephyr Station data weather API.',
   },
   simulator: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'proud',
-    text: 'Simulator — the interactive Streamlit app opens in a new tab: generate a synthetic year and run the whole pipeline live.',
+    text: 'Simulator - the interactive Streamlit app opens in a new tab: generate a synthetic year and run the whole pipeline live.',
   },
 }
 
@@ -137,9 +142,10 @@ export const factConfig = {
 //     sunee.avatar.json mirrors 21 of those expressions and 13 sequences,
 //     verbatim (parameter-for-parameter); "talking" IS the lab's "excited",
 //     renamed for its fact-bubble role.
-//   * The runtime exposes play(key) / setExpression(key) / stop() / pause();
-//     setExpression() is a direct 420ms smooth transition - that is the
-//     "easing" the gaze approximation relies on.
+//   * The runtime exposes play(key) / setExpression(key) / stop() / pause()
+//     and samples definition.expressions[activeExpression] live every frame -
+//     that live sampling is what the continuous gaze approximation writes to
+//     (the 'gaze-live' slot + the 'gaze-follow' hold loop in sunee.avatar.json).
 //   * No cursor/gaze/eye-tracking exists in the lab (packages or Studio app),
 //     so that behavior is approximated, not reused. Everything else here maps
 //     to real, verified sequences.

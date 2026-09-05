@@ -34,7 +34,11 @@
   position: absolute;
   right: 0;
   bottom: calc(100% + 14px);
-  max-width: min(640px, calc(100vw - 40px));
+  /* Square-ish: fixed horizontal span, height capped to the same size, so
+     long messages scroll inside rather than stretching the bubble. */
+  width: min(460px, calc(100vw - 40px));
+  max-height: min(460px, calc(100vh - 220px));
+  overflow-y: auto;
   background: var(--panel-strong, #152131);
   border: 1px solid var(--line, #263545);
   color: var(--text, #f5f8fa);
