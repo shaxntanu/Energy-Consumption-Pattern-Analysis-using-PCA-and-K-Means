@@ -1,0 +1,222 @@
+{
+  "method": "shap",
+  "surrogate": "RandomForestClassifier (post-hoc, fitted after clustering)",
+  "n_features": 51,
+  "n_clusters": 2,
+  "n_consumers": 200,
+  "cv_balanced_accuracy": 0.9825757575757577,
+  "note": "cv_balanced_accuracy is the cross-validated accuracy of a forest predicting the recovered cluster labels from the behavioural features. It is the ceiling on how much of the grouping the features can be said to explain.",
+  "per_cluster": [
+    {
+      "cluster": 0,
+      "n_rows": 144,
+      "top_features": [
+        {
+          "feature": "night_share",
+          "mean_abs_shap": 0.038648235054645014,
+          "mean_shap": 0.038648235054645014,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "shape_entropy",
+          "mean_abs_shap": 0.02847601075525361,
+          "mean_shap": 0.02847601075525361,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "peak_concentration",
+          "mean_abs_shap": 0.021802055643825875,
+          "mean_shap": 0.02141296378448478,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "hour_2_shape",
+          "mean_abs_shap": 0.021379744370343477,
+          "mean_shap": 0.02133195454422017,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "base_load_share",
+          "mean_abs_shap": 0.021124753258301324,
+          "mean_shap": 0.020654928510081754,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "hour_3_shape",
+          "mean_abs_shap": 0.020360935015228707,
+          "mean_shap": 0.020176327611079035,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "shape_gini",
+          "mean_abs_shap": 0.020185463888175877,
+          "mean_shap": 0.020185463888175877,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "profile_ramp",
+          "mean_abs_shap": 0.019531400723063547,
+          "mean_shap": 0.01922400616249939,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "harmonic_1_amplitude",
+          "mean_abs_shap": 0.014420104764449227,
+          "mean_shap": 0.013071355096035556,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "hour_4_shape",
+          "mean_abs_shap": 0.009742097536459823,
+          "mean_shap": 0.009461596139023873,
+          "direction": "pushes into"
+        }
+      ]
+    },
+    {
+      "cluster": 1,
+      "n_rows": 56,
+      "top_features": [
+        {
+          "feature": "night_share",
+          "mean_abs_shap": 0.10492706630398563,
+          "mean_shap": 0.10445358261877767,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "shape_entropy",
+          "mean_abs_shap": 0.09220976203113038,
+          "mean_shap": 0.09121588265595035,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "shape_gini",
+          "mean_abs_shap": 0.08700204086059046,
+          "mean_shap": 0.08654513767137331,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "peak_concentration",
+          "mean_abs_shap": 0.06339695567494026,
+          "mean_shap": 0.0628416726139596,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "hour_3_shape",
+          "mean_abs_shap": 0.05261290468027894,
+          "mean_shap": 0.05218721248055409,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "base_load_share",
+          "mean_abs_shap": 0.0503877473116689,
+          "mean_shap": 0.049845185920170086,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "harmonic_1_amplitude",
+          "mean_abs_shap": 0.04736699170673341,
+          "mean_shap": 0.04712183097984072,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "hour_2_shape",
+          "mean_abs_shap": 0.04715011440983702,
+          "mean_shap": 0.04619567323298938,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "profile_ramp",
+          "mean_abs_shap": 0.03874621696494409,
+          "mean_shap": 0.037303313767866296,
+          "direction": "pushes into"
+        },
+        {
+          "feature": "night_day_ratio",
+          "mean_abs_shap": 0.02687627167071189,
+          "mean_shap": 0.026608271455807044,
+          "direction": "pushes into"
+        }
+      ]
+    }
+  ],
+  "global_importance": {
+    "top_features": [
+      {
+        "feature": "night_share",
+        "mean_abs_shap": 0.05720630780446019,
+        "mean_shap": -3.642919299551295e-19
+      },
+      {
+        "feature": "shape_entropy",
+        "mean_abs_shap": 0.04632146111249913,
+        "mean_shap": -2.5673907444456745e-18
+      },
+      {
+        "feature": "shape_gini",
+        "mean_abs_shap": 0.03889410544045196,
+        "mean_shap": -1.0659875759877479e-17
+      },
+      {
+        "feature": "peak_concentration",
+        "mean_abs_shap": 0.03344862765253797,
+        "mean_shap": 8.586881206085195e-19
+      },
+      {
+        "feature": "hour_3_shape",
+        "mean_abs_shap": 0.02939148652144289,
+        "mean_shap": -2.3245294578089216e-18
+      },
+      {
+        "feature": "base_load_share",
+        "mean_abs_shap": 0.02931839159324425,
+        "mean_shap": -1.179611963664229e-18
+      },
+      {
+        "feature": "hour_2_shape",
+        "mean_abs_shap": 0.028595447981401668,
+        "mean_shap": 4.597017211338539e-18
+      },
+      {
+        "feature": "profile_ramp",
+        "mean_abs_shap": 0.02491154927079009,
+        "mean_shap": -3.903127820947816e-18
+      },
+      {
+        "feature": "harmonic_1_amplitude",
+        "mean_abs_shap": 0.02364523310828877,
+        "mean_shap": -3.452099717193846e-18
+      },
+      {
+        "feature": "night_day_ratio",
+        "mean_abs_shap": 0.013795037972592772,
+        "mean_shap": 3.9790219730218016e-18
+      },
+      {
+        "feature": "hour_4_shape",
+        "mean_abs_shap": 0.011347134952952715,
+        "mean_shap": -1.2620113287731272e-18
+      },
+      {
+        "feature": "hour_5_shape",
+        "mean_abs_shap": 0.011220692367111323,
+        "mean_shap": 3.903127820947816e-19
+      },
+      {
+        "feature": "hour_1_shape",
+        "mean_abs_shap": 0.009451334416597465,
+        "mean_shap": 2.233456475320139e-19
+      },
+      {
+        "feature": "p90_median_ratio",
+        "mean_abs_shap": 0.008397482923212917,
+        "mean_shap": 6.461844948013606e-19
+      },
+      {
+        "feature": "coefficient_of_variation",
+        "mean_abs_shap": 0.006529406814187971,
+        "mean_shap": -2.3201926491189796e-19
+      }
+    ]
+  }
+}

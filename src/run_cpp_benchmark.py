@@ -221,10 +221,18 @@ def run_pca_stage(X: np.ndarray, engine: str) -> dict:
 
 
 def _run_cpp_kmeans(X: np.ndarray, k: int, max_iter: int, tol: float, n_init: int, init: str, seed: int) -> dict:
-    """Run C++ K-Means in a separate process to isolate crashes."""
+    """Run C++ K-Means in a separate process to isolate crashes, and time it
+    here. Timing must happen inside the subprocess: the parent never re-runs
+    the kernel, so any parent-side measurement would be of an empty function."""
     import cpp_bridge
     res = cpp_bridge.kmeans_fit_numpy(
         X, k, max_iter=max_iter, tol=tol, n_init=n_init, init=init, seed=seed)
+
+    def fit():
+        cpp_bridge.kmeans_fit_numpy(
+            X, k, max_iter=max_iter, tol=tol, n_init=n_init, init=init, seed=seed)
+
+    res["time_ms"] = time_fn(fit)
     return res
 
 
@@ -265,12 +273,8 @@ def run_kmeans_stage(X: np.ndarray, engine: str, k: int = 4) -> dict:
                 "crashed": True,
             }
 
-    def fit():
-        pass  # already executed in subprocess
-
-    ms = time_fn(fit)
     return {
-        "time_ms": ms,
+        "time_ms": res["time_ms"],
         "labels": res["labels"],
         "inertia": res["inertia"],
         "n_iterations": res["n_iterations"],

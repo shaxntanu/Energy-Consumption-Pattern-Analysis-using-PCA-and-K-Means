@@ -234,6 +234,36 @@ class CppKMeans:
         return np.argmin(dists, axis=1).astype(np.int64)
 
 
+class _CppPCA:
+    """PCA-shaped object backed by the C++ engine.
+
+    Exposes the attributes pca_analysis reads off a fitted sklearn PCA
+    (components_, explained_variance_, explained_variance_ratio_,
+    n_components_, mean_) and a working transform(). It is a top-level class
+    so the pipeline's save_models step can joblib.dump it; a nested class was
+    not picklable and crashed the --e2e benchmark in pca_analysis.save_models.
+    """
+
+    def __init__(self, kk, comp, ev, evr, mean, scores, feats):
+        self.n_components_ = kk
+        self.components_ = comp          # (k, d)
+        self.explained_variance_ = ev    # (k,)
+        self.explained_variance_ratio_ = evr
+        self.mean_ = mean
+        self._scores = scores
+        self.n_features_in_ = feats
+
+    def transform(self, X2):
+        X2 = np.asarray(X2, dtype=np.float64)
+        return (X2 - self.mean_) @ self.components_.T
+
+    def fit(self, X2, y=None):
+        return self
+
+    def fit_transform(self, X2, y=None):
+        return self.transform(X2)
+
+
 def cpp_pca_object(
     X: np.ndarray, variance_threshold: float = 0.95, max_components: int = 0
 ) -> Tuple[object, np.ndarray, int, dict]:
@@ -275,26 +305,6 @@ def cpp_pca_object(
         "kaiser": by_kaiser,
         "scree_elbow": by_elbow,
     }
-
-    class _CppPCA:
-        def __init__(self, kk, comp, ev, evr, mean, scores, feats):
-            self.n_components_ = kk
-            self.components_ = comp          # (k, d)
-            self.explained_variance_ = ev    # (k,)
-            self.explained_variance_ratio_ = evr
-            self.mean_ = mean
-            self._scores = scores
-            self.n_features_in_ = feats
-
-        def transform(self, X2):
-            X2 = np.asarray(X2, dtype=np.float64)
-            return (X2 - self.mean_) @ self.components_.T
-
-        def fit(self, X2, y=None):
-            return self
-
-        def fit_transform(self, X2, y=None):
-            return self.transform(X2)
 
     pca_obj = _CppPCA(
         k, out["components"], eig[:k], ratios[:k], out["mean"],
