@@ -85,7 +85,7 @@ export default function GlowCursor({
     if (!container || !canvas) return;
 
     // Dynamic import ogl
-    import("ogl").then(({ Renderer, Program, Mesh, Geometry, Vec2 }) => {
+    import("ogl").then(({ Renderer, Program, Mesh, Geometry, Vec2, Vec3 }) => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const renderer = new Renderer({
         canvas,

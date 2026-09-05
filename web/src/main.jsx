@@ -3025,4 +3025,45 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+// A small root error boundary. A single WebGL shader, chart or animation throwing
+// during render or an effect would otherwise make React unmount the whole tree and
+// leave the page blank. This catches it, logs the exact message, and renders a
+// readable fallback instead — so the load never ends in an empty white screen.
+class RootBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  componentDidCatch(error, info) {
+    console.error("UI crashed:", error, info?.componentStack ?? "");
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ maxWidth: "720px", margin: "6rem auto", padding: "0 1.25rem", color: "#dbe7ec", fontFamily: "Inter, system-ui, sans-serif" }}>
+          <p style={{ fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontSize: "0.75rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "#48d7c2" }}>
+            Energy Load-Shape Clustering
+          </p>
+          <h1 style={{ fontSize: "1.6rem", fontWeight: 600, margin: "0.5rem 0 0.75rem" }}>Something on this page failed to render.</h1>
+          <p style={{ color: "#94a8b4", lineHeight: 1.6 }}>
+            A component crashed during render. The page keeps its shell rather than going blank.
+            The error message is logged to the browser console; reload to retry.
+          </p>
+          <pre style={{ marginTop: "1rem", padding: "0.9rem 1rem", background: "#101722", border: "1px solid #2d3c4d", borderRadius: 8, overflowX: "auto", fontSize: "0.78rem", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", whiteSpace: "pre-wrap" }}>
+            {String(this.state.error && this.state.error.message)}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+createRoot(document.getElementById("root")).render(
+  <RootBoundary>
+    <App />
+  </RootBoundary>
+);
