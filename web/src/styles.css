@@ -185,18 +185,6 @@ a {
   width: min(100%, 1400px);
 }
 
-/* VANTA.NET background, full-page backdrop at 25% transparency.
-   position:fixed + z-index:-1 paints it behind every section and panel of the
-   app; opacity:0.25 keeps it a faint particle net so the hero title stays fully
-   legible on top. pointer-events:none and aria-hidden keep it out of the way. */
-.vanta-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.25;
-  pointer-events: none;
-}
-
 .eyebrow {
   display: inline-flex;
   margin-bottom: 1rem;
@@ -745,9 +733,50 @@ p {
   outline-offset: 2px;
 }
 
+/* Restart button: sits beside the dots and re-runs the current slide's reveal
+   animation by remounting it. Same visual language as the arrows, smaller. */
+.carousel-replay {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  margin-left: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.carousel-replay svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.carousel-replay:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background-color: rgba(72, 215, 194, 0.08);
+}
+
+.carousel-replay:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .carousel-arrow,
   .carousel-dot,
+  .carousel-replay,
   .carousel-stage .chart-container,
   .carousel-meta,
   .carousel-caption {
