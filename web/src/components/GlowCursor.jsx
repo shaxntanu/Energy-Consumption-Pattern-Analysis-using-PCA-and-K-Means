@@ -80,16 +80,14 @@ export default function GlowCursor({
     return () => mediaQuery.removeEventListener("change", handler);
   }, []);
 
-  // No usable canvas or reduced motion: still render the children, just without
-  // the trailing glow.
-  if (!canvasSupported || reducedMotion) {
-    return <div ref={containerRef} className={className}>{children}</div>;
-  }
-
   useEffect(() => {
+    // No usable canvas or reduced motion: still render the children, just
+    // without the trailing glow. The engine is gated here rather than with an
+    // early return between hooks, so the hook order never changes between
+    // renders and React never sees a different hook count.
     const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (!container || !canvas) return undefined;
+    if (!container || !canvas || !canvasSupported || reducedMotion) return undefined;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const ctx = canvas.getContext("2d");
@@ -192,14 +190,13 @@ export default function GlowCursor({
       const c1 = hexToRgb(props.color);
       const c2 = hexToRgb(props.secondaryColor);
       const n = nodes.length;
-      const headIdx = n - 1;
       const pulse = 1 + Math.sin(time / 1000 * props.pulseSpeed) * 0.15;
 
-      // Nodes are in chase order (0 = closest to pointer). Index the tail by
-      // headIdx - i so the newest node is the brightest and the tail fades.
+      // Nodes are in chase order (0 = closest to the pointer), so the newest
+      // and brightest node is nodes[0] at the cursor and the trail fades
+      // toward the far end of the chain.
       for (let i = 0; i < n; i++) {
-        const backFromHead = i; // 0 at cursor -> head, n-1 at tail
-        const node = nodes[headIdx - backFromHead];
+        const node = nodes[i];
         // Taper: 1 at the cursor, trailTaper at the far end.
         const scale = 1 - i / Math.max(1, n - 1); // 1 -> 0 toward tail
         const taper = props.trailTaper + (1 - props.trailTaper) * scale;
@@ -251,7 +248,7 @@ export default function GlowCursor({
       ro.disconnect();
       window.removeEventListener("resize", resize);
     };
-  }, []);
+  }, [canvasSupported, reducedMotion]);
 
   return (
     <div

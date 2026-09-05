@@ -78,9 +78,10 @@ def build_config_from_sidebar() -> AnalysisConfig:
     horizon_choice = st.sidebar.select_slider(
         "Observation window (days)",
         options=[30, 90, 180, 365],
-        value=30,
+        value=365,
         help="30/90/180/365 are the validated horizons (data_loader.VALID_HORIZONS_DAYS). "
-             "Longitudinal analysis requires ≥ 180 days; the seasonal rhythm is visible at 365.",
+             "365 matches the committed dataset (200 consumers x 365 days = 1,752,000 "
+             "records); longitudinal and seasonal analyses need it too.",
     )
     n_days = int(horizon_choice)
     n_consumers = st.sidebar.slider("Consumers", 50, 500, 200, step=10)
