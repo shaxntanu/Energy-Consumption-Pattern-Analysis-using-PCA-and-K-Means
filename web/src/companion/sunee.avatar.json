@@ -197,6 +197,76 @@
       },
       "perspective": 1,
       "motion": { "eyes": "none", "body": "none" }
+    },
+    "downward-gaze": {
+      "head": { "x": -15.057812500000004, "y": 0.14296874999999964, "z": -14.549218750000001 },
+      "eyes": {
+        "left": { "width": 22.401171875, "height": 54.5703125, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 22.401171875, "height": 54.5703125, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 57.7
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "skeptical-right": {
+      "head": { "x": -16.528515625, "y": -3.7679687499999996, "z": -13.7296875 },
+      "eyes": {
+        "left": { "width": 23.090625, "height": 57.6796875, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 49.924609375, "height": 12.431640625, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 56.3
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "angry-right": {
+      "head": { "x": 8.063671874999999, "y": 17.626562500000002, "z": -11.116796874999999 },
+      "eyes": {
+        "left": { "width": 20.908203124999996, "height": 40.40078125, "x": 0, "y": 0, "angle": -30.865625 },
+        "right": { "width": 20.908203124999996, "height": 40.40078125, "x": 0, "y": 0, "angle": 28.781640625 },
+        "spacing": 52.059765625
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "attentive-left": {
+      "head": { "x": 1.43359375, "y": 6.194140624999999, "z": 10.56015625 },
+      "eyes": {
+        "left": { "width": 23.836718749999996, "height": 58.130078125, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 23.836718749999996, "height": 58.130078125, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 56.8
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "skeptical-left": {
+      "head": { "x": 3.5292968750000004, "y": -7.0765625, "z": 9.830078125 },
+      "eyes": {
+        "left": { "width": 24.306250000000002, "height": 59.281640624999994, "x": 0, "y": 0, "angle": 0 },
+        "right": { "width": 48.92421875000001, "height": 13.408203124999996, "x": 0, "y": 0, "angle": 0 },
+        "spacing": 62.218359375
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "angry-left": {
+      "head": { "x": -14.750781250000001, "y": -19.350000000000005, "z": 5.631640624999998 },
+      "eyes": {
+        "left": { "width": 19.602343750000003, "height": 48.63984375, "x": 0, "y": 0, "angle": -27.606640625 },
+        "right": { "width": 19.602343750000003, "height": 48.63984375, "x": 0, "y": 0, "angle": 26.1484375 },
+        "spacing": 55.1
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
+    "suspicious-right": {
+      "head": { "x": -17.8, "y": 10, "z": -10.894921875 },
+      "eyes": {
+        "left": { "width": 23.969921875, "height": 55.89296875, "x": 0, "y": -9.8, "angle": 0 },
+        "right": { "width": 53.56328125, "height": 13.333593750000002, "x": 0, "y": -9.8, "angle": 0 },
+        "spacing": 59.94375
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
     }
   },
   "expressionOrder": [
@@ -213,7 +283,14 @@
     "gentle-downward-gaze",
     "surprised-wide-left",
     "drowsy-closed",
-    "shy-downward"
+    "shy-downward",
+    "downward-gaze",
+    "skeptical-right",
+    "angry-right",
+    "attentive-left",
+    "skeptical-left",
+    "angry-left",
+    "suspicious-right"
   ],
   "animations": {
     "idle": {
@@ -297,6 +374,57 @@
       ],
       "blink": { "enabled": true, "initialDelayMs": 4800, "minIntervalMs": 6500, "maxIntervalMs": 9500, "durationMs": 420 },
       "metadata": { "label": "Sleepy", "description": "Drowsy loop for late-night data thoughts.", "group": "Lifecycle" }
+    },
+    "listening": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "attentive-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "downward-gaze", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "gentle-downward-gaze", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 3200, "minIntervalMs": 4800, "maxIntervalMs": 7200, "durationMs": 240 },
+      "metadata": { "label": "Listening", "description": "Stable gaze and attentive blinking (lab sequence, verbatim).", "group": "Lifecycle" }
+    },
+    "excited": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "joyful-down-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "playful-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "surprised-wide-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "surprised-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "joyful-wide", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 1200, "minIntervalMs": 1800, "maxIntervalMs": 3600, "durationMs": 220 },
+      "metadata": { "label": "Excited", "description": "Big expressions, fast transitions (lab sequence, verbatim; same as talking).", "group": "Reactions" }
+    },
+    "bored": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "sleepy-squint", "holdMs": 3600, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "drowsy-closed", "holdMs": 3600, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "neutral", "holdMs": 3600, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 4800, "minIntervalMs": 6500, "maxIntervalMs": 9500, "durationMs": 420 },
+      "metadata": { "label": "Bored", "description": "Preset pool and slow blinking (lab sequence, verbatim).", "group": "Reactions" }
+    },
+    "suspicious": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "skeptical-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "skeptical-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "suspicious-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 2100, "minIntervalMs": 2800, "maxIntervalMs": 5000, "durationMs": 260 },
+      "metadata": { "label": "Suspicious", "description": "Skeptical asymmetry (lab sequence, verbatim), used for the impatient tier.", "group": "Reactions" }
+    },
+    "angry": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "angry-right", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" },
+        { "expression": "angry-left", "holdMs": 2300, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": true, "initialDelayMs": 2100, "minIntervalMs": 2800, "maxIntervalMs": 5000, "durationMs": 260 },
+      "metadata": { "label": "Angry", "description": "Angry eye tilts (lab sequence, verbatim), strongest inactivity tier.", "group": "Reactions" }
     }
   },
   "animationOrder": [
@@ -307,6 +435,11 @@
     "proud",
     "surprised",
     "shy",
-    "sleepy"
+    "sleepy",
+    "listening",
+    "excited",
+    "bored",
+    "suspicious",
+    "angry"
   ]
 }

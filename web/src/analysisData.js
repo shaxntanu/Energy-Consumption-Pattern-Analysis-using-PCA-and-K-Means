@@ -182,6 +182,7 @@ export const seasonalStats = {
   reason: null,
   seasons: ["winter", "spring", "summer", "autumn"],
   meanDailyKwhBySeason: { winter: 26.571, spring: 35.167, summer: 38.014, autumn: 29.433 },
+  peakHourBySeason: { winter: 19, spring: 20, summer: 20, autumn: 19 },
   amplitude: 0.2018,
   phaseR: 0.6781,
   phaseAgreement: 0.885,
