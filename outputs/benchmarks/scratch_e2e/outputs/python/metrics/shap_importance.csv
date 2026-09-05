@@ -1,0 +1,21 @@
+cluster,feature,importance,direction
+0,night_share,0.10492706630398563,pushes into
+0,shape_entropy,0.09220976203113038,pushes into
+0,shape_gini,0.08700204086059046,pushes into
+0,peak_concentration,0.06339695567494026,pushes into
+0,hour_3_shape,0.05261290468027894,pushes into
+0,base_load_share,0.0503877473116689,pushes into
+0,harmonic_1_amplitude,0.04736699170673341,pushes into
+0,hour_2_shape,0.04715011440983702,pushes into
+0,profile_ramp,0.03874621696494409,pushes into
+0,night_day_ratio,0.02687627167071189,pushes into
+1,night_share,0.038648235054645014,pushes into
+1,shape_entropy,0.02847601075525361,pushes into
+1,peak_concentration,0.021802055643825875,pushes into
+1,hour_2_shape,0.021379744370343477,pushes into
+1,base_load_share,0.021124753258301324,pushes into
+1,hour_3_shape,0.020360935015228707,pushes into
+1,shape_gini,0.020185463888175877,pushes into
+1,profile_ramp,0.019531400723063547,pushes into
+1,harmonic_1_amplitude,0.014420104764449227,pushes into
+1,hour_4_shape,0.009742097536459823,pushes into

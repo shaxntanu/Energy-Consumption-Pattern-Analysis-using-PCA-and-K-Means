@@ -1,0 +1,5 @@
+archetype,0,1
+daytime,0,50
+evening,1,49
+flat,50,0
+weekend,5,45
