@@ -1,5 +1,5 @@
-# Final Report — Energy Consumption Pattern Analysis (PCA & K-Means)
-## Upgraded implementation — `Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means`
+# Final Report on Energy Consumption Pattern Analysis (PCA & K-Means)
+## Upgraded implementation of `Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means`
 
 ---
 
@@ -76,57 +76,57 @@ Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
 
 ### 3. Files changed / added (migration)
 
-**Improvement 1** — `src/data_loader.py` (`start_date`, `duration_days`,
+**Improvement 1:** `src/data_loader.py` (`start_date`, `duration_days`,
 `VALID_HORIZONS_DAYS`, `validate_horizon_days`), new `src/longitudinal_analysis.py`,
 `src/energy_analysis.py` (`run_longitudinal`, `longitudinal_results`).
 
-**Improvement 2** — `src/data_loader.py` (`SeasonalConfig`, `seasonal_factors`,
+**Improvement 2:** `src/data_loader.py` (`SeasonalConfig`, `seasonal_factors`,
 `draw_consumer_seasonal`), new `src/seasonal_analysis.py`.
 
-**Improvement 3** — new `src/dataset_adapter.py`, `src/realworld_ingest.py`,
+**Improvement 3:** new `src/dataset_adapter.py`, `src/realworld_ingest.py`,
 `src/realworld_validate.py`, `src/run_realworld.py`.
 
-**Bonus 4 (Zephyr)** — `src/data_loader.py` provenance note + the `season`
+**Bonus 4 (Zephyr):** `src/data_loader.py` provenance note + the `season`
 column seam; narrative threaded through the README, the explorer's Dataset page,
 and this report.
 
-**Bonus 5 (XAI)** — new `src/explainability.py`; wired into `energy_analysis.py`
+**Bonus 5 (XAI):** new `src/explainability.py`; wired into `energy_analysis.py`
 (post-clustering) and surfaced in the web explorer and Streamlit app.
 
-**Delivery** — new `src/export_artifacts.py` (contract exporter), the 8 contract
+**Delivery:** new `src/export_artifacts.py` (contract exporter), the 8 contract
 files under `web/public/data/` (populated with the genuine flagship outputs),
 rewritten `README.md`, this report, `docs/verification.md`, and
 `docs/flow_diagram.md`.
 
-**Fixed during the migration** — `src/run_ablation_study.py` and
+**Fixed during the migration:** `src/run_ablation_study.py` and
 `src/run_seed_robustness.py` now drop the hidden `seasonal_phase` column before
 preprocessing (mirroring `energy_analysis`), so the ablation/robustness arms can
 never leak the hidden seasonal truth into the scaler, PCA or K-Means.
 
 ---
 
-### 4. Improvement 1 — Configurable horizon + longitudinal analysis
+### 4. Improvement 1: Configurable horizon + longitudinal analysis
 
 - Observation period configurable via `AnalysisConfig(start_date=...,
   duration_days=...)`, validated against `VALID_HORIZONS_DAYS=(30, 90, 180, 365)`
   so the default stays meaningful on a laptop while a full year is supported.
-- `src/longitudinal_analysis.py` re-runs the *whole* recipe — feature
-  engineering, scaling, PCA, K selection — inside each non-overlapping segment
+- `src/longitudinal_analysis.py` re-runs the *whole* recipe, feature
+  engineering, scaling, PCA and K selection, inside each non-overlapping segment
   and measures agreement with the full-window partition by **permutation-
   invariant ARI** (no label-matching step).
 - **Gating is explicit:** `LONGITUDINAL_MIN_DAYS = 180`. A 30-day window (one
   January) is honestly skipped and reports `available: false` with the reason.
 
 **Audited result (365-day / 200-consumer flagship, config
-`99c7a6631340d301` — see §9 row):** segments
+`99c7a6631340d301`, see §9 row):** segments
 `[0.838, 0.892, 0.946, 0.851]`, mean temporal stability **0.882**, optimal K
 (that horizon) 4. The 30-day reference reports `available: false`.
 
 ---
 
-### 5. Improvement 2 — Interpretable seasonal variation model
+### 5. Improvement 2: Interpretable seasonal variation model
 
-- `SeasonalConfig` is documented and configurable — no arbitrary multipliers.
+- `SeasonalConfig` is documented and configurable, with no arbitrary multipliers.
 - **Magnitude vs timing separated.** Magnitude (annual amplitude of the daily
   total) is mean-corrected over the window; timing (a phase shift of the 24-hour
   profile) is renormalized so it never changes a daily total.
@@ -137,7 +137,7 @@ never leak the hidden seasonal truth into the scaler, PCA or K-Means.
   inside every cluster.
 
 **Audited result (365-day / 200-consumer flagship, config
-`99c7a6631340d301` — see §9 row):** seasons present
+`99c7a6631340d301`, see §9 row):** seasons present
 `winter/spring/summer/autumn` (mean daily kWh `{winter 26.6, spring 35.2,
 summer 38.0, autumn 29.4}`), magnitude amplitude **0.202**, phase correlation
 **0.678**, peak-season agreement **0.885** (185 consumers with a hidden phase).
@@ -145,7 +145,7 @@ The 30-day reference reports `available: false` (only January present).
 
 ---
 
-### 6. Improvement 3 — Real-world data validation pathway
+### 6. Improvement 3: Real-world data validation pathway
 
 Strictly two, separate branches:
 
@@ -154,20 +154,20 @@ Synthetic → controlled validation (ARI/NMI vs known archetype; internal + stab
 Real-world → external validation (internal only: silhouette / CH / DB + seed + temporal stability)
 ```
 
-- `dataset_adapter.py` — `ColumnMapping` + `DatasetAdapter`; a built-in **UCI
+- `dataset_adapter.py` provides `ColumnMapping` and `DatasetAdapter`; a built-in **UCI
   Individual household electric power consumption** adapter and a **generic CSV**
   adapter; source/column-mapping/unit-conversion documented per adapter (UCI
   cited by name and URL in the adapter docstring).
-- `realworld_ingest.py` — `RealWorldConfig`, validated long panel + ingestion
-  facts; schema guard; windowing; missing/negative accounting. `make_demo_panel()`
+- `realworld_ingest.py` provides `RealWorldConfig`, a validated long panel and
+  ingestion facts, schema guard, windowing, and missing/negative accounting. `make_demo_panel()`
   is a clearly-labelled in-repo smoke-test dataset (plumbing only, not study
   evidence).
-- `realworld_validate.py` — silhouette / CH / DB / seed-stability /
-  temporal-stability + interpretable profile. **Holds no ARI/NMI.**
-- `run_realworld.py` — orchestrator chaining ingest → preprocess → features →
+- `realworld_validate.py` reports silhouette, CH, DB, seed and temporal
+  stability, and an interpretable profile. **Holds no ARI/NMI.**
+- `run_realworld.py` orchestrates the chain ingest → preprocess → features →
   PCA → K-Means → internal validation → report.
 
-**Audited result (CASE A — in-repo demo panel):** 24 meters, 12,096
+**Audited result (CASE A, the in-repo demo panel):** 24 meters, 12,096
 meter-hours, 51 features, PCA 5 components (95.5 %), selected K = 2. Silhouette
 **0.7194**, CH 123.2, DB 0.3966, seed-stability ARI **1.0000**, temporal
 stability **1.0000**; clusters `[morning-peak 50 %, evening-peak 50 %]`. No
@@ -175,17 +175,17 @@ ARI/NMI column anywhere in the report.
 
 ---
 
-### 7. UI/UX — the web explorer and Streamlit simulator
+### 7. UI/UX: the web explorer and Streamlit simulator
 
 Two faces, both reading genuine outputs:
 
-- **Vercel web app (`web/`)** — Vite 7 + React 19 + Chart.js, a 7-slide
+- **Vercel web app (`web/`)**: Vite 7 + React 19 + Chart.js, a 7-slide
   carousel: raw data, annotated raw data, behavioural features, K-Means, PCA,
   behavioural archetypes, and validation/robustness. The carousel numbers are
   the genuine 365-day flagship (K=4, 10 PCA components, 1,752,000 records,
   ARI 0.813) fed from `web/src/analysisData.js`; the 8-file contract under
   `web/public/data/` is the pipeline's canonical export and the mirror source.
-- **Streamlit simulator (`streamlit_app.py` + `dashboard_*.py`)** — the
+- **Streamlit simulator (`streamlit_app.py` + `dashboard_*.py`)**: the
   interactive alternative. It runs the real pipeline live from the sidebar
   controls (its `REFERENCE_HASH` labels the audited 30-day reference run), and
   surfaces dataset rows, cluster profiles, K selection, stability, validation,
@@ -211,38 +211,38 @@ metrics).
 
 ---
 
-### 9. Verification status — IMPLEMENTED / EXECUTED / VALIDATED / AVAILABLE
+### 9. Verification status: IMPLEMENTED / EXECUTED / VALIDATED / AVAILABLE
 
 Legend:
-- **IMPLEMENTED** — code present, consistent, imports clean.
-- **EXECUTED** — ran to completion (exit 0) with console + artifact evidence.
-- **VALIDATED** — executed **and** the produced numbers were audited against the
+- **IMPLEMENTED:** code present, consistent, imports clean.
+- **EXECUTED:** ran to completion (exit 0) with console + artifact evidence.
+- **VALIDATED:** executed **and** the produced numbers were audited against the
   authoritative `outputs/reports/analysis_summary.md` / metadata / metrics CSVs.
-- **AVAILABLE** — the step produced `available: false` with a reason (correct
+- **AVAILABLE:** the step produced `available: false` with a reason (correct
   empty state, not a failure).
-- **PENDING (user run)** — the shell-dependent step has not re-run in this
+- **PENDING (user run):** the shell-dependent step has not re-run in this
   repo this session; the exact command is given and the web contract already
   carries the audited flagship numbers.
 
 | Component | Status | Evidence |
 |---|---|---|
-| Compile gate (`verify_compile.py`) | **PENDING (user run)** | `py verify_compile.py` — compiles every root + `src/` file |
-| 30-day synthetic pipeline (config `6896387297178841`) | **PENDING (user run)** | `py run_module.py energy_analysis` — the audited 30-day reference; the simulator's `REFERENCE_HASH` |
+| Compile gate (`verify_compile.py`) | **PENDING (user run)** | `py verify_compile.py` compiles every root and `src/` file |
+| 30-day synthetic pipeline (config `6896387297178841`) | **PENDING (user run)** | `py run_module.py energy_analysis`, the audited 30-day reference; the simulator's `REFERENCE_HASH` |
 | 365-day synthetic flagship (config `99c7a6631340d301`) | **VALIDATED via contract** | The 8 JSON files under `web/public/data/` carry the genuine flagship outputs (51 features / 10 PCA comps (0.9505) / K=4 (silhouette 0.328, stability ARI 0.995, recovery ARI 0.813) / seasonal amplitude 0.202 & phase r 0.678 / temporal ARI 0.882). On-disk `outputs/` refreshed by `py run_module.py energy_analysis -- --n_days 365 --n_consumers 200` |
-| Real-world demo (CASE A) | **IMPLEMENTED** | `py run_module.py run_realworld -- --demo` — K=2, silhouette 0.719, CH 123.2, DB 0.3966, seed + temporal stability 1.0, zero ARI/NMI |
+| Real-world demo (CASE A) | **IMPLEMENTED** | `py run_module.py run_realworld -- --demo`: K=2, silhouette 0.719, CH 123.2, DB 0.3966, seed + temporal stability 1.0, zero ARI/NMI |
 | Real-world full adapter (CASE B) | **IMPLEMENTED, not run** | Requires a real multi-meter panel; `generic_csv` adapter documented; no fabricated numbers |
-| Ablation study (5 arms) | **IMPLEMENTED** | `py run_module.py run_ablation_study` — behavioral best on this draw, single-draw rule superseded by the seed study |
-| Seed robustness (20 datasets) | **IMPLEMENTED** | `py run_module.py run_seed_robustness` — behavioral mean ARI 0.616 (sd 0.116), Friedman p 4.1e-11 |
-| Seasonal (365-day) | **VALIDATED via contract** | `web/public/data/seasonal.json` `available: true` — amplitude 0.202, phase r 0.678, agreement 0.885 |
-| Longitudinal (365-day) | **VALIDATED via contract** | `web/public/data/longitudinal.json` `available: true` — segment ARI [0.838, 0.892, 0.946, 0.851], mean 0.882 |
-| Explainability (SHAP) | **VALIDATED via contract** | `web/public/data/explainability.json` `available: true, method: "shap"`, cv balanced accuracy 0.985, per-cluster drivers populated — post-hoc surrogate, never fed back into the pipeline |
+| Ablation study (5 arms) | **IMPLEMENTED** | `py run_module.py run_ablation_study`: behavioral best on this draw, single-draw rule superseded by the seed study |
+| Seed robustness (20 datasets) | **IMPLEMENTED** | `py run_module.py run_seed_robustness`: behavioral mean ARI 0.616 (sd 0.116), Friedman p 4.1e-11 |
+| Seasonal (365-day) | **VALIDATED via contract** | `web/public/data/seasonal.json` reports `available: true`, with amplitude 0.202, phase r 0.678 and agreement 0.885 |
+| Longitudinal (365-day) | **VALIDATED via contract** | `web/public/data/longitudinal.json` reports `available: true`, with segment ARI [0.838, 0.892, 0.946, 0.851] and mean 0.882 |
+| Explainability (SHAP) | **VALIDATED via contract** | `web/public/data/explainability.json` `available: true, method: "shap"`, cv balanced accuracy 0.985 and per-cluster drivers populated by a post-hoc surrogate that is never fed back into the pipeline |
 | Artifact contract export | **IMPLEMENTED** | `export_artifacts.py`; 8 JSON files under `web/public/data/`; CSV mirrors regenerated with the flagship run |
 | Streamlit app | **UPDATED** | `streamlit_app.py` + `dashboard_*.py`; `REFERENCE_HASH` updated; seasonal/longitudinal/performance pages wired in |
 | Vercel web app | **UPDATED** | `web/src/main.jsx` + `web/src/analysisData.js` carry the genuine flagship numbers; contract JSONs in `web/public/data/` |
 
 ---
 
-### 10. Exact commands (Windows `py` launcher — run from project root)
+### 10. Exact commands (Windows `py` launcher, run from project root)
 
 ```bash
 # install
@@ -289,12 +289,12 @@ py presentation/generate_dark_plots.py     # see README §16 / final report for 
 
 ---
 
-### 11. Reproducibility — tokens you can pin
+### 11. Reproducibility: tokens you can pin
 
 | Token | Value |
 |-------|-------|
-| **Config hash (flagship)** | `99c7a6631340d301` — 200 consumers × 365 days, quoted throughout this report |
-| **Config hash (30-day reference)** | `6896387297178841` — the audited 30-day reference used as the simulator's `REFERENCE_HASH` |
+| **Config hash (flagship)** | `99c7a6631340d301`, 200 consumers × 365 days, quoted throughout this report |
+| **Config hash (30-day reference)** | `6896387297178841`, the audited 30-day reference used as the simulator's `REFERENCE_HASH` |
 | **Random seed** | `42` |
 | **Flagship window** | `2024-01-01` → `2024-12-30`, 200 consumers, 1,752,000 records |
 | **Package versions** | pandas 3.0.0 · numpy 2.3.5 · scikit-learn 1.9.0 · scipy 1.18.0 · matplotlib 3.10.8 · seaborn 0.13.2 · plotly 6.5.2 · streamlit 1.62.0 · joblib 1.5.3 |
@@ -308,7 +308,7 @@ py presentation/generate_dark_plots.py     # see README §16 / final report for 
 - Internal indices under-counted the latent groups on the **30-day reference
   window** (silhouette peaks at K=6, recovery at K=4, rule chose K=3, ARI 0.585
   vs best-recovery 0.838). On the 365-day flagship the same rule lands cleanly
-  on K=4 (ARI 0.813). On real data such a gap is undetectable — a stated limit
+  on K=4 (ARI 0.813). On real data such a gap is undetectable, a stated limit
   of unsupervised clustering.
 - SHAP is optional at runtime; the flagship contract exports `method: "shap"`
   (cv balanced accuracy 0.985). If `shap` is not installed, a permutation

@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * GlowCursor — WebGL cursor trail using ogl.
- * Adapted from @react-bits/GlowCursor-JS-CSS for this project's theme.
- * Wraps hero or app main content for trail effect.
+ * GlowCursor: a soft radial glow trail that follows the pointer.
+ *
+ * The original WebGL implementation (ogl) never drew correctly because its
+ * fragment shader measured distances between a clip-space UV and a set of
+ * pixel-space point uniforms, so the trail either flooded the panel or never
+ * showed. This version keeps the exact same public API and props but renders
+ * with plain Canvas 2D: an elastic chain of points trails the cursor and each
+ * node draws a radial-gradient glow blob, composited additively for a bright,
+ * smooth tail. No WebGL, no ogl import.
+ *
+ * Honors prefers-reduced-motion (renders nothing when active) and falls back to
+ * just its children when a 2D canvas is unavailable.
  */
 export default function GlowCursor({
   children,
@@ -19,7 +28,7 @@ export default function GlowCursor({
   brightness = 1.25,
   opacity = 1,
   pulseSpeed = 1.1,
-  noiseStrength = 0.035,
+  noiseStrength = 0,
   idleFade = true,
   idleTimeout = 700,
   fadeDuration = 900,
@@ -29,10 +38,10 @@ export default function GlowCursor({
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const propsRef = useRef({});
-  const [webglSupported, setWebglSupported] = useState(true);
+  const [canvasSupported, setCanvasSupported] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
 
-  // Update props ref
+  // Keep the latest props reachable from inside the rAF closure.
   propsRef.current = {
     color,
     secondaryColor,
@@ -45,28 +54,25 @@ export default function GlowCursor({
     hotspot,
     brightness,
     opacity,
-    pulseSpeed,
-    noiseStrength,
     idleFade,
     idleTimeout,
     fadeDuration,
     blendMode,
   };
 
-  // Hex to RGB
   const hexToRgb = (hex) => {
-    const h = hex.replace("#", "");
-    const bigint = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+    const h = hex.replace("#", "").trim();
+    const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+    const bigint = parseInt(full, 16);
+    if (Number.isNaN(bigint)) return { r: 72, g: 215, b: 194 };
     return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
   };
 
   useEffect(() => {
-    // Check for WebGL support
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-    setWebglSupported(!!gl);
+    const probe = document.createElement("canvas");
+    const ctx = probe.getContext && probe.getContext("2d");
+    setCanvasSupported(!!ctx);
 
-    // Check reduced motion
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mediaQuery.matches);
     const handler = (e) => setReducedMotion(e.matches);
@@ -74,330 +80,188 @@ export default function GlowCursor({
     return () => mediaQuery.removeEventListener("change", handler);
   }, []);
 
-  // Skip rendering if no WebGL or reduced motion
-  if (!webglSupported || reducedMotion) {
+  // No usable canvas or reduced motion: still render the children, just without
+  // the trailing glow.
+  if (!canvasSupported || reducedMotion) {
     return <div ref={containerRef} className={className}>{children}</div>;
   }
 
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (!container || !canvas) return;
+    if (!container || !canvas) return undefined;
 
-    // Dynamic import ogl
-    import("ogl").then(({ Renderer, Program, Mesh, Geometry, Vec2, Vec3 }) => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const renderer = new Renderer({
-        canvas,
-        dpr,
-        alpha: true,
-        premultipliedAlpha: true,
-      });
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return undefined;
 
-      const gl = renderer.gl;
-      gl.enable(gl.BLEND);
+    let width = 0;
+    let height = 0;
+    let raf = 0;
+    let disposed = false;
 
-      const MAX_POINTS = 200;
-      const pointData = new Float32Array(MAX_POINTS * 2);
-      const points = [];
+    // Elastic chain: each node chases the one in front of it, the front node
+    // chases the raw pointer. Same direction as followSpeed but stable at any
+    // pointer event rate.
+    const nodes = [];
+    const head = { x: 0, y: 0 };
 
-      // Shaders
-      const VERTEX_SHADER = `
-        attribute vec2 position;
-        attribute vec2 point;
-        uniform vec2 uResolution;
-        varying vec2 vPoint;
-        varying vec2 vUv;
-        void main() {
-          vPoint = point;
-          vUv = position;
-          vec2 clipSpace = (position / uResolution) * 2.0 - 1.0;
-          gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-          gl_PointSize = 1.0;
-        }
-      `;
+    const resize = () => {
+      const rect = container.getBoundingClientRect();
+      width = Math.max(1, rect.width);
+      height = Math.max(1, rect.height);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
 
-      const FRAGMENT_SHADER = `
-        precision highp float;
-        uniform vec2 uResolution;
-        uniform vec2 uPoints[${MAX_POINTS}];
-        uniform int uPointCount;
-        uniform vec3 uColor;
-        uniform vec3 uSecondaryColor;
-        uniform float uTrailWidth;
-        uniform float uTaper;
-        uniform float uGlowIntensity;
-        uniform float uGlowSpread;
-        uniform float uHotspot;
-        uniform float uBrightness;
-        uniform float uOpacity;
-        uniform float uPulseSpeed;
-        uniform float uNoiseStrength;
-        uniform bool uNormalBlend;
-        uniform float uTime;
-        uniform float uFade;
-        varying vec2 vPoint;
-        varying vec2 vUv;
+    const ensureChain = () => {
+      const n = Math.max(1, Math.min(200, propsRef.current.trailLength));
+      while (nodes.length < n) {
+        nodes.push({ x: head.x, y: head.y });
+      }
+      nodes.length = n;
+    };
 
-        // Hash functions
-        float hash11(float p) { return fract(sin(p * 0.1031) * 1031.0); }
-        vec2 hash21(float p) { return fract(sin(vec2(p, p * 1.7) * 103.1) * 1031.0); }
+    resize();
+    ensureChain();
 
-        // Film grain
-        float filmGrain(vec2 uv, float time) {
-          vec2 n = uv * 200.0 + time * 0.1;
-          return fract(sin(dot(n, vec2(12.9898, 78.233))) * 43758.5453);
-        }
+    let pointerActive = false;
+    let lastPointerTime = 0;
 
-        // sRGB encoding
-        vec3 srgb(vec3 c) { return pow(c, vec3(1.0 / 2.2)); }
+    const onPointerEnter = (e) => {
+      pointerActive = true;
+      const rect = container.getBoundingClientRect();
+      head.x = e.clientX - rect.left;
+      head.y = e.clientY - rect.top;
+      ensureChain();
+      nodes.forEach((node) => { node.x = head.x; node.y = head.y; });
+      lastPointerTime = performance.now();
+    };
 
-        void main() {
-          float fade = uFade;
-          if (fade <= 0.0) discard;
+    const onPointerMove = (e) => {
+      if (!pointerActive) pointerActive = true;
+      const rect = container.getBoundingClientRect();
+      head.x = e.clientX - rect.left;
+      head.y = e.clientY - rect.top;
+      lastPointerTime = performance.now();
+    };
 
-          vec2 center = vPoint;
-          float maxDist = 0.0;
-          vec3 color = vec3(0.0);
+    const onPointerLeave = () => {
+      pointerActive = false;
+    };
 
-          for (int i = 0; i < ${MAX_POINTS}; i++) {
-            if (i >= uPointCount) break;
-            vec2 p = uPoints[i];
-            float dist = distance(vUv, p);
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-            // Trail taper
-            float t = float(i) / float(uPointCount - 1);
-            float width = uTrailWidth * mix(1.0, uTaper, t);
+    const draw = (time) => {
+      if (disposed) return;
+      const props = propsRef.current;
 
-            // Glow falloff
-            float glow = smoothstep(width, 0.0, dist);
-            glow = pow(glow, uGlowSpread);
-
-            // Color interpolation
-            vec3 c = mix(uColor, uSecondaryColor, t);
-
-            // Hotspot at cursor
-            if (i == uPointCount - 1) {
-              glow *= uHotspot;
-            }
-
-            color += c * glow;
-            maxDist = max(maxDist, glow);
-          }
-
-          // Pulse
-          float pulse = 1.0 + sin(uTime * uPulseSpeed) * 0.15;
-
-          // Noise
-          float noise = filmGrain(vUv, uTime) * uNoiseStrength;
-
-          color *= uBrightness * pulse * (1.0 + noise);
-          color *= fade * uOpacity;
-
-          // Gamma correct
-          color = srgb(color);
-
-          if (uNormalBlend) {
-            gl_FragColor = vec4(color, fade * uOpacity);
-          } else {
-            // Additive/screen blend
-            gl_FragColor = vec4(color, 1.0);
-          }
-        }
-      `;
-
-      const program = new Program(gl, {
-        vertex: VERTEX_SHADER,
-        fragment: FRAGMENT_SHADER,
-        uniforms: {
-          uResolution: { value: new Vec2() },
-          uPoints: { value: pointData },
-          uPointCount: { value: 0 },
-          uColor: { value: new Vec3(...Object.values(hexToRgb(propsRef.current.color))) },
-          uSecondaryColor: { value: new Vec3(...Object.values(hexToRgb(propsRef.current.secondaryColor))) },
-          uTrailWidth: { value: propsRef.current.trailWidth },
-          uTaper: { value: propsRef.current.trailTaper },
-          uGlowIntensity: { value: propsRef.current.glowIntensity },
-          uGlowSpread: { value: propsRef.current.glowSpread },
-          uHotspot: { value: propsRef.current.hotspot },
-          uBrightness: { value: propsRef.current.brightness },
-          uOpacity: { value: propsRef.current.opacity },
-          uPulseSpeed: { value: propsRef.current.pulseSpeed },
-          uNoiseStrength: { value: propsRef.current.noiseStrength },
-          uNormalBlend: { value: propsRef.current.blendMode === "normal" },
-          uTime: { value: 0 },
-          uFade: { value: 1 },
-        },
-        transparent: true,
-        depthTest: false,
-      });
-
-      // Fullscreen triangle
-      const geometry = new Geometry(gl, {
-        position: { size: 2, data: new Float32Array([-1, -1, 3, -1, -1, 3]) },
-        point: { size: 2, data: new Float32Array([0, 0, 1, 0, 0, 1]) },
-      });
-      const mesh = new Mesh(gl, { geometry, program });
-
-      let width = 0;
-      let height = 0;
-      let initialized = false;
-      let pointerInside = false;
-      let fade = 1;
-      let lastPointerTime = performance.now();
-
-      const resize = () => {
-        const container = containerRef.current;
-        if (!container) return;
-        const rect = container.getBoundingClientRect();
-        width = rect.width;
-        height = rect.height;
-        renderer.setSize(width, height);
-        program.uniforms.uResolution.value.set(width, height);
-      };
-
-      const initializeTrail = () => {
-        if (initialized) return;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        for (let i = 0; i < MAX_POINTS; i++) {
-          points[i] = { x: centerX, y: centerY };
-        }
-        initialized = true;
-      };
-
-      const updatePointer = (x, y) => {
-        if (!initialized) initializeTrail();
-        pointerInside = true;
-        lastPointerTime = performance.now();
-
-        // Shift points
-        for (let i = 0; i < MAX_POINTS - 1; i++) {
-          points[i].x = points[i + 1].x;
-          points[i].y = points[i + 1].y;
-        }
-        points[MAX_POINTS - 1] = { x, y };
-      };
-
-      const onPointerMove = (e) => {
-        const container = containerRef.current;
-        if (!container) return;
-        const rect = container.getBoundingClientRect();
-        const x = clamp(e.clientX - rect.left, 0, width);
-        const y = clamp(height - (e.clientY - rect.top), 0, height);
-        updatePointer(x, y);
-      };
-
-      const onPointerEnter = () => {
-        pointerInside = true;
-      };
-
-      const onPointerLeave = () => {
-        pointerInside = false;
-      };
-
-      const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-
-      let lastTime = performance.now();
-      const render = (time) => {
-        const dt = (time - lastTime) / 1000;
-        lastTime = time;
-
-        const props = propsRef.current;
-
-        // Update uniforms
-        program.uniforms.uTime.value = time / 1000;
-        program.uniforms.uTrailWidth.value = props.trailWidth;
-        program.uniforms.uTaper.value = props.trailTaper;
-        program.uniforms.uGlowIntensity.value = props.glowIntensity;
-        program.uniforms.uGlowSpread.value = props.glowSpread;
-        program.uniforms.uHotspot.value = props.hotspot;
-        program.uniforms.uBrightness.value = props.brightness;
-        program.uniforms.uOpacity.value = props.opacity;
-        program.uniforms.uPulseSpeed.value = props.pulseSpeed;
-        program.uniforms.uNoiseStrength.value = props.noiseStrength;
-        program.uniforms.uNormalBlend.value = props.blendMode === "normal";
-
-        // Idle fade
-        if (props.idleFade) {
-          const idleTime = time - lastPointerTime;
-          if (idleTime > props.idleTimeout) {
-            const fadeProgress = (idleTime - props.idleTimeout) / props.fadeDuration;
-            fade = Math.max(0, 1 - clamp(fadeProgress, 0, 1));
-          } else {
-            fade = 1;
-          }
-        }
-        program.uniforms.uFade.value = fade;
-
-        // Update point data
-        const pointCount = Math.min(props.trailLength, MAX_POINTS);
-        program.uniforms.uPointCount.value = pointCount;
-        for (let i = 0; i < pointCount; i++) {
-          const idx = i * 2;
-          pointData[idx] = points[i].x;
-          pointData[idx + 1] = points[i].y;
-        }
-
-        // Easing for trail head
-        if (pointCount > 1) {
-          const headEase = 0.2;
-          const chainEase = 0.12;
-          // Could add more sophisticated easing here
-        }
-
-        renderer.render({ scene: mesh });
-        requestAnimationFrame(render);
-      };
-
-      const cleanup = () => {
-        renderer.dispose();
-        program.remove();
-        geometry.remove();
-        mesh.remove();
-      };
-
-      // Setup
-      resize();
-      initializeTrail();
-      requestAnimationFrame(render);
-
-      const container = containerRef.current;
-      if (container) {
-        container.addEventListener("pointermove", onPointerMove);
-        container.addEventListener("pointerenter", onPointerEnter);
-        container.addEventListener("pointerleave", onPointerLeave);
+      // Advance the chain toward the pointer.
+      const ease = clamp(props.followSpeed, 0.02, 0.9);
+      if (pointerActive) {
+        nodes[0].x += (head.x - nodes[0].x) * ease;
+        nodes[0].y += (head.y - nodes[0].y) * ease;
+      }
+      for (let i = 1; i < nodes.length; i++) {
+        nodes[i].x += (nodes[i - 1].x - nodes[i].x) * ease;
+        nodes[i].y += (nodes[i - 1].y - nodes[i].y) * ease;
       }
 
-      const ro = new ResizeObserver(resize);
-      ro.observe(container);
-
-      return () => {
-        cleanup();
-        if (container) {
-          container.removeEventListener("pointermove", onPointerMove);
-          container.removeEventListener("pointerenter", onPointerEnter);
-          container.removeEventListener("pointerleave", onPointerLeave);
+      // Idle fade: after idleTimeout of no movement, fade to invisible over
+      // fadeDuration.
+      let globalFade = 1;
+      if (props.idleFade) {
+        const idle = time - lastPointerTime;
+        if (idle > props.idleTimeout) {
+          const progress = (idle - props.idleTimeout) / Math.max(1, props.fadeDuration);
+          globalFade = clamp(1 - progress, 0, 1);
         }
-        ro.disconnect();
-      };
-    }).catch(() => {
-      // ogl not available, skip
-    });
-  }, [webglSupported, reducedMotion]);
+      }
+      if (globalFade <= 0.004) {
+        ctx.clearRect(0, 0, width, height);
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.globalCompositeOperation = props.blendMode === "normal" ? "source-over" : "lighter";
+
+      const c1 = hexToRgb(props.color);
+      const c2 = hexToRgb(props.secondaryColor);
+      const n = nodes.length;
+      const headIdx = n - 1;
+      const pulse = 1 + Math.sin(time / 1000 * props.pulseSpeed) * 0.15;
+
+      // Nodes are in chase order (0 = closest to pointer). Index the tail by
+      // headIdx - i so the newest node is the brightest and the tail fades.
+      for (let i = 0; i < n; i++) {
+        const backFromHead = i; // 0 at cursor -> head, n-1 at tail
+        const node = nodes[headIdx - backFromHead];
+        // Taper: 1 at the cursor, trailTaper at the far end.
+        const scale = 1 - i / Math.max(1, n - 1); // 1 -> 0 toward tail
+        const taper = props.trailTaper + (1 - props.trailTaper) * scale;
+        const radius = Math.max(1.5, props.trailWidth * taper);
+
+        // Falloff: strong near the cursor (glowSpread exponent), boosted by the
+        // hotspot at the very head.
+        let amp = Math.pow(scale, props.glowSpread);
+        if (i === 0) amp = clamp(amp * props.hotspot, 0, 1);
+
+        const baseAlpha = amp * globalFade * props.opacity;
+        if (baseAlpha <= 0.004) continue;
+
+        // Interpolate color from secondary at the tail to primary at the head.
+        const r = Math.round(c2.r + (c1.r - c2.r) * scale);
+        const g = Math.round(c2.g + (c1.g - c2.g) * scale);
+        const b = Math.round(c2.b + (c1.b - c2.b) * scale);
+
+        // Small film-grain jitter keyed to time so the tail stays lively.
+        const jitter = props.noiseStrength ? (Math.sin(time + i * 13.7) * props.noiseStrength * radius) : 0;
+        const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius * 2 + Math.abs(jitter));
+        grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${clamp(baseAlpha * props.glowIntensity * pulse * props.brightness, 0, 1)})`);
+        grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius * 2 + Math.abs(jitter), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalCompositeOperation = "source-over";
+      raf = requestAnimationFrame(draw);
+    };
+
+    container.addEventListener("pointerenter", onPointerEnter);
+    container.addEventListener("pointermove", onPointerMove);
+    container.addEventListener("pointerleave", onPointerLeave);
+    const ro = new ResizeObserver(resize);
+    ro.observe(container);
+    window.addEventListener("resize", resize);
+
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(raf);
+      container.removeEventListener("pointerenter", onPointerEnter);
+      container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener("pointerleave", onPointerLeave);
+      ro.disconnect();
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
 
   return (
     <div
       ref={containerRef}
       className={`glow-cursor ${className}`}
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-      }}
+      style={{ position: "relative", width: "100%", height: "100%" }}
     >
       <canvas
         ref={canvasRef}
+        aria-hidden="true"
         style={{
           position: "absolute",
           inset: 0,

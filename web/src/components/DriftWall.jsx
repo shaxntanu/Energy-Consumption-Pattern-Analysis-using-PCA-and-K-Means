@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 
 /**
- * DriftWall — 3D perspective drifting wall gallery for matplotlib images.
+ * DriftWall: 3D perspective drifting wall gallery for matplotlib images.
  * Adapted from @react-bits/DriftWall-JS-CSS for this project's theme.
  * Items should be images from /public/results/ (matplotlib outputs).
  */
@@ -44,23 +44,28 @@ export default function DriftWall({
   const pointerDampedRef = useRef({ x: 0, y: 0 });
   const lastTsRef = useRef(0);
 
-  // Default items - matplotlib output images from /public/results/
+  // Default items: matplotlib output images from /public/results/
   const DEFAULT_ITEMS = useMemo(() => [
-    { id: "load-shapes", image: "/results/load_shapes.png", title: "Average Load Shapes", href: "#charts" },
-    { id: "pca-variance", image: "/results/pca_variance.png", title: "PCA Explained Variance", href: "#charts" },
-    { id: "k-selection", image: "/results/k_selection.png", title: "K-Selection Metrics", href: "#charts" },
-    { id: "cluster-radar", image: "/results/cluster_radar.png", title: "Cluster Profiles Radar", href: "#charts" },
-    { id: "cluster-0", image: "/results/cluster_0_profile.png", title: "Cluster 0: Night Owls", href: "#charts" },
-    { id: "cluster-1", image: "/results/cluster_1_profile.png", title: "Cluster 1: Early Birds", href: "#charts" },
-    { id: "cluster-2", image: "/results/cluster_2_profile.png", title: "Cluster 2: Day Workers", href: "#charts" },
-    { id: "cluster-3", image: "/results/cluster_3_profile.png", title: "Cluster 3: Evening Peak", href: "#charts" },
-    { id: "seasonal", image: "/results/seasonal_stability.png", title: "Seasonal Stability", href: "#charts" },
-    { id: "longitudinal", image: "/results/longitudinal_ari.png", title: "Longitudinal ARI", href: "#charts" },
-    { id: "validation", image: "/results/validation_sweep.png", title: "Validation Sweep", href: "#charts" },
-    { id: "explainability", image: "/results/explainability.png", title: "Feature Importance", href: "#charts" },
-    { id: "real-world", image: "/results/real_world.png", title: "Real-World Demo", href: "#charts" },
-    { id: "benchmark", image: "/results/benchmark.png", title: "C++ Benchmark", href: "#performance" },
-    { id: "pipeline", image: "/results/pipeline.png", title: "Pipeline Flow", href: "#about" },
+    { id: "hourly", image: "/results/dark/hourly_patterns.png", title: "Hourly Patterns", href: "#charts" },
+    { id: "pca-variance", image: "/results/dark/explained_variance.png", title: "PCA Explained Variance", href: "#charts" },
+    { id: "k-selection", image: "/results/dark/k_selection_metrics.png", title: "K-Selection Metrics", href: "#charts" },
+    { id: "silhouette", image: "/results/dark/silhouette_scores.png", title: "Silhouette Scores", href: "#charts" },
+    { id: "elbow", image: "/results/dark/elbow_curve.png", title: "Elbow Curve", href: "#charts" },
+    { id: "loadings", image: "/results/dark/component_loadings.png", title: "PCA Component Loadings", href: "#charts" },
+    { id: "correlation", image: "/results/dark/correlation_heatmap.png", title: "Correlation Heatmap", href: "#charts" },
+    { id: "distributions", image: "/results/dark/distributions.png", title: "Feature Distributions", href: "#charts" },
+    { id: "boxplots", image: "/results/dark/boxplots_by_time.png", title: "Boxplots by Time", href: "#charts" },
+    { id: "weekday", image: "/results/dark/weekday_weekend_comparison.png", title: "Weekday vs Weekend", href: "#charts" },
+    { id: "variability", image: "/results/dark/consumption_variability.png", title: "Consumption Variability", href: "#charts" },
+    { id: "recovery", image: "/results/dark/archetype_recovery.png", title: "Archetype Recovery", href: "#charts" },
+    { id: "crosstab", image: "/results/dark/archetype_crosstab.png", title: "Archetype Crosstab", href: "#charts" },
+    { id: "robustness", image: "/results/dark/seed_robustness.png", title: "Seed Robustness", href: "#charts" },
+    { id: "ablation", image: "/results/dark/ablation_comparison.png", title: "Ablation Comparison", href: "#charts" },
+    { id: "importance", image: "/results/dark/shap_cluster_importance.png", title: "Cluster Feature Importance", href: "#highlights" },
+    { id: "longitudinal", image: "/results/dark/longitudinal_cluster_stability.png", title: "Longitudinal Stability", href: "#highlights" },
+    { id: "seasonal-shape", image: "/results/dark/seasonal_mean_shape_by_season.png", title: "Seasonal Load Shapes", href: "#highlights" },
+    { id: "seasonal-energy", image: "/results/dark/seasonal_daily_energy_and_peak_hour.png", title: "Seasonal Energy and Peak Hour", href: "#highlights" },
+    { id: "seasonal-phase", image: "/results/dark/seasonal_phase_recovery.png", title: "Seasonal Phase Recovery", href: "#highlights" },
   ], []);
 
   const displayItems = items.length > 0 ? items : DEFAULT_ITEMS;

@@ -46,7 +46,7 @@ flowchart LR
 
 ## The three provenance seams
 
-- **Zephyr Station (weather).** The `season` column is not hand-typed metadata —
+- **Zephyr Station (weather).** The `season` column is not hand-typed metadata -
   it comes from a real weather station the author built and logged (firmware +
   `/api/weather` at `github.com/shaxntanu/Zephyr-Station`, logger + dashboard at
   `github.com/shaxntanu/Zephyr-Station-Dashboard`). The pipeline joins the panel
@@ -63,8 +63,8 @@ flowchart LR
 
 `explainability.py` runs immediately after K-Means and before profiling. A small
 surrogate random forest learns the recovered cluster labels from the 51
-behavioral features; attribution then runs on that surrogate — SHAP
-`TreeExplainer` when `shap` is installed, permutation (one-vs-rest) otherwise.
+behavioral features, and attribution then runs on that surrogate, using SHAP
+`TreeExplainer` when `shap` is installed and permutation (one-vs-rest) otherwise.
 The artifact records which method actually ran (`method: "shap" |
 "permutation_fallback"`), and `cv_balanced_accuracy` is an honest ceiling, not a
 claim about the clusters themselves.
@@ -73,16 +73,16 @@ claim about the clusters themselves.
 
 - **Synthetic branch (controlled validation).** The generator writes the true
   archetype for each consumer. After clustering, we can measure recovery with
-  NMI/ARI *against that hidden ground truth* — a legitimate check that only a
+  NMI/ARI *against that hidden ground truth*, a legitimate check that only a
   dataset with known labels can provide. The labels are never used to fit the
   model.
 - **Real-world branch (external validation).** A real consumption dataset has no
   ground-truth archetype. Grading it with NMI/ARI against invented groups would
   report a score the data could not have produced. Instead the real branch speaks
-  in **internal** quality (silhouette / Calinski–Harabasz / Davies–Bouldin) and
+  in **internal** quality (silhouette / Calinski-Harabasz / Davies-Bouldin) and
   **stability** (K-Means restart agreement, and temporal stability across time
-  windows) — does the recovered segmentation persist and describe real load
-  shapes? Synthetic and real results are therefore reported separately and never
+  windows), asking whether the recovered segmentation persists and describes
+  real load shapes? Synthetic and real results are therefore reported separately and never
   mixed.
 
 ## Plain-text fallback (no rendering tool needed)

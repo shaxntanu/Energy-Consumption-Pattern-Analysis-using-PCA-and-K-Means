@@ -1,6 +1,6 @@
 # Final Deliverables Package
 
-Engagement complete. All phases 0–11 executed. No pending human gates.
+Engagement complete. All phases 0 to 11 executed. No pending human gates.
 
 ## How to run
 
@@ -36,7 +36,7 @@ py -m streamlit run app/app.py
 | Features | 33 behavioral (24h shape + timing + variability) |
 | PCA | 25 components (≥95% cum. var.) |
 | Selected K | **2** |
-| Silhouette @ K=2 | **0.1055** (weak — honest) |
+| Silhouette @ K=2 | **0.1055** (weak but honest) |
 | CH / DB @ K=2 | 16.60 / 3.29 |
 | Stability ARI | **0.791 ± 0.111** (10 seeds) |
 | Cluster sizes | 135 / 65 |
@@ -58,7 +58,7 @@ Scale wins raw metrics; **behavioral** is the project answer.
 | | Baseline | Corrected |
 |-|----------|-----------|
 | weekend_ratio | ~0.267 all clusters | differs (energy ratio) |
-| Selected K | 3 (forced 3–6) | 2 (metrics) |
+| Selected K | 3 (forced 3 to 6) | 2 (metrics) |
 | Cluster meaning | low/mid/high kWh | timing / weekend / variability |
 | Silhouette | 0.31 @ K=3 | 0.11 @ K=2 behavioral |
 
@@ -82,4 +82,4 @@ Scale wins raw metrics; **behavioral** is the project answer.
 
 ## Scientific honesty
 
-Behavioral clustering separation is **weak**. That is expected after removing the magnitude crutch. Do not inflate K or cherry-pick scale results as the main claim. Recommendations are correlational suggestions only — no causal savings.
+Behavioral clustering separation is **weak**. That is expected after removing the magnitude crutch. Do not inflate K or cherry-pick scale results as the main claim. Recommendations are correlational suggestions only, and imply no causal savings.

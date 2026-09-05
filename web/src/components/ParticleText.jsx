@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 /**
- * ParticleText — React Bits particle title (TypeScript variant, ported to JSX).
+ * ParticleText: React Bits particle title (TypeScript variant, ported to JSX).
  *
  * The component samples the rendered text on an offscreen canvas and spawns one
  * particle per lit pixel, then scatters and re-gathers them into the glyph with

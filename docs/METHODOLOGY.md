@@ -10,7 +10,7 @@ Segment electricity consumers by **behavioral usage patterns** (timing, weekend 
 |-------|-------|
 | Source | **Synthetic** (archetype-based generator in `src/data_loader.py`) |
 | Archetypes | daytime-heavy, evening-heavy, flat/industrial-like, weekend-heavy |
-| Hidden label | `archetype` — validation only; never a K-Means feature |
+| Hidden label | `archetype`, validation only; never a K-Means feature |
 | Typical run | 200 consumers × 30 days × hourly |
 
 Generation pipeline per consumer: latent archetype → 24h template → amplitude → peak-timing/shape perturbation → weekday/weekend modifier → noise/spikes → optional weather from **timestamp** (shared across consumers at the same clock time).
@@ -60,13 +60,13 @@ so consumers with different totals can share a cluster if timing matches.
 3. Fit full PCA; retain components until cumulative explained variance ≥ **95%** (documented threshold).
 4. Persist scaler, PCA, `feature_names.txt`, metrics CSV, and `analysis_metadata.json`.
 
-Loadings are interpreted descriptively only — signs are not causal.
+Loadings are interpreted descriptively only; signs are not causal.
 
 ## K-Means
 
 - Evaluate **K = 2…10**.
 - Metrics per K: inertia, silhouette, Calinski-Harabasz, Davies-Bouldin.
-- Selection: multi-metric top-3 vote consensus — **no hard-coded prefer 3–6**.
+- Selection: multi-metric top-3 vote consensus, with **no hard-coded 3 to 6 preference**.
 - Stability: multi-seed Adjusted Rand Index when enabled.
 - Persist the exact fitted `KMeans` used for all downstream numbers.
 - K→metric display uses **dictionary lookup** (`silhouette_by_k[k]`), never `scores[k-2]`.

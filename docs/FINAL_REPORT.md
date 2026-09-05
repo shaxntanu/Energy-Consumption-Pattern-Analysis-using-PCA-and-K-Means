@@ -1,4 +1,4 @@
-# Final Report — Energy Consumption Pattern Analysis (PCA + K-Means)
+# Final Report on Energy Consumption Pattern Analysis (PCA + K-Means)
 
 ## 1. Problem statement
 
@@ -7,8 +7,8 @@ Unsupervised discovery of consumer groups that differ in **energy-usage patterns
 ## 2. Dataset
 
 - **Type:** Synthetic (archetype-based). Labeled in README, metadata, and dashboard.
-- **Generator:** `src/data_loader.py` — daytime, evening, flat, weekend-heavy with continuous within-archetype variation.
-- **Hidden ground truth:** `archetype` — validation only; **never** a K-Means feature.
+- **Generator:** `src/data_loader.py` draws daytime, evening, flat and weekend-heavy shapes with continuous within-archetype variation.
+- **Hidden ground truth:** `archetype`, validation only; **never** a K-Means feature.
 - **Run config:** 200 consumers × 30 days × hourly (144,000 rows).
 - **Validation:** `outputs/reports/dataset_validation_report.md` + archetype figures.
 
@@ -51,7 +51,7 @@ Sort `(consumer_id, timestamp)` → within-consumer fill → configurable invali
 | 9 | 4814.96 | 0.0376 | 7.78 | 2.822 |
 | 10 | 4760.85 | 0.0353 | 7.20 | 2.805 |
 
-**Selected K = 2** (multi-metric consensus; no hard-coded 3–6 preference).  
+**Selected K = 2** (multi-metric consensus; no hard-coded 3 to 6 preference).  
 **Stability:** mean ARI **0.791 ± 0.111** (10 seeds).
 
 ## 7. Final clusters (original feature space)
@@ -79,11 +79,11 @@ Evidence-triggered only (`outputs/reports/recommendations_report.md`). Example t
 
 ## 10. Limitations
 
-1. Synthetic data — external validity limited.  
-2. Behavioral silhouette **weak (~0.11)** — reported honestly.  
+1. Synthetic data limits external validity.  
+2. Behavioral silhouette **weak (~0.11)**, reported honestly.  
 3. Clustering ≠ causation.  
 4. Results depend on feature definitions and 95% PCA threshold.  
-5. Single synthetic window — no seasonal claim.  
+5. Single synthetic window, so no seasonal claim is made.  
 6. Dashboard and offline pipeline share one analysis object (config-hash invalidation).
 
 ## 11. Reproducibility

@@ -1,4 +1,4 @@
-"""Preprocessing tests — no cross-consumer leakage under shuffled row order."""
+"""Preprocessing tests: no cross-consumer leakage under shuffled row order."""
 import numpy as np
 import pandas as pd
 

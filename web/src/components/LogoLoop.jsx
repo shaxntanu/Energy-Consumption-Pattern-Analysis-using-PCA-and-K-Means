@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, memo } from "react";
 
 /**
- * LogoLoop — Infinite logo scroller with fade-out edges.
+ * LogoLoop: infinite logo scroller with fade-out edges.
  * Adapted from @react-bits/LogoLoop-JS-CSS for this project's theme.
  * Uses react-icons for tech logos.
  */

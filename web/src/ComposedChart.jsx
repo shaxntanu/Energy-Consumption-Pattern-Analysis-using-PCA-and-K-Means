@@ -4,7 +4,7 @@ import React from "react";
 // (ComposedChart, SeriesBar, Line, Grid, XAxis, YAxis, ChartTooltip), following
 // the same approach as `Legend.jsx`: the `@bklitui/ui/charts` package is not
 // installed in this project, so this is a faithful local equivalent with the
-// same composable API and call shape. It renders a real SVG composed chart —
+// same composable API and call shape. It renders a real SVG composed chart -
 // it is NOT a Chart.js wrapper.
 
 // ---------------------------------------------------------------------------
@@ -54,12 +54,12 @@ function formatTick(value) {
 }
 
 // ---------------------------------------------------------------------------
-// Local Catmull–Rom curve builder
+// Local Catmull-Rom curve builder
 //
 // Equivalent to `curveCatmullRom.alpha(0.42)` from `@visx/curve`, which is not
 // installed in this project. Call shape is identical, so swapping in the real
 // @visx/curve later is a drop-in replacement. `alpha` is the tangent scale on
-// the classic Catmull–Rom-to-cubic-Bezier conversion; endpoints are clamped
+// the classic Catmull-Rom-to-cubic-Bezier conversion; endpoints are clamped
 // rather than overshooting. Produces a restrained smooth line through every
 // point without flattening the K-wise trend.
 // ---------------------------------------------------------------------------
@@ -179,7 +179,7 @@ function ComposedChart({
   barGap = 0,
   maxBarSize = 32,
   selectedIndex = null,
-  seriesDim = null, // "first" | "second" — legend-driven series emphasis
+  seriesDim = null, // "first" | "second", legend-driven series emphasis
   ariaLabel = "Chart",
   children,
 }) {
@@ -261,7 +261,7 @@ function ComposedChart({
   const rightYAxis =
     yAxisChildren.find((y) => y.props.yAxisId === "right") || null;
   // A from-zero scale is the default when a left axis holds bars (their natural
-  // baseline), but an explicit domain ("domain" prop on the YAxis) wins — used
+  // baseline), but an explicit domain ("domain" prop on the YAxis) wins and is used
   // for a single shared percentage axis such as PCA variance (0% → 100%).
   const leftAxis = buildAxis(
     leftSeries,
@@ -658,7 +658,7 @@ function ComposedChart({
 
         {/* x axis labels. Horizontal labels thin the crowded middles; a
             tickRotation (e.g. -90 for vertical) gives every label a tiny
-            horizontal footprint, so instead each tick is labelled — no clash. */}
+            horizontal footprint, so instead each tick is labelled without any clash. */}
         <g>
           {(() => {
             const rotation =

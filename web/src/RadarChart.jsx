@@ -13,11 +13,11 @@ import React from "react";
 //     {data.map((item, index) => <RadarArea key={item.label} index={index} />)}
 //   </RadarChart>
 //
-// It renders a real SVG radar chart — it is NOT a Chart.js wrapper.
+// It renders a real SVG radar chart; it is NOT a Chart.js wrapper.
 //
 // `data` is an array of profiles: { label, color, values: { <metricKey>: 0..100 } }.
 // `metrics` is an ordered array of { key, label } describing the radial axes.
-// Values are expected on a 0-100 scale (BKLIT RadarArea contract); the caller
+// Values are expected on a 0 to 100 scale (BKLIT RadarArea contract); the caller
 // normalizes at the visualization boundary and leaves the stored analysis data
 // untouched.
 
@@ -279,7 +279,7 @@ function RadarChart({
                     strokeLinecap="round"
                     pointerEvents="all"
                   >
-                    <title>{`${item.label} — ${valueTitle}`}</title>
+                    <title>{`${item.label}: ${valueTitle}`}</title>
                   </path>
                   {pts.map((p, i) => (
                     <circle

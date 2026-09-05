@@ -1,4 +1,4 @@
-"""PCA pipeline tests — feature order, saved artifacts, transform shape."""
+"""PCA pipeline tests: feature order, saved artifacts, transform shape."""
 from pathlib import Path
 
 import joblib

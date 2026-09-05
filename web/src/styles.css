@@ -330,10 +330,10 @@ p {
 }
 
 .chart-panel.tall {
-  /* Taller variant - height controlled by chart-container */
+  /* Taller variant, height controlled by chart-container */
 }
 
-/* Dedicated chart container - CRITICAL for dimensional stability */
+/* Dedicated chart container, CRITICAL for dimensional stability */
 .chart-container {
   position: relative;
   width: 100%;
@@ -605,7 +605,7 @@ p {
 
 /* Banner: the title+subtitle text inside .carousel-meta. Keyed by caption
    identity, it remounts on each idle→rep (or rep→idle) swap and runs the
-   small rise animation below — no layout shift, no abrupt pop. */
+   small rise animation below, with no layout shift and no abrupt pop. */
 .carousel-caption {
   animation: caption-in 0.34s ease both;
 }
@@ -629,8 +629,8 @@ p {
 }
 
 /* Smooth slide switches: the stage box is fixed-size, so on each slide key
-   change the incoming slide fades and settles with pure opacity/transform —
-   no layout shift, and the canvas remount no longer reads as a hard swap. */
+   change the incoming slide fades and settles with pure opacity/transform,
+   with no layout shift, so the canvas remount no longer reads as a hard swap. */
 .carousel-stage .chart-container,
 .carousel-meta {
   animation: carousel-enter 0.4s ease both;
@@ -1592,12 +1592,4 @@ p {
   .k-tooltip {
     transition: none;
   }
-}
-
-
-/* MorphSlider mounted as a carousel slide. The component hardcodes an inline
-   500px height, so force it down to the slide stage size here — !important
-   beats the inline style. */
-.morph-in-carousel {
-  height: 320px !important;
 }
