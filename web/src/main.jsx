@@ -25,7 +25,6 @@ import {
   curveCatmullRom,
 } from "./ComposedChart";
 import { RadarChart, RadarGrid, RadarAxis, RadarLabels, RadarArea } from "./RadarChart";
-import VantaNetBackground from "./VantaNetBackground";
 import GlowCursor from "./components/GlowCursor";
 import LogoLoop from "./components/LogoLoop";
 import DriftWall from "./components/DriftWall";
@@ -1528,6 +1527,7 @@ const loadShapeSlides = [
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
   const [repActive, setRepActive] = React.useState(false);
+  const [playKey, setPlayKey] = React.useState(0);
   const count = loadShapeSlides.length;
   // Linear navigation: clamp instead of wrapping, so the prev arrow is disabled
   // on the first slide and the next arrow is disabled on the last. A fresh
@@ -1536,6 +1536,13 @@ function LoadShapeCarousel({ tall = false }) {
   const goTo = (index) => {
     setSlide(Math.max(0, Math.min(count - 1, index)));
     setRepActive(false);
+  };
+  // Restart this slide's reveal animation: bumping playKey remounts the slide
+  // component (same slide, fresh timers), which also replays the enter fade
+  // and returns the caption to its idle state.
+  const restartAnimation = () => {
+    setRepActive(false);
+    setPlayKey((key) => key + 1);
   };
 
   const { component: Slide, captions } = loadShapeSlides[slide];
@@ -1577,7 +1584,7 @@ function LoadShapeCarousel({ tall = false }) {
           </svg>
         </button>
         <div className="carousel-stage">
-          <div key={slide} className={`chart-container${tall ? " tall" : ""}`}>
+          <div key={`${slide}-${playKey}`} className={`chart-container${tall ? " tall" : ""}`}>
             <Slide onRepActive={setRepActive} />
           </div>
           <div className="carousel-dots">
@@ -1591,6 +1598,18 @@ function LoadShapeCarousel({ tall = false }) {
                 onClick={() => goTo(index)}
               />
             ))}
+            <button
+              className="carousel-replay"
+              type="button"
+              aria-label="Restart this slide's animation"
+              title="Restart animation"
+              onClick={restartAnimation}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M17.65 6.35A8 8 0 1 0 19.73 14" />
+                <path d="M21 3v6h-6" />
+              </svg>
+            </button>
           </div>
         </div>
         <button
@@ -2730,8 +2749,6 @@ function SectionHeader({ eyebrow, title, children }) {
 function App() {
   return (
     <div>
-      {/* Full-page particle-net backdrop at 25% opacity, behind every section. */}
-      <VantaNetBackground />
       <nav className="site-nav" aria-label="Main navigation">
         <a className="brand" href="#top">Load Shape Lab</a>
         <div className="nav-links">
@@ -2746,25 +2763,7 @@ function App() {
       <header className="hero" id="top">
         <div className="hero-copy">
           <span className="eyebrow">PCA plus K-Means energy clustering</span>
-          <GlowCursor
-            color="#48d7c2"
-            secondaryColor="#b78cff"
-            trailLength={40}
-            trailWidth={8}
-            trailTaper={0.8}
-            followSpeed={0.16}
-            glowIntensity={1.9}
-            glowSpread={1.2}
-            hotspot={0.65}
-            brightness={1.25}
-            opacity={1}
-            pulseSpeed={1.1}
-            noiseStrength={0.035}
-            idleFade
-            idleTimeout={700}
-            fadeDuration={900}
-            blendMode="screen"
-          >
+          <GlowCursor color="#48d7c2" secondaryColor="#b78cff" opacity={0.5}>
             {/* hero-text: title, then subtitle, then actions, one above the other.
                 The slideshow sits below this whole block as the next hero child. */}
             <div className="hero-text">
@@ -2922,9 +2921,9 @@ function App() {
               variance={0.45}
               parallax={0.6}
               lift={64}
-              fade={0.6}
-              dim={0.55}
-              overlayColor="#060010"
+              fade={0.22}
+              dim={0.92}
+              overlay="rgba(7, 11, 16, 0.35)"
               radius={14}
               roll={0}
               pauseOnHover={false}

@@ -843,19 +843,19 @@ def page_cpp_engine(results: AnalysisResults):
         return
 
     # Handle K-Means crash case
-        kmeans_agreement = bench["agreement"].get("kmeans_small", {})
-        kmeans_crashed = kmeans_agreement.get("status") == "cpp_crashed"
+    kmeans_agreement = bench["agreement"].get("kmeans_small", {})
+    kmeans_crashed = kmeans_agreement.get("status") == "cpp_crashed"
 
-        ui.metric_cards([
-            {"label": "PCA speedup (small)", "value": f"{bench['speedups']['pca'].get('small', float('nan')):.2f}x"},
-            {"label": "K-Means speedup (small)", "value": f"{bench['speedups']['kmeans'].get('small', float('nan')):.2f}x" if not kmeans_crashed else "N/A (C++ crashed)"},
-            {"label": "Component agreement", "value": _num(
-                bench["agreement"]["pca_small"]["max_abs_component_diff"], 2),
-             "sub": "max abs component diff (sign-aligned)"},
-            {"label": "K-Means ARI (small)", "value": _num(
-                kmeans_agreement["ari"], 4) if not kmeans_crashed else "N/A (C++ crashed)",
-             "sub": "labels are permutation-invariant" if not kmeans_crashed else kmeans_agreement.get("note", "")},
-        ])
+    ui.metric_cards([
+        {"label": "PCA speedup (small)", "value": f"{bench['speedups']['pca'].get('small', float('nan')):.2f}x"},
+        {"label": "K-Means speedup (small)", "value": f"{bench['speedups']['kmeans'].get('small', float('nan')):.2f}x" if not kmeans_crashed else "N/A (C++ crashed)"},
+        {"label": "Component agreement", "value": _num(
+            bench["agreement"]["pca_small"]["max_abs_component_diff"], 2),
+         "sub": "max abs component diff (sign-aligned)"},
+        {"label": "K-Means ARI (small)", "value": _num(
+            kmeans_agreement["ari"], 4) if not kmeans_crashed else "N/A (C++ crashed)",
+         "sub": "labels are permutation-invariant" if not kmeans_crashed else kmeans_agreement.get("note", "")},
+    ])
 
     rows = bench.get("rows", [])
     if rows:
