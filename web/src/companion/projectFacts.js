@@ -70,6 +70,24 @@ const factBuilders = [
         text: `Seasons move the numbers: mean daily use is ${seasonalStats.meanDailyKwhBySeason.winter} kWh in winter vs ${seasonalStats.meanDailyKwhBySeason.summer} kWh in summer.`,
       })
     : null,
+  seasonalStats.available
+    ? () => ({
+        animation: 'surprised',
+        text: `Demand breathes with the seasons at about ${pct(seasonalStats.amplitude)} amplitude - a slow year-long wave that never enters the clustering features.`,
+      })
+    : null,
+  seasonalStats.available
+    ? () => ({
+        animation: 'curious',
+        text: `Even the busiest hour shifts: ${seasonalStats.peakHourBySeason.winter}:00 in winter vs ${seasonalStats.peakHourBySeason.summer}:00 in summer.`,
+      })
+    : null,
+  seasonalStats.available
+    ? () => ({
+        animation: 'shy',
+        text: `We recover the hidden seasonal phase from load shapes alone: r = ${fmt(seasonalStats.phaseR)} with ${pct(seasonalStats.phaseAgreement)} peak-season agreement - true on ${seasonalStats.nTruthConsumers} consumers.`,
+      })
+    : null,
   longitudinalStats.available
     ? () => ({
         animation: 'proud',
