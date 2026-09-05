@@ -69,7 +69,7 @@ def _load_shap():
         import shap  # type: ignore
         return shap
     except Exception as exc:  # pragma: no cover - environment dependent
-        logger.info(f"shap not available ({exc}); using permutation fallback")
+        logger.info("shap not available; using permutation fallback")
         return None
 
 
