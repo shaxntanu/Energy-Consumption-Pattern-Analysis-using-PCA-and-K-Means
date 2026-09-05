@@ -3,7 +3,7 @@
   "config_hash": "99c7a6631340d301",
   "status": "executed",
   "reason": null,
-  "generated_utc": "2026-09-04T17:48:51Z",
+  "generated_utc": "2026-09-05T04:10:51Z",
   "engine": {
     "available": true,
     "reason": null,
@@ -27,7 +27,7 @@
       "n_features": 51,
       "stage": "pca",
       "engine": "python",
-      "time_ms": 2.929600013885647,
+      "time_ms": 2.098800032399595,
       "n_components": 10,
       "variance_retained": 0.9504940204193212
     },
@@ -39,7 +39,7 @@
       "n_features": 51,
       "stage": "pca",
       "engine": "cpp",
-      "time_ms": 7.195100013632327,
+      "time_ms": 3.202199994120747,
       "n_components": 10,
       "variance_retained": 0.950494020419321
     },
@@ -51,7 +51,7 @@
       "n_features": 10,
       "stage": "kmeans",
       "engine": "python",
-      "time_ms": 38.35160000016913,
+      "time_ms": 24.4241000036709,
       "k": 4,
       "inertia": 3911.129183290934,
       "n_iterations": 5
@@ -64,10 +64,134 @@
       "n_features": 10,
       "stage": "kmeans",
       "engine": "cpp",
-      "time_ms": NaN,
+      "time_ms": 4.363199986983091,
       "k": 4,
-      "inertia": NaN,
-      "n_iterations": -1
+      "inertia": 3911.4537685129885,
+      "n_iterations": 8
+    },
+    {
+      "dataset": "medium",
+      "dataset_label": "medium",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 2000,
+      "n_features": 51,
+      "stage": "pca",
+      "engine": "python",
+      "time_ms": 9.177900035865605,
+      "n_components": 10,
+      "variance_retained": 0.9524233798137121
+    },
+    {
+      "dataset": "medium",
+      "dataset_label": "medium",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 2000,
+      "n_features": 51,
+      "stage": "pca",
+      "engine": "cpp",
+      "time_ms": 11.989700025878847,
+      "n_components": 10,
+      "variance_retained": 0.9524233798137118
+    },
+    {
+      "dataset": "medium",
+      "dataset_label": "medium",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 2000,
+      "n_features": 10,
+      "stage": "kmeans",
+      "engine": "python",
+      "time_ms": 50.735400000121444,
+      "k": 4,
+      "inertia": 39052.16008231073,
+      "n_iterations": 6
+    },
+    {
+      "dataset": "medium",
+      "dataset_label": "medium",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 2000,
+      "n_features": 10,
+      "stage": "kmeans",
+      "engine": "cpp",
+      "time_ms": 7.866899948567152,
+      "k": 4,
+      "inertia": 39052.16008231073,
+      "n_iterations": 10
+    },
+    {
+      "dataset": "large",
+      "dataset_label": "large",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 20000,
+      "n_features": 51,
+      "stage": "pca",
+      "engine": "python",
+      "time_ms": 47.03950003022328,
+      "n_components": 10,
+      "variance_retained": 0.9504972318917202
+    },
+    {
+      "dataset": "large",
+      "dataset_label": "large",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 20000,
+      "n_features": 51,
+      "stage": "pca",
+      "engine": "cpp",
+      "time_ms": 105.66630004905164,
+      "n_components": 10,
+      "variance_retained": 0.9504972318917194
+    },
+    {
+      "dataset": "large",
+      "dataset_label": "large",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 20000,
+      "n_features": 10,
+      "stage": "kmeans",
+      "engine": "python",
+      "time_ms": 52.08419996779412,
+      "k": 4,
+      "inertia": 391792.01996959146,
+      "n_iterations": 5
+    },
+    {
+      "dataset": "large",
+      "dataset_label": "large",
+      "source": "bootstrap resample of the flagship standardized matrix",
+      "n_samples": 20000,
+      "n_features": 10,
+      "stage": "kmeans",
+      "engine": "cpp",
+      "time_ms": 41.976100008469075,
+      "k": 4,
+      "inertia": 391792.01996959327,
+      "n_iterations": 5
+    },
+    {
+      "dataset": "wide",
+      "dataset_label": "wide",
+      "source": "independent standard-normal draws (feature-scaling probe)",
+      "n_samples": 2000,
+      "n_features": 128,
+      "stage": "pca",
+      "engine": "python",
+      "time_ms": 50.729199952911586,
+      "n_components": 118,
+      "variance_retained": 0.9515371703605728
+    },
+    {
+      "dataset": "wide",
+      "dataset_label": "wide",
+      "source": "independent standard-normal draws (feature-scaling probe)",
+      "n_samples": 2000,
+      "n_features": 128,
+      "stage": "pca",
+      "engine": "cpp",
+      "time_ms": 174.07010000897571,
+      "n_components": 118,
+      "variance_retained": 0.9515371703605731
     }
   ],
   "agreement": {
@@ -79,23 +203,87 @@
       "max_abs_component_diff": 2.5590640717609858e-14
     },
     "kmeans_small": {
-      "status": "cpp_crashed",
-      "note": "C++ K-Means segfaulted; results not comparable"
+      "ari": 0.9866936870852953,
+      "ami": 0.9818670131951398,
+      "inertia_relative_diff": 8.299015625488065e-05,
+      "python_inertia": 3911.129183290934,
+      "cpp_inertia": 3911.4537685129885,
+      "python_n_iterations": 5,
+      "cpp_n_iterations": 8
+    },
+    "pca_medium": {
+      "n_components_match": true,
+      "python_n_components": 10,
+      "cpp_n_components": 10,
+      "variance_retained_diff": 2.220446049250313e-16,
+      "max_abs_component_diff": 7.19979631469414e-14
+    },
+    "kmeans_medium": {
+      "ari": 1.0,
+      "ami": 1.0,
+      "inertia_relative_diff": 0.0,
+      "python_inertia": 39052.16008231073,
+      "cpp_inertia": 39052.16008231073,
+      "python_n_iterations": 6,
+      "cpp_n_iterations": 10
+    },
+    "pca_large": {
+      "n_components_match": true,
+      "python_n_components": 10,
+      "cpp_n_components": 10,
+      "variance_retained_diff": 7.771561172376096e-16,
+      "max_abs_component_diff": 5.96189764223709e-14
+    },
+    "kmeans_large": {
+      "ari": 1.0,
+      "ami": 0.9999999999999999,
+      "inertia_relative_diff": 4.605600411303781e-15,
+      "python_inertia": 391792.01996959146,
+      "cpp_inertia": 391792.01996959327,
+      "python_n_iterations": 5,
+      "cpp_n_iterations": 5
+    },
+    "pca_wide": {
+      "n_components_match": true,
+      "python_n_components": 118,
+      "cpp_n_components": 118,
+      "variance_retained_diff": 2.220446049250313e-16,
+      "max_abs_component_diff": 2.9106925203414846e-13
     }
   },
   "speedups": {
     "pca": {
-      "small": 0.4071659891224621
+      "small": 0.6554244070492165,
+      "medium": 0.7654820400890608,
+      "large": 0.4451703145504948,
+      "wide": 0.2914297168226812
     },
-    "kmeans": {}
+    "kmeans": {
+      "small": 5.597749375810483,
+      "medium": 6.449224005875682,
+      "large": 1.2408060767266527
+    }
   },
-  "end_to_end": null,
+  "end_to_end": {
+    "status": "executed",
+    "config": "200 consumers x 30 days, behavioral, seed 42 (benchmark scratch)",
+    "python_seconds": 6.998738499998581,
+    "cpp_seconds": 5.290307399991434,
+    "speedup_x": 1.3229360736220948,
+    "labels_ari": 1.0,
+    "python_n_components": 14,
+    "cpp_n_components": 14,
+    "python_variance_retained": 0.9546571551695007,
+    "cpp_variance_retained": 0.9546571551695007,
+    "python_optimal_k": 2,
+    "cpp_optimal_k": 2
+  },
   "notes": [
     "Timing is best-of-3 after one warmup on identical matrices. PCA agreement compares component matrices after sklearn svd_flip sign normalization; K-Means agreement is permutation-invariant (ARI/AMI)."
   ],
   "environment": {
     "platform": "Windows-11-10.0.26200-SP0",
-    "python": "3.14.7",
+    "python": "3.14.0",
     "machine": "AMD64",
     "cpu": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel"
   }

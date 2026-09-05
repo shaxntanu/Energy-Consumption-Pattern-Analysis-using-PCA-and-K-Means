@@ -136,6 +136,7 @@ PcaResult pca_fit(const Mat& X, double variance_threshold, int max_components) {
 
   PcaResult result;
   result.jacobi_sweeps = sweeps;
+  result.mean = mean;
   result.eigen_values.resize(d);
   result.explained_variance_ratio.resize(d);
   result.cumulative_variance.resize(d);

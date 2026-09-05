@@ -100,6 +100,10 @@ KMeansResult lloyd(const Mat& X, int k, std::vector<double> centroids,
 
   KMeansResult res;
   res.centroids.assign(kd, 0.0);
+  // The per-iteration assignment loops index res.labels[i] directly, so it
+  // must be sized up front. Leaving it empty (the struct default) wrote out
+  // of bounds on the first Lloyd iteration and segfaulted the module.
+  res.labels.assign(n, 0);
   res.converged = false;
 
   std::vector<double> new_centroids(kd, 0.0);
