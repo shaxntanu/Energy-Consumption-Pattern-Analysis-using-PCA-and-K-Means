@@ -2769,16 +2769,15 @@ function App() {
             {/* hero-text: title, then subtitle, then actions, one above the other.
                 The slideshow sits below this whole block as the next hero child. */}
             <h1>Energy use is a pattern, not just a number.</h1>
-              <p className="hero-subtitle">
-                This project simulates a full year of household electricity readings, turns
-                each day into a load shape, compresses the features with PCA, and uses K-Means
-                to find daily rhythms that are easier to explain, then checks how the clusters
-                hold up across seasons, over time, and on a real-world demo panel.
-              </p>
-              <div className="hero-actions">
-                <a className="button primary" href="#charts">Explore the charts</a>
-                <a className="button secondary" href="#about">What is this project about?</a>
-              </div>
+            <p className="hero-subtitle">
+              This project simulates a full year of household electricity readings, turns
+              each day into a load shape, compresses the features with PCA, and uses K-Means
+              to find daily rhythms that are easier to explain, then checks how the clusters
+              hold up across seasons, over time, and on a real-world demo panel.
+            </p>
+            <div className="hero-actions">
+              <a className="button primary" href="#charts">Explore the charts</a>
+              <a className="button secondary" href="#about">What is this project about?</a>
             </div>
           </div>
         </div>
