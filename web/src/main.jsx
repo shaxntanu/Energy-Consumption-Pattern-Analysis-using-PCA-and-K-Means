@@ -26,7 +26,6 @@ import {
 } from "./ComposedChart";
 import { RadarChart, RadarGrid, RadarAxis, RadarLabels, RadarArea } from "./RadarChart";
 import VantaNetBackground from "./VantaNetBackground";
-import ParticleText from "./components/ParticleText";
 import GlowCursor from "./components/GlowCursor";
 import LogoLoop from "./components/LogoLoop";
 import DriftWall from "./components/DriftWall";
@@ -2818,29 +2817,11 @@ function App() {
             blendMode="screen"
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-              <ParticleText
-                text="Energy use is a pattern, not just a number."
-                particleSize={2.2}
-                density={4}
-                color="#f8fafc"
-                highlightColor="#8b5cf6"
-                scatter={190}
-                gatherDuration={1600}
-                stagger={420}
-                pointerRepel={42}
-                repelRadius={120}
-                idleDrift={0.8}
-                trigger="mount"
-                fontSize="clamp(2.5rem, 8vw, 6rem)"
-                fontWeight={800}
-                fontFamily="inherit"
-                glow
-                className="hero-particle-text"
-              />
+              <h1>Energy use is a pattern, not just a number.</h1>
               <p>
                 This project simulates a full year of household electricity readings, turns
                 each day into a load shape, compresses the features with PCA, and uses K-Means
-                to find daily rhythms that are easier to explain — then checks how the clusters
+                to find daily rhythms that are easier to explain, then checks how the clusters
                 hold up across seasons, over time, and on a real-world demo panel.
               </p>
               <div className="hero-actions">
