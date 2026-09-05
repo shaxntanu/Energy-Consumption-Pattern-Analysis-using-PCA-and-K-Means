@@ -2,9 +2,7 @@
 #
 # Python 3.12 or newer. The floor is not a preference: scipy 1.18.0 requires
 # >=3.12, and every other pin here requires 3.11 or less, so 3.12 is the oldest
-# interpreter this set installs on. Tested on 3.14.0, which is what .python-version
-# and the Dockerfile ask deployments for; tests/test_deployment_config.py checks
-# those three keep agreeing.
+# interpreter this set installs on. Tested on 3.14.0 (Dockerfile: python:3.14-slim).
 pandas==3.0.0
 numpy==2.3.5
 scikit-learn==1.9.0

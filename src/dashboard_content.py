@@ -2,9 +2,9 @@
 the beginner's guide.
 
 This module exists so that the words live apart from the layout. It holds the
-prose that used to be duplicated between the static landing page
-(``public/index.html``) and the Streamlit pages, so there is one place to edit a
-sentence and one place to check a citation.
+prose that used to be duplicated between the static landing page and the
+Streamlit pages, so there is one place to edit a sentence and one place to check
+a citation.
 
 Two rules hold throughout:
 
