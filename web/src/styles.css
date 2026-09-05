@@ -160,10 +160,18 @@ a {
   padding: clamp(2.5rem, 5vw, 4.5rem) clamp(1rem, 4vw, 3rem) 3rem;
 }
 
+/* The copy leads the hero, so it spans the same width as the slideshow band
+   below it and centres its title, subtitle and actions instead of hugging the
+   left of the column. */
 .hero-copy {
   position: relative;
   isolation: isolate;
-  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: min(100%, 1400px);
+  margin-inline: auto;
 }
 
 .hero-text {
@@ -235,11 +243,14 @@ p {
 .hero-copy p {
   max-width: 58ch;
   font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+  text-align: center;
+  margin-inline: auto;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.85rem;
   margin-top: 2rem;
 }

@@ -581,59 +581,59 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 .nav-group:first-of-type { margin-top: 0.2rem; }
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.12rem; }
 
+/* Streamlit widgets ----------------------------------------------------- */
+[data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 12px; }
+.stRadio > label, .stSelectbox label, .stSlider label, .stMultiSelect label { color: var(--mist) !important; font-family: var(--mono); font-size: 0.8rem; }
+
 /* Calls to action ------------------------------------------------------- */
-/* The tirth_5172 button from Uiverse, converted to plain CSS against the
-   buttons Streamlit actually renders. The reference is a Tailwind component,
-   so Streamlit, which cannot run Tailwind utilities, gets the same rules
-   written out by hand, and the five children of the reference element are
-   mapped onto the four pseudo-element slots that one real <button> offers:
+/* The TimTrayler button from Uiverse, converted to plain CSS against the
+   buttons Streamlit actually renders. The reference is a flat dark plate
+   with a white bold all-caps label and a fuchsia flash on press; its twin
+   neumorphic shadows are dropped here, and the hover shadow-pair is replaced
+   by a gentle lift of background and letter-spacing, so the same states
+   still exist without any box-shadow at all.
 
-   - the sweeping shine bar is the button's ::before,
-   - the top-left and bottom-right brackets (static) are the button's ::after,
-   - the top-right and bottom-left brackets (the pair that grows on hover)
-     are the label <div>'s ::before,
-   - the label itself rides on top at z-index 20.
-
-   Two variants preserve navigation semantics, exactly as the reference pairs
-   its unfilled frame with its filled primary. Main-area CTAs, downloads and
-   the active sidebar page rest filled: cyan-to-indigo gradient face, white
-   label. Inactive sidebar items rest as the frame: the same gradient face is
-   masked away behind the panel colour so only a 1px gradient ring shows. On
-   hover the frame transits to fill (the mask sheds), the right and left
-   brackets grow from 60% to 90%, and the blurred bar sweeps across. */
+   The active page keeps its own mark the way the reference uses its accent:
+   fuchsia text and a faint fuchsia wash that deepens on hover. Sidebar items
+   span their rows and read from the left; main-area CTAs and downloads are
+   centred plates. */
 [data-testid="stMain"] .stButton > button,
 [data-testid="stDownloadButton"] button,
 [data-testid="stSidebar"] .stButton > button {
   position: relative;
-  overflow: hidden;
   cursor: pointer;
   min-width: fit-content;
   height: auto;
   padding: 0.8rem 1.7rem;
-  border: 1px solid transparent;
-  border-radius: 0.5rem; /* rounded-lg from the reference */
-  background: linear-gradient(135deg, var(--cyan), var(--indigo)) border-box;
+  border: none;
+  border-radius: 1.1em; /* the reference's radius */
+  background-color: #212121;
   font-family: 'Barlow', var(--body);
   font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   text-align: center;
   color: #fff;
-  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+  transition: background-color 0.1s ease, letter-spacing 0.1s ease,
+    transform 0.1s ease;
   user-select: none;
   -webkit-user-select: none;
   z-index: 0;
 }
-/* Frame tier: inactive sidebar items. An inset cover in the panel colour
-   hides the gradient face, leaving the neon gradient ring; the mask sheds on
-   hover, which is the frame-to-fill transition. */
-[data-testid="stSidebar"] .stButton > button:not([kind="primary"]):not([data-testid="stBaseButton-primary"]) {
-  box-shadow:
-    inset 0 0 0 999px var(--panel),
-    0 18px 40px -16px rgba(0, 0, 0, 0.65);
-  color: var(--mist);
+/* Hover without shadows: the plate warms and the letters stretch. */
+[data-testid="stMain"] .stButton > button:hover,
+[data-testid="stDownloadButton"] button:hover,
+[data-testid="stSidebar"] .stButton > button:hover {
+  background-color: #2b2b2b;
+  letter-spacing: 0.14em;
+}
+/* Press: fuchsia fill and the reference's 0.95 squeeze. */
+[data-testid="stMain"] .stButton > button:active,
+[data-testid="stDownloadButton"] button:active,
+[data-testid="stSidebar"] .stButton > button:active {
+  background-color: fuchsia;
+  transform: scale(0.95);
 }
 /* Sidebar items span their own row and read from the left. */
 [data-testid="stSidebar"] .stButton > button {
@@ -642,120 +642,33 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
   text-align: left;
   padding: 0.42rem 0.8rem;
   font-size: 0.78rem;
-  letter-spacing: 0.05em;
-  font-weight: 500;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }
-/* Filled tier: main-area CTAs, downloads and the active page stay filled in
-   the resting state; a frame-tier button under the cursor becomes filled too. */
-[data-testid="stMain"] .stButton > button,
-[data-testid="stDownloadButton"] button,
+/* The active page keeps the accent so the reader always knows where they
+   are; hover deepens the wash instead of warming to grey. */
 [data-testid="stSidebar"] .stButton > button[kind="primary"],
-[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"],
-[data-testid="stSidebar"] .stButton > button:not([kind="primary"]):not([data-testid="stBaseButton-primary"]):hover {
-  color: #fff;
+[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
+  background-color: rgba(255, 0, 255, 0.12);
+  color: fuchsia;
 }
-[data-testid="stSidebar"] .stButton > button:not([kind="primary"]):not([data-testid="stBaseButton-primary"]):hover {
-  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65);
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover,
+[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"]:hover {
+  background-color: rgba(255, 0, 255, 0.2);
+  letter-spacing: 0.12em;
 }
-/* Lift under the cursor; press on click. */
-[data-testid="stMain"] .stButton > button:hover,
-[data-testid="stDownloadButton"] button:hover,
-[data-testid="stSidebar"] .stButton > button:hover {
-  transform: translateY(-2px);
-}
-[data-testid="stMain"] .stButton > button:active,
-[data-testid="stDownloadButton"] button:active,
-[data-testid="stSidebar"] .stButton > button:active {
-  transform: translateY(0) scale(0.98);
-}
-/* Focus: a white offset ring, per the reference, standing out from the
-   theme's cyan focus colour so the button keeps its own language. */
+/* Focus: a white offset ring, standing out from the theme's cyan focus
+   colour so the button keeps its own language. */
 [data-testid="stMain"] .stButton > button:focus-visible,
 [data-testid="stDownloadButton"] button:focus-visible,
 [data-testid="stSidebar"] .stButton > button:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 4px;
 }
-/* The shine sweep: a blurred diagonal band that crosses the face on hover. */
-[data-testid="stMain"] .stButton > button::before,
-[data-testid="stDownloadButton"] button::before,
-[data-testid="stSidebar"] .stButton > button::before {
-  content: "";
-  position: absolute;
-  left: -75%;
-  top: 0;
-  height: 100%;
-  width: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  filter: blur(16px);
-  transform: rotate(12deg);
-  transition: left 1s ease-in-out;
-  pointer-events: none;
-  z-index: 1;
-}
-[data-testid="stMain"] .stButton > button:hover::before,
-[data-testid="stDownloadButton"] button:hover::before,
-[data-testid="stSidebar"] .stButton > button:hover::before {
-  left: 125%;
-}
-/* Corner brackets, drawn as solid gradient arms. Top-left and bottom-right
-   keep a short 20% reach; top-right and bottom-left grow from 60% to 90% on
-   hover. The corners are the reference's #D4EDF9, a grey-white. */
-[data-testid="stMain"] .stButton > button::after,
-[data-testid="stDownloadButton"] button::after,
-[data-testid="stSidebar"] .stButton > button::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-  background-image:
-    linear-gradient(#D4EDF9, #D4EDF9),
-    linear-gradient(#D4EDF9, #D4EDF9),
-    linear-gradient(#D4EDF9, #D4EDF9),
-    linear-gradient(#D4EDF9, #D4EDF9);
-  background-repeat: no-repeat;
-  background-size:
-    2px 20%, 50% 2px,
-    2px 20%, 50% 2px;
-  background-position:
-    left top, left top,
-    right bottom, right bottom;
-}
-[data-testid="stMain"] .stButton > button > div::before,
-[data-testid="stDownloadButton"] button > div::before,
-[data-testid="stDownloadButton"] button > span::before,
-[data-testid="stSidebar"] .stButton > button > div::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(#D4EDF9, #D4EDF9),
-    linear-gradient(#D4EDF9, #D4EDF9),
-    linear-gradient(#D4EDF9, #D4EDF9),
-    linear-gradient(#D4EDF9, #D4EDF9);
-  background-repeat: no-repeat;
-  background-size:
-    2px 60%, 50% 2px,
-    2px 60%, 50% 2px;
-  background-position:
-    right top, right top,
-    left bottom, left bottom;
-  transition: background-size 0.3s ease-in-out;
-}
-[data-testid="stMain"] .stButton > button:hover > div::before,
-[data-testid="stDownloadButton"] button:hover > div::before,
-[data-testid="stDownloadButton"] button:hover > span::before,
-[data-testid="stSidebar"] .stButton > button:hover > div::before {
-  background-size:
-    2px 90%, 50% 2px,
-    2px 90%, 50% 2px;
-}
-/* The label plate: a transparent, centred layer above the shine and the
-   brackets. The old 3D plate is stripped here. Download buttons render their
-   label as a span rather than a div, so both shapes are handled. */
+/* The label plate: a transparent, centred layer above the button face, so
+   the label never inherits the pressed fuchsia wash as a plate of its own.
+   Download buttons render their label as a span rather than a div, so both
+   shapes are handled. */
 [data-testid="stMain"] .stButton > button > div,
 [data-testid="stDownloadButton"] button > div,
 [data-testid="stDownloadButton"] button > span,
@@ -787,13 +700,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-testid="stMain"] .stButton > button,
   [data-testid="stDownloadButton"] button,
-  [data-testid="stSidebar"] .stButton > button,
-  [data-testid="stMain"] .stButton > button::before,
-  [data-testid="stDownloadButton"] button::before,
-  [data-testid="stSidebar"] .stButton > button::before,
-  [data-testid="stMain"] .stButton > button > div::before,
-  [data-testid="stDownloadButton"] button > div::before,
-  [data-testid="stSidebar"] .stButton > button > div::before {
+  [data-testid="stSidebar"] .stButton > button {
     transition: none;
   }
 }
