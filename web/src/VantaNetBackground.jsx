@@ -1,8 +1,8 @@
-// VANTA.NET hero background — clean framework integration.
+// VANTA.NET hero background, with clean framework integration.
 //
 // Deliberately scoped to the hero *copy* column only (`.hero-copy`), never to
 // the whole page and never behind the chart carousel, the charts band, tables,
-// or any dense dashboard — so the animation is decoration on the hero, not
+// or any dense dashboard, so the animation is decoration on the hero, not
 // visual noise behind results. The canvas is `aria-hidden` and has
 // `pointer-events: none`, so it can never intercept clicks meant for the hero
 // buttons.
@@ -10,7 +10,7 @@
 // Accessibility / performance contract:
 //   - skipped entirely under `prefers-reduced-motion: reduce`;
 //   - skipped when WebGL is unavailable (the page keeps its plain dark
-//     background — no error is thrown, no gradient needs to be "fixed");
+//     background, so no error is thrown and no gradient needs to be "fixed");
 //   - destroyed on unmount so there are no leaked rAF loops or contexts;
 //   - colors come from the project's theme tokens (--cyan #48d7c2 points on
 //     --bg #070b10), and mouse interaction is limited to a gentle parallax so
@@ -36,7 +36,7 @@ export default function VantaNetBackground() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return undefined;
     }
-    // No WebGL, no animation — the hero simply keeps its plain dark ground.
+    // No WebGL, no animation: the hero simply keeps its plain dark ground.
     if (!window.WebGLRenderingContext) {
       return undefined;
     }
@@ -50,7 +50,7 @@ export default function VantaNetBackground() {
         effectRef.current = NET({
           el: host,
           THREE,
-          mouseControls: true, // gentle parallax only — no click effects
+          mouseControls: true, // gentle parallax only, with no click effects
           touchControls: true,
           gyroControls: false,
           minHeight: 240,

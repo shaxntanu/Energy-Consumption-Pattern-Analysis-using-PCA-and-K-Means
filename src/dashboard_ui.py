@@ -35,8 +35,8 @@ import plotly.io as pio
 import streamlit as st
 
 # The one thing this module imports from the app: how a star count is written
-# down. The rule it encodes - truncate, never round up - is about honesty rather
-# than layout, so it stays with the code that fetches the number.
+# down. The rule it encodes, truncate rather than round up, is about honesty
+# rather than layout, so it stays with the code that fetches the number.
 from dashboard_github import format_count
 
 # --- Colour tokens -----------------------------------------------------------
@@ -618,7 +618,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 
 /* Checkboxes ------------------------------------------------------------ */
 /* A round well that fills when the option is on, adapted from a reference
-   component whose square-cornered original was 50px across - far too big to sit
+   component whose square-cornered original was 50px across, far too big to sit
    beside a line of text in a settings panel, so the shape is kept and the size
    is not.
 
@@ -627,7 +627,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
    checkbox, clipped to a single pixel but present, focusable and announced, and
    these rules only paint the two divs beside it. So Tab still reaches the
    control, Space still toggles it, and the accessible name still comes from the
-   label - none of which a hand-built div could claim without reimplementing all
+   label, none of which a hand-built div could claim without reimplementing all
    three. The checked state is read from the input itself rather than from a
    class, so what a reader sees cannot drift away from the value the app got. */
 [data-testid="stCheckbox"] label { align-items: center; gap: 0.6rem; }
@@ -661,7 +661,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 }
 [data-testid="stCheckbox"] label:active > div:first-of-type { transform: scale(0.92); }
 /* A sentence rather than a field name, so it is set in the body face at body
-   weight - not the mono treatment the sliders and selects use for their labels.
+   weight, not the mono treatment the sliders and selects use for their labels.
    The paragraph is targeted because Streamlit wraps the label in markdown, which
    sets its own size. */
 [data-testid="stCheckbox"] [data-testid="stWidgetLabel"] p {
@@ -679,9 +679,9 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 /* What a reader can select is a statement about what is worth taking away. The
    line drawn here: anything that names a control, labels a structure, or numbers
    a sequence is chrome and is not selectable, because selecting it is almost
-   always an accident of double-clicking. Everything that is the study - headings,
-   ledes, prose, results, figures, feature names, bibliographic details, captions,
-   the synthetic-data warning - stays selectable, because a reader quoting this
+   always an accident of double-clicking. Everything that is the study, headings,
+   ledes, prose, results, figures, feature names, bibliographic details, captions
+   and the synthetic-data warning, stays selectable, because a reader quoting this
    work has to be able to copy it.
 
    Two calls worth stating. A heading that names what a reader is looking at is
@@ -719,8 +719,8 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 /* Every control button shares one visual language from the reference: a light
    #D4EDF9 accent with corner border ticks, an uppercase label, a soft drop
    shadow, and a flat bar that sweeps across on hover as the sheet flips from
-   fill to outline. The reference is a Tailwind component, so Streamlit — which
-   cannot run Tailwind utilities — gets the same rules written out as plain CSS
+   fill to outline. The reference is a Tailwind component, so Streamlit, which
+   cannot run Tailwind utilities, gets the same rules written out as plain CSS
    against the buttons Streamlit actually renders, and the sweeping-bar <span>
    is re-implemented as an ::after pseudo-element.
 
@@ -771,7 +771,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
   color: #D4EDF9;
   box-shadow: 0 18px 40px -16px rgba(212, 237, 249, 0.28);
 }
-/* The sweeping shine bar — the reference's "effect after" span. */
+/* The sweeping shine bar, the reference's "effect after" span. */
 [data-testid="stSidebar"] .stButton > button::after,
 [data-testid="stMain"] .stButton > button::after,
 [data-testid="stDownloadButton"] button::after {
@@ -914,13 +914,13 @@ def archetype_card(name: str, color: str, meta: str, bullets: Sequence[str],
                    badge: str | None = None) -> None:
     """A cluster identity card: colour swatch, name, one meta line, and bullets.
 
-    The only card here with a three-dimensional treatment - see the stylesheet for
+    The only card here with a three-dimensional treatment; see the stylesheet for
     why this one and not the others.
 
     Args:
         name: Cluster name, e.g. "Evening-Peaking".
         color: The cluster's qualitative colour (see cluster_color).
-        meta: A single mono line, e.g. "49 consumers - peaks 20:00".
+        meta: A single mono line, e.g. "49 consumers, peaks at 20:00".
         bullets: Short defining characteristics, HTML allowed for emphasis.
         badge: A short figure for the corner box, normally the cluster's share of
             consumers. Omitted rather than filled with a placeholder if unknown.
@@ -941,8 +941,8 @@ def archetype_card(name: str, color: str, meta: str, bullets: Sequence[str],
 def step_card(number: int, title: str, body: str) -> None:
     """One numbered step in a short sequence.
 
-    The number is real information here - the steps are meant to be done in
-    order - so it is set in the mono face and left unselectable, the same
+    The number is real information here, and because the steps are meant to be
+    done in order, it is set in the mono face and left unselectable, the same
     treatment the chapter numbers get.
     """
     st.markdown(
@@ -988,7 +988,7 @@ def research_card_html(title: str, authors: str, year: str, venue: str, method: 
     return (
         f'<div class="ref-card">'
         f'<div class="ref-title">{title}</div>'
-        f'<div class="ref-authors">{authors} - {year} - {venue}</div>'
+        f'<div class="ref-authors">{authors}, {year}, {venue}</div>'
         f'<div class="ref-grid">'
         f'<div class="rk">Method</div><div class="rv">{method}</div>'
         f'<div class="rk">Dataset</div><div class="rv">{dataset}</div>'
@@ -1112,7 +1112,7 @@ def star_button(repo_url: str, count: int | None = None,
     Args:
         repo_url: The repository's web URL. The link goes here.
         count: Stars, as reported by GitHub. Pass None when that could not be
-            established and the count is left off entirely - the alternative
+            established and the count is left off entirely, since the alternative
             would be a number nobody can stand behind.
         label: The button's text.
     """

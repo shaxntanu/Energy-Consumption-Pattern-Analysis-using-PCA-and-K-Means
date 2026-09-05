@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 // no config, and esbuild then compiles every .jsx with the *classic* transform,
 // which injects `React.createElement(...)` calls into each file. Most components
 // here import only named hooks (`import { useState } from "react"`), so they
-// never put the `React` namespace in scope — the first one React renders throws
+// never put the `React` namespace in scope, as the first one React renders throws
 // `React is not defined` and the page comes up blank.
 //
 // With the plugin active, JSX compiles through react/jsx-runtime instead, so a

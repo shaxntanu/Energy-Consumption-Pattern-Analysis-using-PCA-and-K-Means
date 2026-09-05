@@ -1,4 +1,4 @@
-# Verification Matrix — `Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means`
+# Verification Matrix for `Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means`
 
 This file is the line-by-line audit trail for every claim in the README and
 `docs/report.md`. Every number below is either (a) read directly from an
@@ -15,17 +15,17 @@ re-run in this repo this session. Nothing is fabricated.
 | **EXECUTED** | The workflow ran to completion (exit 0) with console + artifact evidence. |
 | **VALIDATED** | Executed, and the produced numbers were audited against the authoritative outputs. |
 | **VALIDATED via contract** | The 8 JSON files under `web/public/data/` carry the genuine flagship outputs; audited against the run that produced them. |
-| **AVAILABLE** | The step produced `available: false` with a reason — a correct empty state, not a failure. |
+| **AVAILABLE** | The step produced `available: false` with a reason, a correct empty state rather than a failure. |
 | **PENDING (user run)** | Blocked on a shell command this session could not run; the exact command is given. |
 
 ## 1. Compile / syntax gate
 
 | Check | Command | Status |
 |---|---|---|
-| All modules compile | `py verify_compile.py` | **PENDING (user run)** — separator-free launcher; compiles every root + `src/` file |
-| One-command battery | `py run_validation_battery.py` | **PENDING (user run)** — compile → 30d → 90d → 180d → realworld_demo → ablation → seed_robustness → 365d → export_artifacts (9 steps, audit logs under `logs/validation_battery/`) |
+| All modules compile | `py verify_compile.py` | **PENDING (user run):** separator-free launcher; compiles every root + `src/` file |
+| One-command battery | `py run_validation_battery.py` | **PENDING (user run):** compile → 30d → 90d → 180d → realworld_demo → ablation → seed_robustness → 365d → export_artifacts (9 steps, audit logs under `logs/validation_battery/`) |
 
-## 2. 30-day reference (config `6896387297178841`) — VALIDATED (archived)
+## 2. 30-day reference (config `6896387297178841`): VALIDATED (archived)
 
 Evidence: `logs/validation_battery/30d_analysis_summary.md` pattern (archived
 reference from the proving run; same code, same seed, same config). The on-disk
@@ -50,7 +50,7 @@ energy_analysis` (default 30-day) is re-run in this repo.
 | Seasonal | `available: false` (`"no 'season' column with >= 2 distinct values"`) | ✓ |
 | Longitudinal | `available: false` (needs ≥ 180 days) | ✓ |
 
-## 3. 365-day flagship (config `99c7a6631340d301`, 200 consumers) — VALIDATED via contract
+## 3. 365-day flagship (config `99c7a6631340d301`, 200 consumers): VALIDATED via contract
 
 Evidence: `web/public/data/*.json` (8 files, `contract_version 1.0.0`) populated
 from the audited flagship run of this same code (config `99c7a6631340d301`);
@@ -74,11 +74,11 @@ energy_analysis -- --n_days 365 --n_consumers 200`.
 | Mean temporal stability ARI | 0.8817 |
 | Explainability | `method: "shap"`, cv balanced accuracy 0.985 |
 
-> These are the flagship numbers quoted in README §10–§12 and report §4–§5.
+> These are the flagship numbers quoted in README §10-§12 and report §4-§5.
 > The 30-day reference (§2) honestly reports `available: false` for seasonal and
 > longitudinal.
 
-## 4. Real-world demo (CASE A) — IMPLEMENTED
+## 4. Real-world demo (CASE A): IMPLEMENTED
 
 Evidence: `py run_module.py run_realworld -- --demo` (24-meter in-repo demo
 panel; no dataset shipped).
@@ -88,10 +88,10 @@ panel; no dataset shipped).
 | Meters / meter-hours | 24 / 12,096 |
 | Features per meter | 51 |
 | PCA components kept | 5 (95.5 %) |
-| Selected K | 2 (candidates 2–7) |
+| Selected K | 2 (candidates 2 to 7) |
 | Silhouette @ K=2 | 0.7194 |
-| Calinski–Harabasz @ K=2 | 123.2 |
-| Davies–Bouldin @ K=2 | 0.3966 |
+| Calinski-Harabasz @ K=2 | 123.2 |
+| Davies-Bouldin @ K=2 | 0.3966 |
 | Seed-stability ARI | 1.0000 |
 | Temporal stability (3 windows) | 1.0000 |
 | ARI/NMI columns | **none** (asserted by the report header) |
@@ -100,7 +100,7 @@ Status is **IMPLEMENTED** (not VALIDATED) because the demo has not re-run in
 this repo this session. Run `py run_module.py run_realworld -- --demo` to
 validate.
 
-## 5. Ablation (5 arms, seed 42) — IMPLEMENTED
+## 5. Ablation (5 arms, seed 42): IMPLEMENTED
 
 Evidence: `py run_module.py run_ablation_study` → `outputs/reports/ablation_study_report.md`,
 `outputs/metrics/ablation_study_results.csv`.
@@ -116,24 +116,24 @@ Evidence: `py run_module.py run_ablation_study` → `outputs/reports/ablation_st
 > Single-draw rule selects `shape` on parsimony; the pooled 20-dataset rule in
 > §6 selects `behavioral` and supersedes this where they disagree.
 
-Status **IMPLEMENTED** — run the command above to validate in this repo.
+Status **IMPLEMENTED**: run the command above to validate in this repo.
 
-## 6. Seed robustness (20 datasets) — IMPLEMENTED
+## 6. Seed robustness (20 datasets): IMPLEMENTED
 
 Evidence: `py run_module.py run_seed_robustness` → `outputs/reports/seed_robustness_report.md`.
 
 | Claim | Value (from proving run) |
 |---|---|
-| Seeds | 1–19, 42 |
+| Seeds | 1 to 19, and 42 |
 | behavioral ARI mean (sd) | 0.6158 (0.1157) |
 | shape ARI mean (sd) | 0.5855 (0.0538) |
 | Friedman statistic / p | 54.5242 / 4.09e-11 |
 | behavioral vs shape Holm p | 0.3118 (not significant) |
 | Feature set shipped | behavioral (rule: best mean 0.6158, no arm within 0.02) |
 
-Status **IMPLEMENTED** — run the command above to validate in this repo.
+Status **IMPLEMENTED**: run the command above to validate in this repo.
 
-## 7. Artifact contract — VALIDATED via contract
+## 7. Artifact contract: VALIDATED via contract
 
 | File under `web/public/data/` | Content | Verified against |
 |---|---|---|
@@ -142,13 +142,13 @@ Status **IMPLEMENTED** — run the command above to validate in this repo.
 | `clustering.json` | sweep (9), stability (9), selection trace, selected K=4 | `clustering_metrics.csv`, `stability_results.csv`, `k_selection_trace.json` ✓ |
 | `profiles.json` | cluster profiles (4), load shapes (5 incl. population), baseline | `cluster_profiles.csv`, `cluster_load_shapes.csv`, `population_baseline.json` ✓ |
 | `validation.json` | recovery (9), crosstab (4×4), descriptive paragraph | `archetype_recovery.csv`, `archetype_crosstab.csv`, `validation_report.md` ✓ |
-| `seasonal.json` | `available: true` — amplitude 0.202, phase r 0.678, monthly/seasonal kWh | `seasonal_analysis_metrics.json` ✓ |
-| `longitudinal.json` | `available: true` — segment ARI [0.838, 0.892, 0.946, 0.851], mean 0.882 | `longitudinal_analysis_metrics.json` ✓ |
+| `seasonal.json` | `available: true`, amplitude 0.202, phase r 0.678, monthly/seasonal kWh | `seasonal_analysis_metrics.json` ✓ |
+| `longitudinal.json` | `available: true`, segment ARI [0.838, 0.892, 0.946, 0.851], mean 0.882 | `longitudinal_analysis_metrics.json` ✓ |
 | `explainability.json` | `available: true, method: "shap"`, cv 0.985, per-cluster drivers | exporter logic + `shap_importance.csv` ✓ |
 
-**Stale-artifact guard:** `export_artifacts.py` gates on `models/analysis_metadata.json` — if the run metadata says a step was skipped (null), the contract emits `available: false` and never reads a stale metrics file. Regression guard: re-run `py run_module.py export_artifacts` after a short run and diff `web/public/data/seasonal.json` (must stay `available: false`).
+**Stale-artifact guard:** `export_artifacts.py` gates on `models/analysis_metadata.json`, so if the run metadata says a step was skipped (null), the contract emits `available: false` and never reads a stale metrics file. Regression guard: re-run `py run_module.py export_artifacts` after a short run and diff `web/public/data/seasonal.json` (must stay `available: false`).
 
-## 8. Streamlit app — UPDATED (pending boot)
+## 8. Streamlit app: UPDATED (pending boot)
 
 `streamlit_app.py` + `dashboard_*.py` (ui, charts, content, github, zoom) with
 `_session_workdir()` temp-isolation + `config_hash` cache. `REFERENCE_HASH`
@@ -158,7 +158,7 @@ states at short horizons.
 
 **PENDING (user run):** `py -m streamlit run streamlit_app.py` on `:8501`.
 
-## 9. Vercel explorer — UPDATED (pending build)
+## 9. Vercel explorer: UPDATED (pending build)
 
 `web/` (Vite 7 + React 19 + Chart.js 4): carousel reading `analysisData.js`
 (genuine flagship numbers: K=4, 10 PCs, 1,752,000 records, ARI 0.813), 8 contract
@@ -174,7 +174,7 @@ JSON files under `web/public/data/`, `vercel.json` (`framework: vite`,
 |---|---|
 | `__pycache__` / `*.pyc` in tracked tree | checked (gitignored) |
 | Absolute `C:\Users\...` paths in committed files | **none** (report/verification/README use relative paths) |
-| Original trial repo touched | **no** — all writes within this directory |
+| Original trial repo touched | **no**, all writes within this directory |
 | `web/public/data/` contract files | **present** (8 JSON files, flagship `99c7a6631340d301`) |
 
 ## 11. Reproduction script (for the clean-clone check)
@@ -189,5 +189,5 @@ py -m streamlit run streamlit_app.py      # smoke boot on :8501, then Ctrl-C
 cd web && npm install && npm run build
 ```
 
-Every step must exit 0 and reproduce the numbers in §2–§6; any failure blocks
+Every step must exit 0 and reproduce the numbers in §2-§6; any failure blocks
 green.

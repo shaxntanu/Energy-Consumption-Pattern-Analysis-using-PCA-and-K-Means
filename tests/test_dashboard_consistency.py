@@ -1,7 +1,7 @@
 """
 Dashboard / analysis-object consistency tests.
 
-Pages must read from AnalysisResults — never recompute a different PCA/K-Means
+Pages must read from AnalysisResults, never recomputing a different PCA/K-Means
 for display, and K→metric lookup must be by explicit key.
 """
 import pytest

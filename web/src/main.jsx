@@ -29,7 +29,6 @@ import VantaNetBackground from "./VantaNetBackground";
 import GlowCursor from "./components/GlowCursor";
 import LogoLoop from "./components/LogoLoop";
 import DriftWall from "./components/DriftWall";
-import MorphSlider from "./components/MorphSlider";
 import "./styles.css";
 import {
   clusters,
@@ -98,12 +97,12 @@ function chartDefaults() {
 }
 
 // ---------------------------------------------------------------------------
-// "Raw Data Field" slide — Slide 1 of the load-shape carousel, ported from the
+// "Raw Data Field" slide: Slide 1 of the load-shape carousel, ported from the
 // test animation's first scene (ml_pipeline_animation/src/stages/rawDataField.js).
 // A field of 12 sample consumer profiles emerges, then one line highlights as
 // the representative. Profiles are derived from the same real archetype shapes
 // the load-shape chart uses, adding only the same synthetic "consumer" noise the
-// animation applies — so it stays a faithful port without inventing new committed
+// animation applies, so it stays a faithful port without inventing new committed
 // data. It renders inside the same .chart-container area as the other slides and
 // keeps the defined footprint (responsive, no overflow/clip).
 // ---------------------------------------------------------------------------
@@ -193,7 +192,7 @@ function RawDataFieldSlide({ onRepActive }) {
 }
 
 // ---------------------------------------------------------------------------
-// "Raw Data: Annotated Profile" slide - Slide 2 of the load-shape carousel,
+// "Raw Data: Annotated Profile" slide: Slide 2 of the load-shape carousel,
 // ported from the test animation's second scene
 // (ml_pipeline_animation/src/stages/rawDataProfile.js). It zooms into the same
 // representative day the field highlights (sampleProfiles[0]) and draws it as a
@@ -353,7 +352,7 @@ function RawDataAnnotatedSlide({ onRepActive }) {
 }
 
 // ---------------------------------------------------------------------------
-// "Behavioral Features" slide - Slide 3, ported from Scene 3 (features.js).
+// "Behavioral Features" slide: Slide 3, ported from Scene 3 (features.js).
 // The six timing/behavioural descriptors are revealed as bars for the
 // representative (midday-peaking) cluster, then the 51-feature total appears.
 // Palette and reveal order follow the scene; values are the committed cluster
@@ -445,7 +444,7 @@ function BehavioralFeaturesSlide({ onRepActive }) {
           ticks: {
             ...base.scales.y.ticks,
             // Chart.js hands a category scale the row INDEX here, not the label
-            // — read the short name straight from SHORT_FEATURE_LABELS so the
+            // read the short name straight from SHORT_FEATURE_LABELS so the
             // axis never shows counting.
             callback(value, index) {
               return SHORT_FEATURE_LABELS[index] ?? "";
@@ -467,7 +466,7 @@ function BehavioralFeaturesSlide({ onRepActive }) {
         data: FEATURE_VALUES.map((value, i) => (i < state.shown ? value : 0)),
         // Hidden rows stay fully transparent and minBarLength is off, so no
         // coloured sliver peeks out of the axis during the lead-in or between
-        // reveals — the pause stays clean until each bar's own turn.
+        // reveals, and the pause stays clean until each bar's own turn.
         backgroundColor: FEATURE_ROWS.map((row, i) =>
           i < state.shown ? row.color : "rgba(0,0,0,0)",
         ),
@@ -528,7 +527,7 @@ function BehavioralFeaturesSlide({ onRepActive }) {
 }
 
 // ---------------------------------------------------------------------------
-// "K-Means clustering" slide - Slide 4, ported from Scene 4 (kmeans.js).
+// "K-Means clustering" slide: Slide 4, ported from Scene 4 (kmeans.js).
 // A 2D scatter of consumer points is drawn, four centroids spawn, and then
 // the algorithm iterates: every point is recoloured to its nearest centroid
 // ("captured"), and each centroid moves to the mean of its claimed points.
@@ -544,7 +543,7 @@ const KM_ITERS = 5;
 
 // Scatter-chart scaffolding for the K-Means slide: stay in normalized [0,1]
 // space (matching the points), shared by both the faint grid/frame lines and
-// the 0.0–1.0 tick labels.
+// the 0.0 to 1.0 tick labels.
 const KM_GRID_STEPS = [0, 0.2, 0.4, 0.6, 0.8, 1];
 
 // Seeded PRNG so the schematic cloud is stable across renders and slide
@@ -802,8 +801,8 @@ function KMeansSlide({ onRepActive }) {
             >
               <title>K-Means clustering scatter</title>
               {/* Graph-like scaffolding behind the points: a faint Cartesian
-                  grid with a framed axis and compact 0.0–1.0 ticks, so the
-                  cluster claims read against a real scatter chart — not a
+                  grid with a framed axis and compact 0.0 to 1.0 ticks, so the
+                  cluster claims read against a real scatter chart, not a
                   blank panel. */}
               {KM_GRID_STEPS.map((f) => (
                 <line
@@ -950,7 +949,7 @@ function KMeansSlide({ onRepActive }) {
 }
 
 // ---------------------------------------------------------------------------
-// "PCA" slide - Slide 5, ported from Scene 5 (pca.js).
+// "PCA" slide: Slide 5, ported from Scene 5 (pca.js).
 // The 10 retained components reveal as explained-variance bars (#6c8cff), the
 // cumulative line (#48d7c2) then draws across them, and the retained-variance
 // total appears once the cumulative line settles on the committed 95.0%.
@@ -1089,7 +1088,7 @@ function PcaSlide({ onRepActive }) {
 }
 
 // ---------------------------------------------------------------------------
-// "Behavioral Archetypes" slide - Slide 6, ported from Scene 6
+// "Behavioral Archetypes" slide: Slide 6, ported from Scene 6
 // (behavioralArchetypes.js). The four cluster profiles reveal one at a time
 // as 24-hour curves, each tagged with its consumer count, preserving the
 // scene's card-sequential rhythm and archetype colour identity.
@@ -1214,7 +1213,7 @@ function BehavioralArchetypesSlide({ onRepActive }) {
 }
 
 // ---------------------------------------------------------------------------
-// "Validation & Robustness" slide - Slide 7, ported from Scene 7
+// "Validation & Robustness" slide: Slide 7, ported from Scene 7
 // (validationRobustness.js). Only committed figures are shown: the selected
 // K=4 silhouette and Davies-Bouldin from kMetrics, the cluster count, and the
 // dataset scale from summaryStats.
@@ -1231,7 +1230,7 @@ function BehavioralArchetypesSlide({ onRepActive }) {
 // it runs exactly once and every timer survives for its full duration. If the
 // card array were built inside the component (as it once was), each render
 // would mint a fresh identity, the effect would re-run on every setState,
-// clearTimeout all pending timers, and restart the clock — so each card reveal
+// clearTimeout all pending timers, and restart the clock, so each card reveal
 // cancelled the later cards' timers and only the first card ever appeared.
 const VALIDATION_CARDS_AT = 800;
 const VALIDATION_CARD_STAGGER = 120;
@@ -1524,57 +1523,7 @@ const loadShapeSlides = [
       },
     },
   },
-  {
-    component: MorphGallerySlide,
-    captions: {
-      idle: {
-        title: "Result gallery",
-        subtitle: "The committed matplotlib outputs, fused into a WebGL morphing slideshow.",
-      },
-      rep: {
-        title: "The committed outputs",
-        subtitle: "Load shapes, PCA variance, K-selection, cluster radar, and validation sweep.",
-      },
-    },
-  },
-];
-
-// Renders the MorphSlider as one carousel slide. MorphSlider hardcodes an
-// inline 500px height; the .morph-in-carousel class forces it to the slide
-// stage size. It reports its "representative" state permanently so the slide
-// shows the committed-output caption, not the idle one.
-function MorphGallerySlide({ onRepActive }) {
-  React.useEffect(() => {
-    onRepActive?.(true);
-  }, [onRepActive]);
-
-  return (
-    <MorphSlider
-      className="morph-in-carousel"
-      items={[
-        { image: "/results/load_shapes.png", caption: "Load Shapes" },
-        { image: "/results/pca_variance.png", caption: "PCA Variance" },
-        { image: "/results/k_selection.png", caption: "K-Selection" },
-        { image: "/results/cluster_radar.png", caption: "Cluster Radar" },
-        { image: "/results/validation_sweep.png", caption: "Validation" },
-      ]}
-      transition="melt"
-      intensity={0.55}
-      aberration={0.35}
-      drift={0.4}
-      autoplay={false}
-      overlayColor="#05060a"
-      duration={1.1}
-      ease="power2.inOut"
-      autoplayDelay={4}
-      loop
-      radius={16}
-      showCaptions
-      showControls
-      showIndicators
-    />
-  );
-}
+  ];
 
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
@@ -1582,7 +1531,7 @@ function LoadShapeCarousel({ tall = false }) {
   const count = loadShapeSlides.length;
   // Linear navigation: clamp instead of wrapping, so the prev arrow is disabled
   // on the first slide and the next arrow is disabled on the last. A fresh
-  // slide always starts in its idle caption state — resetting the flag here
+  // slide always starts in its idle caption state; resetting the flag here
   // stops the previous slide's rep title from flashing for a frame.
   const goTo = (index) => {
     setSlide(Math.max(0, Math.min(count - 1, index)));
@@ -1732,7 +1681,7 @@ const legendItems = [
 
 // Emphasis applied when a legend item is hovered/focused: the selected series
 // gets a heavier line, the rest are thinned and faded. Scientific values are
-// untouched — only stroke weight/fill presentation changes.
+// untouched; only stroke weight/fill presentation changes.
 function buildMainData(active) {
   const base = buildLoadSeries(false);
   if (active == null) return base;
@@ -2124,7 +2073,7 @@ function LoadShapeBrushChart() {
         <span className="brush-hint">
           {isFull
             ? "Drag across the strip to zoom into a time window. Double-click or press Home to reset."
-            : `Showing ${hourLabel(selection[0])} – ${hourLabel(selection[1])}. Arrow keys move the window, Shift+arrows resize it.`}
+            : `Showing ${hourLabel(selection[0])} to ${hourLabel(selection[1])}. Arrow keys move the window, Shift+arrows resize it.`}
         </span>
         {!isFull && (
           <button type="button" className="brush-reset" onClick={() => setSelection([0, 23])}>
@@ -2295,7 +2244,7 @@ const ARCHETYPE_COLOR = {
 };
 
 function ClusterRadarChart() {
-  // Map the committed analysis values into the radar's 0-100 scale. This happens
+  // Map the committed analysis values into the radar's 0 to 100 scale. This happens
   // only at the visualization boundary; the stored cluster data is untouched.
   const radarData = clusters.map((cluster) => {
     const values = {
@@ -2483,7 +2432,7 @@ function ScienceHighlights() {
           </div>
           <p>
             A documented adapter ingests an external long panel. The real branch reports
-            internal quality and stability only — never ARI/NMI against invented labels.
+            internal quality and stability only, never ARI/NMI against invented labels.
           </p>
           <div className="chip-row">
             <span className="chip">{realWorldStats.meters} meters</span>
@@ -2578,7 +2527,7 @@ function PerformanceSection() {
         Python/scikit-learn implementation remains the scientific reference for every
         result on this page; C++ is a performance-oriented alternative, validated
         against that reference and compared offline. The frontend only renders the
-        committed benchmark report — it never executes C++ in the browser.
+        committed benchmark report, since it never executes C++ in the browser.
       </SectionHeader>
 
       {state === "loading" && (
@@ -2613,7 +2562,7 @@ function PerformanceSection() {
               </div>
               <p>
                 Whether <code>energy_cpp</code> was importable when the offline
-                benchmark ran. The Python pipeline works either way — the module is
+                benchmark ran. The Python pipeline works either way; the module is
                 strictly optional.
               </p>
               <div className="chip-row">
@@ -2643,7 +2592,7 @@ function PerformanceSection() {
               {!executed ? (
                 <p>
                   The committed report says status <code>not_executed</code>
-                  {bench.reason ? ` — ${bench.reason}` : ""}. No speedups or agreement
+                  {bench.reason ? ` (${bench.reason})` : ""}. No speedups or agreement
                   numbers are fabricated here.
                 </p>
               ) : (
@@ -2693,7 +2642,7 @@ function PerformanceSection() {
               <p className="bench-note">
                 Best-of-3 wall times after one warmup, on the identical matrix for both
                 engines; K-Means runs on the same PCA scores. Dataset provenance is
-                recorded in the report — medium/large are bootstrap resamples of the
+                recorded in the report; medium/large are bootstrap resamples of the
                 flagship matrix, wide is a synthetic feature-scaling probe.
               </p>
             </>
@@ -2873,7 +2822,7 @@ function App() {
             <article className="chart-panel">
               <div className="panel-heading">
                 <h3>K selection</h3>
-                <p>K=4 wins the composite rule — silhouette 0.328, stability ARI 0.995.</p>
+                <p>K=4 wins the composite rule, with silhouette 0.328 and stability ARI 0.995.</p>
               </div>
               <KSelectionChart />
             </article>
@@ -2923,33 +2872,40 @@ function App() {
 
         <PerformanceSection />
 
-        {/* DriftWall — Matplotlib gallery presentation */}
+        {/* DriftWall, the Matplotlib gallery presentation */}
         <section className="band" id="gallery">
           <SectionHeader eyebrow="Results gallery" title="Matplotlib analysis outputs">
-            The following images are generated by the Python pipeline and committed to
-            <code>/web/public/results/</code>. They show the full analytical picture:
-            load shapes, PCA variance, K-selection, cluster profiles, validation sweeps,
-            seasonal stability, longitudinal agreement, explainability, real-world demo,
-            and C++ benchmarks.
+            The dark-mode figures are generated by the Python pipeline (through{" "}
+            <code>presentation/generate_dark_plots*</code>) and committed to{" "}
+            <code>/web/public/results/dark/</code>. They show the full analytical
+            picture: hourly patterns, PCA variance and loadings, K-selection and
+            silhouette scoring, cluster recovery and seed robustness, the ablation
+            comparison, feature importance, longitudinal stability, and the three
+            seasonal channels (shape, energy, and phase recovery).
           </SectionHeader>
           <div style={{ height: 560 }}>
             <DriftWall
               items={[
-                { image: '/results/load_shapes.png', title: 'Average Load Shapes', href: '#charts' },
-                { image: '/results/pca_variance.png', title: 'PCA Explained Variance', href: '#charts' },
-                { image: '/results/k_selection.png', title: 'K-Selection Metrics', href: '#charts' },
-                { image: '/results/cluster_radar.png', title: 'Cluster Profiles Radar', href: '#charts' },
-                { image: '/results/cluster_0_profile.png', title: 'Cluster 0: Night Owls', href: '#charts' },
-                { image: '/results/cluster_1_profile.png', title: 'Cluster 1: Early Birds', href: '#charts' },
-                { image: '/results/cluster_2_profile.png', title: 'Cluster 2: Day Workers', href: '#charts' },
-                { image: '/results/cluster_3_profile.png', title: 'Cluster 3: Evening Peak', href: '#charts' },
-                { image: '/results/seasonal_stability.png', title: 'Seasonal Stability', href: '#charts' },
-                { image: '/results/longitudinal_ari.png', title: 'Longitudinal ARI', href: '#charts' },
-                { image: '/results/validation_sweep.png', title: 'Validation Sweep', href: '#charts' },
-                { image: '/results/explainability.png', title: 'Feature Importance', href: '#charts' },
-                { image: '/results/real_world.png', title: 'Real-World Demo', href: '#charts' },
-                { image: '/results/benchmark.png', title: 'C++ Benchmark', href: '#performance' },
-                { image: '/results/pipeline.png', title: 'Pipeline Flow', href: '#about' },
+                { image: '/results/dark/hourly_patterns.png', title: 'Hourly Patterns', href: '#charts' },
+                { image: '/results/dark/explained_variance.png', title: 'PCA Explained Variance', href: '#charts' },
+                { image: '/results/dark/k_selection_metrics.png', title: 'K-Selection Metrics', href: '#charts' },
+                { image: '/results/dark/silhouette_scores.png', title: 'Silhouette Scores', href: '#charts' },
+                { image: '/results/dark/elbow_curve.png', title: 'Elbow Curve', href: '#charts' },
+                { image: '/results/dark/component_loadings.png', title: 'PCA Component Loadings', href: '#charts' },
+                { image: '/results/dark/correlation_heatmap.png', title: 'Correlation Heatmap', href: '#charts' },
+                { image: '/results/dark/distributions.png', title: 'Feature Distributions', href: '#charts' },
+                { image: '/results/dark/boxplots_by_time.png', title: 'Boxplots by Time', href: '#charts' },
+                { image: '/results/dark/weekday_weekend_comparison.png', title: 'Weekday vs Weekend', href: '#charts' },
+                { image: '/results/dark/consumption_variability.png', title: 'Consumption Variability', href: '#charts' },
+                { image: '/results/dark/archetype_recovery.png', title: 'Archetype Recovery', href: '#charts' },
+                { image: '/results/dark/archetype_crosstab.png', title: 'Archetype Crosstab', href: '#charts' },
+                { image: '/results/dark/seed_robustness.png', title: 'Seed Robustness', href: '#charts' },
+                { image: '/results/dark/ablation_comparison.png', title: 'Ablation Comparison', href: '#charts' },
+                { image: '/results/dark/shap_cluster_importance.png', title: 'Cluster Feature Importance', href: '#highlights' },
+                { image: '/results/dark/longitudinal_cluster_stability.png', title: 'Longitudinal Stability', href: '#highlights' },
+                { image: '/results/dark/seasonal_mean_shape_by_season.png', title: 'Seasonal Load Shapes', href: '#highlights' },
+                { image: '/results/dark/seasonal_daily_energy_and_peak_hour.png', title: 'Seasonal Energy and Peak Hour', href: '#highlights' },
+                { image: '/results/dark/seasonal_phase_recovery.png', title: 'Seasonal Phase Recovery', href: '#highlights' },
               ]}
               columns={5}
               tileWidth={200}
@@ -2975,7 +2931,7 @@ function App() {
           </div>
         </section>
 
-        {/* LogoLoop — Tech stack scroller */}
+        {/* LogoLoop, the tech stack scroller */}
         <section className="band" style={{ paddingTop: 0, paddingBottom: 2 }}>
           <div style={{ height: 140, position: 'relative', overflow: 'hidden' }}>
             <LogoLoop
@@ -3035,7 +2991,7 @@ function App() {
 // A small root error boundary. A single WebGL shader, chart or animation throwing
 // during render or an effect would otherwise make React unmount the whole tree and
 // leave the page blank. This catches it, logs the exact message, and renders a
-// readable fallback instead — so the load never ends in an empty white screen.
+// readable fallback instead, so the load never ends in an empty white screen.
 class RootBoundary extends React.Component {
   constructor(props) {
     super(props);
