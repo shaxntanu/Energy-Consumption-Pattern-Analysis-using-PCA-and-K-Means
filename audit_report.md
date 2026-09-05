@@ -20,10 +20,10 @@
 - Explained variance ratio: [0.6529, 0.1076, 0.0630, 0.0541, 0.0498, 0.0290]
 
 **Clustering Results:**
-- K range tested: 2-10
+- K range tested: 2 to 10
 - Best silhouette K: 2 (score: 0.4079)
 - Best elbow K: 3
-- Selected optimal K: 3 (hard-coded preference for 3-6 range)
+- Selected optimal K: 3 (hard-coded preference for the 3 to 6 range)
 - Final cluster sizes: [60, 90, 50]
 - Final inertia: 1258.67
 - Final silhouette score: 0.3116
@@ -45,14 +45,14 @@
 ### Issue 1: Synthetic consumers share same temporal shape
 **Severity:** CRITICAL  
 **Problem:** All consumers use identical 24-hour temporal patterns, with only base consumption varying per consumer. Clustering is effectively magnitude segmentation, not behavioral segmentation.  
-**Evidence:** `src/data_loader.py` lines 73-82: `base_consumption = np.random.uniform(0.5, 3.0, n_consumers)` followed by `time_factor = 0.7 + 0.6 * np.sin(2 * np.pi * (hour - 6) / 24)` applied identically to all consumers.  
-**Why it matters:** Violates the core scientific objective - clustering recovers "who consumes more" not "how consumers consume differently."  
+**Evidence:** `src/data_loader.py` lines 73 to 82: `base_consumption = np.random.uniform(0.5, 3.0, n_consumers)` followed by `time_factor = 0.7 + 0.6 * np.sin(2 * np.pi * (hour - 6) / 24)` applied identically to all consumers.  
+**Why it matters:** Violates the core scientific objective, since clustering recovers "who consumes more" rather than "how consumers consume differently."  
 **Recommended fix:** Implement archetype-based synthetic data with distinct behavioral patterns (daytime-heavy, evening-heavy, flat/industrial, weekend-heavy) with continuous variation within each archetype.  
 **Implementation status:** completed
 
 ### Issue 2: weekend_ratio is not energy-based
 **Severity:** HIGH  
-**Problem:** weekend_ratio is computed as mean(is_weekend) - the fraction of rows that fall on weekend, not an energy behavior measure.  
+**Problem:** weekend_ratio is computed as mean(is_weekend), the fraction of rows that fall on a weekend, not an energy behavior measure.  
 **Evidence:** `src/feature_engineering.py` line 74: `'is_weekend': 'mean'` in temporal aggregation.  
 **Why it matters:** Measures time composition, not energy behavior. A consumer with 30% weekend rows but 50% weekend energy would be mischaracterized.  
 **Recommended fix:** Replace with `weekend_ratio = weekend_mean_energy / weekday_mean_energy` or similar energy-based metric.  
@@ -61,7 +61,7 @@
 ### Issue 3: Electrical variables are redundant/inconsistent
 **Severity:** HIGH  
 **Problem:** Current is manufactured as a re-scaled copy of energy, not independently meaningful.  
-**Evidence:** `src/data_loader.py` line 96: `current = energy_consumption / voltage * 1000` - direct mathematical derivation from energy.  
+**Evidence:** `src/data_loader.py` line 96: `current = energy_consumption / voltage * 1000`, a direct mathematical derivation from energy.  
 **Why it matters:** Adds no independent information, creates false impression of multidimensional measurement.  
 **Recommended fix:** Either drop electrical variables from primary clustering or generate them with physically consistent relationships.  
 **Implementation status:** completed
@@ -77,7 +77,7 @@
 ### Issue 5: Global forward/back-fill causes cross-consumer leakage
 **Severity:** CRITICAL  
 **Problem:** Missing value handling uses global ffill/bfill across entire DataFrame, leaking values across consumers.  
-**Evidence:** `src/preprocessing.py` lines 49-50: `df_clean = df_clean.ffill().bfill()` operates on entire DataFrame without grouping by consumer.  
+**Evidence:** `src/preprocessing.py` lines 49 to 50: `df_clean = df_clean.ffill().bfill()` operates on entire DataFrame without grouping by consumer.  
 **Why it matters:** If consumer A has missing values, they could be filled with consumer B's values if rows are interleaved.  
 **Recommended fix:** Implement within-consumer missing value handling using groupby operations.  
 **Implementation status:** completed
@@ -100,8 +100,8 @@
 
 ### Issue 8: K selection includes hard-coded preferred range
 **Severity:** HIGH  
-**Problem:** K selection prefers K=3-6 for "interpretability" regardless of metrics.  
-**Evidence:** `src/clustering.py` lines 153-159: `if 3 <= best_silhouette_k <= 6: optimal_k = best_silhouette_k` - hard-coded preference for 3-6 range.  
+**Problem:** K selection prefers K=3 to 6 for "interpretability" regardless of metrics.  
+**Evidence:** `src/clustering.py` lines 153 to 159: `if 3 <= best_silhouette_k <= 6: optimal_k = best_silhouette_k`, a hard-coded preference for the 3 to 6 range.  
 **Why it matters:** Presentation preference drives scientific decision rather than letting metrics determine optimal K.  
 **Recommended fix:** Remove hard-coded range; select K based on separation + stability + cluster-size sanity + interpretability together.  
 **Implementation status:** completed
@@ -109,7 +109,7 @@
 ### Issue 9: Recommendations are generic and repeated
 **Severity:** MEDIUM  
 **Problem:** Same generic recommendations appear under every cluster regardless of specific characteristics.  
-**Evidence:** `src/cluster_profiling.py` lines 176-178: "Install smart meters," "Set up automated alerts," "Consider renewable energy integration" added to all clusters.  
+**Evidence:** `src/cluster_profiling.py` lines 176 to 178: "Install smart meters," "Set up automated alerts," "Consider renewable energy integration" added to all clusters.  
 **Why it matters:** Recommendations are not evidence-based or cluster-specific; undermines credibility.  
 **Recommended fix:** Implement template requiring observation/trigger metric/observed value/population baseline for each recommendation.  
 **Implementation status:** completed
@@ -133,7 +133,7 @@
 ### Issue 12: Dashboard recomputes metrics independently
 **Severity:** HIGH  
 **Problem:** Dashboard recomputes PCA and clustering metrics on the fly rather than reading from saved analysis.  
-**Evidence:** `src/app.py` lines 254-262: Re-runs PCA with `pca_temp = PCA(n_components=6)` instead of loading saved model.  
+**Evidence:** `src/app.py` lines 254 to 262: Re-runs PCA with `pca_temp = PCA(n_components=6)` instead of loading saved model.  
 **Why it matters:** Dashboard and offline pipeline can disagree; violates single-source-of-truth principle.  
 **Recommended fix:** Create single analysis object holding all fitted models; dashboard reads from this object.  
 **Implementation status:** completed
@@ -149,7 +149,7 @@
 ### Issue 14: Session state retains stale objects
 **Severity:** HIGH  
 **Problem:** Session state retains old PCA/clustering objects when sidebar parameters change.  
-**Evidence:** `src/app.py` lines 295-306: Only regenerates if session state is empty, not when parameters change.  
+**Evidence:** `src/app.py` lines 295 to 306: Only regenerates if session state is empty, not when parameters change.  
 **Why it matters:** User can see results from previous configuration after changing parameters.  
 **Recommended fix:** Invalidate session state on parameter change; use config hash to enforce regeneration.  
 **Implementation status:** completed
@@ -157,7 +157,7 @@
 ### Issue 15: Dependency versions are unpinned
 **Severity:** MEDIUM  
 **Problem:** requirements.txt uses >= operators without exact version pinning.  
-**Evidence:** `requirements.txt` lines 1-8: All packages use `>=` without specific versions.  
+**Evidence:** `requirements.txt` lines 1 to 8: All packages use `>=` without specific versions.  
 **Why it matters:** Saved models may fail to reload in different environments; reproducibility compromised.  
 **Recommended fix:** Pin exact versions for all dependencies.  
 **Implementation status:** completed
@@ -165,7 +165,7 @@
 ### Issue 16: Valid-value ranges are hard-coded globally
 **Severity:** MEDIUM  
 **Problem:** Valid-value ranges are hard-coded globally without configurability.  
-**Evidence:** `src/preprocessing.py` lines 95-101: Fixed ranges like `energy_consumption_kwh: (0, 100)` not configurable.  
+**Evidence:** `src/preprocessing.py` lines 95 to 101: Fixed ranges like `energy_consumption_kwh: (0, 100)` not configurable.  
 **Why it matters:** Different contexts (residential vs industrial) may require different valid ranges.  
 **Recommended fix:** Make ranges configurable via parameters or config file.  
 **Implementation status:** completed
@@ -251,7 +251,7 @@
 
 ---
 
-## Remediation Completion (Phases 1–11)
+## Remediation Completion (Phases 1 to 11)
 
 All Phase-0 confirmed issues above have been addressed in the corrected codebase. Baseline artifacts remain frozen under `baseline/`. See `docs/CHANGELOG.md`, `docs/BASELINE_VS_CORRECTED.md`, and `docs/FINAL_REPORT.md` for evidence.
 
@@ -260,7 +260,7 @@ All Phase-0 confirmed issues above have been addressed in the corrected codebase
 
 ---
 
-## Remediation Completion (Phases 1-11)
+## Remediation Completion (Phases 1 to 11)
 
 All confirmed issues above were addressed in the corrected pipeline. Baseline artifacts remain under `baseline/`. Final evidence: `docs/FINAL_REPORT.md`, `docs/CHANGELOG.md`, `docs/BASELINE_VS_CORRECTED.md`, `models/analysis_metadata.json`, `tests/` (18 passed).
 

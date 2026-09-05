@@ -1,4 +1,4 @@
-// Genuine flagship export — config 99c7a6631340d301
+// Genuine flagship export, config 99c7a6631340d301
 // 200 consumers × 365 days (2024-01-01 → 2024-12-30), 1,752,000 records
 // K=4 (silhouette 0.328, recovery ARI 0.813), 10 PCA components (0.9505 var)
 // Sourced from web/public/data/*.json (contract_version 1.0.0).
@@ -54,7 +54,7 @@ export const clusterShapes = {
 };
 
 export const clusters = [
-  // from profiles.json cluster_profiles — sizes, day-period shares, hourly
+  // from profiles.json cluster_profiles: sizes, day-period shares, hourly
   // peaks, base-load share, coefficient of variation
   {
     id: "0",
@@ -135,7 +135,7 @@ export const kMetrics = [
   { k: 10, silhouette: 0.159339506404563, calinski: 93.6491217851902, daviesBouldin: 1.6734790346927285, score: 0.41434208205206175, selected: false },
 ];
 
-// PCA variance from pca.json variance_curve — 10 components retained, the
+// PCA variance from pca.json variance_curve: 10 components retained, the
 // cumulative line settles at 0.9505 (reported as "95.0%").
 export const pcaComponents = [
   { component: 1, explainedVariance: 0.33935897022485733, cumulativeVariance: 0.33935897022485733 },
@@ -150,7 +150,7 @@ export const pcaComponents = [
   { component: 10, explainedVariance: 0.011967576576465483, cumulativeVariance: 0.9504940204193212 },
 ];
 
-// Summary band — the 365-day flagship (config 99c7a6631340d301).
+// Summary band: the 365-day flagship (config 99c7a6631340d301).
 export const summaryStats = {
   records: "1,752,000",
   nRecords: 1752000,
@@ -174,7 +174,7 @@ export const summaryStats = {
 
 // --- Upstream science highlights: honest availability labels, no invented numbers ---
 
-// Seasonal model — available: true on the 365-day flagship; at 30-day horizons
+// Seasonal model, available: true on the 365-day flagship; at 30-day horizons
 // the pipeline reports available: false ("no 'season' column with >= 2 distinct
 // values"). Sourced from seasonal.json.
 export const seasonalStats = {
@@ -188,7 +188,7 @@ export const seasonalStats = {
   nTruthConsumers: 185,
 };
 
-// Longitudinal stability — available ≥ 180 days (LONGITUDINAL_MIN_DAYS).
+// Longitudinal stability: available ≥ 180 days (LONGITUDINAL_MIN_DAYS).
 // Sourced from longitudinal.json: four non-overlapping quarterly windows, each
 // re-running scaling → PCA → K selection independently; permutation-invariant ARI.
 export const longitudinalStats = {
@@ -204,7 +204,7 @@ export const longitudinalStats = {
   meanStability: 0.8817,
 };
 
-// Explainability — SHAP (TreeExplainer on a surrogate RF); honest permutation
+// Explainability: SHAP (TreeExplainer on a surrogate RF); honest permutation
 // fallback when shap is absent. Sourced from explainability.json.
 export const explainabilityStats = {
   available: true,
@@ -221,7 +221,7 @@ export const explainabilityStats = {
   ],
 };
 
-// Real-world ingestion — the audited CASE A demo panel (make_demo_panel()).
+// Real-world ingestion: the audited CASE A demo panel (make_demo_panel()).
 // Internal metrics only: the real branch never fabricates NMI/ARI.
 export const realWorldStats = {
   available: true,
@@ -238,7 +238,7 @@ export const realWorldStats = {
   temporalStabilityReal: 1.0,
 };
 
-// Validation recovery — for the Validation slide's honest caption.
+// Validation recovery, for the Validation slide's honest caption.
 export const validationStats = {
   selectedKAri: 0.8127,
   selectedKNmi: 0.8284,

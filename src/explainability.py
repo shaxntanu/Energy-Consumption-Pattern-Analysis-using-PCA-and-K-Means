@@ -5,9 +5,9 @@ Answers one question the clustering result does not: *why* does a consumer land 
 the cluster it lands in?
 
 The clustering itself is unsupervised and has no notion of feature importance.
-This module therefore trains a small, shallow surrogate model - a random forest
+This module therefore trains a small, shallow surrogate model, a random forest
 that predicts the recovered cluster labels from the same behavioural features
-K-Means was fitted on - and explains *that* model. Two things follow from this
+K-Means was fitted on, and explains *that* model. Two things follow from this
 design and are worth stating plainly:
 
 1. The surrogate is POST-HOC. It is fitted after clustering, it never feeds back
@@ -68,7 +68,7 @@ def _load_shap():
     try:
         import shap  # type: ignore
         return shap
-    except Exception as exc:  # pragma: no cover - environment dependent
+    except Exception as exc:  # pragma: no cover, environment dependent
         logger.info("shap not available; using permutation fallback")
         return None
 
@@ -144,7 +144,7 @@ def _shap_importance(X: np.ndarray, labels: np.ndarray,
     elif (shap_values.ndim == 3 and shap_values.shape[1] == n_clusters
             and shap_values.shape[2] == X.shape[1]):
         shap_values = shap_values.transpose(1, 0, 2)   # (n, K, p) -> (K, n, p)
-    # else: already (K, n, p), or a genuinely 2-D binary output — leave it.
+    # else: already (K, n, p) or a genuinely 2-D binary output, so leave it.
 
     # shap_values is (n_clusters, n_rows, n_features).
     if shap_values.ndim == 3 and shap_values.shape[0] == n_clusters:
@@ -311,7 +311,7 @@ def run_explainability(features: pd.DataFrame,
     if method == 'shap':
         try:
             per_cluster, global_importance = _shap_importance(X_std, labels, feature_names)
-        except Exception as exc:  # pragma: no cover - environment dependent
+        except Exception as exc:  # pragma: no cover, environment dependent
             # A broken shap install must never take the pipeline down with it.
             # Fall back to permutation importance and say so honestly.
             logger.warning(f"SHAP explainer failed ({exc}); using permutation fallback")

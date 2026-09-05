@@ -1,4 +1,4 @@
-# Change Log — Remediation Fixes
+# Change Log: Remediation Fixes
 
 One entry per material fix. Baseline artifacts remain under `baseline/`.
 
@@ -53,7 +53,7 @@ One entry per material fix. Baseline artifacts remain under `baseline/`.
 - **Evidence:** Ablation report.
 - **Result:** Objective shifted to pattern segmentation; scale ablation documents the alternative.
 
-### 7. Hard-coded K preference (3–6)
+### 7. Hard-coded K preference (3 to 6)
 - **Problem:** Heuristic could override best silhouette at K=2.
 - **New:** Multi-metric consensus + optional ARI stability; no preferred range.
 - **Files:** `src/clustering.py`

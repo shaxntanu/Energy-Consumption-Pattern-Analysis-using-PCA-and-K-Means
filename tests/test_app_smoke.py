@@ -2,8 +2,8 @@
 
 Every other test here exercises the analysis or a figure factory. These run
 ``streamlit_app.py`` itself through Streamlit's own test harness, so a broken
-page - a renamed attribute, a bad format string, a chart that raises - fails
-here instead of in front of a reader.
+page, whether through a renamed attribute, a bad format string or a chart
+that raises, fails here instead of in front of a reader.
 
 The run is deliberately small and stability is off: the point is that each page
 executes and draws what it claims to, not that the numbers are good.
@@ -60,7 +60,7 @@ def test_navigation_is_complete_and_unique():
     assert len(app.PAGES) == len(set(app.PAGES))
     assert set(app.PAGES) == set(app.PAGE_FUNCS)
     assert app.HOME_PAGE in app.PAGES
-    # PAGES is the flattening of NAV_GROUPS — the sidebar and the router must
+    # PAGES is the flattening of NAV_GROUPS, so the sidebar and the router must
     # stay in lockstep with it. This is the concrete, documented list, so an
     # accidental reorder or a dropped group fails here.
     assert app.PAGES == [

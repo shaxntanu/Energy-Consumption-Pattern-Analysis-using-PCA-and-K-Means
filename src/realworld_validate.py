@@ -2,8 +2,8 @@
 Real-world model evaluation (Improvement 3, validation layer).
 
 Real consumption data has no ground-truth archetype, so a real-world result must
-never be graded with ARI/NMI against invented groups - that would be reporting a
-score the data could not have produced. This module instead evaluates the
+never be graded with ARI/NMI against invented groups, as that would be
+reporting a score the data could not have produced. This module instead evaluates the
 recovered clustering with the evidence the data *does* give:
 
 - internal quality: silhouette, Calinski-Harabasz, Davies-Bouldin (the same
@@ -18,7 +18,7 @@ recovered clustering with the evidence the data *does* give:
   real units against the population.
 
 Together these answer "is this a stable, interpretable partition of real load
-shapes?" - the question real-world validation can legitimately ask. It never
+shapes?", the question real-world validation can legitimately ask. It never
 answers "did we recover the truth?", because no real dataset provides it.
 """
 from __future__ import annotations
@@ -96,7 +96,7 @@ class RealWorldReport:
         """A self-contained report for the real-world pathway."""
         k = self.optimal_k
         lines = []
-        lines.append(f"# Real-world validation report — {self.source_name}")
+        lines.append(f"# Real-world validation report: {self.source_name}")
         lines.append("")
         lines.append("_No ARI/NMI is reported here: real data has no ground-truth "
                      "archetype. Scores are internal quality + restart stability + "
@@ -107,7 +107,7 @@ class RealWorldReport:
         lines.append(f"- Features per meter: {len(self.feature_names)}")
         lines.append(f"- PCA components kept: {self.n_pca_components} "
                      f"({self.pca_cumulative_variance:.1%} variance)")
-        lines.append(f"- K selected: {k}  (candidates {min(self.k_values)}–{max(self.k_values)})")
+        lines.append(f"- K selected: {k}  (candidates {min(self.k_values)}-{max(self.k_values)})")
         lines.append("")
         lines.append("## Internal quality (higher silhouette / CH is better; lower DB is better)")
         lines.append("")
@@ -132,7 +132,7 @@ class RealWorldReport:
         lines.append("|---------:|------:|----------:|--------------:|-----------:|----:|--------------:|")
         for _, prof in self.cluster_profiles.sort_values("cluster").iterrows():
             peak = prof.get("peak_hour")
-            peak_txt = f"{int(peak):02d}:00" if pd.notna(peak) else "—"
+            peak_txt = f"{int(peak):02d}:00" if pd.notna(peak) else "-"
             lines.append(
                 f"| {int(prof['cluster'])} | {prof.get('size_share', 0):.0%} |"
                 f" {peak_txt} |"
@@ -211,7 +211,7 @@ def temporal_stability(preprocessed: pd.DataFrame, features: pd.DataFrame,
     # (consumer_id, timestamp), so a row-index split would slice different
     # consumers into different windows and measure nothing about time at all.
     # Splitting timestamps keeps every meter in every window and makes each
-    # window a different time interval over the SAME meters — the actual
+    # window a different time interval over the SAME meters, the actual
     # question ("does the segmentation persist across earlier vs later time?").
     times = preprocessed["timestamp"]
     t_start, t_end = times.min(), times.max()
@@ -291,7 +291,7 @@ def run_real_world_study(panel: pd.DataFrame, facts: dict,
             f"Real-world clustering needs at least {k_range[1]} meters to evaluate "
             f"K up to {k_range[1] - 1}; this source has {n_consumers}. "
             f"Single-house sources (e.g. the UCI archive) describe one consumer "
-            f"and cannot be clustered - use a multi-meter dataset, or raise "
+            f"and cannot be clustered; use a multi-meter dataset, or raise "
             f"k_range for a larger source."
         )
 
