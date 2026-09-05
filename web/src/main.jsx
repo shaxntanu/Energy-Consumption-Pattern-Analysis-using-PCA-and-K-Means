@@ -27,6 +27,7 @@ import {
 import { RadarChart, RadarGrid, RadarAxis, RadarLabels, RadarArea } from "./RadarChart";
 import LogoLoop from "./components/LogoLoop";
 import DriftWall from "./components/DriftWall";
+import ProjectCompanion from "./companion/ProjectCompanion.jsx";
 import "./styles.css";
 import {
   clusters,
@@ -3026,8 +3027,14 @@ class RootBoundary extends React.Component {
   }
 }
 
+// Optional mascot (Sunee). Setting this to false removes the companion from
+// the page entirely; it is fully isolated in web/src/companion/ and imports
+// nothing from the app except the shared analysis data used for its facts.
+const ENABLE_PROJECT_COMPANION = true;
+
 createRoot(document.getElementById("root")).render(
   <RootBoundary>
     <App />
+    {ENABLE_PROJECT_COMPANION ? <ProjectCompanion /> : null}
   </RootBoundary>
 );
