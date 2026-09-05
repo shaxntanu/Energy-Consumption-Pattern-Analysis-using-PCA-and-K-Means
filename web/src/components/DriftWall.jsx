@@ -22,10 +22,10 @@ export default function DriftWall({
   parallax = 0.6,
   pauseOnHover = true,
   lift = 64,
-  fade = 0.6,
-  dim = 0.55,
+  fade = 0.22,
+  dim = 0.92,
   grayscale = false,
-  overlay = "#060010",
+  overlay = "#070b10",
   items = [],
   className = "",
 }) {
@@ -226,8 +226,11 @@ export default function DriftWall({
 
   // Mask style
   const maskStyle = {
-    maskImage: `radial-gradient(ellipse 65% 75% at 50% 50%, black 40%, transparent 100%), linear-gradient(to bottom, transparent 10%, black 40%, black 60%, transparent 90%)`,
-    WebkitMaskImage: `radial-gradient(ellipse 65% 75% at 50% 50%, black 40%, transparent 100%), linear-gradient(to bottom, transparent 10%, black 40%, black 60%, transparent 90%)`,
+    // Soft edge fade only: the mask used to erase most of the wall, so tiles
+    // fell to near-zero brightness away from the centre. The ellipse now keeps
+    // a much larger band fully opaque.
+    maskImage: `radial-gradient(ellipse 80% 85% at 50% 50%, black 55%, transparent 100%), linear-gradient(to bottom, transparent 6%, black 25%, black 75%, transparent 94%)`,
+    WebkitMaskImage: `radial-gradient(ellipse 80% 85% at 50% 50%, black 55%, transparent 100%), linear-gradient(to bottom, transparent 6%, black 25%, black 75%, transparent 94%)`,
   };
 
   // CSS variables
