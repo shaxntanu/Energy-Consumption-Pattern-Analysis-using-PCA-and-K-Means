@@ -223,7 +223,7 @@ export default function DriftWall({
   const maskStyle = {
     maskImage: `radial-gradient(ellipse 65% 75% at 50% 50%, black 40%, transparent 100%), linear-gradient(to bottom, transparent 10%, black 40%, black 60%, transparent 90%)`,
     WebkitMaskImage: `radial-gradient(ellipse 65% 75% at 50% 50%, black 40%, transparent 100%), linear-gradient(to bottom, transparent 10%, black 40%, black 60%, transparent 90%)`,
-  } as React.CSSProperties;
+  };
 
   // CSS variables
   const cssVars = {
@@ -236,7 +236,7 @@ export default function DriftWall({
     "--dw-gray": grayscale ? 1 : 0,
     "--dw-overlay": overlay,
     "--dw-edge-perspective": `${perspective}px`,
-  } as React.CSSProperties;
+  };
 
   // Render a single tile
   const renderTile = (item, colIdx, copyIdx, itemIdx) => {
@@ -262,7 +262,7 @@ export default function DriftWall({
       transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease, box-shadow 0.4s ease",
       filter: grayscale ? "grayscale(1)" : "none",
       opacity: isActive ? 1 : 1 - fade,
-    } as React.CSSProperties;
+    };
 
     const innerStyle = {
       display: "block",
@@ -276,7 +276,7 @@ export default function DriftWall({
       boxShadow: isActive
         ? `0 ${lift}px ${lift * 2}px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(72, 215, 194, 0.3)`
         : `0 0 ${lift / 2}px rgba(0, 0, 0, 0.3)`,
-    } as React.CSSProperties;
+    };
 
     const imgStyle = {
       width: "100%",
@@ -285,7 +285,7 @@ export default function DriftWall({
       display: "block",
       transition: "transform 0.4s ease, filter 0.4s ease",
       filter: `brightness(${isActive ? 1 : dim})`,
-    } as React.CSSProperties;
+    };
 
     const overlayStyle = {
       position: "absolute",
@@ -295,7 +295,7 @@ export default function DriftWall({
       borderRadius: radius,
       transition: "opacity 0.3s ease",
       pointerEvents: "none",
-    } as React.CSSProperties;
+    };
 
     const content = (
       <span className={innerClass} style={innerStyle}>
