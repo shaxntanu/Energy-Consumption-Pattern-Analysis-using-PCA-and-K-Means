@@ -1,405 +1,423 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * ParticleText — Animated text made of particles that gather/disperse.
- * Adapted from @react-bits/ParticleText-TS-TW for this project's theme.
- * Replaces the H1 "Energy use is a pattern, not just a number."
+ * ParticleText — "Future Interfaces"-style particle title.
+ *
+ * Ported faithfully to JSX from the public TypeScript component
+ * @react-bits/ParticleText-TS-TW (added via `npx shadcn@latest add`). It
+ * samples the rendered text on an off-screen canvas and spawns one particle
+ * per lit pixel, then eases the particles from a scattered state into place,
+ * with optional pointer repulsion and a glow pass on top.
+ *
+ * API follows the shadcn component: `highlightColor` (not `highlight`), an
+ * explicit `glow` toggle, and `trigger`="mount" | "visible" | null for when the
+ * gather animation starts.
  */
 export default function ParticleText({
-  text = "Energy use is a pattern, not just a number.",
-  particleSize = 2.2,
-  density = 4,
-  color = "#48d7c2",
-  highlight = "#48d7c2",
-  scatter = 190,
-  gatherDuration = 1600,
-  stagger = 420,
-  pointerRepel = 42,
-  repelRadius = 120,
-  idleDrift = 0.8,
+  text = "Future Interfaces",
+  color = "#f8fafc",
+  highlightColor = "#8b5cf6",
+  particleSize = 3,
+  density = 3,
+  fontSize = "6rem",
+  fontWeight = 800,
+  fontFamily = "inherit",
+  scatter = 240,
+  gatherDuration = 1500,
+  stagger = 330,
+  pointerRepel = 30,
+  repelRadius = 100,
+  idleDrift = 1,
+  glow = false,
   trigger = "mount",
   className = "",
-  fontSize = "clamp(3.5rem, 13vw, 9rem)",
-  fontWeight = 800,
+  style = {},
 }) {
   const containerRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [phase, setPhase] = useState(trigger === "mount" ? "gather" : "idle");
+  const [isVisible, setIsVisible] = useState(false);
 
-  // Refs for animation loop
-  const particlesRef = useRef([]);
-  const animationFrameRef = useRef(null);
-  const resizeFrameRef = useRef(null);
-  const buildIdRef = useRef(0);
-  const gatheringRef = useRef(false);
-  const gatherStartRef = useRef(0);
-  const pointerRef = useRef({
-    active: false,
-    x: 0,
-    y: 0,
-    smoothX: 0,
-    smoothY: 0,
-  });
+  const propsRef = useRef({});
+  propsRef.current = {
+    text,
+    color,
+    highlightColor,
+    particleSize: Math.max(particleSize, 1),
+    density: Math.max(density, 1),
+    fontSize,
+    stagger,
+    gatherDuration,
+    pointerRepel,
+    repelRadius,
+    glow,
+    phase,
+    fontWeight,
+  };
 
-  // Color utilities
   const hexToRgb = (hex) => {
     const h = hex.replace("#", "");
-    const bigint = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+    const full =
+      h.length === 3
+        ? h
+            .split("")
+            .map((c) => c + c)
+            .join("")
+        : h;
+    const bigint = parseInt(full, 16);
     return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
   };
 
-  const mixRgb = (a, b, t) => ({
-    r: Math.round(a.r + (b.r - a.r) * t),
-    g: Math.round(a.g + (b.g - a.g) * t),
-    b: Math.round(a.b + (b.b - a.b) * t),
-  });
+  const mixRgb = (from, to, amount) => {
+    const clamped = Math.max(0, Math.min(1, amount));
+    return {
+      r: Math.round(from.r + (to.r - from.r) * clamped),
+      g: Math.round(from.g + (to.g - from.g) * clamped),
+      b: Math.round(from.b + (to.b - from.b) * clamped),
+    };
+  };
 
-  const rgbToCss = (rgb) => `rgb(${rgb.r},${rgb.g},${rgb.b})`;
+  const rgbToCss = ({ r, g, b }) => `rgb(${r}, ${g}, ${b})`;
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
-  const resolveFontSize = (fs) => {
-    if (typeof fs === "number") return `${fs}px`;
-    return fs;
+  const waitForFonts = (font) =>
+    new Promise((resolve) => {
+      if (!document.fonts?.ready) return resolve();
+      document.fonts.ready.then(() => {
+        if (document.fonts.check(font)) return resolve();
+        let tries = 0;
+        const check = setInterval(() => {
+          tries += 1;
+          if (document.fonts.check(font) || tries > 50) {
+            clearInterval(check);
+            resolve();
+          }
+        }, 100);
+      });
+    });
+
+  const resolveFontSize = (value, container, fallbackWeight, resolvedFamily) => {
+    const probe = document.createElement("div");
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
+    probe.style.whiteSpace = "nowrap";
+    probe.style.fontFamily = resolvedFamily;
+    probe.style.fontWeight = String(fallbackWeight);
+    probe.textContent = "M";
+    container.appendChild(probe);
+    let numeric = typeof value === "number" ? value : parseFloat(value);
+    if (Number.isNaN(numeric)) numeric = 96;
+    const measured = probe.getBoundingClientRect().height || numeric;
+    probe.remove();
+    return measured;
   };
 
-  const waitForFonts = async () => {
-    if (document.fonts && document.fonts.ready) {
-      await document.fonts.ready;
-    }
-  };
-
-  // Start the gather animation
-  const startGather = () => {
-    gatheringRef.current = true;
-    gatherStartRef.current = performance.now();
-  };
-
-  // Draw a single particle
-  const drawParticle = (ctx, p, colorCss, progress, pointer) => {
-    const size = Math.max(0.5, p.size * progress);
-    const { r, g, b } = hexToRgb(colorCss);
-    const alpha = p.alpha * progress;
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
-
-    // Use fillRect for better performance at small sizes
-    if (size < 2) {
-      ctx.fillRect(p.x - 0.5, p.y - 0.5, 1, 1);
-    } else {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  };
-
-  // Sample text into particles
-  const sampleText = (canvas, ctx, text, fontSizePx, particleSize, density, color, highlight) => {
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.width;
-    const h = canvas.height;
-
-    // Offscreen canvas for text measurement
-    const off = document.createElement("canvas");
-    const offCtx = off.getContext("2d");
-    off.width = w;
-    off.height = h;
-    offCtx.font = `${fontWeight} ${fontSizePx}px Inter, system-ui, sans-serif`;
-    offCtx.textBaseline = "top";
-    offCtx.fillStyle = "white";
-
-    const metrics = offCtx.measureText(text);
-    const textWidth = metrics.width;
-    const maxTextWidth = w * 0.92;
-    const scale = textWidth > maxTextWidth ? maxTextWidth / textWidth : 1;
-    const finalFontSize = fontSizePx * scale;
-    offCtx.font = `${fontWeight} ${finalFontSize}px Inter, system-ui, sans-serif`;
-
-    const finalMetrics = offCtx.measureText(text);
-    const x = (w - finalMetrics.width) / 2;
-    const y = (h - finalMetrics.height) / 2;
-    offCtx.fillText(text, x, y);
-
-    const imgData = offCtx.getImageData(0, 0, w, h);
-    const data = imgData.data;
-    const step = Math.max(1, density);
-    const maxParticles = Math.min(
-      5200,
-      Math.max(900, Math.floor((w * h) / 90))
-    );
-    const stride = Math.max(step, Math.ceil(Math.sqrt((w * h) / maxParticles)));
-
-    const baseColor = hexToRgb(color);
-    const highlightColor = hexToRgb(highlight);
-    const particles = [];
-
-    for (let py = 0; py < h; py += stride) {
-      const rowOffset = py * w * 4;
-      for (let px = 0; px < w; px += stride) {
-        const idx = rowOffset + px * 4;
-        const alpha = data[idx + 3];
-        if (alpha > 40) {
-          const depth = Math.random();
-          const delay = depth * stagger;
-          const isHighlight = Math.random() < 0.15;
-          particles.push({
-            x: px,
-            y: py,
-            targetX: px,
-            targetY: py,
-            size: particleSize * (0.6 + depth * 0.8),
-            alpha: alpha / 255,
-            color: isHighlight ? highlightColor : baseColor,
-            depth,
-            delay,
-            vx: 0,
-            vy: 0,
-          });
-        }
-      }
-    }
-
-    return particles.slice(0, maxParticles);
-  };
-
-  // Initialize particles
-  const initializeParticles = () => {
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const rect = container.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-
-    const ctx = canvas.getContext("2d");
-    ctx.scale(dpr, dpr);
-
-    // Parse fontSize to pixels
-    let fontSizePx = 120;
-    const fsStr = resolveFontSize(fontSize);
-    if (fsStr.endsWith("px")) {
-      fontSizePx = parseFloat(fsStr);
-    } else if (fsStr.includes("clamp")) {
-      // Approximate clamp(3.5rem, 13vw, 9rem) -> use 13vw
-      fontSizePx = Math.max(56, Math.min(144, window.innerWidth * 0.13));
-    } else if (fsStr.endsWith("rem")) {
-      fontSizePx = parseFloat(fsStr) * 16;
-    } else if (fsStr.endsWith("vw")) {
-      fontSizePx = (parseFloat(fsStr) / 100) * window.innerWidth;
-    }
-
-    buildIdRef.current += 1;
-    const currentBuildId = buildIdRef.current;
-
-    waitForFonts().then(() => {
-      if (currentBuildId !== buildIdRef.current) return;
-      particlesRef.current = sampleText(
-        canvas,
-        ctx,
-        text,
-        fontSizePx,
-        particleSize,
-        density,
-        color,
-        highlight
+  // Visibility wiring for trigger="visible".
+  useEffect(() => {
+    if (trigger === "visible") {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            setPhase("gather");
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.1 }
       );
-    });
-  };
-
-  // Render loop
-  const render = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    const w = canvas.width / (window.devicePixelRatio || 1);
-    const h = canvas.height / (window.devicePixelRatio || 1);
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const now = performance.now();
-    const pointer = pointerRef.current;
-
-    // Smooth pointer following
-    pointer.smoothX += (pointer.x - pointer.smoothX) * 0.18;
-    pointer.smoothY += (pointer.y - pointer.smoothY) * 0.18;
-
-    let progress = 1;
-    if (gatheringRef.current) {
-      const elapsed = now - gatherStartRef.current;
-      progress = clamp(elapsed / gatherDuration, 0, 1);
-      progress = easeOutCubic(progress);
-      if (progress >= 1) {
-        gatheringRef.current = false;
-      }
+      if (containerRef.current) observer.observe(containerRef.current);
+      return () => observer.disconnect();
     }
-
-    const particles = particlesRef.current;
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      const particleProgress = gatheringRef.current
-        ? clamp((progress - p.delay / gatherDuration) / (1 - p.delay / gatherDuration), 0, 1)
-        : 1;
-
-      // Idle drift
-      if (!gatheringRef.current && !pointer.active) {
-        const driftSpeed = 0.0003 * idleDrift;
-        p.targetX += Math.sin(now * driftSpeed + p.depth * 10) * 0.3;
-        p.targetY += Math.cos(now * driftSpeed + p.depth * 10) * 0.2;
-      }
-
-      // Pointer repel
-      if (pointer.active) {
-        const dx = p.x - pointer.smoothX;
-        const dy = p.y - pointer.smoothY;
-        const dist = Math.hypot(dx, dy);
-        if (dist < repelRadius && dist > 0) {
-          const force = (pointerRepel / dist) * (1 - dist / repelRadius);
-          p.vx += (dx / dist) * force * 0.5;
-          p.vy += (dy / dist) * force * 0.5;
-        }
-      }
-
-      // Spring to target
-      const k = 0.08;
-      const d = 0.85;
-      const tx = gatheringRef.current ? p.targetX : p.targetX;
-      const ty = gatheringRef.current ? p.targetY : p.targetY;
-
-      p.vx += (tx - p.x) * k;
-      p.vy += (ty - p.y) * k;
-      p.vx *= d;
-      p.vy *= d;
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // Draw
-      const drawProgress = gatheringRef.current ? particleProgress : 1;
-      drawParticle(ctx, p, rgbToCss(p.color), drawProgress, pointer);
+    if (trigger === "mount") {
+      setIsVisible(true);
     }
+    return undefined;
+  }, [trigger]);
 
-    // Draw highlight glow for gathered state
-    if (gatheringRef.current && progress > 0.5) {
-      const glowProgress = (progress - 0.5) * 2;
-      ctx.shadowBlur = 30 * glowProgress;
-      ctx.shadowColor = highlight;
-    } else {
-      ctx.shadowBlur = 0;
-    }
-
-    animationFrameRef.current = requestAnimationFrame(render);
-  };
-
-  // Ensure render loop is running
-  const ensureRenderLoop = () => {
-    if (!animationFrameRef.current) {
-      render();
-    }
-  };
-
-  // Queue a rebuild (resize, text change)
-  const queueSample = () => {
-    if (resizeFrameRef.current) cancelAnimationFrame(resizeFrameRef.current);
-    resizeFrameRef.current = requestAnimationFrame(() => {
-      initializeParticles();
-      ensureRenderLoop();
-    });
-  };
-
-  // Pointer handlers
-  const onPointerMove = (e) => {
+  // Main particle engine.
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const rect = container.getBoundingClientRect();
-    pointerRef.current.active = true;
-    pointerRef.current.x = e.clientX - rect.left;
-    pointerRef.current.y = e.clientY - rect.top;
-  };
+    if (trigger !== null && !isVisible) return;
+    if (trigger === null) setPhase("gather");
 
-  const onPointerLeave = () => {
-    pointerRef.current.active = false;
-  };
+    const canvas = container.querySelector(".particle-text__canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
 
-  const onPointerDown = () => {
-    if (!gatheringRef.current) startGather();
-  };
+    let width = container.getBoundingClientRect().width;
+    let controlHeight = container.getBoundingClientRect().height;
 
-  // Reduced motion
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mediaQuery.matches);
-    const handler = (e) => setReducedMotion(e.matches);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
+    const props = propsRef.current;
+    const resolvedFamily =
+      fontFamily === "inherit" ? getComputedStyle(container).fontFamily : fontFamily;
+    const currentFontSize = resolveFontSize(fontSize, container, fontWeight, resolvedFamily);
+    const resolvedFont = `${fontWeight} ${currentFontSize * 1.1}px ${resolvedFamily}`;
 
-  // Initialize and cleanup
-  useEffect(() => {
-    initializeParticles();
-    ensureRenderLoop();
+    const paintText = () => {
+      ctx.clearRect(0, 0, width, controlHeight);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `${fontWeight} ${currentFontSize * 1.1}px ${resolvedFamily}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, width / 2, controlHeight / 2);
+    };
 
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener("pointermove", onPointerMove);
-      container.addEventListener("pointerleave", onPointerLeave);
-      container.addEventListener("pointerdown", onPointerDown);
+    canvas.width = width * 2;
+    canvas.height = controlHeight * 2;
+    ctx.scale(2, 2);
+    paintText();
+
+    waitForFonts(resolvedFont).then(paintText);
+
+    // Sample lit pixels.
+    const offCanvas = document.createElement("canvas");
+    offCanvas.width = canvas.width;
+    offCanvas.height = canvas.height;
+    const offCtx = offCanvas.getContext("2d");
+    offCtx.drawImage(canvas, 0, 0);
+    const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+
+    const samples = [];
+    const threshold = 220;
+    const step = Math.max(1, Math.floor(props.density / 2));
+    let idx = 0;
+    for (let y = 0; y < offCanvas.height; y += step) {
+      for (let x = 0; x < offCanvas.width; x += step) {
+        const o = idx * 4;
+        if (
+          imageData.data[o] > threshold &&
+          imageData.data[o + 1] > threshold &&
+          imageData.data[o + 2] > threshold
+        ) {
+          samples.push({ x: x / 2, y: y / 2 });
+        }
+        idx += 1;
+      }
     }
 
-    const ro = new ResizeObserver(() => queueSample());
-    if (container) ro.observe(container);
+    const target = { source: new Float32Array(samples.length * 2), count: samples.length };
+    samples.forEach((s, i) => {
+      target.source[i * 2] = s.x;
+      target.source[i * 2 + 1] = s.y;
+    });
+
+    let particles = Array.from({ length: target.count }, (_, i) => ({
+      startX: target.source[i * 2],
+      startY: target.source[i * 2 + 1],
+      currentX: Math.random() * width,
+      currentY: Math.random() * controlHeight,
+      targetIndex: i * 2,
+      delay: Math.random() * props.stagger * 5,
+    }));
+
+    const pointer = {
+      x: width / 2,
+      y: controlHeight / 2,
+      vx: 0,
+      vy: 0,
+    };
+
+    let lastTime = performance.now();
+    let animationTime = 0;
+    let rafId = 0;
+
+    const pointerInside = () => {
+      const rect = container.getBoundingClientRect();
+      return pointer.x >= 0 && pointer.x <= rect.width && pointer.y >= 0 && pointer.y <= rect.height;
+    };
+
+    const render = (now) => {
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      animationTime += dt;
+
+      let avgX = 0;
+      let avgY = 0;
+      const n = particles.length;
+      const distXTotal = pointer.vx;
+      const distYTotal = pointer.vy;
+
+      for (const p of particles) {
+        const tx = target.source[p.targetIndex];
+        const ty = target.source[p.targetIndex + 1];
+
+        if (phase === "gather") {
+          const t = Math.min(Math.max(0, animationTime - p.delay) / props.gatherDuration, 1);
+          const eased = easeOutCubic(t);
+          p.currentX = p.startX + (tx - p.startX) * eased;
+          p.currentY = p.startY + (ty - p.startY) * eased;
+        } else {
+          p.currentX += (tx - p.currentX) * 0.08;
+          p.currentY += (ty - p.currentY) * 0.08;
+        }
+
+        let dxx = pointer.x - p.currentX;
+        let dyy = pointer.y - p.currentY;
+        const dist = Math.sqrt(dxx * dxx + dyy * dyy);
+        const r = props.repelRadius * 1.0;
+        if (dist < r * (1 + props.pointerRepel * 0.02) && pointerInside()) {
+          const force = ((r - dist) / r) * props.pointerRepel;
+          dxx = dxx / (dist || 0.0001);
+          dyy = dyy / (dist || 0.0001);
+          const push = (force * 12) / (1 + r * 0.12);
+          p.currentX += dxx * push;
+          p.currentY += dyy * push;
+        }
+
+        avgX += p.currentX;
+        avgY += p.currentY;
+      }
+
+      avgX = n ? avgX / n : width / 2;
+      avgY = n ? avgY / n : controlHeight / 2;
+      const maxDist = Math.max(props.repelRadius, props.repelRadius * 2);
+
+      ctx.clearRect(0, 0, width, controlHeight);
+      ctx.save();
+      ctx.translate(width / 2, controlHeight / 2);
+      ctx.rotate(Math.sin(animationTime * 0.01) * 0.01);
+      ctx.translate(-avgX, -avgY);
+
+      const colorRgb = hexToRgb(props.color);
+      const highlightRgb = hexToRgb(props.highlightColor);
+
+      for (const p of particles) {
+        const totalDist = Math.max(
+          Math.sqrt((p.currentX - avgX) ** 2 + (p.currentY - avgY) ** 2),
+          0.01
+        );
+        const fade = clamp(totalDist / maxDist, 0, 1);
+        const mixed = mixRgb(highlightRgb, colorRgb, easeOutCubic(fade));
+
+        const gidx = Math.floor(p.targetIndex / 2);
+        const cycle = Math.sin(animationTime * 2 + gidx * 0.05) * 0.5 + 0.5;
+
+        ctx.beginPath();
+        ctx.arc(
+          p.currentX,
+          p.currentY,
+          (props.particleSize / 2) * (idleDrift ? 1 + cycle * 0.1 : 1),
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = rgbToCss(mixed);
+        ctx.globalAlpha = 1 - fade * 0.55;
+        ctx.fill();
+
+        if (props.glow) {
+          ctx.shadowColor = rgbToCss(mixed);
+          ctx.shadowBlur = props.particleSize * 2;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      ctx.restore();
+      ctx.globalAlpha = 1;
+
+      rafId = requestAnimationFrame(render);
+    };
+
+    const onPointerMove = (e) => {
+      const rect = container.getBoundingClientRect();
+      const newX = e.clientX - rect.left;
+      const newY = e.clientY - rect.top;
+      pointer.vx = (newX - pointer.x) * 0.1;
+      pointer.vy = (newY - pointer.y) * 0.1;
+      pointer.x = newX;
+      pointer.y = newY;
+    };
+
+    const onPointerLeave = () => {
+      pointer.vx = 0;
+      pointer.vy = 0;
+    };
+
+    // React to container resizes by re-sampling so the glyph stays sharp.
+    const handleResize = () => {
+      const rect = container.getBoundingClientRect();
+      const newWidth = rect.width;
+      const newControlHeight = rect.height;
+      if (newWidth === width && newControlHeight === controlHeight) return;
+
+      canvas.width = newWidth * 2;
+      canvas.height = newControlHeight * 2;
+      ctx.setTransform(2, 0, 0, 2, 0, 0);
+      ctx.font = `${fontWeight} ${currentFontSize * 1.1}px ${resolvedFamily}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, newWidth / 2, newControlHeight / 2);
+
+      // Re-sample lit pixels for the new size.
+      const off = document.createElement("canvas");
+      off.width = canvas.width;
+      off.height = canvas.height;
+      const octx = off.getContext("2d");
+      octx.drawImage(canvas, 0, 0);
+      const id = octx.getImageData(0, 0, off.width, off.height);
+      const rebuilt = [];
+      let counter = 0;
+      for (let yy = 0; yy < off.height; yy += step) {
+        for (let xx = 0; xx < off.width; xx += step) {
+          const o = counter * 4;
+          if (
+            id.data[o] > threshold &&
+            id.data[o + 1] > threshold &&
+            id.data[o + 2] > threshold
+          ) {
+            rebuilt.push({ x: xx / 2, y: yy / 2 });
+          }
+          counter += 1;
+        }
+      }
+      const newCount = rebuilt.length;
+      particles = Array.from({ length: newCount }, (_, i) => ({
+        startX: rebuilt[i].x,
+        startY: rebuilt[i].y,
+        currentX: Math.random() * newWidth,
+        currentY: Math.random() * newControlHeight,
+        targetIndex: i * 2,
+        delay: Math.random() * props.stagger * 5,
+      }));
+      target.count = newCount;
+      target.source = new Float32Array(newCount * 2);
+      rebuilt.forEach((s, i) => {
+        target.source[i * 2] = s.x;
+        target.source[i * 2 + 1] = s.y;
+      });
+
+      width = newWidth;
+      controlHeight = newControlHeight;
+
+      ctx.clearRect(0, 0, width, controlHeight);
+    };
+
+    const ro = new ResizeObserver(handleResize);
+    ro.observe(container);
+    container.addEventListener("pointermove", onPointerMove);
+    container.addEventListener("pointerleave", onPointerLeave);
+    rafId = requestAnimationFrame(render);
 
     return () => {
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      if (resizeFrameRef.current) cancelAnimationFrame(resizeFrameRef.current);
-      if (container) {
-        container.removeEventListener("pointermove", onPointerMove);
-        container.removeEventListener("pointerleave", onPointerLeave);
-        container.removeEventListener("pointerdown", onPointerDown);
-      }
+      cancelAnimationFrame(rafId);
       ro.disconnect();
+      container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener("pointerleave", onPointerLeave);
     };
-  }, [text, particleSize, density, color, highlight, scatter, gatherDuration, stagger, pointerRepel, repelRadius, idleDrift, fontSize, fontWeight]);
-
-  // Trigger gather on mount
-  useEffect(() => {
-    if (trigger === "mount") {
-      startGather();
-    }
-  }, [trigger]);
+  }, [isVisible, trigger, text, color, highlightColor, fontSize, fontWeight, fontFamily, density, particleSize, stagger, gatherDuration, pointerRepel, repelRadius, idleDrift, glow]);
 
   return (
     <div
       ref={containerRef}
       className={`particle-text ${className}`}
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        minHeight: "1.5em",
-        userSelect: "none",
-      }}
-      role="img"
+      style={style}
       aria-label={text}
     >
-      <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%" }} />
-      <span className="sr-only" style={{
-        position: "absolute",
-        width: "1px",
-        height: "1px",
-        padding: 0,
-        margin: "-1px",
-        overflow: "hidden",
-        clip: "rect(0, 0, 0, 0)",
-        whiteSpace: "nowrap",
-        border: 0,
-      }}>
-        {text}
-      </span>
+      <canvas className="particle-text__canvas" aria-hidden="true" />
+      <span className="particle-text__sr">{text}</span>
     </div>
   );
 }
