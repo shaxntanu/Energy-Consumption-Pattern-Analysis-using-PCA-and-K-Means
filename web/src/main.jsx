@@ -2765,9 +2765,11 @@ function App() {
             fadeDuration={900}
             blendMode="screen"
           >
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {/* hero-text: title, then subtitle, then actions, one above the other.
+                The slideshow sits below this whole block as the next hero child. */}
+            <div className="hero-text">
               <h1>Energy use is a pattern, not just a number.</h1>
-              <p>
+              <p className="hero-subtitle">
                 This project simulates a full year of household electricity readings, turns
                 each day into a load shape, compresses the features with PCA, and uses K-Means
                 to find daily rhythms that are easier to explain, then checks how the clusters

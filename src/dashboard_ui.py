@@ -28,6 +28,7 @@ the pipeline already produced are shown.
 """
 from __future__ import annotations
 
+from datetime import date
 from typing import Iterable, Sequence
 
 import plotly.graph_objects as go
@@ -62,6 +63,11 @@ AMBER = "#F5A524"       # peak end of the ramp, and caution
 AMBER_DEEP = "#E0871B"
 ROSE = "#F26D6D"        # negative deviation, error
 VIOLET = "#B085F5"      # extra qualitative hue
+
+# Interface build stamp, shown in the masthead version badge. The number and
+# the build date pick themselves up on every rerun; bump the number when the
+# interface ships something new rather than on every data pipeline run.
+APP_VERSION = "1.0.0"
 
 # Qualitative palette for cluster IDs. Cluster numbers are arbitrary, so this is
 # a distinct-hue set rather than an ordered ramp. It deliberately does not lead
@@ -404,19 +410,37 @@ a:hover { text-decoration: underline; }
 /* Masthead -------------------------------------------------------------- */
 /* The band that used to be the landing page's top navigation. It carries
    identity and the outbound links only; the page nav itself lives in the
-   sidebar, so there is one place to change pages and no competing menus. */
+   sidebar, so there is one place to change pages and no competing menus.
+   The identity block is a translucent glass chip: a number logo, the brand
+   name, the "against the unknown" tagline and a version badge with the build
+   date, so the masthead reads like the title card of the study. */
 .masthead {
   display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-  padding: 0.55rem 0 0.9rem 0; margin-bottom: 1.4rem;
-  border-bottom: 1px solid var(--line);
+  padding: 0.55rem 1rem; margin-bottom: 1.4rem;
+  background: linear-gradient(180deg, rgba(20, 26, 36, 0.6), rgba(11, 14, 20, 0.35));
+  border: 1px solid rgba(38, 46, 61, 0.45); border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .masthead .brand {
   font-family: var(--display); font-weight: 600; font-size: 0.95rem;
   color: var(--ink); display: flex; align-items: center; gap: 0.5rem;
   letter-spacing: -0.01em;
 }
-.masthead .brand .slash {
-  font-family: var(--mono); color: var(--cyan); font-weight: 500; font-size: 1.05rem;
+/* The number logo: a small neon chip, mono numerals, cyan ring. */
+.masthead .brand .logo {
+  font-family: var(--mono); font-weight: 600; font-size: 0.72rem;
+  letter-spacing: 0.08em; color: #fff; line-height: 1;
+  padding: 0.3rem 0.45rem;
+  background: linear-gradient(135deg, rgba(59,201,222,0.16), rgba(108,140,255,0.16));
+  border: 1px solid rgba(59,201,222,0.45); border-radius: 8px;
+  box-shadow: 0 0 14px rgba(59,201,222,0.28);
+}
+.masthead .brand .name { color: var(--ink); }
+/* The tagline sits behind the name, grey and quiet but always present. */
+.masthead .brand .tag {
+  font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--slate);
+  padding-left: 0.5rem; border-left: 1px solid var(--line);
 }
 .masthead .where {
   font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
@@ -425,6 +449,18 @@ a:hover { text-decoration: underline; }
 }
 .masthead .where b { color: var(--mist); font-weight: 500; }
 .masthead .spacer { flex: 1 1 auto; }
+.masthead .ver {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--mist); white-space: nowrap;
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+.masthead .ver .dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+}
 .masthead .out {
   font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--mist);
@@ -543,77 +579,223 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
   margin: 1.1rem 0 0.35rem 0;
 }
 .nav-group:first-of-type { margin-top: 0.2rem; }
-[data-testid="stSidebar"] .stButton > button {
-  background: transparent; color: var(--mist); border: none;
-  border-left: 2px solid transparent; border-radius: 0 6px 6px 0;
-  font-family: var(--body); font-size: 0.86rem; font-weight: 500;
-  text-align: left; justify-content: flex-start;
-  padding: 0.34rem 0.7rem; width: 100%; min-height: 0;
-  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-}
-[data-testid="stSidebar"] .stButton > button:hover {
-  background: var(--panel-hi); color: var(--ink); border-left-color: var(--slate);
-}
-[data-testid="stSidebar"] .stButton > button[kind="primary"],
-[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
-  background: rgba(59,201,222,0.09); color: var(--cyan);
-  border-left-color: var(--cyan); font-weight: 600;
-}
-[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover,
-[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"]:hover {
-  background: rgba(59,201,222,0.14); color: var(--cyan);
-}
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0.12rem; }
 
-/* Streamlit widgets ----------------------------------------------------- */
-[data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 12px; }
-.stRadio > label, .stSelectbox label, .stSlider label, .stMultiSelect label { color: var(--mist) !important; font-family: var(--mono); font-size: 0.8rem; }
 /* Calls to action ------------------------------------------------------- */
-/* Custom 3D button style adapted to match the dashboard theme */
-[data-testid="stMain"] .stButton > button {
+/* The tirth_5172 button from Uiverse, converted to plain CSS against the
+   buttons Streamlit actually renders. The reference is a Tailwind component,
+   so Streamlit, which cannot run Tailwind utilities, gets the same rules
+   written out by hand, and the five children of the reference element are
+   mapped onto the four pseudo-element slots that one real <button> offers:
+
+   - the sweeping shine bar is the button's ::before,
+   - the top-left and bottom-right brackets (static) are the button's ::after,
+   - the top-right and bottom-left brackets (the pair that grows on hover)
+     are the label <div>'s ::before,
+   - the label itself rides on top at z-index 20.
+
+   Two variants preserve navigation semantics, exactly as the reference pairs
+   its unfilled frame with its filled primary. Main-area CTAs, downloads and
+   the active sidebar page rest filled: cyan-to-indigo gradient face, white
+   label. Inactive sidebar items rest as the frame: the same gradient face is
+   masked away behind the panel colour so only a 1px gradient ring shows. On
+   hover the frame transits to fill (the mask sheds), the right and left
+   brackets grow from 60% to 90%, and the blurred bar sweeps across. */
+[data-testid="stMain"] .stButton > button,
+[data-testid="stDownloadButton"] button,
+[data-testid="stSidebar"] .stButton > button {
   position: relative;
-  padding: 0.5em 1em;
+  overflow: hidden;
+  cursor: pointer;
   min-width: fit-content;
   height: auto;
-  background-color: var(--midnight);
-  border: 0.08em solid var(--cyan);
-  border-radius: 0.3em;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--ink);
-  font-family: var(--body);
+  padding: 0.8rem 1.7rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem; /* rounded-lg from the reference */
+  background: linear-gradient(135deg, var(--cyan), var(--indigo)) border-box;
+  font-family: 'Barlow', var(--body);
+  font-size: 0.82rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
   user-select: none;
+  -webkit-user-select: none;
+  z-index: 0;
 }
-
-[data-testid="stMain"] .stButton > button > div {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  bottom: 0.3em;
+/* Frame tier: inactive sidebar items. An inset cover in the panel colour
+   hides the gradient face, leaving the neon gradient ring; the mask sheds on
+   hover, which is the frame-to-fill transition. */
+[data-testid="stSidebar"] .stButton > button:not([kind="primary"]):not([data-testid="stBaseButton-primary"]) {
+  box-shadow:
+    inset 0 0 0 999px var(--panel),
+    0 18px 40px -16px rgba(0, 0, 0, 0.65);
+  color: var(--mist);
+}
+/* Sidebar items span their own row and read from the left. */
+[data-testid="stSidebar"] .stButton > button {
   width: 100%;
-  padding: 0.6em 1.2em;
-  background-color: var(--panel-hi);
-  border-radius: 0.2em;
-  font-size: 1em;
-  color: var(--cyan);
-  border: 0.08em solid var(--cyan);
-  box-shadow: 0 0.3em 0.1em 0.019em var(--cyan);
-  transition: all 0.5s;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+/* Filled tier: main-area CTAs, downloads and the active page stay filled in
+   the resting state; a frame-tier button under the cursor becomes filled too. */
+[data-testid="stMain"] .stButton > button,
+[data-testid="stDownloadButton"] button,
+[data-testid="stSidebar"] .stButton > button[kind="primary"],
+[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"],
+[data-testid="stSidebar"] .stButton > button:not([kind="primary"]):not([data-testid="stBaseButton-primary"]):hover {
+  color: #fff;
+}
+[data-testid="stSidebar"] .stButton > button:not([kind="primary"]):not([data-testid="stBaseButton-primary"]):hover {
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65);
+}
+/* Lift under the cursor; press on click. */
+[data-testid="stMain"] .stButton > button:hover,
+[data-testid="stDownloadButton"] button:hover,
+[data-testid="stSidebar"] .stButton > button:hover {
+  transform: translateY(-2px);
+}
+[data-testid="stMain"] .stButton > button:active,
+[data-testid="stDownloadButton"] button:active,
+[data-testid="stSidebar"] .stButton > button:active {
+  transform: translateY(0) scale(0.98);
+}
+/* Focus: a white offset ring, per the reference, standing out from the
+   theme's cyan focus colour so the button keeps its own language. */
+[data-testid="stMain"] .stButton > button:focus-visible,
+[data-testid="stDownloadButton"] button:focus-visible,
+[data-testid="stSidebar"] .stButton > button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+/* The shine sweep: a blurred diagonal band that crosses the face on hover. */
+[data-testid="stMain"] .stButton > button::before,
+[data-testid="stDownloadButton"] button::before,
+[data-testid="stSidebar"] .stButton > button::before {
+  content: "";
+  position: absolute;
+  left: -75%;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  filter: blur(16px);
+  transform: rotate(12deg);
+  transition: left 1s ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+}
+[data-testid="stMain"] .stButton > button:hover::before,
+[data-testid="stDownloadButton"] button:hover::before,
+[data-testid="stSidebar"] .stButton > button:hover::before {
+  left: 125%;
+}
+/* Corner brackets, drawn as solid gradient arms. Top-left and bottom-right
+   keep a short 20% reach; top-right and bottom-left grow from 60% to 90% on
+   hover. The corners are the reference's #D4EDF9, a grey-white. */
+[data-testid="stMain"] .stButton > button::after,
+[data-testid="stDownloadButton"] button::after,
+[data-testid="stSidebar"] .stButton > button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    linear-gradient(#D4EDF9, #D4EDF9),
+    linear-gradient(#D4EDF9, #D4EDF9),
+    linear-gradient(#D4EDF9, #D4EDF9),
+    linear-gradient(#D4EDF9, #D4EDF9);
+  background-repeat: no-repeat;
+  background-size:
+    2px 20%, 50% 2px,
+    2px 20%, 50% 2px;
+  background-position:
+    left top, left top,
+    right bottom, right bottom;
+}
+[data-testid="stMain"] .stButton > button > div::before,
+[data-testid="stDownloadButton"] button > div::before,
+[data-testid="stDownloadButton"] button > span::before,
+[data-testid="stSidebar"] .stButton > button > div::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(#D4EDF9, #D4EDF9),
+    linear-gradient(#D4EDF9, #D4EDF9),
+    linear-gradient(#D4EDF9, #D4EDF9),
+    linear-gradient(#D4EDF9, #D4EDF9);
+  background-repeat: no-repeat;
+  background-size:
+    2px 60%, 50% 2px,
+    2px 60%, 50% 2px;
+  background-position:
+    right top, right top,
+    left bottom, left bottom;
+  transition: background-size 0.3s ease-in-out;
+}
+[data-testid="stMain"] .stButton > button:hover > div::before,
+[data-testid="stDownloadButton"] button:hover > div::before,
+[data-testid="stDownloadButton"] button:hover > span::before,
+[data-testid="stSidebar"] .stButton > button:hover > div::before {
+  background-size:
+    2px 90%, 50% 2px,
+    2px 90%, 50% 2px;
+}
+/* The label plate: a transparent, centred layer above the shine and the
+   brackets. The old 3D plate is stripped here. Download buttons render their
+   label as a span rather than a div, so both shapes are handled. */
+[data-testid="stMain"] .stButton > button > div,
+[data-testid="stDownloadButton"] button > div,
+[data-testid="stDownloadButton"] button > span,
+[data-testid="stSidebar"] .stButton > button > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 20;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: inherit;
   white-space: nowrap;
   user-select: none;
+  -webkit-user-select: none;
 }
-
-[data-testid="stMain"] .stButton > button:hover > div {
-  transform: translate(0, 0.3em);
-  box-shadow: 0 0 0 0 var(--cyan);
-  color: var(--ink);
-  background-color: var(--cyan-deep);
+[data-testid="stSidebar"] .stButton > button > div { justify-content: flex-start; }
+[data-testid="stMain"] .stButton > button > div :is(div, span, p),
+[data-testid="stDownloadButton"] button > div :is(div, span, p),
+[data-testid="stDownloadButton"] button > span :is(div, span, p),
+[data-testid="stSidebar"] .stButton > button > div :is(div, span, p) {
+  position: relative;
+  z-index: 20;
 }
-
-[data-testid="stMain"] .stButton > button:not(:hover) > div {
-  transition: all 1s;
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="stMain"] .stButton > button,
+  [data-testid="stDownloadButton"] button,
+  [data-testid="stSidebar"] .stButton > button,
+  [data-testid="stMain"] .stButton > button::before,
+  [data-testid="stDownloadButton"] button::before,
+  [data-testid="stSidebar"] .stButton > button::before,
+  [data-testid="stMain"] .stButton > button > div::before,
+  [data-testid="stDownloadButton"] button > div::before,
+  [data-testid="stSidebar"] .stButton > button > div::before {
+    transition: none;
+  }
 }
 
 /* Checkboxes ------------------------------------------------------------ */
@@ -715,124 +897,6 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .metric-card { transition: none; } }
 @media (max-width: 640px) { .block-container { padding-left: 1rem; padding-right: 1rem; } .insight .row { grid-template-columns: 1fr; gap: 0.2rem; } }
 
-/* Simulator controls: the "toast" button (tirth_5172 reference). ---------- */
-/* Every control button shares one visual language from the reference: a light
-   #D4EDF9 accent with corner border ticks, an uppercase label, a soft drop
-   shadow, and a flat bar that sweeps across on hover as the sheet flips from
-   fill to outline. The reference is a Tailwind component, so Streamlit, which
-   cannot run Tailwind utilities, gets the same rules written out as plain CSS
-   against the buttons Streamlit actually renders, and the sweeping-bar <span>
-   is re-implemented as an ::after pseudo-element.
-
-   Two tiers preserve navigation semantics. Standalone actions (main-area CTAs,
-   downloads) and the currently-active page sit at the reference's filled
-   resting state: light fill, dark ink. Inactive sidebar items stay on the
-   outline tier so the active page stays recognisable while every button still
-   carries the same accent, tick and sweep. */
-[data-testid="stSidebar"] .stButton > button,
-[data-testid="stMain"] .stButton > button,
-[data-testid="stDownloadButton"] button {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 0;
-  border: none;
-  border-left: 4px solid #D4EDF9;
-  border-right: 4px solid transparent;
-  min-width: fit-content;
-  height: auto;
-  padding: 0.6em 1.4em;
-  font-family: 'Barlow', var(--body);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-align: center;
-  color: #D4EDF9;
-  background-color: transparent;
-  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65);
-  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 0;
-}
-/* Filled resting state: main-area CTAs, downloads, and the active page. */
-[data-testid="stMain"] .stButton > button,
-[data-testid="stDownloadButton"] button,
-[data-testid="stSidebar"] .stButton > button[kind="primary"],
-[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
-  background-color: #D4EDF9;
-  color: #252525;
-}
-/* Hover: the sheet flips to outline, the right tick grows in, the shine sweeps. */
-[data-testid="stSidebar"] .stButton > button:hover,
-[data-testid="stMain"] .stButton > button:hover,
-[data-testid="stDownloadButton"] button:hover {
-  border-right-color: #D4EDF9;
-  background-color: transparent;
-  color: #D4EDF9;
-  box-shadow: 0 18px 40px -16px rgba(212, 237, 249, 0.28);
-}
-/* The sweeping shine bar, the reference's "effect after" span. */
-[data-testid="stSidebar"] .stButton > button::after,
-[data-testid="stMain"] .stButton > button::after,
-[data-testid="stDownloadButton"] button::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  height: 110%;
-  width: 22%;
-  transform: translate(-50%, -50%) rotate(3deg);
-  background: rgba(255, 255, 255, 0.45);
-  transition: left 1s ease-in-out;
-  pointer-events: none;
-  z-index: 0;
-}
-[data-testid="stSidebar"] .stButton > button:hover::after,
-[data-testid="stMain"] .stButton > button:hover::after,
-[data-testid="stDownloadButton"] button:hover::after { left: 125%; }
-/* The label rides above the shine bar. */
-[data-testid="stButton"] button :is(div, span, p),
-[data-testid="stDownloadButton"] button :is(div, span, p) {
-  position: relative;
-  z-index: 1;
-}
-/* Strip the older 3D-plate sheet off main-area CTAs so it cannot fight the
-   label; the accent, fill and sweep now carry the whole control. */
-[data-testid="stMain"] .stButton > button > div {
-  display: block;
-  position: relative;
-  z-index: 1;
-  width: auto;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  font-size: inherit;
-  color: inherit;
-  white-space: nowrap;
-}
-[data-testid="stMain"] .stButton > button:hover > div,
-[data-testid="stMain"] .stButton > button:not(:hover) > div {
-  transform: none;
-  background: transparent;
-  color: inherit;
-  box-shadow: none;
-}
-/* Sidebar items stay full-width rows so the navigation reads as a list. */
-[data-testid="stSidebar"] .stButton > button {
-  width: 100%;
-  justify-content: flex-start;
-  text-align: left;
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-testid="stSidebar"] .stButton > button,
-  [data-testid="stMain"] .stButton > button,
-  [data-testid="stDownloadButton"] button,
-  [data-testid="stSidebar"] .stButton > button::after,
-  [data-testid="stMain"] .stButton > button::after,
-  [data-testid="stDownloadButton"] button::after { transition: none; }
-}
 """
 
 
@@ -1042,6 +1106,10 @@ def masthead(section_label: str, links: Sequence[tuple[str, str]] = (),
              brand: str = "Load-Shape Study") -> None:
     """The identity band at the top of every page.
 
+    The band carries the number logo, the brand name, the "against the
+    unknown" tagline and a version badge, then the breadcrumb and any
+    outbound links.
+
     Args:
         section_label: Where the reader currently is, shown as a breadcrumb.
         links: (label, url) pairs for outbound links only. Page navigation
@@ -1052,11 +1120,16 @@ def masthead(section_label: str, links: Sequence[tuple[str, str]] = (),
         f'<a class="out" href="{url}" target="_blank" rel="noopener">{label}</a>'
         for label, url in links
     )
+    today = date.today().strftime("%Y-%m")
     st.markdown(
         f'<div class="masthead">'
-        f'<span class="brand"><span class="slash">/</span>{brand}</span>'
+        f'<span class="brand"><span class="logo">01</span>'
+        f'<span class="name">{brand}</span>'
+        f'<span class="tag">against the unknown</span></span>'
         f'<span class="where"><b>{section_label}</b></span>'
-        f'<span class="spacer"></span>{outs}</div>',
+        f'<span class="spacer"></span>'
+        f'<span class="ver"><span class="dot"></span>v{APP_VERSION} &middot; {today}</span>'
+        f'{outs}</div>',
         unsafe_allow_html=True,
     )
 
