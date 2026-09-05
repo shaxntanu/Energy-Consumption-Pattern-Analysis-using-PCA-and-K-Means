@@ -1525,7 +1525,57 @@ const loadShapeSlides = [
       },
     },
   },
+  {
+    component: MorphGallerySlide,
+    captions: {
+      idle: {
+        title: "Result gallery",
+        subtitle: "The committed matplotlib outputs, fused into a WebGL morphing slideshow.",
+      },
+      rep: {
+        title: "The committed outputs",
+        subtitle: "Load shapes, PCA variance, K-selection, cluster radar, and validation sweep.",
+      },
+    },
+  },
 ];
+
+// Renders the MorphSlider as one carousel slide. MorphSlider hardcodes an
+// inline 500px height; the .morph-in-carousel class forces it to the slide
+// stage size. It reports its "representative" state permanently so the slide
+// shows the committed-output caption, not the idle one.
+function MorphGallerySlide({ onRepActive }) {
+  React.useEffect(() => {
+    onRepActive?.(true);
+  }, [onRepActive]);
+
+  return (
+    <MorphSlider
+      className="morph-in-carousel"
+      items={[
+        { image: "/results/load_shapes.png", caption: "Load Shapes" },
+        { image: "/results/pca_variance.png", caption: "PCA Variance" },
+        { image: "/results/k_selection.png", caption: "K-Selection" },
+        { image: "/results/cluster_radar.png", caption: "Cluster Radar" },
+        { image: "/results/validation_sweep.png", caption: "Validation" },
+      ]}
+      transition="melt"
+      intensity={0.55}
+      aberration={0.35}
+      drift={0.4}
+      autoplay={false}
+      overlayColor="#05060a"
+      duration={1.1}
+      ease="power2.inOut"
+      autoplayDelay={4}
+      loop
+      radius={16}
+      showCaptions
+      showControls
+      showIndicators
+    />
+  );
+}
 
 function LoadShapeCarousel({ tall = false }) {
   const [slide, setSlide] = React.useState(0);
@@ -2732,6 +2782,8 @@ function SectionHeader({ eyebrow, title, children }) {
 function App() {
   return (
     <div>
+      {/* Full-page particle-net backdrop at 25% opacity, behind every section. */}
+      <VantaNetBackground />
       <nav className="site-nav" aria-label="Main navigation">
         <a className="brand" href="#top">Load Shape Lab</a>
         <div className="nav-links">
@@ -2745,7 +2797,6 @@ function App() {
 
       <header className="hero" id="top">
         <div className="hero-copy">
-          <VantaNetBackground />
           <span className="eyebrow">PCA plus K-Means energy clustering</span>
           <GlowCursor
             color="#48d7c2"
@@ -2766,61 +2817,36 @@ function App() {
             fadeDuration={900}
             blendMode="screen"
           >
-            <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <ParticleText
-                  text="Energy use is a pattern, not just a number."
-                  particleSize={2.2}
-                  density={4}
-                  color="#48d7c2"
-                  highlight="#b78cff"
-                  scatter={190}
-                  gatherDuration={1600}
-                  stagger={420}
-                  pointerRepel={42}
-                  repelRadius={120}
-                  idleDrift={0.8}
-                  trigger="mount"
-                  fontSize="clamp(2.5rem, 8vw, 6rem)"
-                  fontWeight={800}
-                />
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              <ParticleText
+                text="Energy use is a pattern, not just a number."
+                particleSize={2.2}
+                density={4}
+                color="#f8fafc"
+                highlightColor="#8b5cf6"
+                scatter={190}
+                gatherDuration={1600}
+                stagger={420}
+                pointerRepel={42}
+                repelRadius={120}
+                idleDrift={0.8}
+                trigger="mount"
+                fontSize="clamp(2.5rem, 8vw, 6rem)"
+                fontWeight={800}
+                fontFamily="inherit"
+                glow
+                className="hero-particle-text"
+              />
+              <p>
+                This project simulates a full year of household electricity readings, turns
+                each day into a load shape, compresses the features with PCA, and uses K-Means
+                to find daily rhythms that are easier to explain — then checks how the clusters
+                hold up across seasons, over time, and on a real-world demo panel.
+              </p>
+              <div className="hero-actions">
+                <a className="button primary" href="#charts">Explore the charts</a>
+                <a className="button secondary" href="#about">What is this project about?</a>
               </div>
-              <aside style={{ width: "100%", maxWidth: 400, flexShrink: 0 }}>
-                <MorphSlider
-                  items={[
-                    { image: "/results/load_shapes.png", caption: "Load Shapes" },
-                    { image: "/results/pca_variance.png", caption: "PCA Variance" },
-                    { image: "/results/k_selection.png", caption: "K-Selection" },
-                    { image: "/results/cluster_radar.png", caption: "Cluster Radar" },
-                    { image: "/results/validation_sweep.png", caption: "Validation" },
-                  ]}
-                  transition="melt"
-                  intensity={0.55}
-                  aberration={0.35}
-                  drift={0.4}
-                  autoplay={false}
-                  overlayColor="#05060a"
-                  duration={1.1}
-                  ease="power2.inOut"
-                  scale={2.4}
-                  autoplayDelay={4}
-                  loop
-                  radius={16}
-                  showCaptions
-                  showControls
-                  showIndicators
-                />
-              </aside>
-            </div>
-            <p>
-              This project simulates a full year of household electricity readings, turns
-              each day into a load shape, compresses the features with PCA, and uses K-Means
-              to find daily rhythms that are easier to explain — then checks how the clusters
-              hold up across seasons, over time, and on a real-world demo panel.
-            </p>
-            <div className="hero-actions">
-              <a className="button primary" href="#charts">Explore the charts</a>
-              <a className="button secondary" href="#about">What is this project about?</a>
             </div>
           </GlowCursor>
         </div>
