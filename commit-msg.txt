@@ -1,0 +1,15 @@
+fix(web): remove glow cursor, move tech stack roller to the end, Uiverse restart button
+
+- Delete GlowCursor entirely: component file removed and the hero wrapper
+  unwrapped; the orb could never be fully trusted behind stacking contexts
+  and the user asked for it gone.
+- LogoLoop (tech stack scroller) moves from between the gallery and
+  references to the very end of the page, closing out <main>.
+- The carousel's restart control becomes the Uiverse "Refresh" button
+  (andrew-demchenk0), themed to the site cyan: resting label with icon
+  tile waiting flush right, hover expands the tile across the face, press
+  sits down by the shadow. Label reads "Restart animation", so the face is
+  200px wide and the icon positions are re-derived (rest 159, hover 198)
+  the same way the reference derives them.
+
+Co-Authored-By: Claude Code <noreply@anthropic.com>
