@@ -68,6 +68,16 @@
       "perspective": 1,
       "motion": { "eyes": "none", "body": "none" }
     },
+    "gaze-live": {
+      "head": { "x": 0, "y": 0, "z": 0 },
+      "eyes": {
+        "left": { "width": 20, "height": 50, "x": 0, "y": -7, "angle": 0 },
+        "right": { "width": 20, "height": 50, "x": 0, "y": -7, "angle": 0 },
+        "spacing": 35
+      },
+      "perspective": 1,
+      "motion": { "eyes": "none", "body": "none" }
+    },
     "upward-side-glance": {
       "head": { "x": 7.3, "y": 27.8, "z": -16.1 },
       "eyes": {
@@ -271,6 +281,7 @@
   },
   "expressionOrder": [
     "neutral",
+    "gaze-live",
     "upward-side-glance",
     "joyful-down-right",
     "surprised-left",
@@ -425,6 +436,14 @@
       ],
       "blink": { "enabled": true, "initialDelayMs": 2100, "minIntervalMs": 2800, "maxIntervalMs": 5000, "durationMs": 260 },
       "metadata": { "label": "Angry", "description": "Angry eye tilts (lab sequence, verbatim), strongest inactivity tier.", "group": "Reactions" }
+    },
+    "gaze-follow": {
+      "playbackMode": "loop",
+      "steps": [
+        { "expression": "gaze-live", "holdMs": 60000, "transitionMs": 500, "transition": "smooth" }
+      ],
+      "blink": { "enabled": false, "initialDelayMs": 1200, "minIntervalMs": 1800, "maxIntervalMs": 3600, "durationMs": 220 },
+      "metadata": { "label": "Gaze follow", "description": "Hold slot for the continuous cursor-gaze pose (written live by the companion). Not a lab sequence.", "group": "Reactions" }
     }
   },
   "animationOrder": [
@@ -440,6 +459,7 @@
     "excited",
     "bored",
     "suspicious",
-    "angry"
+    "angry",
+    "gaze-follow"
   ]
 }
