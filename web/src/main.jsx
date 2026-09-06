@@ -2749,6 +2749,68 @@ function SectionHeader({ eyebrow, title, children }) {
   );
 }
 
+// Dedicated seasonal band. Every number comes from seasonalStats in
+// analysisData.js, which mirrors web/public/data/seasonal.json verbatim.
+function SeasonBand() {
+  const seasons = seasonalStats.seasons.map((season) => ({
+    label: season,
+    kwh: seasonalStats.meanDailyKwhBySeason[season],
+    peak: seasonalStats.peakHourBySeason[season],
+  }));
+  const maxKwh = Math.max(...seasons.map((s) => s.kwh));
+  return (
+    <section className="band" id="seasons">
+      <SectionHeader eyebrow="Seasons" title="The same households, measured four times a year">
+        The seasonal thread separates magnitude from timing. One channel tracks how mean daily
+        energy swings across the year (amplitude), another tracks when the 24-hour profile
+        peaks (phase). Both are scored against the seasonal phase hidden at generation time,
+        so these are honest recovery numbers, not a chart fitted to the story.
+      </SectionHeader>
+      <div className="stats-grid">
+        <StatCard label="Seasons present" value={seasonalStats.seasons.length} note={seasonalStats.seasons.map((s) => s[0].toUpperCase() + s.slice(1)).join(" · ")} />
+        <StatCard label="Amplitude" value={seasonalStats.amplitude.toFixed(3)} note={`68% of consumers report ${seasonalStats.amplitudeQ25.toFixed(3)} to ${seasonalStats.amplitudeQ75.toFixed(3)}`} />
+        <StatCard label="Phase recovery" value={`r = ${seasonalStats.phaseR.toFixed(3)}`} note="correlation vs the hidden seasonal phase" />
+        <StatCard label="Peak-season agreement" value={`${(seasonalStats.phaseAgreement * 100).toFixed(1)}%`} note={`${seasonalStats.nTruthConsumers} consumers with known phase`} />
+      </div>
+      <div className="season-grid">
+        {seasons.map((s) => (
+          <article className="season-card" key={s.label}>
+            <span className="season-card-name">{s.label}</span>
+            <strong className="season-card-kwh">{s.kwh.toFixed(1)}<small> mean daily kWh</small></strong>
+            <span className="season-track">
+              <span className="season-fill" style={{ width: `${(s.kwh / maxKwh) * 100}%` }} />
+            </span>
+            <small className="season-card-peak">peak hour {s.peak}:00</small>
+          </article>
+        ))}
+      </div>
+      <div className="chart-grid">
+        <article className="chart-panel">
+          <div className="panel-heading">
+            <h3>Mean load shape by season</h3>
+            <p>The average 24-hour curve per season on one scale; the evening peak grows from winter into summer.</p>
+          </div>
+          <img className="panel-figure" src="/results/dark/seasonal_mean_shape_by_season.png" alt="Mean 24-hour load shape for each season" loading="lazy" />
+        </article>
+        <article className="chart-panel">
+          <div className="panel-heading">
+            <h3>Daily energy and peak hour</h3>
+            <p>Mean daily kWh climbs from 26.6 in winter to 38.0 in summer, with the population peak hour at 20:00.</p>
+          </div>
+          <img className="panel-figure" src="/results/dark/seasonal_daily_energy_and_peak_hour.png" alt="Mean daily energy and peak hour by season" loading="lazy" />
+        </article>
+        <article className="chart-panel">
+          <div className="panel-heading">
+            <h3>Phase recovery</h3>
+            <p>Estimated seasonal phase against the hidden truth: r = 0.678 across 200 consumers. Positive, and expected to be modest.</p>
+          </div>
+          <img className="panel-figure" src="/results/dark/seasonal_phase_recovery.png" alt="Estimated seasonal phase versus the hidden phase" loading="lazy" />
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function App() {
   return (
     <div>
@@ -2757,6 +2819,7 @@ function App() {
         <div className="nav-links">
           <a href="#about">About</a>
           <a href="#charts">Charts</a>
+          <a href="#seasons">Seasons</a>
           <a href="#performance">Performance</a>
           <a href="#references">References</a>
           <a href="https://energy-consumption-pattern-vqrh.streamlit.app/" target="_blank" rel="noopener noreferrer">Simulator</a>
@@ -2849,6 +2912,8 @@ function App() {
           </div>
         </section>
 
+        <SeasonBand />
+
         <section className="band">
           <SectionHeader eyebrow="Cluster stories" title="Four readable patterns">
             The names are intentionally plain. They describe the daily curve rather than
@@ -2905,9 +2970,9 @@ function App() {
                 { id: 'ablation', image: '/results/dark/ablation_comparison.png', title: 'Ablation Comparison', href: '#charts' },
                 { id: 'importance', image: '/results/dark/shap_cluster_importance.png', title: 'Cluster Feature Importance', href: '#highlights' },
                 { id: 'longitudinal', image: '/results/dark/longitudinal_cluster_stability.png', title: 'Longitudinal Stability', href: '#highlights' },
-                { id: 'seasonal-shape', image: '/results/dark/seasonal_mean_shape_by_season.png', title: 'Seasonal Load Shapes', href: '#highlights' },
-                { id: 'seasonal-energy', image: '/results/dark/seasonal_daily_energy_and_peak_hour.png', title: 'Seasonal Energy and Peak Hour', href: '#highlights' },
-                { id: 'seasonal-phase', image: '/results/dark/seasonal_phase_recovery.png', title: 'Seasonal Phase Recovery', href: '#highlights' },
+                { id: 'seasonal-shape', image: '/results/dark/seasonal_mean_shape_by_season.png', title: 'Seasonal Load Shapes', href: '#seasons' },
+                { id: 'seasonal-energy', image: '/results/dark/seasonal_daily_energy_and_peak_hour.png', title: 'Seasonal Energy and Peak Hour', href: '#seasons' },
+                { id: 'seasonal-phase', image: '/results/dark/seasonal_phase_recovery.png', title: 'Seasonal Phase Recovery', href: '#seasons' },
               ]}
               columns={5}
               tileWidth={200}
