@@ -12,7 +12,7 @@ import {
   RadialLinearScale,
   Tooltip,
 } from "chart.js";
-import { Bar, Line } from "react-chartjs-2";
+import { Bar, Line, Scatter } from "react-chartjs-2";
 import { Legend, LegendItemComponent, LegendLabel, LegendMarker } from "./Legend";
 import {
   ChartTooltip,
@@ -2749,6 +2749,197 @@ function SectionHeader({ eyebrow, title, children }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Seasonal charts: interactive rebuilds of the matplotlib figures. Every
+// number comes from seasonalStats in analysisData.js, which mirrors
+// web/public/data/seasonal.json verbatim. The matplotlib plots drew the same
+// arrays (shapes scaled to %, phase pairs unrounded); these charts only add
+// hover/tooltip/legend behaviour on top of that committed data.
+// ---------------------------------------------------------------------------
+
+// Matplotlib's season hues mapped onto the app tokens: winter blue, spring
+// cyan, summer rose, autumn amber.
+const SEASON_COLOR = {
+  winter: "var(--blue)",
+  spring: "var(--cyan)",
+  summer: "var(--rose)",
+  autumn: "var(--amber)",
+};
+const seasonLabel = (s) => s[0].toUpperCase() + s.slice(1);
+
+// Mean 24-hour load shape per season (the seasonal_mean_shape figure): four
+// lines, one per season, y = share of the season's daily energy in percent.
+function SeasonalShapeChart() {
+  const rows = seasonalStats.meanShapeBySeason;
+  if (!rows || rows.length === 0) return null;
+  const base = chartDefaults();
+  const data = {
+    labels: hours,
+    datasets: rows.map(({ season, shape }) => ({
+      label: seasonLabel(season),
+      data: shape.map((share) => share * 100),
+      borderColor: SEASON_COLOR[season],
+      backgroundColor: SEASON_COLOR[season],
+      borderWidth: 2.25,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      pointHitRadius: 14,
+      tension: 0.35,
+    })),
+  };
+  const options = {
+    ...base,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      ...base.plugins,
+      tooltip: {
+        ...base.plugins.tooltip,
+        callbacks: {
+          label(ctx) {
+            return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}% of daily energy`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: { ...base.scales.x, maxTicksLimit: 12 },
+      y: {
+        ...base.scales.y,
+        beginAtZero: true,
+        title: { display: true, text: "Share of daily energy (%)", color: "#94a8b4", font: { size: 11 } },
+        ticks: { ...base.scales.y.ticks, callback: (v) => `${v}%` },
+      },
+    },
+  };
+  return <Line data={data} options={options} />;
+}
+
+// Mean daily energy and peak hour by season (the seasonal_daily_energy figure,
+// two subplots rebuilt as one dual-axis chart): kWh bars on the left axis, the
+// afternoon/evening peak hour as a line on the right.
+function SeasonalEnergyPeakChart() {
+  const rows = seasonalStats.seasons.map((season) => ({
+    season: seasonLabel(season),
+    label: seasonLabel(season),
+    kwh: seasonalStats.meanDailyKwhBySeason[season],
+    peak: seasonalStats.peakHourBySeason[season],
+  }));
+  return (
+    <ComposedChart
+      data={rows}
+      xDataKey="season"
+      ariaLabel="Mean daily energy and peak hour by season: kWh bars on the left axis, peak-hour line on the right"
+    >
+      <Grid horizontal />
+      <YAxis
+        yAxisId="left"
+        orientation="left"
+        label="Mean daily kWh"
+        tickCount={5}
+        tickFormat={(v) => v.toFixed(0)}
+      />
+      <YAxis
+        yAxisId="right"
+        orientation="right"
+        label="Peak hour"
+        domain={[12, 24]}
+        tickCount={4}
+        tickFormat={(v) => `${Math.round(v)}:00`}
+      />
+      <SeriesBar
+        yAxisId="left"
+        dataKey="kwh"
+        label="Mean daily kWh"
+        fill="var(--blue)"
+        radius={4}
+        maxBarSize={40}
+        format={(v) => `${v.toFixed(1)} kWh/day`}
+      />
+      <ComposedLine
+        yAxisId="right"
+        dataKey="peak"
+        label="Peak hour"
+        stroke="var(--amber)"
+        strokeWidth={2.25}
+        curve={curveCatmullRom.alpha(0.42)}
+        format={(v) => `${v}:00`}
+      />
+      <ChartTooltip showCrosshair={false} />
+      <XAxis numTicks={4} />
+    </ComposedChart>
+  );
+}
+
+// Per-consumer seasonal phase recovery (the seasonal_phase_recovery figure):
+// hidden truth on x, four-season estimate on y, dashed identity line as the
+// perfect-recovery reference.
+function SeasonalPhaseScatter() {
+  const points = seasonalStats.phaseRecoveryPoints;
+  if (!points || points.length === 0) return null;
+  const base = chartDefaults();
+  const data = {
+    datasets: [
+      {
+        label: "Consumer",
+        data: points.map(([truth, est]) => ({ x: truth, y: est })),
+        backgroundColor: "rgba(72, 215, 194, 0.4)",
+        borderColor: "rgba(72, 215, 194, 0.9)",
+        borderWidth: 1,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+      },
+      {
+        label: "Perfect recovery",
+        data: [
+          { x: 0, y: 0 },
+          { x: 365, y: 365 },
+        ],
+        type: "line",
+        showLine: true,
+        borderColor: "rgba(245, 248, 250, 0.45)",
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        fill: false,
+      },
+    ],
+  };
+  const options = {
+    ...base,
+    plugins: {
+      ...base.plugins,
+      tooltip: {
+        ...base.plugins.tooltip,
+        callbacks: {
+          label(ctx) {
+            if (ctx.dataset.type === "line") return "";
+            return `truth ${ctx.parsed.x.toFixed(1)}d · estimated ${ctx.parsed.y.toFixed(1)}d`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        ...base.scales.x,
+        type: "linear",
+        min: 0,
+        max: 365,
+        title: { display: true, text: "Hidden seasonal phase (day of year)", color: "#94a8b4", font: { size: 11 } },
+        ticks: { ...base.scales.x.ticks, stepSize: 91 },
+      },
+      y: {
+        ...base.scales.y,
+        type: "linear",
+        min: 0,
+        max: 365,
+        title: { display: true, text: "Estimated peak (day of year)", color: "#94a8b4", font: { size: 11 } },
+        ticks: { ...base.scales.y.ticks, stepSize: 91 },
+      },
+    },
+  };
+  return <Scatter data={data} options={options} />;
+}
+
 // Dedicated seasonal band. Every number comes from seasonalStats in
 // analysisData.js, which mirrors web/public/data/seasonal.json verbatim.
 function SeasonBand() {
@@ -2788,23 +2979,29 @@ function SeasonBand() {
         <article className="chart-panel">
           <div className="panel-heading">
             <h3>Mean load shape by season</h3>
-            <p>The average 24-hour curve per season on one scale; the evening peak grows from winter into summer.</p>
+            <p>The average 24-hour curve per season on one scale; the evening peak grows from winter into summer. Hover to compare hours.</p>
           </div>
-          <img className="panel-figure" src="/results/dark/seasonal_mean_shape_by_season.png" alt="Mean 24-hour load shape for each season" loading="lazy" />
+          <div className="chart-container">
+            <SeasonalShapeChart />
+          </div>
         </article>
         <article className="chart-panel">
           <div className="panel-heading">
             <h3>Daily energy and peak hour</h3>
             <p>Mean daily kWh climbs from 26.6 in winter to 38.0 in summer, with the population peak hour at 20:00.</p>
           </div>
-          <img className="panel-figure" src="/results/dark/seasonal_daily_energy_and_peak_hour.png" alt="Mean daily energy and peak hour by season" loading="lazy" />
+          <div className="chart-container">
+            <SeasonalEnergyPeakChart />
+          </div>
         </article>
         <article className="chart-panel">
           <div className="panel-heading">
             <h3>Phase recovery</h3>
-            <p>Estimated seasonal phase against the hidden truth: r = 0.678 across 200 consumers. Positive, and expected to be modest.</p>
+            <p>Estimated seasonal phase against the hidden truth: r = 0.678 across 200 consumers. Points hug the dashed identity line when recovery is exact.</p>
           </div>
-          <img className="panel-figure" src="/results/dark/seasonal_phase_recovery.png" alt="Estimated seasonal phase versus the hidden phase" loading="lazy" />
+          <div className="chart-container">
+            <SeasonalPhaseScatter />
+          </div>
         </article>
       </div>
     </section>

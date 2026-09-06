@@ -295,6 +295,8 @@ def _seasonal(metadata: dict) -> dict:
             'peak_hour_by_season': None,
             'amplitude_estimate': None,
             'phase_recovery_corr': None,
+            'mean_shape_by_season': None,
+            'phase_recovery_points': None,
         }
     metrics = _read_json(PROJECT_ROOT / 'outputs' / 'metrics' / 'seasonal_analysis_metrics.json')
     if metrics is None:
@@ -306,6 +308,8 @@ def _seasonal(metadata: dict) -> dict:
             'peak_hour_by_season': None,
             'amplitude_estimate': amplitude,
             'phase_recovery_corr': metadata.get('seasonal_phase_recovery_corr'),
+            'mean_shape_by_season': None,
+            'phase_recovery_points': None,
         }
     return {
         'available': True,
@@ -319,6 +323,8 @@ def _seasonal(metadata: dict) -> dict:
         'phase_recovery_corr': metrics.get('phase_recovery_corr'),
         'phase_accuracy': metrics.get('phase_accuracy'),
         'n_truth_consumers': metrics.get('n_truth_consumers'),
+        'mean_shape_by_season': metrics.get('mean_shape_by_season'),
+        'phase_recovery_points': metrics.get('phase_recovery_points'),
     }
 
 
