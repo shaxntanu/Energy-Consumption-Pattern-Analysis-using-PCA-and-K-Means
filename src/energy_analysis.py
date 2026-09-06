@@ -53,7 +53,7 @@ import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -293,13 +293,24 @@ class EnergyAnalysis:
         self.results: Optional[AnalysisResults] = None
         logger.info(f"Configured run '{config.experiment_name}' (hash {config.config_hash()})")
 
-    def run(self) -> AnalysisResults:
+    def run(self,
+            progress_cb: Optional[Callable[[int, str], None]] = None) -> AnalysisResults:
         """Execute every step and persist the artifacts.
+
+        Args:
+            progress_cb: Optional callback invoked as (step_number, step_label)
+                before each of the 11 steps starts. The dashboard uses it to
+                drive a live progress widget; scripts and tests omit it.
 
         Returns:
             AnalysisResults for this run.
         """
         config = self.config
+
+        def _emit(step: int, label: str) -> None:
+            if progress_cb is not None:
+                progress_cb(step, label)
+
         logger.info("=" * 70)
         logger.info(f"Starting analysis: {config.experiment_name}")
         logger.info(f"Observation window: {config.window_label()}")
@@ -307,6 +318,7 @@ class EnergyAnalysis:
 
         dirs = ensure_output_dirs(config.output_dir, config.model_dir)
 
+        _emit(1, "Generating synthetic data")
         logger.info("[1/11] Generating synthetic data")
         raw_data = generate_synthetic_data(
             n_consumers=config.n_consumers,
@@ -321,6 +333,7 @@ class EnergyAnalysis:
         if ARCHETYPE_COL in raw_data.columns:
             true_archetypes = raw_data.groupby('consumer_id')[ARCHETYPE_COL].first()
 
+        _emit(2, "Preprocessing")
         logger.info("[2/11] Preprocessing")
         # Drop the hidden truth columns (archetype and, when present, the hidden
         # seasonal phase) but KEEP the derived `season` column, which is a
@@ -332,12 +345,14 @@ class EnergyAnalysis:
             remove_outliers_flag=config.remove_outliers,
         )
 
+        _emit(3, "Engineering features")
         logger.info("[3/11] Engineering features")
         features = engineer_all_features(preprocessed, feature_set=config.feature_set)
         features_selected = select_features(features, feature_group=config.feature_set)
         feature_names = [c for c in features_selected.columns if c != 'consumer_id']
         consumer_order = features_selected['consumer_id'].tolist()
 
+        _emit(4, "Standardizing and fitting PCA")
         logger.info("[4/11] Standardizing and fitting PCA")
         X_pca, pca_model, scaler, n_components = run_pca_pipeline(
             features_selected,
@@ -348,6 +363,7 @@ class EnergyAnalysis:
         )
         loadings = loading_table(pca_model, feature_names)
 
+        _emit(5, "Sweeping K and selecting")
         logger.info("[5/11] Sweeping K and selecting")
         clustering = run_clustering_pipeline(
             X_pca,
@@ -365,6 +381,7 @@ class EnergyAnalysis:
         # the pipeline used, and SHAP (or a permutation fallback) explains it. The
         # surrogate never feeds back into PCA or K-Means, so this step cannot
         # change any cluster.
+        _emit(6, "Explaining the clusters (XAI)")
         logger.info("[6/11] Explaining the clusters (XAI)")
         explainability_results = run_explainability(
             features_selected, labels,
@@ -374,6 +391,7 @@ class EnergyAnalysis:
             metrics_dir=str(dirs['metrics']),
         )
 
+        _emit(7, "Profiling clusters")
         logger.info("[7/11] Profiling clusters")
         features_combined = engineer_all_features(preprocessed, feature_set='combined')
         features_combined = features_combined.set_index('consumer_id').reindex(consumer_order).reset_index()
@@ -384,11 +402,13 @@ class EnergyAnalysis:
         )
         shapes = cluster_load_shapes(features_combined, labels)
 
+        _emit(8, "Deriving recommendations")
         logger.info("[8/11] Deriving recommendations")
         recommendations = run_recommendation_engine(
             profiles, baseline, output_dir=str(dirs['reports'])
         )
 
+        _emit(9, "Validating against the hidden archetypes")
         logger.info("[9/11] Validating against the hidden archetypes")
         recovery, crosstab = None, None
         if true_archetypes is not None:
@@ -408,6 +428,7 @@ class EnergyAnalysis:
         # enabled. Estimates the magnitude and timing channels from the data and,
         # when the raw data carries the hidden seasonal_phase column, validates
         # its phase estimate against it.
+        _emit(10, "Seasonal analysis")
         logger.info("[10/11] Seasonal analysis")
         seasonal_results = None
         if config.seasonal is not None and config.seasonal.enabled:
@@ -424,6 +445,7 @@ class EnergyAnalysis:
             logger.info("Seasonal analysis skipped (seasonality disabled)")
 
         # Improvement 1: longitudinal analysis. Only meaningful for long windows.
+        _emit(11, "Longitudinal analysis")
         logger.info("[11/11] Longitudinal analysis")
         longitudinal_results = None
         if config.run_longitudinal and config.n_days >= LONGITUDINAL_MIN_DAYS:

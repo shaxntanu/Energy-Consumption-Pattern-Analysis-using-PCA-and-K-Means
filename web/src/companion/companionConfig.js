@@ -27,7 +27,7 @@ export const INTRO_KEY = 'sunee-intro-shown'
 export const introMessage = {
   priority: MESSAGE_PRIORITY.intro,
   animation: 'happy',
-  text: "Hi! I'm Sunee 👋 I'll be your little guide through this project. Stick around - I'll show you some interesting things along the way!",
+  text: "Hi! I'm Sunee 👋 I'll be your little guide through this project. Stick around, and I'll show you some interesting things along the way!",
 }
 
 // ---- Cursor gaze (continuous) --------------------------------------------
@@ -82,7 +82,7 @@ export const inactivityConfig = {
   reactionPlayMs: 2_400,
   // Fired once per boredom cycle when the angry tier is entered.
   inactivityMessage: {
-    text: "I'm still here, no rush… you know where to find me. 🌙",
+    text: "I'm still here, no rush - you know where to find me. 🌙",
     animation: 'angry',
   },
 }
@@ -97,12 +97,12 @@ export const sectionSummaries = {
   about: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'About - 1,752,000 hourly readings from 200 synthetic consumers, distilled into 51 shape features and 4 archetypes. A simple way to find daily energy rhythms.',
+    text: 'About - 1.75 million hourly readings from 200 synthetic consumers, distilled into 51 shape features and 4 archetypes. A simple way to find daily energy rhythms.',
   },
   charts: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'Charts - the matplotlib results rebuilt for the web: load-shape brush, K selection, PCA variance and cluster radar. K = 4 with a 0.328 silhouette.',
+    text: 'Charts - the matplotlib results rebuilt for the web: load-shape brush, K selection, PCA variance, and cluster radar. K = 4 with a 0.328 silhouette.',
   },
   performance: {
     priority: MESSAGE_PRIORITY.navigation,
@@ -112,7 +112,7 @@ export const sectionSummaries = {
   references: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'curious',
-    text: 'References - the research behind the method: PCA (Abdi & Williams), silhouette (Rousseeuw), plus MacQueen, Davies-Bouldin and our Zephyr Station data weather API.',
+    text: 'References - the research behind the method: PCA (Abdi & Williams), silhouette (Rousseeuw), plus MacQueen, Davies-Bouldin, and our Zephyr Station weather API.',
   },
   simulator: {
     priority: MESSAGE_PRIORITY.navigation,
