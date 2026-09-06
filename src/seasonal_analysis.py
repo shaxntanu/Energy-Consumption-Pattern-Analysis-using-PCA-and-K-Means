@@ -187,6 +187,7 @@ def run_seasonal_analysis(raw_data: pd.DataFrame,
     phase_recovery_corr = None
     phase_accuracy = None
     n_truth_consumers = 0
+    phase_recovery_points = None
     if has_truth:
         truth_phase = (raw_data.groupby('consumer_id')[hidden_phase_col].first()
                        .dropna())
@@ -206,6 +207,15 @@ def run_seasonal_analysis(raw_data: pd.DataFrame,
         valid = agreement.dropna()
         if len(valid):
             phase_accuracy = float(valid.mean())
+        # Per-consumer (hidden phase, estimated peak DOY) pairs, for the web
+        # phase-recovery scatter. Two decimals keeps the JSON compact while the
+        # correlation printed above is recomputed from the unrounded values.
+        if len(joined):
+            phase_recovery_points = [
+                [round(float(truth), 2), round(float(est), 2)]
+                for truth, est in zip(joined['truth_phase'],
+                                      joined['estimated_doy'])
+            ]
 
     # Cluster x season cross-check. Because the seasonal phase is drawn
     # independently of archetype, mean daily energy should vary with season the
@@ -227,6 +237,15 @@ def run_seasonal_analysis(raw_data: pd.DataFrame,
         .rename(columns={'cluster': 'consumer_id'}))
 
     shapes = _mean_shape_by_season(preprocessed, season_col)
+    shape_by_season = {row['season']: row['share'] for row in shapes}
+    # Ordered export of the normalized 24-hour shapes (sum to 1), the exact
+    # arrays the shape figure plots (there scaled to %). Six decimals keeps the
+    # JSON small without visibly moving the curves.
+    mean_shape_by_season = [
+        {'season': season,
+         'shape': [round(float(v), 6) for v in shape_by_season[season]]}
+        for season in seasons_present
+    ]
 
     # ---- Figures ------------------------------------------------------------
     figures = []
@@ -317,6 +336,8 @@ def run_seasonal_analysis(raw_data: pd.DataFrame,
         'phase_recovery_corr': phase_recovery_corr,
         'phase_accuracy': phase_accuracy,
         'n_truth_consumers': n_truth_consumers,
+        'mean_shape_by_season': mean_shape_by_season,
+        'phase_recovery_points': phase_recovery_points,
         'cluster_amplitude_median': (
             {int(k): (float(v) if pd.notna(v) else None)
              for k, v in cluster_amplitude.items()}

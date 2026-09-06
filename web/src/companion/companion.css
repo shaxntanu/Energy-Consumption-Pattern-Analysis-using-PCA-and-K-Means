@@ -38,7 +38,10 @@
      not fixed. No internal scroller - the bubble grows with the text. */
   max-width: min(460px, calc(100vw - 40px));
   min-width: 180px;
-  background: var(--panel-strong, #152131);
+  /* 75% transparent surface (25% alpha of --panel-strong #152131) so page
+     text stays visible behind the bubble; the message text itself stays fully
+     opaque so it remains readable. https://github.com/shaxntanu/... */
+  background: rgba(21, 33, 49, 0.25);
   border: 1px solid var(--line, #263545);
   color: var(--text, #f5f8fa);
   border-radius: 12px;
