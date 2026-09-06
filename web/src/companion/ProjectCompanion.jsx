@@ -292,13 +292,13 @@ function ProjectCompanion() {
   }, [showMessage])
 
   // ---- Cursor gaze (continuous, approximated: lab has no tracking API) ----
-  // While the cursor is near, a rAF loop eases the cursor's normalized
-  // position toward its latest target and writes a blended pose into the
-  // 'gaze-live' slot of the definition. The vendored runtime samples that
-  // object live every frame and the 'gaze-follow' loop animation keeps its
-  // paint loop running, so any cursor angle becomes a continuous blend of the
-  // two nearest real lab glance expressions, scaled by distance toward
-  // neutral - theoretically infinite degrees of freedom, no discrete steps.
+  // A rAF loop eases the cursor's normalized position toward its latest
+  // target and writes a blended pose into the 'gaze-live' slot of the
+  // definition. The vendored runtime samples that object live every frame and
+  // the 'gaze-follow' loop animation keeps its paint loop running, so any
+  // cursor angle anywhere on the page becomes a continuous blend of the two
+  // nearest real lab glance expressions, scaled by distance toward neutral -
+  // infinite degrees of freedom over the full viewport, no discrete steps.
   useEffect(() => {
     if (prefersReducedMotion || !gazeConfig.enabled) return undefined
     const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }
@@ -346,11 +346,16 @@ function ProjectCompanion() {
       )
       const active =
         !suppressed && state.armed && now - state.lastMoveAt <= gazeConfig.steadyMs
-      const wantT = active
-        ? clamp(Math.hypot(state.target.x, state.target.y) / gazeConfig.rangePx, 0, 1)
+      // Normalize against the window halves: the whole viewport is the gaze
+      // field, the screen edge = full rotation, just off the avatar = a slight
+      // glance. No dead zone anywhere on the page.
+      const wantU = active
+        ? clamp(state.target.x / (window.innerWidth / 2), -1, 1)
         : 0
-      const wantU = active ? clamp(state.target.x / gazeConfig.rangePx, -1, 1) : 0
-      const wantV = active ? clamp(state.target.y / gazeConfig.rangePx, -1, 1) : 0
+      const wantV = active
+        ? clamp(state.target.y / (window.innerHeight / 2), -1, 1)
+        : 0
+      const wantT = active ? clamp(Math.hypot(wantU, wantV), 0, 1) : 0
       state.t += (wantT - state.t) * gazeConfig.easeFactor
       state.u += (wantU - state.u) * gazeConfig.easeFactor
       state.v += (wantV - state.v) * gazeConfig.easeFactor
@@ -461,10 +466,7 @@ function ProjectCompanion() {
       state.target.x = event.clientX - (rect.left + rect.width / 2)
       state.target.y = event.clientY - (rect.top + rect.height / 2)
       state.lastMoveAt = now
-      if (Math.hypot(state.target.x, state.target.y) > gazeConfig.rangePx) {
-        state.armed = false
-        return
-      }
+      // No range gate: every cursor position on the page is a gaze target.
       if (!state.armed) {
         state.armed = true
         avatarRef.current?.play('gaze-follow')

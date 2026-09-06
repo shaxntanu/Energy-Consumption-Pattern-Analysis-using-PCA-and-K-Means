@@ -34,16 +34,15 @@ export const introMessage = {
 // The Avatar Lab runtime has NO pointer/gaze tracking API (verified by
 // grepping avatar-core, avatar-react and the Studio app: pointer events only
 // drive the Studio's editor controls and 3D view orbit). So gaze-following is
-// APPROXIMATED here, but continuously: while the cursor is close, a rAF loop
-// eases the cursor's position within the range circle and writes a blended
-// pose into the definition's 'gaze-live' expression slot (which the vendored
-// runtime samples live every frame). Any cursor angle maps to a blend of the
-// two nearest lab glance expressions, scaled by distance toward neutral - so
-// the gaze direction is a continuous field, not a fixed set of directions.
+// APPROXIMATED here, but continuously across the whole viewport: a rAF loop
+// eases the cursor's position and writes a blended pose into the definition's
+// 'gaze-live' expression slot (which the vendored runtime samples live every
+// frame). The cursor position is normalized against the window halves, so any
+// cursor angle maps to a blend of the two nearest lab glance expressions,
+// scaled by distance toward neutral - the gaze direction is a continuous
+// field over the entire screen, no fixed directions and no dead zone.
 export const gazeConfig = {
   enabled: true,
-  // Distance from avatar center before Sunee pays attention.
-  rangePx: 320,
   // Throttle between mousemove evaluations (the rAF loop eases between them).
   throttleMs: 200,
   // Per-frame easing toward the target pose (0..1, higher = snappier).
