@@ -294,7 +294,9 @@ p {
   background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
   border: 1px solid rgba(148, 168, 180, 0.17);
   border-radius: 8px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  /* Shadow stays small enough to fit inside the 12-20px card gaps; a 24px
+     offset would bleed onto the cards below and read as overlap. */
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .stat-card {
@@ -1685,9 +1687,9 @@ p {
 /* Seasonal band ------------------------------------------------------- */
 .season-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.75rem;
-  margin-top: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0 1.75rem;
 }
 
 .season-card {
@@ -1698,7 +1700,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .season-card-name {
