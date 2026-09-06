@@ -57,6 +57,11 @@ N_CLUSTERS_MIN = 2
 EXPLAIN_CAP = 2000
 BACKGROUND_SAMPLE = 100
 RANDOM_STATE = 42
+# The surrogate matrices are tiny (at most EXPLAIN_CAP rows x a few dozen
+# features). Parallel joblib workers buy nothing here, and on Windows a loky
+# spawn inside Streamlit's script runner can hang re-importing the app module.
+# One deterministic worker is the safe, honest setting for this workload.
+SURROGATE_N_JOBS = 1
 
 
 def _load_shap():
@@ -93,7 +98,8 @@ def _surrogate_cv_accuracy(X: np.ndarray, labels: np.ndarray) -> float:
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
     clf = RandomForestClassifier(n_estimators=120, max_depth=6,
-                                 random_state=RANDOM_STATE, n_jobs=-1)
+                                 random_state=RANDOM_STATE,
+                                 n_jobs=SURROGATE_N_JOBS)
     scorer = make_scorer(balanced_accuracy_score)
     scores = cross_val_score(clf, X, labels, cv=cv, scoring=scorer)
     return float(np.mean(scores))
@@ -104,7 +110,8 @@ def _fit_surrogate(X: np.ndarray, labels: np.ndarray):
     from sklearn.ensemble import RandomForestClassifier
 
     clf = RandomForestClassifier(n_estimators=120, max_depth=6,
-                                 random_state=RANDOM_STATE, n_jobs=-1)
+                                 random_state=RANDOM_STATE,
+                                 n_jobs=SURROGATE_N_JOBS)
     clf.fit(X, labels)
     return clf
 
@@ -225,10 +232,12 @@ def _permutation_importance(X: np.ndarray, labels: np.ndarray,
     for c in clusters:
         binary = np.asarray(labels == c, dtype=int)
         clf = RandomForestClassifier(n_estimators=100, max_depth=4,
-                                     random_state=RANDOM_STATE, n_jobs=-1)
+                                     random_state=RANDOM_STATE,
+                                     n_jobs=SURROGATE_N_JOBS)
         clf.fit(X, binary)
         result = permutation_importance(
-            clf, X, binary, n_repeats=5, random_state=RANDOM_STATE, n_jobs=-1
+            clf, X, binary, n_repeats=5, random_state=RANDOM_STATE,
+            n_jobs=SURROGATE_N_JOBS
         )
         mean_imp = result.importances_mean
         global_abs += mean_imp

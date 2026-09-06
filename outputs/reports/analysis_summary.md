@@ -19,7 +19,7 @@ evidence about real-world household behaviour.
 - Feature set: behavioral
 - Random seed: 42
 - Package versions: pandas 3.0.0, numpy 2.3.5, scikit-learn 1.9.0, scipy 1.18.0, matplotlib 3.10.8, seaborn 0.13.2, plotly 6.5.2, streamlit 1.62.0, joblib 1.5.3
-- Generated: 2026-09-04T05:55:49.143226+00:00
+- Generated: 2026-09-06T04:25:06.831953+00:00
 
 ## Dimensionality reduction
 
