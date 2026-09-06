@@ -104,6 +104,11 @@ export const sectionSummaries = {
     animation: 'excited',
     text: 'Charts - the matplotlib results rebuilt for the web: load-shape brush, K selection, PCA variance, and cluster radar. K = 4 with a 0.328 silhouette.',
   },
+  seasons: {
+    priority: MESSAGE_PRIORITY.navigation,
+    animation: 'excited',
+    text: 'Seasons - the same 200 households across all four seasons: mean daily energy climbs from 26.6 kWh in winter to 38.0 in summer, and the recovered seasonal phase matches the hidden truth with r = 0.678.',
+  },
   performance: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
