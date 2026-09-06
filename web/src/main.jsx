@@ -2759,11 +2759,15 @@ function SectionHeader({ eyebrow, title, children }) {
 
 // Matplotlib's season hues mapped onto the app tokens: winter blue, spring
 // cyan, summer rose, autumn amber.
+// Hex values of the design tokens (--blue/--cyan/--rose/--amber): Chart.js
+// paints on a canvas, whose 2D API cannot resolve CSS variables, so var(--...)
+// would silently fall back to a near-invisible default color. SVG charts in
+// this file can keep using var(--...); canvas charts must use literals.
 const SEASON_COLOR = {
-  winter: "var(--blue)",
-  spring: "var(--cyan)",
-  summer: "var(--rose)",
-  autumn: "var(--amber)",
+  winter: "#6c8cff",
+  spring: "#48d7c2",
+  summer: "#fb7185",
+  autumn: "#f2b04b",
 };
 const seasonLabel = (s) => s[0].toUpperCase() + s.slice(1);
 
@@ -2802,7 +2806,9 @@ function SeasonalShapeChart() {
       },
     },
     scales: {
-      x: { ...base.scales.x, maxTicksLimit: 12 },
+      // maxTicksLimit lives inside ticks (a scale-root value is ignored), so
+      // 24 hours land on even every-2nd-hour ticks (00:00, 02:00, ...).
+      x: { ...base.scales.x, ticks: { ...base.scales.x.ticks, maxTicksLimit: 12 } },
       y: {
         ...base.scales.y,
         beginAtZero: true,
