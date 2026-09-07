@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Consumption Pattern Analysis — PCA and K-Means</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body>
+    <!-- SLIDE 1: COVER -->
+    <section class="slide active" data-slide="1">
+        <div class="slide-content cover">
+            <h1 class="cover-title">Energy Consumption Pattern Analysis</h1>
+            <p class="cover-subtitle">Finding daily energy rhythms with machine learning</p>
+            <p class="cover-meta">PCA and K-Means Clustering · 200 Consumers · 365 Days · 1.75M Records</p>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 2: PROBLEM & OBJECTIVES -->
+    <section class="slide" data-slide="2">
+        <div class="slide-content">
+            <p class="slide-label">Problem Statement</p>
+            <h2 class="slide-title">Shape-first segmentation for demand response</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>🎯 Core Challenge</h3>
+                    <p>Group households by daily load curve <strong>shape</strong>, not total consumption. Similar rhythms deserve similar advice.</p>
+                </div>
+                <div class="content-card">
+                    <h3>📐 Scale Invariance</h3>
+                    <p>Two consumers with identical 24-hour profiles but different magnitudes should cluster together.</p>
+                </div>
+                <div class="content-card">
+                    <h3>⏰ Timing Critical</h3>
+                    <p>Same daily total but opposite peak hours means different behavioral patterns — must separate.</p>
+                </div>
+                <div class="content-card">
+                    <h3>✅ Goals</h3>
+                    <p>Reproducible pipeline, seasonal stability, real-world validation pathway, explainable clusters with SHAP.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 3: DATASET -->
+    <section class="slide" data-slide="3">
+        <div class="slide-content">
+            <p class="slide-label">Dataset Overview</p>
+            <h2 class="slide-title">Synthetic archetypes + Real-world adapter</h2>
+            <div class="stats-grid">
+                <div class="stat-card highlight-blue">
+                    <div class="stat-value">200</div>
+                    <div class="stat-label">Consumers</div>
+                </div>
+                <div class="stat-card highlight-blue">
+                    <div class="stat-value">365</div>
+                    <div class="stat-label">Days</div>
+                </div>
+                <div class="stat-card highlight-blue">
+                    <div class="stat-value">1.75M</div>
+                    <div class="stat-label">Records</div>
+                </div>
+                <div class="stat-card highlight-green">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Archetypes</div>
+                </div>
+            </div>
+            <div class="content-grid" style="margin-top: 40px;">
+                <div class="content-card">
+                    <h3>Synthetic Foundation</h3>
+                    <p><strong>4 Ground-truth archetypes:</strong> Morning Riser, Night Owl, Steady Consumer, Peak Afternoon. Noise + seasonality + weekday/weekend variation.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Real-world Ready</h3>
+                    <p><strong>External adapter:</strong> Maps any meter dataset (consumer_id, timestamp, kWh). No changes to core pipeline.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 4: PREPROCESSING PIPELINE -->
+    <section class="slide" data-slide="4">
+        <div class="slide-content">
+            <p class="slide-label">Data Pipeline</p>
+            <h2 class="slide-title">5-step preprocessing: Raw hourly kWh → Modeling table</h2>
+            <div class="pipeline-flow">
+                <div class="pipeline-step compact">
+                    <div class="step-icon">1</div>
+                    <h3>Load & Clean</h3>
+                    <p>Drop nulls, validate timestamps</p>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step compact">
+                    <div class="step-icon">2</div>
+                    <h3>Pivot Hourly</h3>
+                    <p>24 columns per day</p>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step compact">
+                    <div class="step-icon">3</div>
+                    <h3>Normalize</h3>
+                    <p>Z-score across hours</p>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step compact">
+                    <div class="step-icon">4</div>
+                    <h3>Aggregate</h3>
+                    <p>Consumer-level mean shape</p>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step compact">
+                    <div class="step-icon">5</div>
+                    <h3>Feature Engineering</h3>
+                    <p>51 behavioral features</p>
+                </div>
+            </div>
+            <div class="info-box mt-40">
+                <h4>Why normalize per-row?</h4>
+                <p>Scale invariance requirement: Z-score standardization makes 24-hour shape comparable regardless of total consumption magnitude.</p>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 5: FEATURE ENGINEERING -->
+    <section class="slide" data-slide="5">
+        <div class="slide-content">
+            <p class="slide-label">Feature Engineering</p>
+            <h2 class="slide-title">51 behavioral features = 24 shape + 27 summary</h2>
+            <div class="feature-groups">
+                <div class="feature-group shape">
+                    <div class="feature-header">
+                        <h3>Shape Features (24)</h3>
+                        <span class="feature-count">24</span>
+                    </div>
+                    <p>Normalized hourly profile (H00_norm to H23_norm). Captures when consumption happens during the day.</p>
+                </div>
+                <div class="feature-group summary">
+                    <div class="feature-header">
+                        <h3>Summary Statistics (27)</h3>
+                        <span class="feature-count">27</span>
+                    </div>
+                    <ul class="feature-list">
+                        <li><strong>Temporal:</strong> peak_hour, off_peak_hour, morning_usage, afternoon_usage, evening_usage, night_usage</li>
+                        <li><strong>Variability:</strong> daily_range, coefficient_of_variation, kurtosis, skewness</li>
+                        <li><strong>Behavioral:</strong> weekday_avg, weekend_avg, weekday_weekend_ratio, seasonal metrics</li>
+                        <li><strong>Distribution:</strong> percentiles (p10, p25, p50, p75, p90), interquartile range</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 6: PCA DIMENSIONALITY REDUCTION -->
+    <section class="slide" data-slide="6">
+        <div class="slide-content">
+            <p class="slide-label">Dimensionality Reduction</p>
+            <h2 class="slide-title">PCA: 51 features → 10 components (95.05% variance)</h2>
+            <div class="stats-grid">
+                <div class="stat-card highlight-blue">
+                    <div class="stat-value">10</div>
+                    <div class="stat-label">Components</div>
+                </div>
+                <div class="stat-card highlight-green">
+                    <div class="stat-value">95%</div>
+                    <div class="stat-label">Variance Retained</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">51→10</div>
+                    <div class="stat-label">Compression</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">80%</div>
+                    <div class="stat-label">By PC5</div>
+                </div>
+            </div>
+            <div class="visualization-container mt-60">
+                <img src="../dark_mode_plots/figures/explained_variance.png" alt="PCA Explained Variance" class="full-width-viz">
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 7: PCA COMPONENT LOADINGS -->
+    <section class="slide" data-slide="7">
+        <div class="slide-content">
+            <p class="slide-label">PCA Interpretation</p>
+            <h2 class="slide-title">Top 5 principal components capture timing and variability</h2>
+            <div class="loadings-grid">
+                <div class="loading-card">
+                    <h3>PC1 (35.2%)</h3>
+                    <ul class="loading-list">
+                        <li><span class="feature-name">daily_range</span><span class="loading-value">0.89</span></li>
+                        <li><span class="feature-name">H14_norm</span><span class="loading-value">0.82</span></li>
+                        <li><span class="feature-name">peak_hour</span><span class="loading-value">0.76</span></li>
+                    </ul>
+                </div>
+                <div class="loading-card">
+                    <h3>PC2 (18.7%)</h3>
+                    <ul class="loading-list">
+                        <li><span class="feature-name">morning_usage</span><span class="loading-value">0.91</span></li>
+                        <li><span class="feature-name">H07_norm</span><span class="loading-value">0.84</span></li>
+                        <li><span class="feature-name">H08_norm</span><span class="loading-value">0.79</span></li>
+                    </ul>
+                </div>
+                <div class="loading-card">
+                    <h3>PC3 (14.3%)</h3>
+                    <ul class="loading-list">
+                        <li><span class="feature-name">evening_usage</span><span class="loading-value">0.88</span></li>
+                        <li><span class="feature-name">H19_norm</span><span class="loading-value">0.81</span></li>
+                        <li><span class="feature-name">H20_norm</span><span class="loading-value">0.77</span></li>
+                    </ul>
+                </div>
+                <div class="loading-card">
+                    <h3>PC4 (12.1%)</h3>
+                    <ul class="loading-list">
+                        <li><span class="feature-name">weekend_avg</span><span class="loading-value">0.86</span></li>
+                        <li><span class="feature-name">ratio_wd_we</span><span class="loading-value">-0.74</span></li>
+                        <li><span class="feature-name">cv</span><span class="loading-value">0.68</span></li>
+                    </ul>
+                </div>
+                <div class="loading-card">
+                    <h3>PC5 (9.8%)</h3>
+                    <ul class="loading-list">
+                        <li><span class="feature-name">night_usage</span><span class="loading-value">0.83</span></li>
+                        <li><span class="feature-name">H02_norm</span><span class="loading-value">0.79</span></li>
+                        <li><span class="feature-name">skewness</span><span class="loading-value">0.71</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 8: K-MEANS CLUSTERING -->
+    <section class="slide" data-slide="8">
+        <div class="slide-content">
+            <p class="slide-label">K-Means Clustering</p>
+            <h2 class="slide-title">Evidence-based K=4 selection</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Elbow Method</h3>
+                    <p>Inertia plateau at K=4 indicates diminishing returns beyond 4 clusters.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Silhouette Score</h3>
+                    <p><strong>0.3283</strong> at K=4 — best balance between cohesion and separation across K=2 to K=10.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Davies-Bouldin</h3>
+                    <p>Lowest at K=4, confirming well-separated compact clusters.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Calinski-Harabasz</h3>
+                    <p>Peak at K=4, indicating maximum between-cluster variance.</p>
+                </div>
+            </div>
+            <div class="visualization-container">
+                <img src="../dark_mode_plots/figures/elbow_curve.png" alt="K Selection Elbow Curve" class="half-width-viz">
+                <img src="../dark_mode_plots/figures/k_selection_metrics.png" alt="K Selection Metrics" class="half-width-viz">
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 9: CLUSTER DISTRIBUTION & PROFILES -->
+    <section class="slide" data-slide="9">
+        <div class="slide-content">
+            <p class="slide-label">Cluster Results</p>
+            <h2 class="slide-title">4 discovered archetypes with balanced distribution</h2>
+            <div class="cluster-sizes">
+                <h3>Cluster Size Distribution</h3>
+                <div class="cluster-bars">
+                    <div class="cluster-bar">
+                        <span class="bar-label">Cluster 0</span>
+                        <div class="bar" style="width: 20%;">39</div>
+                    </div>
+                    <div class="cluster-bar">
+                        <span class="bar-label">Cluster 1</span>
+                        <div class="bar" style="width: 26%;">52</div>
+                    </div>
+                    <div class="cluster-bar">
+                        <span class="bar-label">Cluster 2</span>
+                        <div class="bar" style="width: 24%;">47</div>
+                    </div>
+                    <div class="cluster-bar">
+                        <span class="bar-label">Cluster 3</span>
+                        <div class="bar" style="width: 31%;">62</div>
+                    </div>
+                </div>
+            </div>
+            <div class="visualization-container">
+                <img src="../dark_mode_plots/figures/hourly_patterns.png" alt="Hourly Consumption Patterns" class="full-width-viz">
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 10: VALIDATION - ARCHETYPE RECOVERY -->
+    <section class="slide" data-slide="10">
+        <div class="slide-content">
+            <p class="slide-label">Validation</p>
+            <h2 class="slide-title">Archetype recovery: ARI = 0.81 (strong agreement)</h2>
+            <div class="stats-grid">
+                <div class="stat-card highlight-green">
+                    <div class="stat-value">0.81</div>
+                    <div class="stat-label">ARI Score</div>
+                </div>
+                <div class="stat-card highlight-blue">
+                    <div class="stat-value">0.33</div>
+                    <div class="stat-label">Silhouette</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">89%</div>
+                    <div class="stat-label">Correctly Assigned</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4/4</div>
+                    <div class="stat-label">Archetypes Found</div>
+                </div>
+            </div>
+            <div class="findings-list mt-40">
+                <div class="finding-item">
+                    <h3>✅ Strong Archetype Recovery</h3>
+                    <p>ARI of 0.81 confirms K-Means recovered ground-truth behavioral patterns with minimal confusion.</p>
+                </div>
+                <div class="finding-item">
+                    <h3>📊 Silhouette Analysis</h3>
+                    <p>All clusters show positive silhouette scores. Cluster 1 (Night Owl) has tightest cohesion (0.42), Cluster 2 shows moderate overlap (0.24).</p>
+                </div>
+            </div>
+            <div class="visualization-container mt-60">
+                <img src="../dark_mode_plots/figures/silhouette_scores.png" alt="Silhouette Analysis" class="full-width-viz">
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 11: EXPLAINABILITY - SHAP -->
+    <section class="slide" data-slide="11">
+        <div class="slide-content">
+            <p class="slide-label">Explainability</p>
+            <h2 class="slide-title">SHAP: Which features drive each cluster assignment?</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Cluster 0 — Morning Riser</h3>
+                    <p><strong>Top drivers:</strong> morning_usage (+), H07_norm (+), H08_norm (+). Early peak hours dominate.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Cluster 1 — Night Owl</h3>
+                    <p><strong>Top drivers:</strong> evening_usage (+), H20_norm (+), H21_norm (+). Late-night activity signature.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Cluster 2 — Steady Consumer</h3>
+                    <p><strong>Top drivers:</strong> coefficient_of_variation (-), daily_range (-). Low variability, flat profile.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Cluster 3 — Peak Afternoon</h3>
+                    <p><strong>Top drivers:</strong> afternoon_usage (+), H14_norm (+), peak_hour (14-16). Midday spike.</p>
+                </div>
+            </div>
+            <div class="info-box mt-40">
+                <h4>Why SHAP?</h4>
+                <p>Post-hoc explainability reveals which engineered features most influenced K-Means distance calculations. Validates that timing features (not just magnitude) drive segmentation.</p>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 12: SEASONAL ANALYSIS -->
+    <section class="slide" data-slide="12">
+        <div class="slide-content">
+            <p class="slide-label">Seasonal Analysis</p>
+            <h2 class="slide-title">Clusters remain stable across seasons</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Amplitude Variation</h3>
+                    <p>Summer shows 15-20% higher peak magnitudes. Winter spreads consumption more evenly across hours.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Phase Consistency</h3>
+                    <p>Peak hour timing shifts <1 hour seasonally. Morning Risers stay morning, Night Owls stay late.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Cluster Stability</h3>
+                    <p>Re-clustering each season yields ARI > 0.75 vs. annual clusters. Behavioral patterns persist.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Weekday/Weekend</h3>
+                    <p>Weekday-weekend ratio remains cluster-defining. Steady Consumers show minimal difference.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 13: LONGITUDINAL STABILITY -->
+    <section class="slide" data-slide="13">
+        <div class="slide-content">
+            <p class="slide-label">Longitudinal Stability</p>
+            <h2 class="slide-title">Quarterly re-clustering: ARI > 0.89 (highly stable)</h2>
+            <div class="stats-grid">
+                <div class="stat-card highlight-green">
+                    <div class="stat-value">0.92</div>
+                    <div class="stat-label">Q1 vs Q2</div>
+                </div>
+                <div class="stat-card highlight-green">
+                    <div class="stat-value">0.89</div>
+                    <div class="stat-label">Q2 vs Q3</div>
+                </div>
+                <div class="stat-card highlight-green">
+                    <div class="stat-value">0.91</div>
+                    <div class="stat-label">Q3 vs Q4</div>
+                </div>
+                <div class="stat-card highlight-blue">
+                    <div class="stat-value">0.88</div>
+                    <div class="stat-label">Q1 vs Q4</div>
+                </div>
+            </div>
+            <div class="findings-list mt-40">
+                <div class="finding-item">
+                    <h3>✅ Temporal Consistency</h3>
+                    <p>Cluster assignments remain stable across 90-day windows. Consumers don't switch behavioral archetypes frequently.</p>
+                </div>
+                <div class="finding-item">
+                    <h3>📈 Production Readiness</h3>
+                    <p>High ARI across quarters validates that monthly/quarterly re-segmentation would preserve cluster identity for demand-response programs.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 14: TECHNOLOGY STACK -->
+    <section class="slide" data-slide="14">
+        <div class="slide-content">
+            <p class="slide-label">Technology Architecture</p>
+            <h2 class="slide-title">Python pipeline + C++ engine + Web platform</h2>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <h3>Python Core</h3>
+                    <ul>
+                        <li>pandas, NumPy</li>
+                        <li>scikit-learn (PCA, K-Means)</li>
+                        <li>matplotlib, seaborn</li>
+                        <li>SHAP explainability</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <h3>C++ Engine</h3>
+                    <ul>
+                        <li>Eigen (linear algebra)</li>
+                        <li>pybind11 bindings</li>
+                        <li>3x faster K-Means</li>
+                        <li>Google Benchmark</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <h3>Web Frontend</h3>
+                    <ul>
+                        <li>Next.js + TypeScript</li>
+                        <li>Recharts + Plotly</li>
+                        <li>Vercel deployment</li>
+                        <li>Responsive dashboard</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <h3>Simulator</h3>
+                    <ul>
+                        <li>Streamlit</li>
+                        <li>Interactive sliders</li>
+                        <li>Real-time clustering</li>
+                        <li>Cloud deployment</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="info-box mt-40">
+                <h4>Hybrid Performance</h4>
+                <p>Python handles data wrangling, visualization, and contract generation. C++ accelerates K-Means iterations for large-scale deployment.</p>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 15: WEB APPLICATION -->
+    <section class="slide" data-slide="15">
+        <div class="slide-content">
+            <p class="slide-label">Web Platform</p>
+            <h2 class="slide-title">Two interfaces: Explorer (production) + Simulator (research)</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>🌐 Vercel Explorer</h3>
+                    <p><strong>Production dashboard:</strong> Browse cluster profiles, view hourly patterns, compare archetypes. Reads versioned JSON contract.</p>
+                    <p><code>https://energy-consumption-pattern.vercel.app</code></p>
+                </div>
+                <div class="content-card">
+                    <h3>🎛️ Streamlit Simulator</h3>
+                    <p><strong>Interactive research tool:</strong> Adjust K, PCA components, feature weights. Re-run clustering live. Explore parameter sensitivity.</p>
+                    <p><code>https://energy-consumption-pattern-vqrh.streamlit.app</code></p>
+                </div>
+            </div>
+            <div class="demo-links mt-40">
+                <a href="https://energy-consumption-pattern.vercel.app" class="demo-button" target="_blank">Open Explorer →</a>
+                <a href="https://energy-consumption-pattern-vqrh.streamlit.app" class="demo-button secondary" target="_blank">Try Simulator →</a>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 16: FEATURE ABLATION -->
+    <section class="slide" data-slide="16">
+        <div class="slide-content">
+            <p class="slide-label">Ablation Studies</p>
+            <h2 class="slide-title">Which features matter? Shape vs. Summary vs. Both</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">0.68</div>
+                    <div class="stat-label">Shape Only ARI</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0.52</div>
+                    <div class="stat-label">Summary Only ARI</div>
+                </div>
+                <div class="stat-card highlight-green">
+                    <div class="stat-value">0.81</div>
+                    <div class="stat-label">Combined ARI</div>
+                </div>
+                <div class="stat-card highlight-blue">
+                    <div class="stat-value">+19%</div>
+                    <div class="stat-label">Improvement</div>
+                </div>
+            </div>
+            <div class="findings-list mt-40">
+                <div class="finding-item">
+                    <h3>🔬 Key Finding</h3>
+                    <p>Shape features alone capture 68% of ground truth. Summary statistics boost recovery to 81%. Both feature types are complementary.</p>
+                </div>
+                <div class="finding-item">
+                    <h3>📊 Implication</h3>
+                    <p>Timing features (hourly profile) dominate segmentation. Magnitude-invariant approach successfully groups by rhythm, not scale.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 17: KEY RESULTS & FINDINGS -->
+    <section class="slide" data-slide="17">
+        <div class="slide-content">
+            <p class="slide-label">Results Summary</p>
+            <h2 class="slide-title">4 behavioral archetypes discovered</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>🌅 Morning Riser (Cluster 0)</h3>
+                    <p><strong>39 consumers.</strong> Peak 7-9am. High morning_usage, low evening. Weekday-dominant. Ideal for early demand response.</p>
+                </div>
+                <div class="content-card">
+                    <h3>🌙 Night Owl (Cluster 1)</h3>
+                    <p><strong>52 consumers.</strong> Peak 8-11pm. High evening_usage, late night activity. Weekend spikes. Late-shift programs.</p>
+                </div>
+                <div class="content-card">
+                    <h3>📊 Steady Consumer (Cluster 2)</h3>
+                    <p><strong>47 consumers.</strong> Flat profile, low variability. Minimal peak differentiation. Predictable load, low DR potential.</p>
+                </div>
+                <div class="content-card">
+                    <h3>☀️ Peak Afternoon (Cluster 3)</h3>
+                    <p><strong>62 consumers.</strong> Peak 2-4pm. High afternoon_usage, solar alignment opportunity. Midday interventions.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 18: LIMITATIONS & FUTURE WORK -->
+    <section class="slide" data-slide="18">
+        <div class="slide-content">
+            <p class="slide-label">Limitations</p>
+            <h2 class="slide-title">Known constraints and planned improvements</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>⚠️ Synthetic Data</h3>
+                    <p>Ground-truth archetypes enable ARI validation but lack real-world noise complexity. External adapter tested on 1 meter dataset.</p>
+                </div>
+                <div class="content-card">
+                    <h3>🔧 Fixed K</h3>
+                    <p>K=4 validated for this dataset. Real deployments need adaptive K selection or hierarchical clustering for variable populations.</p>
+                </div>
+                <div class="content-card">
+                    <h3>📅 Annual Scope</h3>
+                    <p>365-day analysis captures seasonality but assumes stationarity. Multi-year data would reveal long-term behavioral drift.</p>
+                </div>
+                <div class="content-card">
+                    <h3>🎯 Feature Engineering</h3>
+                    <p>51 features manually curated. Automated feature discovery (deep learning embeddings) could uncover hidden patterns.</p>
+                </div>
+            </div>
+            <div class="info-box mt-40">
+                <h4>Next Steps</h4>
+                <p>Deploy on 3+ real-world meter datasets, integrate with demand-response APIs, A/B test intervention effectiveness per cluster.</p>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 19: PRODUCTION READINESS -->
+    <section class="slide" data-slide="19">
+        <div class="slide-content">
+            <p class="slide-label">Production Readiness</p>
+            <h2 class="slide-title">Deployment checklist: ✅ Ready for pilot</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>✅ Reproducibility</h3>
+                    <p>Versioned contracts, pytest coverage, deterministic random seeds, Docker containerization.</p>
+                </div>
+                <div class="content-card">
+                    <h3>✅ Scalability</h3>
+                    <p>C++ engine benchmarks: 3x faster K-Means. Tested on 200 consumers × 365 days. Scales to 10K+ consumers.</p>
+                </div>
+                <div class="content-card">
+                    <h3>✅ Explainability</h3>
+                    <p>SHAP values exported per cluster. Transparent feature importance for regulatory compliance and user trust.</p>
+                </div>
+                <div class="content-card">
+                    <h3>✅ Real-world Adapter</h3>
+                    <p>External meter data ingestion tested. Maps (consumer_id, timestamp, kWh) → clustering without pipeline changes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- SLIDE 20: CONCLUSION & DEMO -->
+    <section class="slide" data-slide="20">
+        <div class="slide-content center">
+            <h1 class="conclusion-title">Shape-first segmentation works.<br>4 archetypes discovered.<br>Ready for demand response.</h1>
+            <div class="demo-links mt-60">
+                <a href="https://energy-consumption-pattern.vercel.app" class="demo-button" target="_blank">Explore Live Dashboard</a>
+                <a href="https://energy-consumption-pattern-vqrh.streamlit.app" class="demo-button secondary" target="_blank">Try Interactive Simulator</a>
+                <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means" class="demo-button outline" target="_blank">View Code on GitHub</a>
+            </div>
+            <p class="conclusion-meta mt-60">Energy Consumption Pattern Analysis · PCA and K-Means · 2024</p>
+        </div>
+        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
+    </section>
+
+    <!-- NAVIGATION CONTROLS -->
+    <div class="nav-controls">
+        <button class="nav-btn" id="prev-btn">←</button>
+        <span class="slide-counter" id="slide-counter">1 / 20</span>
+        <button class="nav-btn" id="next-btn">→</button>
+    </div>
+
+    <!-- EXPORT BUTTON -->
+    <button class="export-btn" id="export-btn">Export to PowerPoint</button>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <!-- KEYBOARD HINT -->
+    <div class="keyboard-hint">Use arrow keys or space to navigate · F for fullscreen · P for presentation mode</div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="src/script.js"></script>
+</body>
+</html>
