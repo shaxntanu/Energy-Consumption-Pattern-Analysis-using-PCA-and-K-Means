@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-/* Spasex restyle. Brand: pure black canvas, white uppercase D-DIN display set in
-   tight vertical leading and wide horizontal tracking. No accent colour in the
+/* Spasex restyle. Brand: pure black canvas, white uppercase Times New Roman
+   display set in tight vertical leading and wide horizontal tracking.
+   No accent colour in the
    chrome; no drop shadows or gradient overlays. The only chromatic content is
    the chart data itself, which is kept as-is (the data series ARE the imagery of
    the project, standing in for the brand's photography). All UI chrome — canvas,
@@ -23,8 +23,8 @@
   --rose: #fb7185;
   /* Unselected / background chart bars: a light neutral, not an accent. */
   --k-bar: #e0e0e8;
-  --font-body: 'D-DIN', 'Arial Narrow', Arial, Verdana, sans-serif;
-  --font-display: 'D-DIN-Bold', 'Arial Narrow', Arial, Verdana, sans-serif;
+  --font-body: 'Times New Roman', Times, serif;
+  --font-display: 'Times New Roman', Times, serif;
   font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
@@ -56,8 +56,8 @@ a {
   text-decoration: none;
 }
 
-/* Fixed overlay nav: transparent over the canvas, white uppercase caps with wide
-   tracking. No opaque background, no blur. */
+/* Fixed overlay nav: solid opaque bar (0% transparency), white uppercase caps
+   with wide tracking. No blur, no transparency. */
 .site-nav {
   position: sticky;
   top: 0;
@@ -67,7 +67,7 @@ a {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem clamp(1rem, 4vw, 3rem);
-  background: transparent;
+  background: #000000;
   border-bottom: 1px solid var(--line);
 }
 
