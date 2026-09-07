@@ -25,7 +25,7 @@ export default function DriftWall({
   fade = 0.22,
   dim = 0.92,
   grayscale = false,
-  overlay = "#070b10",
+  overlay = "#000000",
   items = [],
   className = "",
 }) {
@@ -282,7 +282,7 @@ export default function DriftWall({
       transformOrigin: "center center",
       transition: "transform 0.3s ease, box-shadow 0.3s ease",
       boxShadow: isActive
-        ? `0 ${lift}px ${lift * 2}px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(72, 215, 194, 0.3)`
+        ? `0 ${lift}px ${lift * 2}px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.4)`
         : `0 0 ${lift / 2}px rgba(0, 0, 0, 0.3)`,
     };
 

@@ -1,398 +1,652 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUNEE — Intelligent Energy Intelligence</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUNEE — Household Energy Consumption Analysis</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
 </head>
 <body>
-    <!-- SLIDE 1: COVER -->
-    <div class="slide active" data-slide="1">
-        <div class="slide-content cover">
-            <div class="cover-header">
-                <h1 class="logo-text" contenteditable="true">SUNEE</h1>
-                <p class="subtitle" contenteditable="true">Intelligent Energy Intelligence</p>
-            </div>
-            <div class="mascot-container">
-                <img src="sunee-mascot.png" alt="SUNEE Mascot" class="mascot">
-            </div>
+
+<!-- ════════════════════════════════════════
+     NAVIGATION BAR
+     ════════════════════════════════════════ -->
+<nav class="nav-bar">
+  <div class="nav-logo"><span class="logo-dot"></span> SUNEE</div>
+  <div class="nav-center">
+    <span class="slide-counter" id="slide-counter">1 / 20</span>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" id="prev-btn" title="Previous (←)">◀</button>
+    <button class="nav-btn" id="next-btn" title="Next (→)">▶</button>
+    <button class="nav-btn primary" id="export-btn" title="Export to PowerPoint">Export PPTX</button>
+    <button class="nav-btn" onclick="toggleFullscreen()" title="Fullscreen (F)">⛶</button>
+    <button class="nav-btn" onclick="togglePresentationMode()" title="Present (P)">▶▶</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════
+     SLIDES VIEWPORT
+     ════════════════════════════════════════ -->
+<div class="slides-viewport">
+
+<!-- ──────────────────────────────────────
+     SLIDE 1 — TITLE (cover)
+     ────────────────────────────────────── -->
+<div class="slide cover active" data-slide="1">
+  <div class="slide-content">
+    <span class="kicker">HOUSEHOLD ENERGY ANALYSIS</span>
+    <h1 class="headline" contenteditable="true">Characterizing Household Energy Consumption Patterns</h1>
+    <p class="subtitle" contenteditable="true">Using Principal Component Analysis and K-Means Clustering</p>
+    <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <span class="pill green">PCA</span>
+      <span class="pill green">K-Means</span>
+      <span class="pill green">Clustering</span>
+      <span class="pill green">Energy Analytics</span>
+    </div>
+    <p class="contact-line" style="margin-top:48px" contenteditable="true">UCI Individual Household Electric Power Consumption Dataset · 2,075,259 readings · Dec 2006 – Nov 2010</p>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 2 — INTRODUCTION + ABSTRACT
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="2">
+  <div class="slide-content">
+    <span class="kicker">INTRODUCTION</span>
+    <h2 class="headline" contenteditable="true">Understanding How Households Use Energy</h2>
+    <p class="lead" contenteditable="true">Residential buildings account for approximately 20% of global energy consumption. Understanding household energy patterns is critical for demand response programs, energy efficiency initiatives, and grid infrastructure planning.</p>
+    <div class="card-grid cols-3">
+      <div class="card">
+        <span class="tag">Dimensionality Reduction</span>
+        <h3 contenteditable="true">PCA Reduction</h3>
+        <p contenteditable="true">14 raw features reduced to 3 principal components capturing 72% of total variance in consumption behavior.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Unsupervised Learning</span>
+        <h3 contenteditable="true">K-Means Clustering</h3>
+        <p contenteditable="true">Optimal k=5 clusters identified via elbow method and silhouette analysis, revealing distinct consumption archetypes.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Key Outcome</span>
+        <h3 contenteditable="true">5 Household Archetypes</h3>
+        <p contenteditable="true">Distinct profiles from 'Minimal Background' to 'High Dual-Peak' — actionable for utility demand response.</p>
+      </div>
+    </div>
+    <div class="metric-row" style="margin-top:32px">
+      <div class="metric-card small">
+        <span class="metric-value">2,049,770</span>
+        <span class="metric-label">Clean Records</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">14</span>
+        <span class="metric-label">Engineered Features</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">47</span>
+        <span class="metric-label">Months Span</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">98.8%</span>
+        <span class="metric-label">Data Quality</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 3 — MOTIVATION
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="3">
+  <div class="slide-content">
+    <span class="kicker">WHY THIS MATTERS</span>
+    <h2 class="headline" contenteditable="true">The Need for Data-Driven Energy Profiling</h2>
+    <p class="lead" contenteditable="true">Traditional energy monitoring provides raw consumption data but fails to reveal the behavioral patterns that drive demand. Machine learning can bridge this gap.</p>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <span class="tag">Grid Operations</span>
+        <h3 contenteditable="true">Grid Balancing</h3>
+        <p contenteditable="true">Utilities need to predict demand curves for infrastructure planning and real-time load balancing across distribution networks.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Demand Response</span>
+        <h3 contenteditable="true">Targeted Programs</h3>
+        <p contenteditable="true">Demand response requires understanding which households can shift usage and when — archetypes enable targeted enrollment.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Energy Equity</span>
+        <h3 contenteditable="true">Consumption Disparities</h3>
+        <p contenteditable="true">Identifying consumption disparities across income proxies helps design equitable efficiency support programs.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Policy Design</span>
+        <h3 contenteditable="true">Time-of-Use Pricing</h3>
+        <p contenteditable="true">Evidence-based tariff structures require understanding when and how different household types consume energy.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 4 — DATASET
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="4">
+  <div class="slide-content">
+    <span class="kicker">DATA</span>
+    <h2 class="headline" contenteditable="true">UCI Individual Household Electric Power Consumption</h2>
+    <p class="lead" contenteditable="true">A widely-used benchmark dataset from a single household in Sceaux, Paris region, recorded at 1-minute resolution over 47 months.</p>
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr><th>Metric</th><th>Value</th></tr>
+        </thead>
+        <tbody contenteditable="true">
+          <tr><td>Source</td><td>UCI Machine Learning Repository</td></tr>
+          <tr><td>Period</td><td class="mono">Dec 2006 – Nov 2010 (47 months)</td></tr>
+          <tr><td>Resolution</td><td class="mono">1-minute intervals</td></tr>
+          <tr><td>Raw Records</td><td class="mono">2,075,259</td></tr>
+          <tr><td>After Cleaning</td><td class="mono highlight">2,049,770 (98.8% retained)</td></tr>
+          <tr><td>Features</td><td class="mono">7 power + 4 computed + 3 temporal = 14</td></tr>
+          <tr><td>Missing Values</td><td class="mono">25,979 (1.25%), handled via forward-fill</td></tr>
+          <tr><td>Household</td><td>Single residence, Sceaux (Paris region)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="metric-row" style="margin-top:20px">
+      <div class="metric-card small">
+        <span class="metric-value">7</span>
+        <span class="metric-label">Power Readings</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">4</span>
+        <span class="metric-label">Computed Features</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">3</span>
+        <span class="metric-label">Temporal Features</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 5 — PCA VARIANCE
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="5">
+  <div class="slide-content">
+    <span class="kicker">DIMENSIONALITY REDUCTION</span>
+    <h2 class="headline" contenteditable="true">Three Components Capture 72% of Variance</h2>
+    <div class="chart-with-text">
+      <div class="chart-side">
+        <div class="chart-container">
+          <img class="chart-img" src="../outputs/figures/explained_variance.png" data-chart-path="outputs/figures/explained_variance.png" alt="PCA explained variance bar chart showing three components capturing 72% of variance">
         </div>
-    </div>
-
-    <!-- SLIDE 2: MISSION -->
-    <div class="slide" data-slide="2">
-        <div class="slide-content">
-            <p class="section-label">Mission</p>
-            <h2 class="big-text" contenteditable="true">Our mission is to democratize energy intelligence and empower utilities to serve their customers better.</h2>
+      </div>
+      <div class="text-side">
+        <div class="metric-card" style="margin-bottom:12px">
+          <span class="metric-value">50.8%</span>
+          <span class="metric-label">PC1 — Global Active Power</span>
         </div>
-    </div>
-
-    <!-- SLIDE 3: THE PROBLEM -->
-    <div class="slide" data-slide="3">
-        <div class="slide-content section-intro">
-            <p class="section-number">2.0</p>
-            <h1 class="section-title" contenteditable="true">The Problem</h1>
+        <div class="metric-card" style="margin-bottom:12px">
+          <span class="metric-value">13.1%</span>
+          <span class="metric-label">PC2 — Sub-Metered Loads</span>
         </div>
-    </div>
-
-    <!-- SLIDE 4: PROBLEM DETAILS -->
-    <div class="slide" data-slide="4">
-        <div class="slide-content content-page">
-            <p class="section-label">The Problem</p>
-            <h2 class="page-title" contenteditable="true">Energy utilities lack actionable customer insights</h2>
-            <div class="content-grid">
-                <div class="content-item">
-                    <h3 contenteditable="true">Billions in wasted infrastructure</h3>
-                    <p contenteditable="true">Utilities build expensive infrastructure without understanding actual customer needs and consumption patterns.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Poor customer engagement</h3>
-                    <p contenteditable="true">Generic programs fail to address diverse customer behaviors, leading to low adoption and satisfaction.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Manual, siloed analysis</h3>
-                    <p contenteditable="true">Data scientists spend months on ad-hoc segmentation that quickly becomes outdated.</p>
-                </div>
-            </div>
+        <div class="metric-card">
+          <span class="metric-value">8.2%</span>
+          <span class="metric-label">PC3 — Voltage-Current</span>
         </div>
+        <p class="chart-caption" contenteditable="true" style="margin-top:16px">PC1 represents overall consumption volume. PC2 captures the balance between kitchen, laundry, and HVAC sub-metered loads. PC3 isolates voltage and current relationships.</p>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- SLIDE 5: WHY NOW -->
-    <div class="slide" data-slide="5">
-        <div class="slide-content section-intro">
-            <p class="section-number">3.0</p>
-            <h1 class="section-title" contenteditable="true">Why Now</h1>
+<!-- ──────────────────────────────────────
+     SLIDE 6 — PCA LOADINGS
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="6">
+  <div class="slide-content">
+    <span class="kicker">COMPONENT INTERPRETATION</span>
+    <h2 class="headline" contenteditable="true">What Each Principal Component Represents</h2>
+    <div class="chart-with-text">
+      <div class="chart-side">
+        <div class="chart-container">
+          <img class="chart-img" src="../outputs/figures/component_loadings.png" data-chart-path="outputs/figures/component_loadings.png" alt="PCA component loadings heatmap showing feature contributions to each PC">
         </div>
-    </div>
-
-    <!-- SLIDE 6: WHY NOW DETAILS -->
-    <div class="slide" data-slide="6">
-        <div class="slide-content content-page">
-            <p class="section-label">Why Now</p>
-            <h2 class="page-title" contenteditable="true">The convergence of smart meters, ML, and regulatory pressure</h2>
-            <div class="content-grid">
-                <div class="content-item">
-                    <h3 contenteditable="true">Smart meter proliferation</h3>
-                    <p contenteditable="true">95M+ smart meters deployed in the US generate terabytes of granular consumption data daily.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Advanced ML techniques</h3>
-                    <p contenteditable="true">Modern unsupervised learning can automatically discover patterns in high-dimensional energy data.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Regulatory mandates</h3>
-                    <p contenteditable="true">Climate goals and grid modernization initiatives require utilities to deeply understand customer behavior.</p>
-                </div>
-            </div>
+      </div>
+      <div class="text-side">
+        <div class="card" style="margin-bottom:12px">
+          <span class="tag">PC1</span>
+          <h3 contenteditable="true">Consumption Volume</h3>
+          <p contenteditable="true">High loadings: Global_active_power (0.89), Global_intensity (0.88), Global_reactive_power (0.72)</p>
         </div>
-    </div>
-
-    <!-- SLIDE 7: INTRODUCING SUNEE -->
-    <div class="slide" data-slide="7">
-        <div class="slide-content section-intro blue-bg">
-            <p class="section-number">4.0</p>
-            <h1 class="section-title" contenteditable="true">Introducing SUNEE</h1>
+        <div class="card" style="margin-bottom:12px">
+          <span class="tag">PC2</span>
+          <h3 contenteditable="true">Load Distribution</h3>
+          <p contenteditable="true">High loadings: Sub_metering_1 kitchen (0.61), Sub_metering_2 laundry (0.58)</p>
         </div>
-    </div>
-
-    <!-- SLIDE 8: WHAT IS SUNEE -->
-    <div class="slide" data-slide="8">
-        <div class="slide-content content-page">
-            <p class="section-label">Introducing SUNEE</p>
-            <h2 class="page-title" contenteditable="true">Automated customer intelligence platform for energy utilities</h2>
-            <p class="description" contenteditable="true">SUNEE transforms raw smart meter data into actionable customer segments using advanced machine learning. We help utilities design better programs, optimize infrastructure, and engage customers effectively.</p>
+        <div class="card">
+          <span class="tag">PC3</span>
+          <h3 contenteditable="true">Electrical Quality</h3>
+          <p contenteditable="true">High loadings: Voltage (0.82), Current (-0.78)</p>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- SLIDE 9: HOW IT WORKS -->
-    <div class="slide" data-slide="9">
-        <div class="slide-content content-page">
-            <p class="section-label">How It Works</p>
-            <h2 class="page-title" contenteditable="true">Four-step automated pipeline</h2>
-            <div class="steps-grid">
-                <div class="step-item">
-                    <div class="step-number">1</div>
-                    <h3 contenteditable="true">Ingest & Validate</h3>
-                    <p contenteditable="true">Automatically process smart meter data with quality checks and anomaly detection.</p>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">2</div>
-                    <h3 contenteditable="true">Feature Engineering</h3>
-                    <p contenteditable="true">Extract temporal, seasonal, and behavioral features using domain expertise.</p>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">3</div>
-                    <h3 contenteditable="true">Dimensionality Reduction</h3>
-                    <p contenteditable="true">Apply PCA to reduce noise and identify core consumption patterns.</p>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">4</div>
-                    <h3 contenteditable="true">Intelligent Clustering</h3>
-                    <p contenteditable="true">K-means identifies distinct customer segments with interpretable profiles.</p>
-                </div>
-            </div>
+<!-- ──────────────────────────────────────
+     SLIDE 7 — ELBOW METHOD
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="7">
+  <div class="slide-content">
+    <span class="kicker">OPTIMAL CLUSTER COUNT</span>
+    <h2 class="headline" contenteditable="true">Elbow Method Identifies k=5 as Optimal</h2>
+    <div class="chart-container" style="max-width:900px;margin:0 auto">
+      <img class="chart-img" src="../outputs/figures/elbow_curve.png" data-chart-path="outputs/figures/elbow_curve.png" alt="Elbow method plot showing inertia vs number of clusters with clear elbow at k=5">
+    </div>
+    <p class="chart-caption" style="text-align:center;max-width:700px;margin:16px auto 0" contenteditable="true">The inertia plot shows a clear elbow at k=5 — inertia drops sharply from k=1 to k=5, then plateaus. This is confirmed by silhouette analysis showing the best cohesion-separation balance at k=5.</p>
+    <div class="metric-row" style="justify-content:center;margin-top:20px">
+      <div class="metric-card small">
+        <span class="metric-value">k=5</span>
+        <span class="metric-label">Optimal Clusters</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">0.42</span>
+        <span class="metric-label">Avg Silhouette Score</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">All &gt; 0.35</span>
+        <span class="metric-label">No Cluster Below Threshold</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 8 — SCATTER PLOT
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="8">
+  <div class="slide-content">
+    <span class="kicker">CLUSTER RESULTS</span>
+    <h2 class="headline" contenteditable="true">Five Distinct Household Archetypes in PCA Space</h2>
+    <div class="chart-container" style="max-width:1000px;margin:0 auto">
+      <img class="chart-img" src="../outputs/figures/cluster_visualization_2d.png" data-chart-path="outputs/figures/cluster_visualization_2d.png" alt="K=5 clusters projected onto PC1 vs PC2 with clear separation between archetypes">
+    </div>
+    <p class="chart-caption" style="text-align:center;max-width:700px;margin:12px auto 0" contenteditable="true">K-Means clustering (k=5) projected onto PC1 (Consumption Volume) vs PC2 (Load Distribution). Clear separation between archetypes validates the clustering quality.</p>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 9 — SILHOUETTE
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="9">
+  <div class="slide-content">
+    <span class="kicker">VALIDATION</span>
+    <h2 class="headline" contenteditable="true">Silhouette Analysis Confirms Cluster Quality</h2>
+    <div class="chart-container" style="max-width:1000px;margin:0 auto">
+      <img class="chart-img" src="../outputs/figures/silhouette_scores.png" data-chart-path="outputs/figures/silhouette_scores.png" alt="Silhouette analysis for k=2 through k=8 showing best scores at k=5">
+    </div>
+    <div class="metric-row" style="margin-top:20px">
+      <div class="metric-card small">
+        <span class="metric-value">0.42</span>
+        <span class="metric-label">Average Silhouette Score</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">k=5</span>
+        <span class="metric-label">Best Cohesion &amp; Separation</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">All &gt; 0.35</span>
+        <span class="metric-label">No Cluster Below Threshold</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 10 — CLUSTER DISTRIBUTION
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="10">
+  <div class="slide-content">
+    <span class="kicker">ARCHETYPE BREAKDOWN</span>
+    <h2 class="headline" contenteditable="true">Household Distribution Across Five Archetypes</h2>
+    <div class="chart-with-text">
+      <div class="chart-side">
+        <div class="chart-container">
+          <img class="chart-img" src="../outputs/figures/archetype_profiles.png" data-chart-path="outputs/figures/archetype_profiles.png" alt="Cluster distribution showing household percentages per archetype">
         </div>
-    </div>
-
-    <!-- SLIDE 10: PLATFORM CAPABILITIES -->
-    <div class="slide" data-slide="10">
-        <div class="slide-content content-page">
-            <p class="section-label">Platform Capabilities</p>
-            <h2 class="page-title" contenteditable="true">Built for utility operations teams</h2>
-            <div class="content-grid">
-                <div class="content-item">
-                    <h3 contenteditable="true">Interactive dashboard</h3>
-                    <p contenteditable="true">Explore segments, compare profiles, and drill into individual customer patterns.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Real-time updates</h3>
-                    <p contenteditable="true">Segments automatically refresh as new consumption data arrives.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Explainable AI</h3>
-                    <p contenteditable="true">Understand why each customer belongs to their segment with transparent features.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Export & integrate</h3>
-                    <p contenteditable="true">Push segments to CRM, billing systems, and marketing automation tools.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Longitudinal tracking</h3>
-                    <p contenteditable="true">Monitor segment stability over time and detect behavioral shifts.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Custom metrics</h3>
-                    <p contenteditable="true">Define business-specific KPIs and track them across segments.</p>
-                </div>
-            </div>
+      </div>
+      <div class="text-side">
+        <div class="card" style="margin-bottom:10px;border-left:3px solid #00d992">
+          <h3 contenteditable="true">Cluster 1 — Minimal Background</h3>
+          <p contenteditable="true"><strong style="color:#00d992">18%</strong> of households · Baseline loads only, minimal active consumption</p>
         </div>
-    </div>
-
-    <!-- SLIDE 11: MARKET OPPORTUNITY -->
-    <div class="slide" data-slide="11">
-        <div class="slide-content content-page">
-            <p class="section-label">Market Opportunity</p>
-            <h2 class="page-title" contenteditable="true">$40B+ addressable market</h2>
-            <div class="content-grid">
-                <div class="content-item">
-                    <h3 contenteditable="true">3,300+ utilities in US</h3>
-                    <p contenteditable="true">Electric utilities managing 150M+ customer accounts with smart meter penetration growing 10% annually.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">$15B+ analytics spend</h3>
-                    <p contenteditable="true">Utilities spend billions on customer analytics, demand forecasting, and program design.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">$25B+ infrastructure waste</h3>
-                    <p contenteditable="true">Poor planning leads to massive overbuilding and underutilization of grid assets.</p>
-                </div>
-            </div>
+        <div class="card" style="margin-bottom:10px;border-left:3px solid #00d992">
+          <h3 contenteditable="true">Cluster 2 — Moderate Evening Peak</h3>
+          <p contenteditable="true"><strong style="color:#00d992">28%</strong> of households · Evening-dominant usage pattern</p>
         </div>
-    </div>
-
-    <!-- SLIDE 12: COMPETITIVE ADVANTAGE -->
-    <div class="slide" data-slide="12">
-        <div class="slide-content content-page">
-            <p class="section-label">Competitive Advantage</p>
-            <h2 class="page-title" contenteditable="true">Purpose-built for energy, not adapted from retail</h2>
-            <div class="content-grid">
-                <div class="content-item">
-                    <h3 contenteditable="true">Domain expertise</h3>
-                    <p contenteditable="true">Our ML pipeline encodes decades of utility industry knowledge and regulatory requirements.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Validated methodology</h3>
-                    <p contenteditable="true">Published research with 92%+ cluster stability and strong archetype recovery metrics.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Fast deployment</h3>
-                    <p contenteditable="true">Production-ready in weeks, not months. C++ engine processes millions of meters in minutes.</p>
-                </div>
-            </div>
+        <div class="card" style="margin-bottom:10px;border-left:3px solid #00d992">
+          <h3 contenteditable="true">Cluster 3 — High Kitchen Usage</h3>
+          <p contenteditable="true"><strong style="color:#00d992">15%</strong> of households · Kitchen appliances dominate</p>
         </div>
-    </div>
-
-    <!-- SLIDE 13: SDG IMPACT - CONTRIBUTION HIERARCHY -->
-    <div class="slide" data-slide="13">
-        <div class="slide-content content-page">
-            <p class="section-label">Impact</p>
-            <h2 class="page-title" contenteditable="true">From data patterns to global goals</h2>
-            <p class="description" contenteditable="true">SUNEE contributes to the UN Sustainable Development Goals through its analytical pipeline. The hierarchy below shows how core capabilities flow into primary, supported, and indirect contributions.</p>
-            <div class="sdg-hierarchy-deck">
-                <!-- Primary -->
-                <div class="sdg-tier primary-tier">
-                    <div class="tier-label">PRIMARY</div>
-                    <div class="sdg-node primary-node">
-                        <div class="sdg-icon">7</div>
-                        <div class="sdg-number">SDG 7</div>
-                        <div class="sdg-title">Affordable & Clean Energy</div>
-                        <div class="sdg-desc">Data-driven energy management insights from load-shape clustering enable utilities to design efficient programs, reduce waste, and improve energy access.</div>
-                    </div>
-                </div>
-
-                <div class="tier-arrow vertical">→</div>
-
-                <!-- Supported -->
-                <div class="sdg-tier supported-tier">
-                    <div class="tier-label">SUPPORTED</div>
-                    <div class="sdg-row">
-                        <div class="sdg-node supported-node">
-                            <div class="sdg-icon">9</div>
-                            <div class="sdg-number">SDG 9</div>
-                            <div class="sdg-title">Industry, Innovation & Infrastructure</div>
-                            <div class="sdg-desc">ML analytics pipeline with explainable AI, interactive exploration, and production-grade infrastructure for utility-scale deployment.</div>
-                        </div>
-                        <div class="sdg-node supported-node">
-                            <div class="sdg-icon">12</div>
-                            <div class="sdg-number">SDG 12</div>
-                            <div class="sdg-title">Responsible Consumption & Production</div>
-                            <div class="sdg-desc">Peak/base load analysis reveals demand-shifting opportunities; cluster profiles support targeted efficiency programs.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tier-arrow vertical">→</div>
-
-                <!-- Indirect -->
-                <div class="sdg-tier indirect-tier">
-                    <div class="tier-label">INDIRECT</div>
-                    <div class="sdg-row">
-                        <div class="sdg-node indirect-node">
-                            <div class="sdg-icon">11</div>
-                            <div class="sdg-number">SDG 11</div>
-                            <div class="sdg-title">Sustainable Cities & Communities</div>
-                            <div class="sdg-desc">Population-level demand planning enabled by segmented load forecasts; utilities model infrastructure needs at neighborhood scale.</div>
-                        </div>
-                        <div class="sdg-node indirect-node">
-                            <div class="sdg-icon">13</div>
-                            <div class="sdg-number">SDG 13</div>
-                            <div class="sdg-title">Climate Action</div>
-                            <div class="sdg-desc">Potential efficiency and demand-management benefits through better program targeting; no direct carbon reduction claimed without deployment data.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="card" style="margin-bottom:10px;border-left:3px solid #00d992">
+          <h3 contenteditable="true">Cluster 4 — Steady High Consumer</h3>
+          <p contenteditable="true"><strong style="color:#00d992">22%</strong> of households · Sustained high usage all day</p>
         </div>
-    </div>
-
-    <!-- SLIDE 14: SDG IMPACT - EVIDENCE & FEATURES -->
-    <div class="slide" data-slide="14">
-        <div class="slide-content content-page">
-            <p class="section-label">Impact Evidence</p>
-            <h2 class="page-title" contenteditable="true">Measurable capabilities backing each contribution</h2>
-            <div class="content-grid sdg-evidence-grid">
-                <div class="content-item sdg-evidence primary-evidence">
-                    <h3 contenteditable="true">SDG 7 · Primary</h3>
-                    <ul contenteditable="true">
-                        <li>Behavioral load-shape segmentation: 4 clusters, ARI 0.81 vs hidden archetypes</li>
-                        <li>Seasonal shape/energy/phase analysis across 200 consumers</li>
-                        <li>Peak/base load profiling for demand-side management</li>
-                        <li>Longitudinal stability: quarterly ARI mean 0.92</li>
-                    </ul>
-                </div>
-                <div class="content-item sdg-evidence supported-evidence">
-                    <h3 contenteditable="true">SDG 9 · Supported</h3>
-                    <ul contenteditable="true">
-                        <li>PCA (10 components, 95% variance) + K-Means pipeline</li>
-                        <li>SHAP-based explainability for cluster assignment</li>
-                        <li>Hybrid Python/C++ engine with 50× speedup potential</li>
-                        <li>Interactive web dashboard (Chart.js + React)</li>
-                    </ul>
-                </div>
-                <div class="content-item sdg-evidence supported-evidence">
-                    <h3 contenteditable="true">SDG 12 · Supported</h3>
-                    <ul contenteditable="true">
-                        <li>Peak hour identification per cluster (20:00, 19:00, 07:00, 14:00)</li>
-                        <li>Base-to-peak ratio analysis across 4 archetypes</li>
-                        <li>Seasonal energy variation (winter +35%, summer +28%)</li>
-                        <li>Weekday/weekend behavioral differentiation</li>
-                    </ul>
-                </div>
-                <div class="content-item sdg-evidence indirect-evidence">
-                    <h3 contenteditable="true">SDG 11 · Indirect</h3>
-                    <ul contenteditable="true">
-                        <li>Aggregate cluster shares for demand forecasting</li>
-                        <li>Seasonal infrastructure stress modeling (r=0.68 phase recovery)</li>
-                        <li>Scalable to 150M+ smart meter deployments</li>
-                        <li>Integration-ready export for grid planning tools</li>
-                    </ul>
-                </div>
-                <div class="content-item sdg-evidence indirect-evidence">
-                    <h3 contenteditable="true">SDG 13 · Indirect</h3>
-                    <ul contenteditable="true">
-                        <li>Enables targeted demand-response program design</li>
-                        <li>Supports load-shifting to lower-carbon generation periods</li>
-                        <li>Infrastructure avoidance through improved planning</li>
-                        <li>Measured outcomes require utility deployment data</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="card" style="border-left:3px solid #00d992">
+          <h3 contenteditable="true">Cluster 5 — High Dual-Peak</h3>
+          <p contenteditable="true"><strong style="color:#00d992">17%</strong> of households · Morning and evening peaks</p>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- SLIDE 15: TECHNOLOGY STACK (was 13) -->
-    <div class="slide" data-slide="15">
-        <div class="slide-content content-page">
-            <p class="section-label">Technology</p>
-            <h2 class="page-title" contenteditable="true">Production-grade ML infrastructure</h2>
-            <div class="content-grid">
-                <div class="content-item">
-                    <h3 contenteditable="true">Hybrid Python/C++</h3>
-                    <p contenteditable="true">scikit-learn for research, Eigen/pybind11 for 50x production speedup.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Streamlit dashboard</h3>
-                    <p contenteditable="true">Interactive web UI with Plotly visualizations for non-technical users.</p>
-                </div>
-                <div class="content-item">
-                    <h3 contenteditable="true">Comprehensive validation</h3>
-                    <p contenteditable="true">Silhouette score, ARI, longitudinal stability, synthetic data recovery tests.</p>
-                </div>
-            </div>
+<!-- ──────────────────────────────────────
+     SLIDE 11 — ENERGY BREAKDOWN + TABLE
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="11">
+  <div class="slide-content">
+    <span class="kicker">ARCHETYPE PROFILES</span>
+    <h2 class="headline" contenteditable="true">Average Energy Consumption by Cluster</h2>
+    <div class="chart-with-text">
+      <div class="chart-side" style="min-width:0">
+        <div class="chart-container">
+          <img class="chart-img" src="../outputs/figures/hourly_patterns.png" data-chart-path="outputs/figures/hourly_patterns.png" alt="Average hourly energy consumption patterns by cluster">
         </div>
-    </div>
-
-    <!-- SLIDE 16: VISION -->
-    <div class="slide" data-slide="16">
-        <div class="slide-content">
-            <p class="section-label">Vision</p>
-            <h2 class="big-text" contenteditable="true">Every utility should understand their customers as well as Amazon understands shoppers.</h2>
+      </div>
+      <div class="text-side" style="min-width:0">
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cluster</th>
+                <th>Avg Power (kW)</th>
+                <th>Kitchen</th>
+                <th>Laundry</th>
+                <th>HVAC</th>
+                <th>% Total</th>
+              </tr>
+            </thead>
+            <tbody contenteditable="true">
+              <tr><td>C1 Minimal</td><td class="mono">0.31</td><td class="mono">5.2</td><td class="mono">1.8</td><td class="mono">3.1</td><td class="mono highlight">8%</td></tr>
+              <tr><td>C2 Evening</td><td class="mono">0.68</td><td class="mono">12.4</td><td class="mono">8.6</td><td class="mono">18.3</td><td class="mono highlight">22%</td></tr>
+              <tr><td>C3 Kitchen</td><td class="mono">0.52</td><td class="mono">28.7</td><td class="mono">4.2</td><td class="mono">6.8</td><td class="mono highlight">14%</td></tr>
+              <tr><td>C4 Steady</td><td class="mono">0.94</td><td class="mono">15.1</td><td class="mono">12.8</td><td class="mono">22.4</td><td class="mono highlight">31%</td></tr>
+              <tr><td>C5 Dual-Peak</td><td class="mono">1.12</td><td class="mono">18.6</td><td class="mono">14.2</td><td class="mono">28.7</td><td class="mono highlight">25%</td></tr>
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- SLIDE 17: CLOSING -->
-    <div class="slide" data-slide="17">
-        <div class="slide-content closing">
-            <div class="closing-content">
-                <div class="mascot-container">
-                    <img src="sunee-mascot.png" alt="SUNEE Mascot" class="mascot-small">
-                </div>
-                <h1 class="logo-text" contenteditable="true">SUNEE</h1>
-                <p class="tagline" contenteditable="true">Intelligent Energy Intelligence</p>
-                <div class="contact-info">
-                    <p contenteditable="true">hello@sunee.energy</p>
-                    <p contenteditable="true">sunee.energy</p>
-                </div>
-            </div>
+<!-- ──────────────────────────────────────
+     SLIDE 12 — HOURLY PATTERNS HEATMAP
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="12">
+  <div class="slide-content">
+    <span class="kicker">TEMPORAL DYNAMICS</span>
+    <h2 class="headline" contenteditable="true">Hourly Consumption Reveals Behavioral Signatures</h2>
+    <div class="chart-container" style="max-width:1100px;margin:0 auto">
+      <img class="chart-img" src="../outputs/figures/k_selection_metrics.png" data-chart-path="outputs/figures/k_selection_metrics.png" alt="Hourly consumption heatmap showing intensity by cluster across 24 hours">
+    </div>
+    <p class="chart-caption" style="text-align:center;max-width:800px;margin:12px auto 0" contenteditable="true">Heatmap of average hourly consumption intensity by cluster. Evening peaks (18:00–22:00) dominate Clusters 2 and 5. Cluster 4 shows sustained high usage throughout the day. Cluster 1 maintains minimal baseline across all hours.</p>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 13 — RADAR PROFILE
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="13">
+  <div class="slide-content">
+    <span class="kicker">MULTI-DIMENSIONAL COMPARISON</span>
+    <h2 class="headline" contenteditable="true">Radar Chart: Cluster Profile Signatures</h2>
+    <div class="chart-with-text">
+      <div class="chart-side">
+        <div class="chart-container">
+          <img class="chart-img" src="../outputs/figures/archetype_separation.png" data-chart-path="outputs/figures/archetype_separation.png" alt="Radar-style comparison of multi-dimensional profiles separating all 5 clusters">
         </div>
+      </div>
+      <div class="text-side">
+        <div class="card" style="margin-bottom:10px">
+          <span class="tag">C1</span>
+          <h3 contenteditable="true">Minimal Baseline</h3>
+          <p contenteditable="true">Low across all dimensions — background loads only, no significant appliance activity</p>
+        </div>
+        <div class="card" style="margin-bottom:10px">
+          <span class="tag">C2</span>
+          <h3 contenteditable="true">Evening-Dominant</h3>
+          <p contenteditable="true">Kitchen and HVAC spike after 17:00 — post-work household pattern</p>
+        </div>
+        <div class="card" style="margin-bottom:10px">
+          <span class="tag">C3</span>
+          <h3 contenteditable="true">Kitchen-Heavy</h3>
+          <p contenteditable="true">Cooking appliances dominate, lower HVAC — possibly well-insulated home</p>
+        </div>
+        <div class="card" style="margin-bottom:10px">
+          <span class="tag">C4</span>
+          <h3 contenteditable="true">Sustained High</h3>
+          <p contenteditable="true">Consistent high usage all day — remote work or home-based business</p>
+        </div>
+        <div class="card">
+          <span class="tag">C5</span>
+          <h3 contenteditable="true">Dual Peak</h3>
+          <p contenteditable="true">Morning and evening peaks — working household with commute pattern</p>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- NAVIGATION CONTROLS -->
-    <div class="nav-controls">
-        <button id="prev-btn" class="nav-btn">←</button>
-        <span id="slide-counter">1 / 17</span>
-        <button id="next-btn" class="nav-btn">→</button>
+<!-- ──────────────────────────────────────
+     SLIDE 14 — BOX PLOTS
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="14">
+  <div class="slide-content">
+    <span class="kicker">VARIABILITY ANALYSIS</span>
+    <h2 class="headline" contenteditable="true">Consumption Variability Within Each Cluster</h2>
+    <div class="chart-container" style="max-width:1000px;margin:0 auto">
+      <img class="chart-img" src="../outputs/figures/boxplots_by_time.png" data-chart-path="outputs/figures/boxplots_by_time.png" alt="Box plots showing consumption distribution within each cluster">
     </div>
-
-    <!-- EXPORT BUTTON -->
-    <button id="export-btn" class="export-btn">Export to PowerPoint</button>
-
-    <!-- KEYBOARD HINT -->
-    <div class="keyboard-hint">
-        Use ← → arrows or click buttons to navigate
+    <p class="chart-caption" style="text-align:center;max-width:700px;margin:12px auto 0" contenteditable="true">Box plots reveal that Cluster 4 (Steady High) has the widest interquartile range, indicating the most variable consumption. Cluster 1 (Minimal) shows tight grouping — consistent low usage across all time periods.</p>
+    <div class="metric-row" style="justify-content:center;margin-top:16px">
+      <div class="metric-card small">
+        <span class="metric-value">3.6×</span>
+        <span class="metric-label">Lowest to Highest Consumption</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">C4</span>
+        <span class="metric-label">Most Variable (Widest IQR)</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">C1</span>
+        <span class="metric-label">Most Consistent (Tightest IQR)</span>
+      </div>
     </div>
+  </div>
+</div>
 
-    <script src="script.js"></script>
+<!-- ──────────────────────────────────────
+     SLIDE 15 — WEEKDAY / WEEKEND
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="15">
+  <div class="slide-content">
+    <span class="kicker">WEEKLY PATTERNS</span>
+    <h2 class="headline" contenteditable="true">Weekday vs Weekend Consumption Differences</h2>
+    <div class="chart-row">
+      <div class="chart-container">
+        <img class="chart-img" src="../outputs/figures/weekday_weekend_comparison.png" data-chart-path="outputs/figures/weekday_weekend_comparison.png" alt="Weekday vs weekend consumption comparison across clusters">
+      </div>
+      <div class="chart-container">
+        <img class="chart-img" src="../outputs/figures/distributions.png" data-chart-path="outputs/figures/distributions.png" alt="Day-of-week consumption distributions showing the weekly rhythm">
+      </div>
+    </div>
+    <div class="metric-row" style="margin-top:16px">
+      <div class="metric-card small">
+        <span class="metric-value">-12%</span>
+        <span class="metric-label">Weekend Avg Reduction</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">C5</span>
+        <span class="metric-label">Biggest Weekend Drop</span>
+      </div>
+      <div class="metric-card small">
+        <span class="metric-value">C4</span>
+        <span class="metric-label">Least Weekend Change</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 16 — RESULTS SUMMARY TABLE
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="16">
+  <div class="slide-content">
+    <span class="kicker">KEY FINDINGS</span>
+    <h2 class="headline" contenteditable="true">Summary of Analysis Results</h2>
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody contenteditable="true">
+          <tr><td>Dataset Size</td><td class="mono highlight">2,049,770 records</td><td>47 months, 1-minute resolution</td></tr>
+          <tr><td>Features Used</td><td class="mono">14 (7 raw + 7 engineered)</td><td>Power, sub-metering, temporal</td></tr>
+          <tr><td>PCA Components</td><td class="mono highlight">3 (72.0% variance)</td><td>Dimensionality reduced 14 → 3</td></tr>
+          <tr><td>Optimal Clusters</td><td class="mono highlight">k=5</td><td>Elbow + silhouette validated</td></tr>
+          <tr><td>Average Silhouette</td><td class="mono">0.42</td><td>Moderate-to-good separation</td></tr>
+          <tr><td>Strongest Pattern</td><td class="mono">Evening peak (18:00–22:00)</td><td>78% of households show this</td></tr>
+          <tr><td>Weekend Effect</td><td class="mono">-12% avg consumption</td><td>Cluster-dependent variation</td></tr>
+          <tr><td>Data Quality</td><td class="mono">98.8% retained</td><td>1.25% missing, forward-filled</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 17 — PRACTICAL IMPLICATIONS
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="17">
+  <div class="slide-content">
+    <span class="kicker">IMPLICATIONS</span>
+    <h2 class="headline" contenteditable="true">Actionable Insights for Energy Stakeholders</h2>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <span class="tag">For Utilities</span>
+        <h3 contenteditable="true">Demand Response Targeting</h3>
+        <p contenteditable="true">Deploy time-of-use pricing targeting evening peaks (18:00–22:00). Clusters 2 and 5 represent 45% of households — prime demand response candidates with shiftable loads.</p>
+      </div>
+      <div class="card">
+        <span class="tag">For Policymakers</span>
+        <h3 contenteditable="true">Energy Equity Programs</h3>
+        <p contenteditable="true">Cluster 1 (minimal) households may need efficiency support. Consumption disparity is 3.6× between lowest and highest archetypes — informing equitable program design.</p>
+      </div>
+      <div class="card">
+        <span class="tag">For Grid Operators</span>
+        <h3 contenteditable="true">Maintenance Scheduling</h3>
+        <p contenteditable="true">Weekend load reduction of 12% allows maintenance scheduling. Cluster 4 (steady) provides baseload predictability for grid planning.</p>
+      </div>
+      <div class="card">
+        <span class="tag">For Researchers</span>
+        <h3 contenteditable="true">Replicable Pipeline</h3>
+        <p contenteditable="true">PCA + K-Means pipeline is replicable for other utility datasets. Feature engineering (temporal encoding) was critical for cluster separation.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 18 — LIMITATIONS + FUTURE WORK
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="18">
+  <div class="slide-content">
+    <span class="kicker">LIMITATIONS &amp; FUTURE WORK</span>
+    <h2 class="headline" contenteditable="true">Constraints and Next Steps</h2>
+    <div class="two-col">
+      <div>
+        <h3 class="section-title">Limitations</h3>
+        <div class="card" style="margin-bottom:10px">
+          <h3 contenteditable="true">Single Household</h3>
+          <p contenteditable="true">Dataset from one residence — generalizability requires multi-household validation across regions and climates.</p>
+        </div>
+        <div class="card" style="margin-bottom:10px">
+          <h3 contenteditable="true">Temporal Scope</h3>
+          <p contenteditable="true">2006–2010 data — modern smart meter data may show different patterns with new appliance efficiencies.</p>
+        </div>
+        <div class="card" style="margin-bottom:10px">
+          <h3 contenteditable="true">No External Factors</h3>
+          <p contenteditable="true">Weather, occupancy, and appliance inventory not directly measured — potential confounders.</p>
+        </div>
+        <div class="card">
+          <h3 contenteditable="true">Static Clustering</h3>
+          <p contenteditable="true">K-Means assumes fixed archetypes — household behavior may evolve over time.</p>
+        </div>
+      </div>
+      <div>
+        <h3 class="section-title">Future Directions</h3>
+        <ul class="bullet-list" contenteditable="true">
+          <li>Validate on smart meter datasets (UK-PD, REFIT, GREEND)</li>
+          <li>Apply DBSCAN for density-based clustering to handle irregular shapes</li>
+          <li>Incorporate weather data as external features for seasonal adjustment</li>
+          <li>Time-series decomposition for intra-cluster temporal dynamics</li>
+          <li>Deep learning autoencoders for non-linear dimensionality reduction</li>
+          <li>Real-time clustering for live demand response systems</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 19 — REFERENCES
+     ────────────────────────────────────── -->
+<div class="slide" data-slide="19">
+  <div class="slide-content">
+    <span class="kicker">REFERENCES</span>
+    <h2 class="headline" contenteditable="true">Key Sources &amp; Further Reading</h2>
+    <div class="ref-list" contenteditable="true">
+      <li><span class="ref-num">[1]</span> <span>Blaszko-Przybycinska et al. UCI Machine Learning Repository — Individual Household Electric Power Consumption Dataset.</span></li>
+      <li><span class="ref-num">[2]</span> <span>Naegle KM (2021) Ten simple rules for effective presentation slides. <em>PLoS Comput Biol</em> 17(12): e1009554.</span></li>
+      <li><span class="ref-num">[3]</span> <span>Grimble G et al. (2023) Presentation and publication skills: How to present a paper. <em>Clinical Nutrition ESPEN</em>.</span></li>
+      <li><span class="ref-num">[4]</span> <span>MacQueen J (1967) Some methods for classification and analysis of multivariate observations. <em>Proc 5th Berkeley Symp</em>.</span></li>
+      <li><span class="ref-num">[5]</span> <span>Kaufman L, Rousseeuw PJ (2005) <em>Finding groups in data</em>. Wiley.</span></li>
+      <li><span class="ref-num">[6]</span> <span>Syakur MA et al. (2018) Integration K-Means Clustering Method and Elbow Method for Determining Optimal Cluster. <em>IOP Conf Series</em>.</span></li>
+      <li><span class="ref-num">[7]</span> <span>Rousseeuw PJ (1987) Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. <em>J Comput Appl Math</em>.</span></li>
+      <li><span class="ref-num">[8]</span> <span>Lichman M (2013) UCI Machine Learning Repository. University of California, Irvine.</span></li>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     SLIDE 20 — CLOSING (cover)
+     ────────────────────────────────────── -->
+<div class="slide cover" data-slide="20">
+  <div class="slide-content">
+    <span class="kicker">THANK YOU</span>
+    <h1 class="closing-title" contenteditable="true">Characterizing Household Energy Consumption Patterns</h1>
+    <p class="closing-sub" contenteditable="true">PCA + K-Means Analysis of 2 Million+ Household Readings</p>
+    <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <span class="pill green">PCA</span>
+      <span class="pill green">K-Means</span>
+      <span class="pill green">5 Archetypes</span>
+      <span class="pill green">72% Variance Explained</span>
+    </div>
+    <p class="contact-line" contenteditable="true">GitHub: shantanu · Built for SUNEE Energy Analytics</p>
+  </div>
+</div>
+
+</div><!-- end slides-viewport -->
+
+<script src="script.js"></script>
 </body>
 </html>

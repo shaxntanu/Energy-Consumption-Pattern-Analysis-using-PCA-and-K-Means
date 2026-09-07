@@ -12,7 +12,7 @@
 }
 
 .bs-avatar:focus-visible {
-  outline: 2px solid var(--bs-avatar-focus, #48d7c2);
+  outline: 2px solid var(--bs-avatar-focus, #ffffff);
   outline-offset: 2px;
 }
 

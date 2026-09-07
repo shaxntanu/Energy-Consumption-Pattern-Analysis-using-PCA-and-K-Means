@@ -26,7 +26,7 @@
 }
 
 .companion-avatar-button:focus-visible {
-  outline: 2px solid var(--cyan, #48d7c2);
+  outline: 2px solid var(--text, #ffffff);
   outline-offset: 3px;
 }
 
@@ -41,8 +41,8 @@
   /* 75% transparent surface (25% alpha of --panel-strong #152131) so page
      text stays visible behind the bubble; the message text itself stays fully
      opaque so it remains readable. https://github.com/shaxntanu/... */
-  background: rgba(21, 33, 49, 0.25);
-  border: 1px solid var(--line, #263545);
+  background: rgba(5, 5, 5, 0.55);
+  border: 1px solid var(--line, #3a3a3f);
   color: var(--text, #f5f8fa);
   border-radius: 12px;
   padding: 10px 28px 10px 14px;
@@ -61,8 +61,8 @@
   width: 12px;
   height: 12px;
   background: inherit;
-  border-right: 1px solid var(--line, #263545);
-  border-bottom: 1px solid var(--line, #263545);
+  border-right: 1px solid var(--line, #3a3a3f);
+  border-bottom: 1px solid var(--line, #3a3a3f);
   transform: rotate(45deg);
 }
 
@@ -86,11 +86,11 @@
 
 .companion-bubble-close:hover {
   color: var(--text, #f5f8fa);
-  background: var(--line, #263545);
+  background: var(--line, #3a3a3f);
 }
 
 .companion-bubble-close:focus-visible {
-  outline: 2px solid var(--cyan, #48d7c2);
+  outline: 2px solid var(--text, #ffffff);
   outline-offset: 1px;
 }
 
