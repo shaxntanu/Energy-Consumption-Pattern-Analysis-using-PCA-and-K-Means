@@ -35,7 +35,7 @@ hourly meter rows it:
 5. explains the clusters (surrogate random forest + SHAP, with an honest
    permutation fallback),
 6. profiles and recommends from the clusters,
-7. validates the whole thing three independent ways — against the hidden
+7. validates the whole thing three independent ways: against the hidden
    synthetic archetypes (ARI/NMI), across the year (longitudinal stability),
    and across seasons (magnitude-vs-timing model),
 8. exports a versioned JSON contract that the deployed Vercel explorer renders
@@ -49,7 +49,7 @@ interactive explorer** (`web/`) that renders the flagship results offline.
 
 The headline scientific finding, on the flagship: the evidence-based rule lands
 on **K = 4**, the hidden synthetic data was built from **4 archetypes**, and the
-clusters recover those archetypes at **ARI 0.813 / NMI 0.828** — with the honest
+clusters recover those archetypes at **ARI 0.813 / NMI 0.828**, with the honest
 caveat that on a 30-day window the same rule undercounts (K = 3, ARI 0.61), a
 limit of unsupervised clustering that the repo reports rather than hides.
 
@@ -72,8 +72,8 @@ Three sub-questions follow from that thesis and structure the whole repo:
    deliberately excluded from the clustering question.
 2. **How many latent groups are there?** This is the honest crux of the
    project. Internal indices cannot know the true number of groups. The
-   pipeline therefore uses a pre-registered composite rule (section 11) and —
-   because the training data is synthetic — checks that rule against the hidden
+   pipeline therefore uses a pre-registered composite rule (section 11) and,
+   because the training data is synthetic, checks that rule against the hidden
    ground truth (section 13).
 3. **Do the groups persist?** A segmentation is only useful if it describes a
    property of the consumer rather than of the month or the season. The
@@ -175,15 +175,15 @@ panels**, kept scrupulously separate.
 | Random seed | 42 (drives generator, PCA, K-Means) |
 | Config hash | `99c7a6631340d301` (all hyperparameters hashed) |
 
-Per consumer-day the generator writes: `hourly_kwh_by_meter`, `season` (kept —
-it comes from the Zephyr weather API provenance), `archetype` (dropped before
+Per consumer-day the generator writes: `hourly_kwh_by_meter`, `season` (kept,
+as it comes from the Zephyr weather API provenance), `archetype` (dropped before
 any statistic), `seasonal_phase` (dropped), `timestamp`.
 
 ### 4.2 Zephyr Station provenance (the `season` column)
 
 The `season` label is not hand-typed metadata. It comes from a real weather
-station the author built and logged — firmware + `/api/weather` at
-`github.com/shaxntanu/Zephyr-Station`. The pipeline joins the panel to that
+station the author built and logged (firmware plus `/api/weather` at
+`github.com/shaxntanu/Zephyr-Station`). The pipeline joins the panel to that
 weather history by month and maps `month → season`, so every consumer-day
 carries a season label before any modelling happens.
 
@@ -205,13 +205,13 @@ The full list is persisted verbatim in `models/analysis_metadata.json`
 (`feature_list`). PCA and the surrogate never see the raw 24 hourly values;
 they see these 51 consumer-level features.
 
-### Group 1 — shape (24 features): the normalized 24-hour profile
+### Group 1 (shape, 24 features): the normalized 24-hour profile
 
 | Feature | Meaning |
 |---------|---------|
 | `hour_0_shape` … `hour_23_shape` | the daily load curve (24 hourly mean kWh) divided by its own daily mean. Two consumers with the same shape at different scales are identical here |
 
-### Group 2 — summary (27 features): how that shape varies
+### Group 2 (summary, 27 features): how that shape varies
 
 | Feature | Meaning |
 |---------|---------|
@@ -224,8 +224,8 @@ they see these 51 consumer-level features.
 | `haar_detail_l1`, `haar_detail_l2`, `haar_detail_l3` | Haar-wavelet detail energy at three scales |
 | `shape_entropy` | Shannon entropy of the normalized profile |
 | `shape_gini` | Gini inequality of the profile |
-| `base_load_share` | minimum-hour fraction — the "always-on" floor |
-| `peak_to_avg_ratio` | peak hour vs daily mean — spikiness |
+| `base_load_share` | minimum-hour fraction, the "always-on" floor |
+| `peak_to_avg_ratio` | peak hour vs daily mean, a spikiness measure |
 | `coefficient_of_variation` | relative dispersion of the profile |
 | `daily_total_cv` | how much the daily total varies across days |
 | `p90_median_ratio` | heavy-tail indicator of the hourly distribution |
@@ -235,7 +235,7 @@ they see these 51 consumer-level features.
 | `skewness`, `kurtosis` | distributional shape of the hours |
 
 Design notes recorded in the repo: `load_factor` exists in the engine but is
-**excluded downstream** — it correlates highly with the remaining summaries and
+**excluded downstream**: it correlates highly with the remaining summaries and
 keeping it would double-count one axis of variation. Scale-invariance is tested
 explicitly in `tests/test_features.py` (a uniform scaling of the profile changes
 the scale diagnostics and not the shape group). The panel fed to PCA is
@@ -253,7 +253,7 @@ Before any descriptive statistic, a validation layer owns every fix
 | Schema | required columns present with expected types |
 | Duplicates | exact `(meter_id, timestamp)` duplicates flagged and deduped; counts logged |
 | Timestamps | robust parsing; failed rows recorded and dropped only after accounting |
-| Missing values | within-meter imputation only — never cross-consumer |
+| Missing values | within-meter imputation only, never cross-consumer |
 | Continuity | gaps longer than the imputation window are left missing and accounted |
 | Units | unit conversion + sanity bounds for the real-world adapter |
 
@@ -274,12 +274,12 @@ table:
 | Deduplicate | exact `(meter_id, timestamp)` duplicates removed, counts logged |
 | Parse timestamps | robust parsing with accounting for failed rows |
 | Fill short gaps | within-meter imputation (never cross-consumer) |
-| Cap extremes | per-consumer winsorization, not deletion — no consumer is silently removed |
+| Cap extremes | per-consumer winsorization, not deletion, so no consumer is silently removed |
 | Sort | panel sorted by `(consumer, timestamp)` so every downstream day is contiguous |
 
 **The leakage boundary is enforced here:** `archetype` and `seasonal_phase` are
 dropped before this stage computes anything, so no statistic anywhere in the
-pipeline — not a mean, not a PCA component, not a centroid — can see the answer
+pipeline (not a mean, not a PCA component, not a centroid) can see the answer
 key. `season` is the only seasonal signal kept. The drop is verified by tests
 (`tests/test_preprocessing.py`).
 
@@ -298,10 +298,10 @@ panel to their 51-feature row. The two design rules:
    summaries carry secondary cues (weekend behaviour, spikiness, dispersion).
    PCA then compresses the 51 dimensions; it never sees raw hourly values.
 
-`feature_set` is configurable — `"behavioral"` (51, shipped), `"shape"` (24),
-`"summary"` (27), `"scale"` (7), `"combined"` (58) — which is what makes the
-ablation study (section 17) possible: the only thing that varies between arms
-is which columns go in.
+`feature_set` is configurable (`"behavioral"` at 51 features, shipped; `"shape"`
+at 24, `"summary"` at 27, `"scale"` at 7, `"combined"` at 58), which is what
+makes the ablation study (section 17) possible: the only thing that varies
+between arms is which columns go in.
 
 ---
 
@@ -377,12 +377,12 @@ composite rule** (unchanged across every study in the repo):
 
 1. Reject any K whose partition is unstable (mean pairwise ARI across 10 seeds
    < 0.6) or leaves a cluster below 5% of consumers.
-2. For the survivors, min-max normalize three internal indices — silhouette
-   (higher better), Calinski-Harabasz (higher better), inverted Davies-Bouldin
-   (lower better) — and average them.
+2. For the survivors, min-max normalize three internal indices (silhouette,
+   higher better; Calinski-Harabasz, higher better; inverted Davies-Bouldin,
+   lower better) and average them.
 3. Apply a 5% tolerance band: if the best-scoring K and a smaller K are within
    0.05 composite points, the **smaller** K wins (parsimony is built in).
-4. Inertia/elbow is computed and reported for context only — it can never
+4. Inertia/elbow is computed and reported for context only. It can never
    override the composite.
 
 ### The flagship sweep (K = 2–10, config `99c7a6631340d301`)
@@ -391,7 +391,7 @@ composite rule** (unchanged across every study in the repo):
 |---|---------|-----------|-----|-----|------------|-----------|
 | 2 | 7083.5 | 0.294 | 73.0 | 1.382 | 0.996 | 0.000 |
 | 3 | 4968.5 | 0.331 | 93.7 | 1.196 | 0.985 | 0.879 |
-| **4 ★** | **3911.1** | **0.328** | **96.6** | **1.169** | **0.995** | **0.944** |
+| **4** | **3911.1** | **0.328** | **96.6** | **1.169** | **0.995** | **0.944** |
 | 5 | 3466.1 | 0.335 | 87.6 | 1.202 | 0.959 | 0.821 |
 | 6 | 3072.5 | 0.324 | 83.6 | 1.233 | 0.991 | 0.626 |
 | 7 | 2844.6 | 0.316 | 77.5 | 1.209 | 0.893 | rejected (<5% cluster) |
@@ -402,7 +402,7 @@ composite rule** (unchanged across every study in the repo):
 Selected: **K = 4**, sizes **[39, 52, 47, 62]**, silhouette **0.3283**, CH
 **96.6**, DB **1.1691**, stability mean pairwise **ARI 0.9947 ± 0.0071** with
 assignment agreement 0.998 across 10 restarts. Silhouette alone peaks at K = 5
-(0.3352), with K = 3 a close second (0.3305) — but neither decides: the
+(0.3352), with K = 3 a close second (0.3305), but neither decides: the
 composite, which also folds in Calinski-Harabasz and Davies-Bouldin, peaks at
 K = 4 (0.9444 vs K = 5's 0.8210), and no other K sits inside K = 4's 5%
 tolerance band, so the parsimony tie-break is not even needed. The full decision
@@ -411,7 +411,7 @@ trace (filtered sets, raw and normalized scores, tolerance tie-break) is in
 
 ---
 
-## 12. Cluster evaluation metrics — which one answers which question
+## 12. Cluster evaluation metrics, and which one answers which question
 
 | Metric | Synthetic | Real | Why it belongs there |
 |--------|-----------|------|-----------------------|
@@ -440,7 +440,7 @@ external column; the real branch carries only the internal one.
 | 2 | Evening-Peaking | 47 (23.5%) | 20:00 | **0.380** (pop 0.290) | **11.32** (pop 8.59) | **0.705** (pop 0.550) | 1.38 |
 | 3 | Evening-Peaking Weekend-Heavy | 62 (31.0%) | 19:00 | 0.299 (pop 0.290) | 9.45 (pop 8.59) | 0.596 (pop 0.550) | 1.32 |
 
-*\*Mean kWh per record is context only — it never drove any feature.*
+*\*Mean kWh per record is context only and never drove any feature.*
 
 Character-telling deltas in the profile tables: cluster 1 is the flat, stable
 group (peak-to-avg 4.92 vs population 8.59; CV 0.302 vs 0.550); cluster 2 is
