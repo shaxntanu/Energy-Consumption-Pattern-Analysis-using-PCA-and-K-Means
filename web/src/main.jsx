@@ -71,7 +71,7 @@ function chartDefaults() {
           color: "#ffffff",
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 12 },
+          font: { family: '"Times New Roman", Times, serif', size: 12 },
         },
       },
       tooltip: {
@@ -512,7 +512,7 @@ function BehavioralFeaturesSlide({ onRepActive }) {
         <span
           style={{
             color: "#ffffff",
-            fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
+            fontFamily: '"Times New Roman", Times, serif',
             fontSize: "0.7rem",
             fontWeight: 700,
             letterSpacing: "1.17px",
@@ -929,7 +929,7 @@ function KMeansSlide({ onRepActive }) {
           justifyContent: "center",
           gap: "0.5rem",
           color: "#ffffff",
-          fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
+          fontFamily: '"Times New Roman", Times, serif',
           fontSize: "0.7rem",
           fontWeight: 700,
           letterSpacing: "1.17px",
@@ -1075,7 +1075,7 @@ function PcaSlide({ onRepActive }) {
         <span
           style={{
             color: "#ffffff",
-            fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
+            fontFamily: '"Times New Roman", Times, serif',
             fontSize: "0.7rem",
             fontWeight: 700,
             letterSpacing: "1.17px",
@@ -1186,7 +1186,7 @@ function BehavioralArchetypesSlide({ onRepActive }) {
               alignItems: "center",
               gap: 6,
               color: "#ffffff",
-              fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
+              fontFamily: '"Times New Roman", Times, serif',
               fontSize: "0.7rem",
               letterSpacing: "0.05em",
               opacity: i < state.shown ? 1 : 0,
@@ -1335,7 +1335,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
             <div
               style={{
                 color: card.color,
-                fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
+                fontFamily: '"Times New Roman", Times, serif',
                 fontSize: "0.7rem",
                 fontWeight: 700,
                 letterSpacing: "1.17px",
@@ -1419,7 +1419,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
         <span
           style={{
             color: "#ffffff",
-            fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
+            fontFamily: '"Times New Roman", Times, serif',
             fontSize: "0.7rem",
             letterSpacing: "1.17px",
             textTransform: "uppercase",
@@ -1729,7 +1729,7 @@ function buildMainData(active) {
 function axisTickDefaults() {
   return {
     color: "#f0f0fa",
-    font: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 11 },
+    font: { family: '"Times New Roman", Times, serif', size: 11 },
     padding: 6,
   };
 }
@@ -1779,8 +1779,8 @@ function makeBrushMainOptions(selection, animate, setChartHover) {
         borderWidth: 1,
         titleColor: "#ffffff",
         bodyColor: "#ffffff",
-        titleFont: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 12, weight: "700" },
-        bodyFont: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 12 },
+        titleFont: { family: '"Times New Roman", Times, serif', size: 12, weight: "700" },
+        bodyFont: { family: '"Times New Roman", Times, serif', size: 12 },
         padding: 10,
         cornerRadius: 6,
         boxPadding: 4,
@@ -3294,8 +3294,8 @@ class RootBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ maxWidth: "720px", margin: "6rem auto", padding: "0 1.25rem", color: "#ffffff", fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif' }}>
-          <p style={{ fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', fontSize: "0.75rem", letterSpacing: "1.17px", textTransform: "uppercase", color: "#ffffff" }}>
+        <div style={{ maxWidth: "720px", margin: "6rem auto", padding: "0 1.25rem", color: "#ffffff", fontFamily: '"Times New Roman", Times, serif' }}>
+          <p style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: "0.75rem", letterSpacing: "1.17px", textTransform: "uppercase", color: "#ffffff" }}>
             Energy Load-Shape Clustering
           </p>
           <h1 style={{ fontSize: "1.6rem", fontWeight: 600, margin: "0.5rem 0 0.75rem" }}>Something on this page failed to render.</h1>
@@ -3303,7 +3303,7 @@ class RootBoundary extends React.Component {
             A component crashed during render. The page keeps its shell rather than going blank.
             The error message is logged to the browser console; reload to retry.
           </p>
-          <pre style={{ marginTop: "1rem", padding: "0.9rem 1rem", background: "#0a0a0a", border: "1px solid #3a3a3f", borderRadius: 8, overflowX: "auto", fontSize: "0.78rem", fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', whiteSpace: "pre-wrap" }}>
+          <pre style={{ marginTop: "1rem", padding: "0.9rem 1rem", background: "#0a0a0a", border: "1px solid #3a3a3f", borderRadius: 8, overflowX: "auto", fontSize: "0.78rem", fontFamily: '"Times New Roman", Times, serif', whiteSpace: "pre-wrap" }}>
             {String(this.state.error && this.state.error.message)}
           </pre>
         </div>
