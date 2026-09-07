@@ -338,8 +338,8 @@ class PresentationController {
             });
         }
         
-        // Try to find and export images
-        const images = slideElement.querySelectorAll('img[src*="assets/graphs"]');
+        // Try to find and export images (charts load from ../dark_mode_plots/)
+        const images = slideElement.querySelectorAll('img[src*="dark_mode_plots"]');
         if (images.length > 0) {
             const imgY = 2.0;
             const imgW = 9;

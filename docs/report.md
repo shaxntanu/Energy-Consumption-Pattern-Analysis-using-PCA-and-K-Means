@@ -65,7 +65,7 @@ Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
 ├─ outputs/                        reports/ · metrics/ · figures/ (audited trail)
 ├─ models/                         analysis_metadata.json · pca_metadata.json · *.pkl
 ├─ docs/                           report.md · verification.md · flow_diagram.md
-├─ presentation/                   dark_theme.py · generate_dark_plots.py (dark-mode charts)
+├─ presentation/                   HTML deck (index.html · src/script.js · src/styles/main.css)
 ├─ streamlit_app.py + dashboard_*.py    interactive simulator (alt UI)
 ├─ verify_compile.py · run_module.py · run_validation_battery.py   portable launchers
 ├─ requirements.txt · Dockerfile · .gitignore · vercel.json
@@ -283,8 +283,7 @@ py -m streamlit run streamlit_app.py       # http://localhost:8501
 # web app (Vercel)
 cd web && npm install && npm run build
 
-# dark-mode charts (all Matplotlib figures)
-py presentation/generate_dark_plots.py     # see README §16 / final report for details
+# dark-mode charts: committed static outputs in dark_mode_plots/ (see README §22.3)
 ```
 
 ---

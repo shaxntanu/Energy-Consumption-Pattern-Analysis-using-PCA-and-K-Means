@@ -606,8 +606,36 @@ body:hover .keyboard-hint {
 }
 
 .sdg-icon {
-  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
   margin-bottom: 12px;
+  border: 1px solid var(--gray-500);
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--gray-300);
+}
+
+.primary-node .sdg-icon {
+  border-color: var(--blue-vivid);
+  background: rgba(0, 102, 255, 0.08);
+  color: var(--blue-vivid);
+}
+
+.supported-node .sdg-icon {
+  border-color: var(--blue-electric);
+  background: rgba(0, 128, 255, 0.08);
+  color: var(--blue-electric);
+}
+
+.indirect-node .sdg-icon {
+  border-color: var(--violet);
+  background: rgba(183, 140, 255, 0.08);
+  color: var(--violet);
 }
 
 .sdg-number {
