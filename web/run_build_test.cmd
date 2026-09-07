@@ -1,5 +1,5 @@
 @echo off
-cd /d C:\Users\Shantanu\Documents\GitHub\Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means\web
+cd /d "%~dp0"
 call npm install
 echo NPM_INSTALL_DONE
 call npm run build

@@ -20,5 +20,4 @@ build/
 *.pyd
 *.so
 *.dll
-*.lib
-"Prompt UI Changes/" 
+*.lib 

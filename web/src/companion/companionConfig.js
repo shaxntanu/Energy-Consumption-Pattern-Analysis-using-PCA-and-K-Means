@@ -140,7 +140,7 @@ export const factConfig = {
 }
 
 // ---- Capability notes (verified against the lab, 2026-09) -----------------
-// The Avatar Lab runs at C:\Users\Shantanu\Desktop\bible-strong-avatar-lab.
+// The canonical avatar source is the external bible-strong Avatar Lab.
 //   * Sunee's definition comes from src/features/studio/defaultStudioDocument.json
 //     (expressions 00-24 + 23 built-in sequences). This project's
 //     sunee.avatar.json mirrors 21 of those expressions and 13 sequences,

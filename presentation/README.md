@@ -95,34 +95,17 @@ Complete technical presentation deck for the Energy Consumption Pattern Analysis
 
 ## 📦 Assets
 
-### Images
+The deck loads its images from sibling directories in the repo (relative paths):
 
-- **SUNEE Logo:** `assets/images/sunee-logo.png` (bottom-left on every slide)
-
-### Dark Mode Plots
-
-- **Figures:** `assets/graphs/figures/` (primary analysis plots)
-  - `explained_variance.png`
-  - `elbow_curve.png`
-  - `k_selection_metrics.png`
-  - `silhouette_scores.png`
-  - `hourly_patterns.png`
-  - And more...
-
-- **Ablation:** `assets/graphs/ablation/` (feature ablation studies)
-  - `behavioral/figures/`
-  - `combined/figures/`
-  - `scale/figures/`
-  - `shape/figures/`
-  - `summary/figures/`
-
-Total: **45+ dark mode visualizations**
+- **Mascot:** `../sunee-pitch-deck/sunee-mascot.png` (SUNEE mascot, bottom-left on every slide)
+- **Dark-mode figures:** `../dark_mode_plots/figures/` (featured plots: `explained_variance.png`, `elbow_curve.png`, `k_selection_metrics.png`, `silhouette_scores.png`, `hourly_patterns.png`)
+- **Ablation figures:** `../dark_mode_plots/ablation/` (5 arms × 5 charts; the full set is documented in the top-level README §22.3)
 
 ## 🏗️ Architecture
 
 ```
 presentation/
-├── index.html              # Main presentation file (34 slides)
+├── index.html              # Main presentation file (20 slides)
 ├── README.md               # This file
 ├── src/
 │   ├── styles/
@@ -130,14 +113,7 @@ presentation/
 │   ├── script.js           # Navigation and export logic
 │   ├── components/         # (Future: reusable components)
 │   └── utils/              # (Future: helper functions)
-├── assets/
-│   ├── images/
-│   │   └── sunee-logo.png  # SUNEE mascot logo
-│   └── graphs/
-│       ├── figures/        # Primary analysis plots
-│       └── ablation/       # Feature ablation plots
-├── public/                 # (Future: static assets)
-└── exports/                # PowerPoint export destination
+└── assets/                 # (removed; images load from ../dark_mode_plots/ and ../sunee-pitch-deck/)
 ```
 
 ## 🔧 Customization
@@ -171,7 +147,7 @@ Edit `src/styles/main.css`:
 
 ```html
 <div class="visualization-container">
-    <img src="assets/graphs/figures/your_plot.png" 
+    <img src="../dark_mode_plots/figures/your_plot.png" 
          alt="Description" 
          class="full-width-viz">
 </div>
@@ -205,7 +181,7 @@ While optimized for 1920×1080 presentation display, the deck includes responsiv
 
 Check that paths in `index.html` match actual file locations:
 ```
-assets/graphs/figures/explained_variance.png
+../dark_mode_plots/figures/explained_variance.png
 ```
 
 ### PowerPoint export fails
