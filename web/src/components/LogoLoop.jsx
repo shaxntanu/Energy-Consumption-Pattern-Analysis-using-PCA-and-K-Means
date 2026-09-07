@@ -48,7 +48,7 @@ export default function LogoLoop({
   hoverSpeed = 0,
   scaleOnHover = true,
   fadeOut = true,
-  fadeOutColor = "#070b10",
+  fadeOutColor = "#000000",
   className = "",
   ariaLabel = "Technology stack",
 }) {

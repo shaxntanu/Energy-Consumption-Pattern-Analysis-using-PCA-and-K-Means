@@ -68,28 +68,28 @@ function chartDefaults() {
     plugins: {
       legend: {
         labels: {
-          color: "#dbe7ec",
+          color: "#ffffff",
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: "Inter", size: 12 },
+          font: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 12 },
         },
       },
       tooltip: {
-        backgroundColor: "#101722",
-        borderColor: "#2d3c4d",
+        backgroundColor: "#0a0a0a",
+        borderColor: "#3a3a3f",
         borderWidth: 1,
         titleColor: "#ffffff",
-        bodyColor: "#dbe7ec",
+        bodyColor: "#ffffff",
       },
     },
     scales: {
       x: {
-        grid: { color: "rgba(141, 163, 176, 0.12)" },
-        ticks: { color: "#94a8b4", maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+        grid: { color: "rgba(255, 255, 255, 0.14)" },
+        ticks: { color: "#f0f0fa", maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
       },
       y: {
-        grid: { color: "rgba(141, 163, 176, 0.12)" },
-        ticks: { color: "#94a8b4" },
+        grid: { color: "rgba(255, 255, 255, 0.14)" },
+        ticks: { color: "#f0f0fa" },
       },
     },
   };
@@ -427,7 +427,7 @@ function BehavioralFeaturesSlide({ onRepActive }) {
   // cannot shift right as text appears.
   const options = React.useMemo(() => {
     const base = chartDefaults();
-    const muted = "rgba(148, 168, 180, 0.35)";
+    const muted = "rgba(240, 240, 250, 0.35)";
     return {
       ...base,
       indexAxis: "y",
@@ -511,11 +511,12 @@ function BehavioralFeaturesSlide({ onRepActive }) {
       >
         <span
           style={{
-            color: "#a78bfa",
-            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+            color: "#ffffff",
+            fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
             fontSize: "0.7rem",
             fontWeight: 700,
-            letterSpacing: "0.14em",
+            letterSpacing: "1.17px",
+            textTransform: "uppercase",
           }}
         >
           {summaryStats.features} FEATURES
@@ -812,8 +813,8 @@ function KMeansSlide({ onRepActive }) {
                   y2={py(1)}
                   stroke={
                     f === 0 || f === 1
-                      ? "rgba(148, 168, 180, 0.30)"
-                      : "rgba(141, 163, 176, 0.10)"
+                      ? "rgba(255, 255, 255, 0.30)"
+                      : "rgba(255, 255, 255, 0.10)"
                   }
                   strokeWidth={1}
                 />
@@ -827,8 +828,8 @@ function KMeansSlide({ onRepActive }) {
                   y2={py(f)}
                   stroke={
                     f === 0 || f === 1
-                      ? "rgba(148, 168, 180, 0.30)"
-                      : "rgba(141, 163, 176, 0.10)"
+                      ? "rgba(255, 255, 255, 0.30)"
+                      : "rgba(255, 255, 255, 0.10)"
                   }
                   strokeWidth={1}
                 />
@@ -839,7 +840,7 @@ function KMeansSlide({ onRepActive }) {
                     x={px(f)}
                     y={py(1) + 15}
                     textAnchor="middle"
-                    fill="rgba(148, 168, 180, 0.55)"
+                    fill="rgba(255, 255, 255, 0.55)"
                     fontSize="9"
                   >
                     {f.toFixed(1)}
@@ -848,7 +849,7 @@ function KMeansSlide({ onRepActive }) {
                     x={px(0) - 8}
                     y={py(f) + 3}
                     textAnchor="end"
-                    fill="rgba(148, 168, 180, 0.55)"
+                    fill="rgba(255, 255, 255, 0.55)"
                     fontSize="9"
                   >
                     {f.toFixed(1)}
@@ -861,7 +862,7 @@ function KMeansSlide({ onRepActive }) {
                   cx={px(state.pts[i].x)}
                   cy={py(state.pts[i].y)}
                   r={3}
-                  fill={state.assign[i] >= 0 ? KM_COLORS[state.assign[i]] : "#9aa9b5"}
+                  fill={state.assign[i] >= 0 ? KM_COLORS[state.assign[i]] : "#d6d6db"}
                   fillOpacity={i < state.revealed ? (state.assign[i] >= 0 ? 0.92 : 0.5) : 0}
                   stroke="none"
                   style={pointTransition}
@@ -927,11 +928,12 @@ function KMeansSlide({ onRepActive }) {
           display: "flex",
           justifyContent: "center",
           gap: "0.5rem",
-          color: "#4ade80",
-          fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+          color: "#ffffff",
+          fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
           fontSize: "0.7rem",
           fontWeight: 700,
-          letterSpacing: "0.12em",
+          letterSpacing: "1.17px",
+          textTransform: "uppercase",
           paddingTop: 4,
           opacity: state.done ? 1 : 0,
           transition: "opacity 0.3s ease",
@@ -939,7 +941,7 @@ function KMeansSlide({ onRepActive }) {
         }}
       >
         <span>4 DISTINCT CLUSTERS</span>
-        <span style={{ color: "#fbbf24" }}>
+        <span style={{ color: "#f0f0fa" }}>
           SILHOUETTE {Number(kMetrics.find((row) => row.selected)?.silhouette ?? 0.328).toFixed(3)}
         </span>
       </div>
@@ -1072,11 +1074,12 @@ function PcaSlide({ onRepActive }) {
       >
         <span
           style={{
-            color: "#fbbf24",
-            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+            color: "#ffffff",
+            fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
             fontSize: "0.7rem",
             fontWeight: 700,
-            letterSpacing: "0.14em",
+            letterSpacing: "1.17px",
+            textTransform: "uppercase",
           }}
         >
           {(PCA_RETAINED * 100).toFixed(1)}% VARIANCE RETAINED
@@ -1182,8 +1185,8 @@ function BehavioralArchetypesSlide({ onRepActive }) {
               display: "flex",
               alignItems: "center",
               gap: 6,
-              color: "#dbe7ec",
-              fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+              color: "#ffffff",
+              fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
               fontSize: "0.7rem",
               letterSpacing: "0.05em",
               opacity: i < state.shown ? 1 : 0,
@@ -1201,7 +1204,7 @@ function BehavioralArchetypesSlide({ onRepActive }) {
               }}
             />
             {cluster.name}
-            <span aria-hidden="true" style={{ color: "#71808d" }}>
+            <span aria-hidden="true" style={{ color: "#f0f0fa" }}>
               {cluster.size}
             </span>
           </span>
@@ -1332,10 +1335,11 @@ function ValidationRobustnessSlide({ onRepActive }) {
             <div
               style={{
                 color: card.color,
-                fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+                fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
                 fontSize: "0.7rem",
                 fontWeight: 700,
-                letterSpacing: "0.12em",
+                letterSpacing: "1.17px",
+                textTransform: "uppercase",
               }}
             >
               {card.label}
@@ -1351,7 +1355,7 @@ function ValidationRobustnessSlide({ onRepActive }) {
             >
               {card.value}
             </div>
-            <div style={{ color: "#71808d", fontSize: "0.7rem" }}>{card.note}</div>
+            <div style={{ color: "#f0f0fa", fontSize: "0.7rem" }}>{card.note}</div>
           </div>
         ))}
       </div>
@@ -1414,10 +1418,11 @@ function ValidationRobustnessSlide({ onRepActive }) {
       >
         <span
           style={{
-            color: "#48d7c2",
-            fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+            color: "#ffffff",
+            fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif',
             fontSize: "0.7rem",
-            letterSpacing: "0.12em",
+            letterSpacing: "1.17px",
+            textTransform: "uppercase",
           }}
         >
           {summaryStats.records} READING · {summaryStats.consumers} CONSUMERS · RECOVERY ARI {summaryStats.recovery}
@@ -1723,8 +1728,8 @@ function buildMainData(active) {
 
 function axisTickDefaults() {
   return {
-    color: "#94a8b4",
-    font: { family: "Inter", size: 11 },
+    color: "#f0f0fa",
+    font: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 11 },
     padding: 6,
   };
 }
@@ -1735,7 +1740,7 @@ function hourXScale(min, max) {
     min,
     max,
     border: { display: false },
-    grid: { color: "rgba(141, 163, 176, 0.12)" },
+    grid: { color: "rgba(255, 255, 255, 0.14)" },
     ticks: {
       ...axisTickDefaults(),
       precision: 0,
@@ -1769,13 +1774,13 @@ function makeBrushMainOptions(selection, animate, setChartHover) {
       // The composable Legend renders the series; hide Chart.js's own legend.
       legend: { display: false },
       tooltip: {
-        backgroundColor: "rgba(16, 23, 34, 0.96)",
-        borderColor: "#2d3c4d",
+        backgroundColor: "rgba(10, 10, 10, 0.96)",
+        borderColor: "#3a3a3f",
         borderWidth: 1,
         titleColor: "#ffffff",
-        bodyColor: "#dbe7ec",
-        titleFont: { family: "Inter", size: 12, weight: "700" },
-        bodyFont: { family: "Inter", size: 12 },
+        bodyColor: "#ffffff",
+        titleFont: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 12, weight: "700" },
+        bodyFont: { family: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', size: 12 },
         padding: 10,
         cornerRadius: 6,
         boxPadding: 4,
@@ -1797,7 +1802,7 @@ function makeBrushMainOptions(selection, animate, setChartHover) {
       x: hourXScale(selection[0], selection[1]),
       y: {
         border: { display: false },
-        grid: { color: "rgba(141, 163, 176, 0.12)" },
+        grid: { color: "rgba(255, 255, 255, 0.14)" },
         ticks: { ...axisTickDefaults(), maxTicksLimit: 5 },
       },
     },
@@ -2812,7 +2817,7 @@ function SeasonalShapeChart() {
       y: {
         ...base.scales.y,
         beginAtZero: true,
-        title: { display: true, text: "Share of daily energy (%)", color: "#94a8b4", font: { size: 11 } },
+        title: { display: true, text: "Share of daily energy (%)", color: "#f0f0fa", font: { size: 11 } },
         ticks: { ...base.scales.y.ticks, callback: (v) => `${v}%` },
       },
     },
@@ -2930,7 +2935,7 @@ function SeasonalPhaseScatter() {
         type: "linear",
         min: 0,
         max: 365,
-        title: { display: true, text: "Hidden seasonal phase (day of year)", color: "#94a8b4", font: { size: 11 } },
+        title: { display: true, text: "Hidden seasonal phase (day of year)", color: "#f0f0fa", font: { size: 11 } },
         ticks: { ...base.scales.x.ticks, stepSize: 91 },
       },
       y: {
@@ -2938,7 +2943,7 @@ function SeasonalPhaseScatter() {
         type: "linear",
         min: 0,
         max: 365,
-        title: { display: true, text: "Estimated peak (day of year)", color: "#94a8b4", font: { size: 11 } },
+        title: { display: true, text: "Estimated peak (day of year)", color: "#f0f0fa", font: { size: 11 } },
         ticks: { ...base.scales.y.ticks, stepSize: 91 },
       },
     },
@@ -3207,7 +3212,7 @@ function App() {
               lift={64}
               fade={0.22}
               dim={0.92}
-              overlay="rgba(7, 11, 16, 0.35)"
+              overlay="rgba(0, 0, 0, 0.2)"
               radius={14}
               roll={0}
               pauseOnHover={false}
@@ -3230,8 +3235,6 @@ function App() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <div className="ref-corner"></div>
-                <div className="ref-star">★</div>
                 <div className="ref-title-area">
                   <strong>{reference.title}</strong>
                 </div>
@@ -3263,7 +3266,7 @@ function App() {
               hoverSpeed={0}
               scaleOnHover
               fadeOut
-              fadeOutColor="#070b10"
+              fadeOutColor="#000000"
               ariaLabel="Technology stack"
             />
           </div>
@@ -3291,16 +3294,16 @@ class RootBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ maxWidth: "720px", margin: "6rem auto", padding: "0 1.25rem", color: "#dbe7ec", fontFamily: "Inter, system-ui, sans-serif" }}>
-          <p style={{ fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontSize: "0.75rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "#48d7c2" }}>
+        <div style={{ maxWidth: "720px", margin: "6rem auto", padding: "0 1.25rem", color: "#ffffff", fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif' }}>
+          <p style={{ fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', fontSize: "0.75rem", letterSpacing: "1.17px", textTransform: "uppercase", color: "#ffffff" }}>
             Energy Load-Shape Clustering
           </p>
           <h1 style={{ fontSize: "1.6rem", fontWeight: 600, margin: "0.5rem 0 0.75rem" }}>Something on this page failed to render.</h1>
-          <p style={{ color: "#94a8b4", lineHeight: 1.6 }}>
+          <p style={{ color: "#f0f0fa", lineHeight: 1.6 }}>
             A component crashed during render. The page keeps its shell rather than going blank.
             The error message is logged to the browser console; reload to retry.
           </p>
-          <pre style={{ marginTop: "1rem", padding: "0.9rem 1rem", background: "#101722", border: "1px solid #2d3c4d", borderRadius: 8, overflowX: "auto", fontSize: "0.78rem", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", whiteSpace: "pre-wrap" }}>
+          <pre style={{ marginTop: "1rem", padding: "0.9rem 1rem", background: "#0a0a0a", border: "1px solid #3a3a3f", borderRadius: 8, overflowX: "auto", fontSize: "0.78rem", fontFamily: '"D-DIN", "Arial Narrow", Arial, Verdana, sans-serif', whiteSpace: "pre-wrap" }}>
             {String(this.state.error && this.state.error.message)}
           </pre>
         </div>

@@ -1,18 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Spasex restyle. Brand: pure black canvas, white uppercase D-DIN display set in
+   tight vertical leading and wide horizontal tracking. No accent colour in the
+   chrome; no drop shadows or gradient overlays. The only chromatic content is
+   the chart data itself, which is kept as-is (the data series ARE the imagery of
+   the project, standing in for the brand's photography). All UI chrome — canvas,
+   panels, nav, buttons, borders, text, ticks, focus rings, tags — is mapped onto
+   the black/white system. */
 
 :root {
-  --bg: #070b10;
-  --panel: #101722;
-  --panel-strong: #152131;
-  --line: #263545;
-  --text: #f5f8fa;
-  --muted: #94a8b4;
+  --bg: #000000;
+  --panel: #0a0a0a;
+  --panel-strong: #131315;
+  --line: #3a3a3f;
+  --text: #ffffff;
+  --muted: #f0f0fa;
+  --faint: rgba(240, 240, 250, 0.42);
+  /* Data-series tokens (kept): the charts are the page's one source of colour. */
   --cyan: #48d7c2;
   --blue: #6c8cff;
   --amber: #f2b04b;
   --violet: #b78cff;
   --rose: #fb7185;
-  font-family: Inter, system-ui, sans-serif;
+  /* Unselected / background chart bars: a light neutral, not an accent. */
+  --k-bar: #e0e0e8;
+  --font-body: 'D-DIN', 'Arial Narrow', Arial, Verdana, sans-serif;
+  --font-display: 'D-DIN-Bold', 'Arial Narrow', Arial, Verdana, sans-serif;
+  font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
 }
@@ -35,10 +48,7 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(72, 215, 194, 0.16), transparent 34rem),
-    radial-gradient(circle at 80% 12%, rgba(108, 140, 255, 0.12), transparent 30rem),
-    var(--bg);
+  background: var(--bg);
 }
 
 a {
@@ -46,6 +56,8 @@ a {
   text-decoration: none;
 }
 
+/* Fixed overlay nav: transparent over the canvas, white uppercase caps with wide
+   tracking. No opaque background, no blur. */
 .site-nav {
   position: sticky;
   top: 0;
@@ -55,107 +67,112 @@ a {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem clamp(1rem, 4vw, 3rem);
-  background: rgba(7, 11, 16, 0.78);
-  border-bottom: 1px solid rgba(148, 168, 180, 0.16);
-  backdrop-filter: blur(18px);
+  background: transparent;
+  border-bottom: 1px solid var(--line);
 }
 
 .brand {
+  font-family: var(--font-display);
   font-weight: 800;
-  letter-spacing: 0;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
 }
 
 .nav-links {
   display: flex;
   gap: 1rem;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
 }
 
 .nav-links a:hover {
   color: var(--text);
 }
 
-/* GitHub button styles */
+/* GitHub button (nav): ghost pill, matching the single-CTA language. */
 .nav-links .button {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 8px 15px;
   gap: 10px;
-  background-color: #181717;
-  outline: 3px #181717 solid;
-  outline-offset: -3px;
-  border-radius: 5px;
-  border: none;
+  background-color: transparent;
+  border: 1px solid var(--text);
+  border-radius: 32px;
   cursor: pointer;
   transition: 400ms;
-  color: white;
+  color: var(--text);
 }
 
 .nav-links .button .text {
-  color: white;
+  color: var(--text);
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: 0.82rem;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
   transition: 400ms;
 }
 
 .nav-links .button svg {
-  fill: white;
+  fill: var(--text);
   transition: 400ms;
 }
 
 .nav-links .button:hover {
-  background-color: transparent;
+  background-color: var(--text);
 }
 
 .nav-links .button:hover .text {
-  color: #181717;
+  color: var(--bg);
 }
 
 .nav-links .button:hover svg {
-  fill: #181717;
+  fill: var(--bg);
 }
 
-/* GitHub footer button */
+/* GitHub footer button: ghost pill. */
 .github-footer-button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  padding: 12px 24px;
+  padding: 18px 24px;
   gap: 12px;
-  background-color: #181717;
-  outline: 3px #181717 solid;
-  outline-offset: -3px;
-  border-radius: 5px;
-  border: none;
+  background-color: transparent;
+  border: 1px solid var(--text);
+  border-radius: 32px;
   cursor: pointer;
   transition: 400ms;
-  color: white;
+  color: var(--text);
   font-size: 1rem;
 }
 
 .github-footer-button .text {
-  color: white;
+  color: var(--text);
   font-weight: 700;
+  font-family: var(--font-body);
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
   transition: 400ms;
 }
 
 .github-footer-button svg {
-  fill: white;
+  fill: var(--text);
   transition: 400ms;
 }
 
 .github-footer-button:hover {
-  background-color: transparent;
+  background-color: var(--text);
 }
 
 .github-footer-button:hover .text {
-  color: #181717;
+  color: var(--bg);
 }
 
 .github-footer-button:hover svg {
-  fill: #181717;
+  fill: var(--bg);
 }
 
 /* Hero is a strict vertical stack on every screen: eyebrow + title + subtitle
@@ -196,11 +213,11 @@ a {
 .eyebrow {
   display: inline-flex;
   margin-bottom: 1rem;
-  color: var(--cyan);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  color: var(--muted);
+  font-family: var(--font-body);
   font-size: 0.76rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 1.17px;
   text-transform: uppercase;
 }
 
@@ -213,22 +230,28 @@ p {
 
 h1 {
   margin-bottom: 1.2rem;
+  font-family: var(--font-display);
   font-size: clamp(3.2rem, 8vw, 7.5rem);
-  line-height: 0.94;
-  letter-spacing: 0;
+  line-height: 0.95;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
 }
 
 h2 {
   margin-bottom: 0.9rem;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 3.5rem);
-  line-height: 1;
-  letter-spacing: 0;
+  line-height: 1.2;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
 }
 
 h3 {
   margin-bottom: 0.35rem;
+  font-family: var(--font-display);
   font-size: 1.15rem;
-  letter-spacing: 0;
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
 }
 
 p {
@@ -251,24 +274,31 @@ p {
   margin-top: 2rem;
 }
 
+/* The only CTA: ghost-outlined pill, uppercase caps. Never filled. */
 .button {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  font-weight: 800;
+  border-radius: 32px;
+  padding: 18px 24px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--text);
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
 }
 
 .button.primary {
-  background: var(--cyan);
-  color: #041012;
+  background: transparent;
+  color: var(--text);
 }
 
 .button.secondary {
-  border: 1px solid var(--line);
-  color: var(--text);
+  border: 1px solid var(--faint);
+  color: var(--muted);
 }
 
 .button:hover,
@@ -279,7 +309,7 @@ p {
 
 .band {
   padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3rem);
-  border-top: 1px solid rgba(148, 168, 180, 0.16);
+  border-top: 1px solid var(--line);
 }
 
 .section-header {
@@ -299,12 +329,9 @@ p {
 .cluster-card,
 .reference-card,
 .chart-panel {
-  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
-  border: 1px solid rgba(148, 168, 180, 0.17);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  /* Shadow stays small enough to fit inside the 12-20px card gaps; a 24px
-     offset would bleed onto the cards below and read as overlap. */
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .stat-card {
@@ -316,15 +343,16 @@ p {
 .cluster-index {
   display: block;
   color: var(--muted);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.74rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
 }
 
 .stat-card strong {
   display: block;
   margin-top: 0.8rem;
+  font-family: var(--font-display);
   font-size: 2.1rem;
 }
 
@@ -426,6 +454,7 @@ p {
 
 .cluster-card dd {
   margin: 0.25rem 0 0;
+  font-family: var(--font-display);
   font-weight: 800;
 }
 
@@ -433,102 +462,50 @@ p {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-/* Bold 3D Reference Cards ----------------------------------------------- */
+/* Reference cards: flat near-black surfaces with a hairline border. No 3D
+   shadow, no corner accent, no stripes/dots — the chromed austerity of the
+   brand. */
 .reference-card {
   position: relative;
   display: block;
   background: var(--panel);
-  border: 0.35em solid var(--line);
-  border-radius: 0.6em;
-  box-shadow: 0.5em 0.5em 0 rgba(0, 0, 0, 0.5);
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  transition: border-color 0.4s ease, transform 0.4s ease;
   overflow: hidden;
   transform-origin: center;
 }
 
 .reference-card:hover {
-  transform: translate(-0.3em, -0.3em) scale(1.01);
-  box-shadow: 0.8em 0.8em 0 rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+  border-color: var(--text);
 }
 
 .reference-card:active {
-  transform: translate(0.1em, 0.1em) scale(0.98);
-  box-shadow: 0.4em 0.4em 0 rgba(0, 0, 0, 0.5);
+  transform: translateY(0);
 }
 
-/* Background pattern grid */
-.reference-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-  background-size: 0.5em 0.5em;
-  pointer-events: none;
-  opacity: 0.5;
-  transition: opacity 0.4s ease;
-  z-index: 0;
-}
-
-.reference-card:hover::before {
-  opacity: 1;
-}
-
-/* Dot overlay pattern */
-.reference-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(148, 168, 180, 0.15) 1px, transparent 1px);
-  background-size: 1em 1em;
-  background-position: -0.5em -0.5em;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: 0;
-}
-
-.reference-card:hover::after {
-  opacity: 1;
-}
-
-/* Title area with striped background */
+/* Title area: clean white surface with black caps — the one filled moment on
+   each card, flipped to text-inverse where the photography/video logic would
+   otherwise sit. */
 .ref-title-area {
   position: relative;
   padding: 1.1em;
-  background: var(--cyan);
+  background: var(--text);
   color: var(--bg);
   font-weight: 800;
-  border-bottom: 0.35em solid var(--line);
-  z-index: 2;
-  overflow: hidden;
-}
-
-.ref-title-area::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(0, 0, 0, 0.08),
-    rgba(0, 0, 0, 0.08) 0.5em,
-    transparent 0.5em,
-    transparent 1em
-  );
-  pointer-events: none;
-  opacity: 0.4;
+  border-bottom: 1px solid var(--line);
 }
 
 .reference-card strong {
   position: relative;
   z-index: 1;
   display: block;
+  font-family: var(--font-display);
   font-size: 0.95rem;
   line-height: 1.3;
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
   color: var(--bg);
 }
 
@@ -536,7 +513,6 @@ p {
 .ref-body {
   position: relative;
   padding: 1.2em;
-  z-index: 2;
   background: var(--panel);
 }
 
@@ -545,48 +521,6 @@ p {
   color: var(--muted);
   font-size: 0.85rem;
   line-height: 1.55;
-}
-
-/* Corner accent */
-.ref-corner {
-  position: absolute;
-  top: -0.8em;
-  right: -0.8em;
-  width: 3em;
-  height: 3em;
-  background: var(--amber);
-  transform: rotate(45deg);
-  z-index: 1;
-  transition: transform 0.3s ease;
-}
-
-.reference-card:hover .ref-corner {
-  transform: rotate(50deg) scale(1.1);
-}
-
-/* Star decoration */
-.ref-star {
-  position: absolute;
-  top: 0.35em;
-  right: 0.35em;
-  color: var(--bg);
-  font-size: 1em;
-  font-weight: bold;
-  z-index: 2;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reference-card,
-  .reference-card::before,
-  .reference-card::after,
-  .ref-corner {
-    transition: none;
-  }
-
-  .reference-card:hover {
-    transform: none;
-    box-shadow: 0.5em 0.5em 0 rgba(0, 0, 0, 0.5);
-  }
 }
 
 /* Carousel arrows + dots for the load-shape card ----------------------- */
@@ -610,8 +544,10 @@ p {
 
 .carousel-title {
   font-size: 0.95rem;
+  font-family: var(--font-display);
   font-weight: 650;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
   color: var(--text);
   margin: 0 0 0.2rem;
 }
@@ -678,7 +614,7 @@ p {
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: var(--panel-strong);
+  background: transparent;
   color: var(--muted);
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
@@ -695,13 +631,13 @@ p {
 }
 
 .carousel-arrow:hover {
-  color: var(--cyan);
-  border-color: var(--cyan);
-  background-color: rgba(72, 215, 194, 0.08);
+  color: var(--text);
+  border-color: var(--text);
+  background-color: var(--panel);
 }
 
 .carousel-arrow:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -709,7 +645,7 @@ p {
 .carousel-arrow:disabled:hover {
   color: var(--line);
   border-color: var(--line);
-  background: var(--panel-strong);
+  background: transparent;
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -734,26 +670,17 @@ p {
 }
 
 .carousel-dot.active {
-  background: var(--cyan);
+  background: var(--text);
   transform: scale(1.25);
 }
 
 .carousel-dot:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
-/* Restart button: sits beside the dots and re-runs the current slide's reveal
-   animation by remounting it. Styled to match the primary CTA buttons
-   ("Explore the charts", .button.primary): cyan fill, dark navy label, 8px
-   radius, bold weight, lift on hover - so the replay control speaks the same
-   accent language as the page's main actions. */
+/* Restart button: ghost pill, matching the page's single ghost-CTA language. */
 .carousel-replay {
-  --main-focus: #fff;
-  --font-color: #041012;
-  --bg-color: var(--cyan);
-  --bg-color-hover: #7fe8d8;
-  --bg-color-active: #2fc4af;
   position: relative;
   cursor: pointer;
   min-width: fit-content;
@@ -762,18 +689,18 @@ p {
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  padding: 0.75rem 1.15rem;
+  padding: 18px 24px;
   margin-left: 1rem;
-  border: none;
-  border-radius: 8px;
-  background-color: var(--bg-color);
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 0.92rem;
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: none;
+  border: 1px solid var(--text);
+  border-radius: 32px;
+  background-color: transparent;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
   text-align: center;
-  color: var(--font-color);
+  color: var(--text);
   transition: background-color 0.15s ease, transform 0.15s ease;
   user-select: none;
   -webkit-user-select: none;
@@ -781,17 +708,18 @@ p {
 }
 
 .carousel-replay:hover {
-  background-color: var(--bg-color-hover);
+  background-color: var(--text);
+  color: var(--bg);
   transform: translateY(-2px);
 }
 
 .carousel-replay:active {
-  background-color: var(--bg-color-active);
+  background-color: var(--muted);
   transform: translateY(0) scale(0.97);
 }
 
 .carousel-replay:focus-visible {
-  outline: 2px solid var(--main-focus);
+  outline: 2px solid var(--text);
   outline-offset: 3px;
 }
 
@@ -872,7 +800,7 @@ p {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.68rem;
   line-height: 1.2;
   opacity: 0;
@@ -891,6 +819,7 @@ p {
 }
 
 .features-short {
+  font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 0.05em;
   min-width: 2.8rem;
@@ -944,10 +873,9 @@ p {
 
 .highlight-card {
   padding: 1.15rem 1.25rem;
-  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
-  border: 1px solid rgba(148, 168, 180, 0.17);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
 
 .highlight-head {
@@ -964,25 +892,25 @@ p {
 
 .availability {
   flex: none;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
-  border-radius: 999px;
+  border-radius: 9999px;
   padding: 0.2rem 0.55rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
 }
 
 .availability.is-true {
-  color: var(--cyan);
-  border: 1px solid rgba(72, 215, 194, 0.35);
-  background: rgba(72, 215, 194, 0.08);
+  color: var(--text);
+  border: 1px solid var(--text);
 }
 
 .availability.is-false {
   color: var(--muted);
-  border: 1px solid rgba(148, 168, 180, 0.3);
-  background: rgba(148, 168, 180, 0.08);
+  border: 1px solid var(--line);
 }
 
 .highlight-card p {
@@ -999,13 +927,15 @@ p {
 }
 
 .chip {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.68rem;
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--panel-strong);
   padding: 0.22rem 0.5rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .mini-bars {
@@ -1026,8 +956,9 @@ p {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--muted);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.66rem;
+  letter-spacing: 0.5px;
   text-transform: lowercase;
 }
 
@@ -1035,7 +966,7 @@ p {
   display: block;
   height: 6px;
   border-radius: 3px;
-  background: rgba(148, 168, 180, 0.14);
+  background: var(--faint);
   overflow: hidden;
 }
 
@@ -1048,22 +979,22 @@ p {
 .mini-value {
   text-align: right;
   color: var(--text);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.68rem;
 }
 
 .bench-table-wrap {
   margin-top: 1.25rem;
   overflow-x: auto;
-  border: 1px solid rgba(148, 168, 180, 0.17);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
+  background: var(--panel);
 }
 
 .bench-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.72rem;
   min-width: 640px;
 }
@@ -1072,14 +1003,14 @@ p {
 .bench-table td {
   text-align: right;
   padding: 0.55rem 0.9rem;
-  border-bottom: 1px solid rgba(148, 168, 180, 0.12);
+  border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
 
 .bench-table th {
   color: var(--muted);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
   font-size: 0.62rem;
 }
@@ -1094,7 +1025,7 @@ p {
 }
 
 .bench-table .bench-fast {
-  color: var(--cyan);
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -1123,8 +1054,9 @@ p {
 .legend-title {
   color: var(--muted);
   font-size: 0.72rem;
+  font-family: var(--font-body);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
 }
 
@@ -1153,10 +1085,11 @@ p {
   gap: 0.45rem;
   padding: 0.3rem 0.5rem;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
   color: var(--text);
   font: inherit;
+  font-family: var(--font-body);
   font-size: 0.8rem;
   line-height: 1.25;
   cursor: pointer;
@@ -1164,17 +1097,17 @@ p {
 }
 
 .legend-item-button:hover {
-  background: rgba(21, 33, 49, 0.7);
+  background: var(--panel);
   border-color: var(--line);
 }
 
 .legend-item.is-active .legend-item-button {
-  background: rgba(21, 33, 49, 0.9);
+  background: var(--panel-strong);
   border-color: var(--line);
 }
 
 .legend-item-button:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -1201,7 +1134,7 @@ p {
 
 .legend-value {
   color: var(--muted);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.72rem;
 }
 
@@ -1255,14 +1188,14 @@ p {
   top: 0;
   bottom: 0;
   z-index: 2;
-  border: 1px solid rgba(108, 140, 255, 0.55);
-  border-radius: 6px;
-  background: rgba(108, 140, 255, 0.12);
+  border: 1px solid var(--text);
+  border-radius: 4px;
+  background: var(--panel-strong);
   pointer-events: none;
 }
 
 .brush-window:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -1291,7 +1224,7 @@ p {
   height: 56%;
   min-height: 14px;
   border-radius: 2px;
-  background: rgba(108, 140, 255, 0.9);
+  background: var(--text);
 }
 
 .load-chart-footer {
@@ -1314,24 +1247,25 @@ p {
   align-items: center;
   padding: 0.32rem 0.6rem;
   border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--panel-strong);
+  border-radius: 32px;
+  background: transparent;
   color: var(--text);
   font: inherit;
   font-size: 0.8rem;
   font-weight: 700;
+  letter-spacing: 1.17px;
+  text-transform: uppercase;
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .brush-reset:hover {
-  color: var(--cyan);
-  border-color: var(--cyan);
-  background-color: rgba(72, 215, 194, 0.08);
+  color: var(--bg);
+  background-color: var(--text);
 }
 
 .brush-reset:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -1380,13 +1314,13 @@ p {
   .chart-panel {
     padding: 0.6rem;
   }
-  
+
   .chart-container {
     height: 220px;
     min-height: 220px;
     max-height: 220px;
   }
-  
+
   .chart-container.tall {
     height: 280px;
     min-height: 280px;
@@ -1406,8 +1340,6 @@ p {
   gap: 0.45rem;
   height: 100%;
   min-width: 0;
-  /* Chart-local tokens derived from the global dark theme. */
-  --k-bar: #31465a;
 }
 
 .k-chart-top {
@@ -1421,14 +1353,14 @@ p {
 
 .k-selected-tag {
   flex: none;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.66rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
-  color: var(--cyan);
-  border: 1px solid rgba(72, 215, 194, 0.35);
-  background: rgba(72, 215, 194, 0.08);
-  border-radius: 999px;
+  color: var(--text);
+  border: 1px solid var(--text);
+  background: transparent;
+  border-radius: 9999px;
   padding: 0.18rem 0.55rem;
 }
 
@@ -1448,7 +1380,7 @@ p {
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.45s ease, transform 0.45s ease;
-  --k-bar: #31465a;
+  --k-bar: #e0e0e8;
 }
 
 .validation-sweep.is-shown {
@@ -1463,9 +1395,9 @@ p {
   justify-content: center;
   flex-wrap: wrap;
   min-width: 0;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.66rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.96px;
   color: var(--muted);
 }
 
@@ -1519,11 +1451,11 @@ p {
   min-height: 0;
   min-width: 0;
   outline: none;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .composed-chart:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -1556,11 +1488,11 @@ p {
   min-height: 0;
   min-width: 0;
   outline: none;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .radar-chart:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -1570,6 +1502,7 @@ p {
 
 .radar-label {
   fill: var(--text);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -1578,7 +1511,7 @@ p {
 
 .radar-ring-label {
   fill: var(--muted);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.58rem;
   pointer-events: none;
 }
@@ -1619,9 +1552,8 @@ p {
   min-width: 156px;
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--panel-strong);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   transform: translateY(4px);
   transition: opacity 0.12s ease, transform 0.12s ease;
 }
@@ -1631,8 +1563,11 @@ p {
   padding-bottom: 0.3rem;
   border-bottom: 1px solid var(--line);
   color: var(--text);
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.78rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .k-tooltip-row {
@@ -1655,7 +1590,7 @@ p {
 
 .k-tooltip-value {
   color: var(--text);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.72rem;
 }
 
@@ -1695,25 +1630,25 @@ p {
 }
 
 .season-card {
-  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
-  border: 1px solid rgba(148, 168, 180, 0.17);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 1.1rem 1.15rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .season-card-name {
   color: var(--muted);
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.74rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
 }
 
 .season-card-kwh {
+  font-family: var(--font-display);
   font-size: 1.9rem;
   line-height: 1.1;
 }
@@ -1727,7 +1662,7 @@ p {
 .season-track {
   height: 6px;
   border-radius: 3px;
-  background: rgba(148, 168, 180, 0.15);
+  background: var(--faint);
   overflow: hidden;
 }
 
@@ -1735,7 +1670,7 @@ p {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, var(--cyan), #7fe8d8);
+  background: var(--text);
 }
 
 .season-card-peak {
@@ -1746,9 +1681,9 @@ p {
   width: 100%;
   height: 240px;
   object-fit: contain;
-  border: 1px solid rgba(148, 168, 180, 0.17);
-  border-radius: 6px;
-  background: rgba(7, 11, 16, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
 }
 
 /* SDG Impact Section ---------------------------------------------------- */
@@ -1802,15 +1737,15 @@ p {
   width: 100%;
 }
 
-/* Tier labels: mono eyebrow with an accent dot, matching .eyebrow */
+/* Tier labels: caps eyebrow with a neutral dot, matching .eyebrow */
 .node-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -1824,27 +1759,27 @@ p {
 }
 
 .hierarchy-node.primary .node-badge {
-  color: var(--cyan);
+  color: var(--text);
 }
 
 .hierarchy-node.primary .node-badge::before {
-  background: var(--cyan);
+  background: var(--text);
 }
 
 .hierarchy-node.supported .node-badge {
-  color: var(--blue);
+  color: var(--muted);
 }
 
 .hierarchy-node.supported .node-badge::before {
-  background: var(--blue);
+  background: var(--muted);
 }
 
 .hierarchy-node.indirect .node-badge {
-  color: var(--violet);
+  color: var(--faint);
 }
 
 .hierarchy-node.indirect .node-badge::before {
-  background: var(--violet);
+  background: var(--faint);
 }
 
 .node-content {
@@ -1855,10 +1790,9 @@ p {
 /* Node cards: same panel surface as .stat-card / .chart-panel */
 .sdg-node-card {
   width: 100%;
-  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
-  border: 1px solid rgba(148, 168, 180, 0.17);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   padding: 1.5rem;
   text-align: center;
   transition: transform 0.2s ease, border-color 0.2s ease;
@@ -1883,21 +1817,22 @@ p {
 }
 
 .node-sdg-label {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.96px;
   color: var(--sdg-color);
   margin-bottom: 0.3rem;
 }
 
 .node-sdg-title {
+  font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 600;
   color: var(--text);
 }
 
-/* Tier connectors: hairline plus chevron built from the line/muted tokens */
+/* Tier connectors: hairline plus chevron built from the line tokens */
 .hierarchy-arrow {
   position: relative;
 }
@@ -1949,10 +1884,9 @@ p {
 .sdg-detail-card {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(145deg, rgba(21, 33, 49, 0.96), rgba(12, 18, 27, 0.96));
-  border: 1px solid rgba(148, 168, 180, 0.17);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   padding: 1.25rem;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
@@ -1989,28 +1923,30 @@ p {
 }
 
 .sdg-number {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.96px;
   color: var(--sdg-color);
 }
 
 .sdg-title {
+  font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text);
+  text-transform: uppercase;
 }
 
-/* Classification chip: muted mono label with an accent dot, no fill */
+/* Classification chip: caps label with a dot, no fill */
 .sdg-classification {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--font-body);
   font-size: 0.62rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.96px;
   text-transform: uppercase;
   color: var(--muted);
   white-space: nowrap;
@@ -2045,7 +1981,7 @@ p {
   color: var(--text);
   font-size: 0.86rem;
   line-height: 1.5;
-  border-top: 1px solid rgba(148, 168, 180, 0.12);
+  border-top: 1px solid var(--line);
 }
 
 .sdg-features li:first-child {
@@ -2063,8 +1999,8 @@ p {
 
 /* SDG Disclaimer */
 .sdg-disclaimer {
-  background: rgba(148, 168, 180, 0.06);
-  border: 1px solid rgba(148, 168, 180, 0.12);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 1.25rem;
   max-width: 900px;

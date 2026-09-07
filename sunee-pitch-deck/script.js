@@ -1,16 +1,17 @@
 // ============================================
-// SUNEE PITCH DECK - INTERACTIVE CONTROLS
+// SUNEE ACADEMIC DECK — INTERACTIVE CONTROLS
 // Navigation + Content Editing + PowerPoint Export
 // ============================================
 
 let currentSlide = 1;
-const totalSlides = 17;
+const totalSlides = 20;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
     initializeNavigation();
     initializeExport();
     updateSlideCounter();
+    loadContent();
 });
 
 // ==================
@@ -18,12 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==================
 
 function initializeNavigation() {
-    // Button navigation
     document.getElementById('prev-btn').addEventListener('click', () => navigateSlide(-1));
     document.getElementById('next-btn').addEventListener('click', () => navigateSlide(1));
-    
-    // Keyboard navigation
+
     document.addEventListener('keydown', (e) => {
+        if (e.target.hasAttribute('contenteditable')) return;
+
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
             navigateSlide(-1);
         } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
@@ -33,54 +34,43 @@ function initializeNavigation() {
             goToSlide(1);
         } else if (e.key === 'End') {
             goToSlide(totalSlides);
+        } else if (e.key === 'f' || e.key === 'F') {
+            toggleFullscreen();
+        } else if (e.key === 'p' || e.key === 'P') {
+            togglePresentationMode();
         }
     });
-    
-    // Touch/swipe support
+
     let touchStartX = 0;
-    let touchEndX = 0;
-    
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
     });
-    
     document.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
+        const touchEndX = e.changedTouches[0].screenX;
+        if (touchEndX < touchStartX - 50) navigateSlide(1);
+        if (touchEndX > touchStartX + 50) navigateSlide(-1);
     });
-    
-    function handleSwipe() {
-        if (touchEndX < touchStartX - 50) {
-            navigateSlide(1);
-        }
-        if (touchEndX > touchStartX + 50) {
-            navigateSlide(-1);
-        }
-    }
 }
 
 function navigateSlide(direction) {
     const newSlide = currentSlide + direction;
-    
     if (newSlide >= 1 && newSlide <= totalSlides) {
         goToSlide(newSlide);
     }
 }
 
 function goToSlide(slideNumber) {
-    // Remove active class from current slide
-    const currentSlideEl = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
-    if (currentSlideEl) {
-        currentSlideEl.classList.remove('active');
-    }
-    
-    // Add active class to new slide
+    const currentEl = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+    if (currentEl) currentEl.classList.remove('active');
+
     currentSlide = slideNumber;
-    const newSlideEl = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
-    if (newSlideEl) {
-        newSlideEl.classList.add('active');
+    const newEl = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+    if (newEl) {
+        newEl.classList.add('active');
+        // Scroll slide content to top
+        const content = newEl.querySelector('.slide-content');
+        if (content) content.scrollTop = 0;
     }
-    
     updateSlideCounter();
 }
 
@@ -94,48 +84,87 @@ function updateSlideCounter() {
 // ==================
 
 function initializeExport() {
-    const exportBtn = document.getElementById('export-btn');
-    exportBtn.addEventListener('click', exportToPowerPoint);
+    document.getElementById('export-btn').addEventListener('click', exportToPowerPoint);
+}
+
+async function chartToBase64(imgEl) {
+    try {
+        const src = imgEl.currentSrc || imgEl.src;
+        if (!src) return null;
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        await new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = reject;
+            image.src = src;
+        });
+        if (!image.naturalWidth || !image.naturalHeight) return null;
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        canvas.getContext('2d').drawImage(image, 0, 0);
+        return canvas.toDataURL('image/png');
+    } catch (e) {
+        console.warn('Chart embed failed:', e);
+        return null;
+    }
+}
+
+function resolveChartPath(path) {
+    try { return new URL(path, document.baseURI).href; }
+    catch (e) { return path; }
+}
+
+function fitBox(naturalW, naturalH, boxW, boxH) {
+    const ratio = Math.min(boxW / naturalW, boxH / naturalH);
+    return { w: naturalW * ratio, h: naturalH * ratio };
 }
 
 async function exportToPowerPoint() {
-    // Check if PptxGenJS is loaded
     if (typeof PptxGenJS === 'undefined') {
-        alert('PowerPoint export library not loaded. Please include PptxGenJS library:\n<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>');
+        alert('PowerPoint export library not loaded.');
         return;
     }
-    
+
     const exportBtn = document.getElementById('export-btn');
     const originalText = exportBtn.textContent;
     exportBtn.textContent = 'Exporting...';
     exportBtn.disabled = true;
-    
+
+    const missingCharts = [];
+
     try {
         const pptx = new PptxGenJS();
-        
-        // Presentation settings
         pptx.layout = 'LAYOUT_16x9';
         pptx.author = 'SUNEE';
-        pptx.company = 'SUNEE Energy Intelligence';
-        pptx.subject = 'SUNEE Pitch Deck';
-        pptx.title = 'SUNEE - Intelligent Energy Intelligence';
-        
-        // Export each slide
+        pptx.company = 'SUNEE Energy Analytics';
+        pptx.subject = 'Characterizing Household Energy Consumption Patterns';
+        pptx.title = 'SUNEE — PCA and K-Means Analysis';
+
         for (let i = 1; i <= totalSlides; i++) {
-            await exportSlide(pptx, i);
+            missingCharts.push(...(await exportSlide(pptx, i)));
         }
-        
-        // Save the presentation
-        await pptx.writeFile({ fileName: 'SUNEE-Pitch-Deck.pptx' });
-        
+
+        await pptx.writeFile({ fileName: 'SUNEE-Academic-Deck.pptx' });
+
         exportBtn.textContent = '✓ Exported!';
         setTimeout(() => {
             exportBtn.textContent = originalText;
             exportBtn.disabled = false;
         }, 2000);
+
+        if (missingCharts.length > 0) {
+            const lines = missingCharts.map(p => `  ${resolveChartPath(p)}`);
+            alert(
+                'PowerPoint saved.\n\nSome chart images could not be embedded (browser security).\n' +
+                'Place these files manually:\n\n' + lines.join('\n')
+            );
+        } else {
+            alert('PowerPoint saved with all charts embedded.');
+        }
     } catch (error) {
         console.error('Export error:', error);
-        alert('Export failed. Please check console for details.');
+        alert('Export failed. Check console for details.');
         exportBtn.textContent = originalText;
         exportBtn.disabled = false;
     }
@@ -143,137 +172,298 @@ async function exportToPowerPoint() {
 
 async function exportSlide(pptx, slideNumber) {
     const slideEl = document.querySelector(`.slide[data-slide="${slideNumber}"]`);
-    if (!slideEl) return;
-    
-    const slide = pptx.addSlide();
-    
-    // Set slide background
-    slide.background = { color: '0a0a0a' };
-    
-    // Extract content based on slide type
-    const slideContent = slideEl.querySelector('.slide-content');
-    
-    // Get slide title if present
-    const title = slideContent.querySelector('.slide-title, .cover-title, .closing-title, .vision-statement, .section-title, .page-title, .big-text');
-    if (title) {
-        const titleText = title.textContent.trim();
-        // Large title for cover (1), vision (16), closing (17)
-        const fontSize = (slideNumber === 1 || slideNumber === 16 || slideNumber === 17) ? 72 : 24;
+    if (!slideEl) return [];
 
-        slide.addText(titleText, {
-            x: 0.5,
-            y: 0.5,
-            w: 9,
-            h: 1,
-            fontSize: fontSize,
-            bold: true,
-            color: 'FFFFFF',
-            align: 'center'
+    const slide = pptx.addSlide();
+    slide.background = { color: '0a0a0a' };
+
+    const slideContent = slideEl.querySelector('.slide-content');
+    const missingCharts = [];
+
+    // ---- Charts ----
+    const chartImgs = slideContent.querySelectorAll('.chart-img');
+    if (chartImgs.length > 0) {
+        return await placeCharts(slide, slideContent, chartImgs, missingCharts, slideNumber);
+    }
+
+    // ---- Title (cover slides) ----
+    const isCover = slideEl.classList.contains('cover');
+    let yPos = 0.55;
+
+    // Eyebrow / kicker
+    const kickerEl = slideContent.querySelector('.kicker');
+    if (kickerEl && kickerEl.textContent.trim()) {
+        slide.addText(kickerEl.textContent.trim().toUpperCase(), {
+            x: 0.6, y: yPos, w: 11, h: 0.3,
+            fontSize: 11, bold: true, color: '00D9FF',
+            fontFace: 'Consolas', charSpacing: 2
+        });
+        yPos += 0.42;
+    }
+
+    // Headline
+    const titleEl = slideContent.querySelector('.headline, .closing-title');
+    if (titleEl && titleEl.textContent.trim()) {
+        slide.addText(titleEl.textContent.trim(), {
+            x: 0.6, y: yPos, w: 12.1, h: isCover ? 1.8 : 1.2,
+            fontSize: isCover ? 36 : 28,
+            bold: false, color: 'FFFFFF',
+            align: isCover ? 'center' : 'left',
+            valign: 'top', breakLine: true
+        });
+        yPos += isCover ? 1.6 : 1.2;
+    }
+
+    // Subtitle
+    const subtitleEl = slideContent.querySelector('.subtitle, .closing-sub');
+    if (subtitleEl && subtitleEl.textContent.trim()) {
+        slide.addText(subtitleEl.textContent.trim(), {
+            x: 0.6, y: yPos, w: 12.1, h: 0.6,
+            fontSize: 16, color: 'B4B4B4', valign: 'top',
+            align: isCover ? 'center' : 'left'
+        });
+        yPos += 0.8;
+    }
+
+    // Lead paragraph
+    const leadEl = slideContent.querySelector('.lead');
+    if (leadEl && leadEl.textContent.trim()) {
+        slide.addText(leadEl.textContent.trim(), {
+            x: 0.6, y: yPos, w: 12.1, h: 0.8,
+            fontSize: 15, color: 'B4B4B4', valign: 'top'
+        });
+        yPos += 0.9;
+    }
+
+    yPos = Math.max(yPos, 2.0);
+
+    // ---- Metric cards ----
+    const metricCards = slideContent.querySelectorAll('.metric-card');
+    if (metricCards.length > 0) {
+        const mcWidth = Math.min(2.8, 11.5 / metricCards.length);
+        metricCards.forEach((card, i) => {
+            const value = card.querySelector('.metric-value');
+            const label = card.querySelector('.metric-label');
+            const x = 0.6 + i * (mcWidth + 0.2);
+            if (value && value.textContent.trim()) {
+                slide.addText(value.textContent.trim(), {
+                    x: x, y: yPos, w: mcWidth, h: 0.5,
+                    fontSize: 22, bold: true, color: '00D9FF',
+                    fontFace: 'Consolas', align: 'center'
+                });
+            }
+            if (label && label.textContent.trim()) {
+                slide.addText(label.textContent.trim(), {
+                    x: x, y: yPos + 0.45, w: mcWidth, h: 0.35,
+                    fontSize: 10, color: '6B6B6B', align: 'center',
+                    fontFace: 'Consolas'
+                });
+            }
+        });
+        yPos += 1.0;
+    }
+
+    // ---- Cards ----
+    const cards = slideContent.querySelectorAll('.card');
+    if (cards.length > 0 && yPos < 6.5) {
+        const cols = cards.length <= 2 ? 2 : cards.length <= 4 ? 2 : 3;
+        const cardW = (12.1 - (cols - 1) * 0.2) / cols;
+        cards.forEach((card, i) => {
+            if (i >= 6) return;
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const x = 0.6 + col * (cardW + 0.2);
+            const y = yPos + row * 1.4;
+            if (y > 6.0) return;
+
+            let textRuns = [];
+            const tag = card.querySelector('.tag');
+            const h3 = card.querySelector('h3');
+            const p = card.querySelector('p');
+            if (tag && tag.textContent.trim()) {
+                textRuns.push({ text: tag.textContent.trim().toUpperCase() + '\n', options: { fontSize: 9, color: '00D9FF', fontFace: 'Consolas', bold: true } });
+            }
+            if (h3 && h3.textContent.trim()) {
+                textRuns.push({ text: h3.textContent.trim() + '\n', options: { fontSize: 14, color: 'FFFFFF', bold: true } });
+            }
+            if (p && p.textContent.trim()) {
+                textRuns.push({ text: p.textContent.trim(), options: { fontSize: 11, color: 'B4B4B4' } });
+            }
+            if (textRuns.length) {
+                slide.addText(textRuns, { x: x, y: y, w: cardW, h: 1.3, valign: 'top' });
+            }
         });
     }
-    
-    // Extract main content
-    const contentElements = slideContent.querySelectorAll('p, h3, h4, .big-statement, .sdg-desc, .sdg-title, .sdg-number, ul, li');
-    let yPos = title ? 2 : 1;
-    
-    contentElements.forEach((el, index) => {
-        if (el.classList.contains('slide-title') ||
-            el.classList.contains('cover-title') ||
-            el.classList.contains('closing-title') ||
-            el.classList.contains('vision-statement') ||
-            el.classList.contains('section-title') ||
-            el.classList.contains('page-title') ||
-            el.classList.contains('big-text')) {
-            return; // Skip, already added
-        }
-        
-        const text = el.textContent.trim();
-        if (!text) return;
-        
-        let fontSize = 14;
-        let bold = false;
-        let color = 'B4B4B4';
-        
-        if (el.classList.contains('big-statement')) {
-            fontSize = 36;
-            bold = true;
-            color = 'FFFFFF';
-        } else if (el.tagName === 'H3') {
-            fontSize = 28;
-            bold = true;
-            color = '00D9FF';
-        } else if (el.tagName === 'H4') {
-            fontSize = 20;
-            bold = true;
-            color = 'FFFFFF';
-        } else if (el.classList.contains('sdg-title')) {
-            fontSize = 20;
-            bold = true;
-            color = 'FFFFFF';
-        } else if (el.classList.contains('sdg-number')) {
-            fontSize = 14;
-            bold = true;
-            color = '00D9FF';
-        } else if (el.classList.contains('sdg-desc')) {
-            fontSize = 14;
-            bold = false;
-            color = 'B4B4B4';
-        } else if (el.tagName === 'UL') {
-            // Handle list - process children
-            const listItems = el.querySelectorAll('li');
-            listItems.forEach((li, liIndex) => {
-                const liText = li.textContent.trim();
-                if (!liText) return;
-                slide.addText(`• ${liText}`, {
-                    x: 0.8,
-                    y: yPos,
-                    w: 8.5,
-                    h: 'auto',
-                    fontSize: 13,
-                    bold: false,
-                    color: 'B4B4B4',
-                    valign: 'top'
-                });
-                yPos += (13 / 72) * 1.4;
+
+    // ---- Tables ----
+    const tables = slideContent.querySelectorAll('.data-table');
+    if (tables.length > 0) {
+        tables.forEach((table) => {
+            const rows = [];
+            // Header
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push({ text: th.textContent.trim(), options: { fontSize: 9, bold: true, color: 'FFFFFF', fontFace: 'Consolas' } });
             });
-            return; // Skip normal processing since we handled it
-        } else if (el.tagName === 'LI') {
-            // Skip individual LI elements since we process them in UL
-            return;
-        }
-
-        slide.addText(text, {
-            x: 0.5,
-            y: yPos,
-            w: 9,
-            h: 'auto',
-            fontSize: fontSize,
-            bold: bold,
-            color: color,
-            valign: 'top'
+            rows.push(headers);
+            // Body
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const cells = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    const isHighlight = td.classList.contains('highlight');
+                    cells.push({
+                        text: td.textContent.trim(),
+                        options: { fontSize: 10, color: isHighlight ? '00D9FF' : 'B4B4B4', fontFace: td.classList.contains('mono') ? 'Consolas' : 'Calibri' }
+                    });
+                });
+                rows.push(cells);
+            });
+            slide.addTable(rows, {
+                x: 0.6, y: yPos, w: 12.1,
+                border: { type: 'solid', pt: 0.5, color: '3D3A39' },
+                colW: Array(headers.length).fill(12.1 / headers.length),
+                rowH: 0.35,
+                autoPage: false
+            });
         });
+    }
 
-        yPos += (fontSize / 72) * 1.5;
+    // ---- Bullet lists ----
+    const bullets = slideContent.querySelectorAll('.bullet-list li');
+    if (bullets.length > 0) {
+        let bulletY = yPos;
+        bullets.forEach((li) => {
+            if (bulletY > 6.5) return;
+            slide.addText('  ' + li.textContent.trim(), {
+                x: 0.6, y: bulletY, w: 12.1, h: 0.35,
+                fontSize: 13, color: 'B4B4B4', valign: 'top'
+            });
+            bulletY += 0.38;
+        });
+    }
+
+    // ---- References ----
+    const refs = slideContent.querySelectorAll('.ref-list li');
+    if (refs.length > 0) {
+        let refY = yPos;
+        refs.forEach((li) => {
+            if (refY > 6.8) return;
+            const num = li.querySelector('.ref-num');
+            const text = li.querySelector('span:last-child') || li;
+            slide.addText(
+                [
+                    { text: (num ? num.textContent.trim() + ' ' : ''), options: { color: '00D9FF', bold: true, fontFace: 'Consolas', fontSize: 11 } },
+                    { text: text.textContent.trim(), options: { color: 'B4B4B4', fontSize: 11 } }
+                ],
+                { x: 0.6, y: refY, w: 12.1, h: 0.4, valign: 'top' }
+            );
+            refY += 0.42;
+        });
+    }
+
+    // ---- Contact / footer line ----
+    const contactEl = slideContent.querySelector('.contact-line');
+    if (contactEl && contactEl.textContent.trim()) {
+        slide.addText(contactEl.textContent.trim(), {
+            x: 0.6, y: 6.4, w: 12.1, h: 0.4,
+            fontSize: 12, color: '6B6B6B', align: 'center', fontFace: 'Consolas'
+        });
+    }
+
+    // ---- Section titles (for limitations page) ----
+    const sectionTitles = slideContent.querySelectorAll('.section-title');
+    if (sectionTitles.length > 0 && yPos < 5.0) {
+        sectionTitles.forEach(st => {
+            slide.addText(st.textContent.trim(), {
+                x: 0.6, y: yPos, w: 5.5, h: 0.35,
+                fontSize: 16, bold: true, color: 'FFFFFF'
+            });
+            yPos += 0.4;
+        });
+    }
+
+    addFooter(slide, slideNumber);
+    return missingCharts;
+}
+
+async function placeCharts(slide, slideContent, chartImgs, missingCharts, slideNumber) {
+    const isPair = chartImgs.length > 1;
+    const imgTop = isPair ? 2.0 : 1.8;
+    const imgBottom = 6.3;
+
+    for (let index = 0; index < chartImgs.length; index++) {
+        const imgEl = chartImgs[index];
+        const path = imgEl.getAttribute('data-chart-path') || imgEl.getAttribute('src') || 'chart.png';
+        const b64 = await chartToBase64(imgEl);
+
+        if (b64) {
+            const naturalW = imgEl.naturalWidth || 1600;
+            const naturalH = imgEl.naturalHeight || 900;
+            const boxW = isPair ? 5.9 : 12.1;
+            const boxH = imgBottom - imgTop;
+            const fit = fitBox(naturalW, naturalH, boxW, boxH);
+            const x = isPair ? 0.6 + index * 6.15 : 0.6 + (boxW - fit.w) / 2;
+            const y = imgTop + (boxH - fit.h) / 2;
+            slide.addImage({ data: b64, x: x, y: y, w: fit.w, h: fit.h });
+        } else {
+            missingCharts.push(path);
+            const noteX = isPair ? 0.6 + index * 6.15 : 0.6;
+            slide.addText(`[ Chart ]\nPlace:\n${path}`, {
+                x: noteX, y: imgTop + 0.2, w: isPair ? 5.9 : 12.1, h: 3.0,
+                fontSize: 11, color: '00D9FF', fontFace: 'Consolas', valign: 'top'
+            });
+        }
+    }
+
+    // Captions
+    const captions = slideContent.querySelectorAll('.chart-caption');
+    captions.forEach((cap) => {
+        if (cap.textContent.trim()) {
+            slide.addText(cap.textContent.trim(), {
+                x: 0.6, y: 6.4, w: 12.1, h: 0.5,
+                fontSize: 10, color: '6B6B6B', italic: true, valign: 'top'
+            });
+        }
     });
 
-    // Add footer
-    slide.addText('SUNEE', {
-        x: 0.5,
-        y: 6.8,
-        w: 2,
-        h: 0.3,
-        fontSize: 10,
-        color: '6B6B6B'
+    // Metric cards below charts
+    const metricCards = slideContent.querySelectorAll('.metric-card');
+    if (metricCards.length > 0) {
+        const mcWidth = Math.min(2.8, 11.5 / metricCards.length);
+        metricCards.forEach((card, i) => {
+            const value = card.querySelector('.metric-value');
+            const label = card.querySelector('.metric-label');
+            const x = 0.6 + i * (mcWidth + 0.2);
+            const y = 6.4;
+            if (value && value.textContent.trim()) {
+                slide.addText(value.textContent.trim(), {
+                    x: x, y: y, w: mcWidth, h: 0.3,
+                    fontSize: 16, bold: true, color: '00D9FF',
+                    fontFace: 'Consolas', align: 'center'
+                });
+            }
+            if (label && label.textContent.trim()) {
+                slide.addText(label.textContent.trim(), {
+                    x: x, y: y + 0.28, w: mcWidth, h: 0.25,
+                    fontSize: 8, color: '6B6B6B', align: 'center',
+                    fontFace: 'Consolas'
+                });
+            }
+        });
+    }
+
+    addFooter(slide, slideNumber);
+    return missingCharts;
+}
+
+function addFooter(slide, slideNumber) {
+    slide.addText('SUNEE · PCA + K-Means Energy Analysis', {
+        x: 0.6, y: 7.05, w: 6, h: 0.3,
+        fontSize: 9, color: '6B6B6B', fontFace: 'Consolas'
     });
-    
-    slide.addText(`${slideNumber}`, {
-        x: 8.5,
-        y: 6.8,
-        w: 1,
-        h: 0.3,
-        fontSize: 10,
-        color: '6B6B6B',
-        align: 'right'
+    slide.addText(`${slideNumber} / ${totalSlides}`, {
+        x: 10.7, y: 7.05, w: 2, h: 0.3,
+        fontSize: 9, color: '6B6B6B', align: 'right', fontFace: 'Consolas'
     });
 }
 
@@ -281,74 +471,54 @@ async function exportSlide(pptx, slideNumber) {
 // CONTENT EDITING
 // ==================
 
-// Auto-save edited content to localStorage
 document.addEventListener('input', (e) => {
-    if (e.target.hasAttribute('contenteditable')) {
-        saveContent();
-    }
+    if (e.target.hasAttribute('contenteditable')) saveContent();
 });
 
 function saveContent() {
-    const slides = document.querySelectorAll('.slide');
     const content = {};
-    
-    slides.forEach((slide, index) => {
-        const editableElements = slide.querySelectorAll('[contenteditable="true"]');
-        const slideContent = [];
-        
-        editableElements.forEach((el, elIndex) => {
-            slideContent.push({
-                index: elIndex,
-                html: el.innerHTML
-            });
+    document.querySelectorAll('.slide').forEach((slide, index) => {
+        const editables = slide.querySelectorAll('[contenteditable="true"]');
+        const slideData = [];
+        editables.forEach((el, i) => {
+            slideData.push({ index: i, html: el.innerHTML });
         });
-        
-        content[`slide-${index + 1}`] = slideContent;
+        content[`slide-${index + 1}`] = slideData;
     });
-    
-    localStorage.setItem('sunee-deck-content', JSON.stringify(content));
+    try { localStorage.setItem('sunee-deck-content', JSON.stringify(content)); }
+    catch (e) { console.warn('Could not save:', e); }
 }
 
 function loadContent() {
-    const savedContent = localStorage.getItem('sunee-deck-content');
-    if (!savedContent) return;
-    
-    const content = JSON.parse(savedContent);
-    const slides = document.querySelectorAll('.slide');
-    
-    slides.forEach((slide, index) => {
-        const slideKey = `slide-${index + 1}`;
-        if (!content[slideKey]) return;
-        
-        const editableElements = slide.querySelectorAll('[contenteditable="true"]');
-        const slideContent = content[slideKey];
-        
-        slideContent.forEach((saved) => {
-            if (editableElements[saved.index]) {
-                editableElements[saved.index].innerHTML = saved.html;
-            }
+    let saved;
+    try { saved = localStorage.getItem('sunee-deck-content'); }
+    catch (e) { return; }
+    if (!saved) return;
+
+    try {
+        const content = JSON.parse(saved);
+        document.querySelectorAll('.slide').forEach((slide, index) => {
+            const key = `slide-${index + 1}`;
+            if (!content[key]) return;
+            const editables = slide.querySelectorAll('[contenteditable="true"]');
+            content[key].forEach(s => {
+                if (editables[s.index]) editables[s.index].innerHTML = s.html;
+            });
         });
-    });
+    } catch (e) { console.warn('Could not restore:', e); }
 }
 
-// Load saved content on page load
-document.addEventListener('DOMContentLoaded', () => {
-    loadContent();
-});
-
-// ==================
-// UTILITY FUNCTIONS
-// ==================
-
-// Reset content to original
 function resetContent() {
     if (confirm('Reset all content to original? This cannot be undone.')) {
-        localStorage.removeItem('sunee-deck-content');
+        try { localStorage.removeItem('sunee-deck-content'); } catch (e) {}
         location.reload();
     }
 }
 
-// Fullscreen toggle
+// ==================
+// UTILITY
+// ==================
+
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
@@ -357,71 +527,23 @@ function toggleFullscreen() {
     }
 }
 
-// Keyboard shortcut: F for fullscreen
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'f' || e.key === 'F') {
-        if (!e.target.hasAttribute('contenteditable')) {
-            toggleFullscreen();
-        }
-    }
-});
-
-// ==================
-// PRESENTATION MODE
-// ==================
-
 let presentationMode = false;
+let hideControlsTimeout;
 
 function togglePresentationMode() {
     presentationMode = !presentationMode;
-    
-    const navControls = document.querySelector('.nav-controls');
-    const exportBtn = document.querySelector('.export-btn');
-    const hint = document.querySelector('body::after');
-    
-    if (presentationMode) {
-        navControls.style.opacity = '0';
-        exportBtn.style.opacity = '0';
-        document.body.style.cursor = 'none';
-    } else {
-        navControls.style.opacity = '1';
-        exportBtn.style.opacity = '1';
-        document.body.style.cursor = 'default';
-    }
+    document.body.classList.toggle('presenting', presentationMode);
 }
 
-// Keyboard shortcut: P for presentation mode
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'p' || e.key === 'P') {
-        if (!e.target.hasAttribute('contenteditable')) {
-            togglePresentationMode();
-        }
-    }
-});
-
-// Show controls on mouse move in presentation mode
-let hideControlsTimeout;
 document.addEventListener('mousemove', () => {
     if (presentationMode) {
-        const navControls = document.querySelector('.nav-controls');
-        const exportBtn = document.querySelector('.export-btn');
-        
-        navControls.style.opacity = '1';
-        exportBtn.style.opacity = '1';
-        document.body.style.cursor = 'default';
-        
+        document.body.classList.remove('presenting');
         clearTimeout(hideControlsTimeout);
         hideControlsTimeout = setTimeout(() => {
-            navControls.style.opacity = '0';
-            exportBtn.style.opacity = '0';
-            document.body.style.cursor = 'none';
+            if (presentationMode) document.body.classList.add('presenting');
         }, 2000);
     }
 });
 
-console.log('🎯 SUNEE Pitch Deck loaded');
-console.log('Keyboard shortcuts:');
-console.log('  ← → : Navigate slides');
-console.log('  F   : Toggle fullscreen');
-console.log('  P   : Presentation mode');
-console.log('  Home/End : First/Last slide');
+console.log('%c▶ SUNEE Academic Deck loaded', 'color:#00d992;font-weight:bold');
+console.log('%c← → Navigate  |  F Fullscreen  |  P Present  |  Home/End Jump', 'color:#8b949e');

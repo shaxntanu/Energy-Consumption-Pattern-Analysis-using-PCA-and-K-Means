@@ -583,7 +583,7 @@ function ComposedChart({
                     textAnchor="end"
                     style={{ fill: isBaseline ? "var(--text)" : "var(--muted)" }}
                     fontSize={9.5}
-                    fontFamily='"IBM Plex Mono", ui-monospace, monospace'
+                    fontFamily=inherit
                   >
                     {leftTickFmt(tick)}
                   </text>
@@ -630,7 +630,7 @@ function ComposedChart({
                     textAnchor="start"
                     style={{ fill: "var(--muted)" }}
                     fontSize={9.5}
-                    fontFamily='"IBM Plex Mono", ui-monospace, monospace'
+                    fontFamily=inherit
                   >
                     {rightTickFmt(tick)}
                   </text>
@@ -683,7 +683,7 @@ function ComposedChart({
                   transform={rotation ? `rotate(${rotation} ${x} ${y})` : undefined}
                   style={{ fill: isSelected ? "var(--cyan)" : "var(--muted)" }}
                   fontSize={9.5}
-                  fontFamily='"IBM Plex Mono", ui-monospace, monospace'
+                  fontFamily=inherit
                   fontWeight={isSelected ? 700 : 400}
                 >
                   {row[xDataKey] ?? i}
