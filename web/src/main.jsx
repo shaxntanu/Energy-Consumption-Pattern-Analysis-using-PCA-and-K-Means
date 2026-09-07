@@ -3024,6 +3024,7 @@ function App() {
           <a href="#charts">Charts</a>
           <a href="#seasons">Seasons</a>
           <a href="#performance">Performance</a>
+          <a href="#sdg-impact">SDG Impact</a>
           <a href="#references">References</a>
           <a href="https://energy-consumption-pattern-vqrh.streamlit.app/" target="_blank" rel="noopener noreferrer">Simulator</a>
         </div>
@@ -3141,6 +3142,21 @@ function App() {
         <ScienceHighlights />
 
         <PerformanceSection />
+
+        // SDG Impact Section - Impact Beyond Clustering
+        <section className="band" id="sdg-impact">
+          <SectionHeader
+            eyebrow="Impact & Sustainable Development"
+            title="From data patterns to global goals"
+          >
+            This project contributes to the UN Sustainable Development Goals through its
+            methodology and outputs. The contribution hierarchy reflects how the
+            analytical pipeline connects to each goal: direct contributions from core
+            capabilities, supported goals through enabling features, and indirect
+            contributions through downstream applications.
+          </SectionHeader>
+          <SDGImpactSection />
+        </section>
 
         {/* DriftWall, the Matplotlib gallery presentation */}
         <section className="band" id="gallery">
@@ -3293,6 +3309,218 @@ class RootBoundary extends React.Component {
     }
     return this.props.children;
   }
+}
+
+// ---------------------------------------------------------------------------
+// SDG Impact Section: Visual contribution hierarchy
+// ---------------------------------------------------------------------------
+function SDGImpactSection() {
+  const sdgData = [
+    {
+      number: 7,
+      title: "Affordable and Clean Energy",
+      shortTitle: "Clean Energy",
+      classification: "Primary",
+      description: "Core contribution: data-driven energy management insights from load-shape clustering enable utilities to design efficient programs, reduce waste, and improve energy access.",
+      features: [
+        "Behavioral load-shape segmentation (4 clusters, ARI 0.81)",
+        "Seasonal shape/energy/phase analysis across 200 consumers",
+        "Peak/base load profiling for demand-side management",
+        "Longitudinal stability tracking (quarterly ARI mean 0.92)"
+      ],
+      color: "var(--cyan)",
+      bgColor: "rgba(72, 215, 194, 0.12)",
+      borderColor: "var(--cyan)",
+      icon: "⚡"
+    },
+    {
+      number: 9,
+      title: "Industry, Innovation and Infrastructure",
+      shortTitle: "Innovation",
+      classification: "Supported",
+      description: "Enabling contribution: ML analytics pipeline with explainable AI, interactive exploration tools, and production-grade infrastructure for utility-scale deployment.",
+      features: [
+        "PCA (10 components, 95% variance) + K-Means pipeline",
+        "SHAP-based explainability for cluster assignment",
+        "Hybrid Python/C++ engine with 50× speedup potential",
+        "Interactive web dashboard (Chart.js + React)"
+      ],
+      color: "var(--blue)",
+      bgColor: "rgba(108, 140, 255, 0.12)",
+      borderColor: "var(--blue)",
+      icon: "🔬"
+    },
+    {
+      number: 12,
+      title: "Responsible Consumption and Production",
+      shortTitle: "Responsible Consumption",
+      classification: "Supported",
+      description: "Enabling contribution: Peak/base load analysis reveals demand-shifting opportunities; cluster profiles support targeted efficiency programs without prescribing specific reductions.",
+      features: [
+        "Peak hour identification per cluster (20:00, 19:00, 07:00, 14:00)",
+        "Base-to-peak ratio analysis across 4 archetypes",
+        "Seasonal energy variation patterns (winter +35%, summer +28%)",
+        "Weekday/weekend behavioral differentiation"
+      ],
+      color: "var(--amber)",
+      bgColor: "rgba(242, 176, 75, 0.12)",
+      borderColor: "var(--amber)",
+      icon: "♻️"
+    },
+    {
+      number: 11,
+      title: "Sustainable Cities and Communities",
+      shortTitle: "Sustainable Cities",
+      classification: "Indirect",
+      description: "Downstream contribution: Population-level demand planning enabled by segmented load forecasts; utilities can model infrastructure needs at neighborhood scale.",
+      features: [
+        "Aggregate cluster shares for demand forecasting",
+        "Seasonal infrastructure stress modeling (shape/phase recovery r=0.68)",
+        "Scalable to 150M+ smart meter deployments",
+        "Integration-ready export for grid planning tools"
+      ],
+      color: "var(--violet)",
+      bgColor: "rgba(183, 140, 255, 0.12)",
+      borderColor: "var(--violet)",
+      icon: "🏙️"
+    },
+    {
+      number: 13,
+      title: "Climate Action",
+      shortTitle: "Climate Action",
+      classification: "Indirect",
+      description: "Downstream contribution: Potential efficiency and demand-management benefits through better program targeting; no direct carbon reduction claimed without deployment measurement.",
+      features: [
+        "Enables targeted demand-response program design",
+        "Supports load-shifting to lower-carbon generation periods",
+        "Infrastructure avoidance through improved planning",
+        "Measured outcomes require utility deployment data"
+      ],
+      color: "var(--rose)",
+      bgColor: "rgba(251, 113, 133, 0.12)",
+      borderColor: "var(--rose)",
+      icon: "🌍"
+    }
+  ];
+
+  return (
+    <div className="sdg-impact-section">
+      {/* Contribution Hierarchy Visualization */}
+      <div className="sdg-hierarchy">
+        <div className="hierarchy-header">
+          <h3>SDG Contribution Hierarchy</h3>
+          <p className="hierarchy-note">
+            Primary → Supported → Indirect. Arrow direction shows contribution flow from core capabilities to downstream outcomes.
+          </p>
+        </div>
+        <div className="hierarchy-flow">
+          {/* Primary */}
+          <div className="hierarchy-node primary">
+            <div className="node-badge">PRIMARY</div>
+            <div className="node-content">
+              <SDGNodeCard sdg={sdgData[0]} />
+            </div>
+          </div>
+
+          {/* Arrow down to supported */}
+          <div className="hierarchy-arrow vertical" />
+
+          {/* Supported row */}
+          <div className="hierarchy-row supported-row">
+            <div className="hierarchy-node supported">
+              <div className="node-badge">SUPPORTED</div>
+              <div className="node-content">
+                <SDGNodeCard sdg={sdgData[1]} />
+              </div>
+            </div>
+            <div className="hierarchy-arrow horizontal" />
+            <div className="hierarchy-node supported">
+              <div className="node-badge">SUPPORTED</div>
+              <div className="node-content">
+                <SDGNodeCard sdg={sdgData[2]} />
+              </div>
+            </div>
+          </div>
+
+          {/* Arrow down to indirect */}
+          <div className="hierarchy-arrow vertical" />
+
+          {/* Indirect row */}
+          <div className="hierarchy-row indirect-row">
+            <div className="hierarchy-node indirect">
+              <div className="node-badge">INDIRECT</div>
+              <div className="node-content">
+                <SDGNodeCard sdg={sdgData[3]} />
+              </div>
+            </div>
+            <div className="hierarchy-arrow horizontal" />
+            <div className="hierarchy-node indirect">
+              <div className="node-badge">INDIRECT</div>
+              <div className="node-content">
+                <SDGNodeCard sdg={sdgData[4]} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Cards */}
+      <div className="sdg-detail-grid">
+        {sdgData.map((sdg) => (
+          <article key={sdg.number} className="sdg-detail-card" style={{
+            "--sdg-color": sdg.color,
+            "--sdg-bg": sdg.bgColor,
+            "--sdg-border": sdg.borderColor
+          }}>
+            <div className="sdg-card-header">
+              <span className="sdg-icon">{sdg.icon}</span>
+              <div className="sdg-title-row">
+                <span className="sdg-number">SDG {sdg.number}</span>
+                <span className="sdg-title">{sdg.shortTitle}</span>
+              </div>
+              <span className={`sdg-classification ${sdg.classification.toLowerCase()}`}>
+                {sdg.classification}
+              </span>
+            </div>
+            <p className="sdg-description">{sdg.description}</p>
+            <ul className="sdg-features">
+              {sdg.features.map((feature, idx) => (
+                <li key={idx}>
+                  <span className="feature-bullet" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      {/* Disclaimer */}
+      <div className="sdg-disclaimer">
+        <p>
+          <strong>Accuracy note:</strong> Classifications follow UN SDG target definitions. "Primary" means the project's core output
+          directly addresses specific SDG targets. "Supported" means the project provides enabling capabilities. "Indirect" means
+          potential downstream benefits that require deployment and measurement by adopting organizations. No direct energy savings,
+          carbon reduction, or infrastructure avoidance claims are made without empirical deployment evidence.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Reusable SDG node card for hierarchy visualization
+function SDGNodeCard({ sdg }) {
+  return (
+    <div className="sdg-node-card" style={{
+      "--sdg-color": sdg.color,
+      "--sdg-bg": sdg.bgColor,
+      "--sdg-border": sdg.borderColor
+    }}>
+      <div className="node-icon">{sdg.icon}</div>
+      <div className="node-sdg-label">SDG {sdg.number}</div>
+      <div className="node-sdg-title">{sdg.shortTitle}</div>
+    </div>
+  );
 }
 
 // Optional mascot (Sunee). Setting this to false removes the companion from

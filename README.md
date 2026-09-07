@@ -12,7 +12,29 @@
 
 ![Energy Consumption Pattern Analysis](public/Energy_Consumption_Pattern_Analysis.png)
 
-| Item | Detail |
+### 📊 Dark Mode Visualizations
+
+Premium dark-themed visualizations optimized for presentations are available in [`dark_mode_plots/`](dark_mode_plots/). All 45+ plots feature:
+- High-contrast neon color palette on dark backgrounds
+- Optimized for projection and slide decks
+- 300 DPI resolution for print quality
+- Consistent visual language across all charts
+
+**Main Visualizations:** [`dark_mode_plots/figures/`](dark_mode_plots/figures/) - EDA, PCA, Clustering, Validation, Studies  
+**Ablation Studies:** [`dark_mode_plots/ablation/`](dark_mode_plots/ablation/) - Feature-set comparisons (scale, shape, summary, behavioral, combined)
+
+<details>
+<summary><b>View Sample Dark Mode Plots</b></summary>
+
+| Analysis Category | Dark Mode Preview |
+|------------------|-------------------|
+| **Clustering** | ![Elbow Curve](dark_mode_plots/figures/elbow_curve.png) |
+| **PCA** | ![Explained Variance](dark_mode_plots/figures/explained_variance.png) |
+| **Patterns** | ![Hourly Patterns](dark_mode_plots/figures/hourly_patterns.png) |
+
+</details>
+
+---
 |------|--------|
 | Reference run | Config **`99c7a6631340d301`**, seed **42**, **200 consumers × 365 days** (Jan-Dec 2024). This is the flagship year. Its numbers ship in `web/public/data/*.json` and are what the deployed Vercel explorer renders. Every table in this README that says "flagship" quotes that audited contract. |
 | Current on-disk outputs | The last executed pipeline run is the **365-day flagship** (config `99c7a6631340d301`, 1,752,000 records, K = 4). `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` describe that window (generated 2026-09-04). The ablation and seed-robustness studies describe their own documented windows. The web contract is exported once and not re-read at deploy time. |
@@ -646,7 +668,30 @@ The extended script is gated on persisted data. On the current on-disk flagship 
 | Package versions | As in section 4, pinned in `requirements.txt`, recorded verbatim in `analysis_metadata.json`. |
 | Artifact contract | `contract_version 1.0.0`, append-only, typed, stable keys. Vercel reads only `web/public/data/*.json`. |
 
-### 22.5 Limitations: what this run does not claim
+### 22.5 UN Sustainable Development Goals (SDG) Contribution
+
+This project contributes to the UN SDGs through its analytical pipeline. The contribution hierarchy follows UN target definitions:
+
+| Tier | SDG | Classification | Core Contribution |
+|------|-----|----------------|-------------------|
+| **Primary** | **SDG 7** — Affordable and Clean Energy | Primary | Load-shape clustering enables data-driven energy management, program design, and improved energy access |
+| **Supported** | **SDG 9** — Industry, Innovation and Infrastructure | Supported | ML analytics pipeline with explainable AI, interactive exploration, and production-grade infrastructure |
+| **Supported** | **SDG 12** — Responsible Consumption and Production | Supported | Peak/base load analysis reveals demand-shifting opportunities; cluster profiles support targeted efficiency programs |
+| **Indirect** | **SDG 11** — Sustainable Cities and Communities | Indirect | Population-level demand planning via segmented load forecasts; neighborhood-scale infrastructure modeling |
+| **Indirect** | **SDG 13** — Climate Action | Indirect | Enables targeted demand-response design; potential efficiency benefits require deployment measurement |
+
+**Evidence backing each tier:**
+- **SDG 7 (Primary):** 4 clusters, ARI 0.81 vs hidden archetypes; seasonal shape/energy/phase analysis across 200 consumers; longitudinal quarterly ARI mean 0.92
+- **SDG 9 (Supported):** PCA (10 components, 95% variance) + K-Means pipeline; SHAP explainability; hybrid Python/C++ engine (50× speedup); interactive Chart.js + React dashboard
+- **SDG 12 (Supported):** Peak hour identification per cluster (20:00, 19:00, 07:00, 14:00); base-to-peak ratio analysis; seasonal energy variation (winter +35%, summer +28%); weekday/weekend differentiation
+- **SDG 11 (Indirect):** Aggregate cluster shares for demand forecasting; seasonal infrastructure stress modeling (r=0.68 phase recovery); scalable to 150M+ meters; integration-ready export
+- **SDG 13 (Indirect):** Enables demand-response program design; supports load-shifting to lower-carbon generation; infrastructure avoidance through improved planning; measured outcomes require utility deployment data
+
+> **Accuracy note:** Classifications follow UN SDG target definitions. "Primary" means the project's core output directly addresses specific SDG targets. "Supported" means the project provides enabling capabilities. "Indirect" means potential downstream benefits that require deployment and measurement by adopting organizations. No direct energy savings, carbon reduction, or infrastructure avoidance claims are made without empirical deployment evidence.
+
+The SDG contribution is visualized in the [Vercel interactive explorer](https://energy-consumption-pattern.vercel.app) (SDG Impact section) and the [SUNEE pitch deck](sunee-pitch-deck/) (slides 13–14).
+
+### 22.6 Limitations: what this run does not claim
 
 - **Short windows cannot do longitudinal or seasonal work.** A 30-day panel is one January. `seasonal: available: false` and `longitudinal: available: false` are correct, not missing. The 365-day results in sections 11-12 come from the flagship web contract.
 - **Internal indices under-counted real groups on the 30-day window.** The rule chose K = 3 while recovery peaked at K = 4. On the 365-day flagship the same rule lands cleanly on K = 4 (ARI 0.81). On real data such a gap is undetectable, a stated limit of unsupervised clustering.
@@ -654,7 +699,7 @@ The extended script is gated on persisted data. On the current on-disk flagship 
 - **SHAP is post-hoc and surrogate-led.** `cv_balanced_accuracy` is an honest ceiling for how well the surrogate tracks the clusters, not a claim about the clusters themselves.
 - **The real-world pathway is not yet executed in this repo.** The explorer's real-world card ships the shared codebase's documented demo. `py run_module.py run_realworld -- --demo` reproduces it locally.
 
-### 22.6 Future work
+### 22.7 Future work
 
 - Longer, heterogeneous synthetic horizons and a broader archetype library to tighten the seasonal amplitude and phase recovery bounds.
 - Real-meter validation on a full-year panel (≥ 180 days) to populate the longitudinal lane and stress-test the generic adapter.
