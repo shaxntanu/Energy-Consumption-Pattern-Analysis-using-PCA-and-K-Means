@@ -392,7 +392,7 @@
         <h1 class="slide-title">51 correlated numbers collapse into 10 that matter.</h1>
         <div class="content-grid cols-1-2">
             <div>
-                <div class="chart-frame"><img src="../dark_mode_plots/figures/component_loadings.png" alt="PCA component loadings heatmap"></div>
+                <div class="chart-frame"><img src="dark_mode_plots/figures/component_loadings.png" alt="PCA component loadings heatmap"></div>
                 <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Loadings heatmap (PC1–PC10). Cyan labels mark hourly and share features; the heat encodes correlation of each feature with each component.</p>
             </div>
             <div class="content-card">
@@ -422,7 +422,7 @@
         <h1 class="slide-title">Ten components hold 95.05 percent of the variance.</h1>
         <div class="content-grid cols-1-2">
             <div>
-                <div class="chart-frame"><img src="../dark_mode_plots/figures/explained_variance.png" alt="Explained variance by component with 95 percent threshold"></div>
+                <div class="chart-frame"><img src="dark_mode_plots/figures/explained_variance.png" alt="Explained variance by component with 95 percent threshold"></div>
             </div>
             <div class="content-card">
                 <table class="data-table" style="font-size: 15px;">
@@ -546,7 +546,7 @@
         <p class="slide-label">03 — Method · choose</p>
         <h1 class="slide-title">Silhouette peaks at K = 5; the rule says K = 4.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/k_selection_metrics.png" alt="K selection metrics: silhouette, Calinski Harabasz, Davies Bouldin, composite by K"></div>
+            <div class="chart-frame"><img src="dark_mode_plots/figures/k_selection_metrics.png" alt="K selection metrics: silhouette, Calinski Harabasz, Davies Bouldin, composite by K"></div>
             <div class="content-card">
                 <table class="data-table" style="font-size: 15px;">
                     <thead><tr><th>K</th><th>Silhouette</th><th>CH</th><th>DB</th><th>Composite</th></tr></thead>
@@ -598,7 +598,7 @@
                 <p class="cluster-stat">Largest group; weekend heavy</p>
             </div>
         </div>
-        <div class="chart-frame"><img src="../dark_mode_plots/figures/hourly_patterns.png" alt="24-hour normalized load shapes for the four clusters with day-part bands"></div>
+        <div class="chart-frame"><img src="dark_mode_plots/figures/hourly_patterns.png" alt="24-hour normalized load shapes for the four clusters with day-part bands"></div>
         <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Day-part bands: night (indigo) · morning (cyan) · afternoon (green) · evening (amber). Each curve is the cluster mean of the normalized 24-hour profile.</p>
         <p class="source">Source: web/public/data/profiles.json (cluster_profiles + cluster_load_shapes) · RESULTS.md §4 — sizes 39 / 52 / 47 / 62</p>
     </div>
@@ -611,8 +611,8 @@
         <p class="slide-label">04 — Results · recovery</p>
         <h1 class="slide-title">Recovery peaks exactly where the rule landed.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/archetype_recovery.png" alt="ARI and NMI vs K, showing peak recovery at K = 4"></div>
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/archetype_crosstab.png" alt="Crosstab of recovered clusters vs hidden archetypes at K = 4"></div>
+            <div class="chart-frame"><img src="dark_mode_plots/figures/archetype_recovery.png" alt="ARI and NMI vs K, showing peak recovery at K = 4"></div>
+            <div class="chart-frame"><img src="dark_mode_plots/figures/archetype_crosstab.png" alt="Crosstab of recovered clusters vs hidden archetypes at K = 4"></div>
         </div>
         <div class="content-grid cols-2" style="margin-top: var(--sp-3);">
             <div class="content-card">
@@ -635,7 +635,7 @@
         <p class="slide-label">04 — Results · explanation</p>
         <h1 class="slide-title">SHAP says which hours separate the groups.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/shap_cluster_importance.png" alt="SHAP feature importance per cluster"></div>
+            <div class="chart-frame"><img src="dark_mode_plots/figures/shap_cluster_importance.png" alt="SHAP feature importance per cluster"></div>
             <div class="content-card">
                 <h3>Top global features (mean |SHAP|)</h3>
                 <table class="data-table" style="font-size: 15px;">
@@ -664,8 +664,8 @@
         <p class="slide-label">04 — Results · seasons</p>
         <h1 class="slide-title">A 25 percent seasonal swing, the same four groups underneath.</h1>
         <div class="two-figs">
-            <div class="chart-frame" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_mean_shape_by_season.png" alt="Mean 24-hour shape per season"></div>
-            <div class="chart-frame" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_daily_energy_and_peak_hour.png" alt="Daily energy and peak hour by season"></div>
+            <div class="chart-frame" style="flex:1"><img src="dark_mode_plots/figures/seasonal_mean_shape_by_season.png" alt="Mean 24-hour shape per season"></div>
+            <div class="chart-frame" style="flex:1"><img src="dark_mode_plots/figures/seasonal_daily_energy_and_peak_hour.png" alt="Daily energy and peak hour by season"></div>
         </div>
         <div class="stats-row" style="margin-top: var(--sp-3);">
             <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.202</div><div class="stat-label">Amplitude estimate (injected 0.25)</div></div>
@@ -685,7 +685,7 @@
         <p class="slide-label">04 — Results · stability over time</p>
         <h1 class="slide-title">Mean agreement 0.88 across four quarters.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/longitudinal_cluster_stability.png" alt="Longitudinal cluster stability across quarterly windows"></div>
+            <div class="chart-frame"><img src="dark_mode_plots/figures/longitudinal_cluster_stability.png" alt="Longitudinal cluster stability across quarterly windows"></div>
             <div class="content-card">
                 <h3>Quarterly re-runs vs the full-year partition</h3>
                 <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-bottom: var(--sp-2);">Each quarter re-runs scaling, PCA, and K selection independently. ARI is permutation-invariant.</p>
@@ -712,8 +712,8 @@
         <p class="slide-label">04 — Results · honest read</p>
         <h1 class="slide-title">The top two feature sets are statistically indistinguishable.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/ablation_comparison.png" alt="Ablation: ARI by feature set"></div>
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/seed_robustness.png" alt="Seed robustness: stability ARI distribution"></div>
+            <div class="chart-frame"><img src="dark_mode_plots/figures/ablation_comparison.png" alt="Ablation: ARI by feature set"></div>
+            <div class="chart-frame"><img src="dark_mode_plots/figures/seed_robustness.png" alt="Seed robustness: stability ARI distribution"></div>
         </div>
         <div class="info-box">
             <p>The chart shows a visual gap between the best and second-best feature sets. The test says the gap is not significant — behavioural vs shape-only are within error. Calling the visual winner a win would overread the data.</p>
