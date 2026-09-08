@@ -64,12 +64,25 @@ Loadings are interpreted descriptively only; signs are not causal.
 
 ## K-Means
 
+<<<<<<< Updated upstream
 - Evaluate **K = 2…10**.
 - Metrics per K: inertia, silhouette, Calinski-Harabasz, Davies-Bouldin.
 - Selection: multi-metric top-3 vote consensus, with **no hard-coded 3 to 6 preference**.
 - Stability: multi-seed Adjusted Rand Index when enabled.
+=======
+Candidate **K = 2…10**. For each K the pipeline records inertia, silhouette, Calinski-Harabasz, Davies-Bouldin, and stability across random restarts. The selection rule is fixed in advance and never sees the hidden archetype labels:
+
+1. Discard any K whose smallest cluster holds less than 5% of consumers (`MIN_CLUSTER_SHARE = 0.05`) — isolating a handful of outliers is not a segmentation.
+2. Discard any K whose mean pairwise Adjusted Rand Index across restarts falls below 0.60 (`MIN_STABILITY_ARI = 0.60`) — an unstable partition is not a finding.
+3. Combine silhouette, Calinski-Harabasz and Davies-Bouldin (the last negated, so lower is better) into one composite by min-max normalizing each across the surviving candidates.
+4. Among candidates within 0.05 of the best composite (`SCORE_TOLERANCE`), take the smallest K, so two indistinguishable solutions resolve to the simpler one.
+
+If every candidate fails a filter, the filter is relaxed and the relaxation is logged, so a weak result is reported rather than silently invented. There is **no** preference for any particular K. The inertia elbow is computed and reported for comparison only; it does not drive the choice.
+
+- On the shipped run this selects **K = 3** (the elbow suggests 4; K in 6…10 are rejected for leaving a sub-5% cluster). See `outputs/reports/analysis_summary.md`.
+>>>>>>> Stashed changes
 - Persist the exact fitted `KMeans` used for all downstream numbers.
-- K→metric display uses **dictionary lookup** (`silhouette_by_k[k]`), never `scores[k-2]`.
+- K-to-metric display uses **dictionary lookup** (`silhouette_by_k[k]`), never `scores[k-2]`.
 
 ## Profiling & recommendations
 
@@ -89,10 +102,14 @@ One `AnalysisResults` object from `EnergyAnalysis`. Sidebar parameter changes re
 
 ## Ablation
 
-| Exp | Features | Purpose |
-|-----|----------|---------|
-| A | Scale | Magnitude-dominated baseline |
-| B | Behavioral | Primary scientific experiment |
-| C | Combined | Interaction check |
+Five feature sets are run on the same data, the same seed and the same K-selection rule, so the only thing that varies is which columns go in:
 
-Higher silhouette on scale does **not** override the behavioral objective; it demonstrates why feature choice changes the analytical question.
+| Arm | Features | Count | Purpose |
+|-----|----------|-------|---------|
+| scale | magnitude summaries | 7 | Magnitude-dominated control |
+| shape | normalized 24-hour profile only | 24 | Timing alone |
+| summary | scalars derived from the profile | 27 | Timing without the raw profile |
+| behavioral | shape + summary (the shipped set) | 51 | Primary scientific experiment |
+| combined | behaviour + magnitude | 58 | Interaction check |
+
+Higher silhouette on scale does **not** override the behavioral objective. The scale arm scores best on silhouette (0.52) yet its agreement with the hidden archetypes is zero (ARI -0.004) — exactly the case the rule was written to resist. On a single draw the rule can land on `shape`; the feature set is fixed from a 20-dataset seed-robustness study that selects `behavioral` on the pooled evidence. See `outputs/reports/ablation_study_report.md` and `outputs/reports/seed_robustness_report.md`.

@@ -36,12 +36,47 @@ Premium dark-themed visualizations optimized for presentations are available in 
 </details>
 
 ---
+<<<<<<< Updated upstream
 |------|--------|
 | Reference run | Config **`99c7a6631340d301`**, seed **42**, **200 consumers × 365 days** (Jan-Dec 2024). This is the flagship year. Its numbers ship in `web/public/data/*.json` and are what the deployed Vercel explorer renders. Every table in this README that says "flagship" quotes that audited contract. |
 | Current on-disk outputs | The last executed pipeline run is the **365-day flagship** (config `99c7a6631340d301`, 1,752,000 records, K = 4). `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` describe that window (generated 2026-09-04). The ablation and seed-robustness studies describe their own documented windows. The web contract is exported once and not re-read at deploy time. |
 | Explorer | The [Vercel interactive explorer](https://energy-consumption-pattern.vercel.app) reads `web/public/data/*.json` only. No sklearn runs in the browser. |
 | Simulator | Streamlit (`streamlit_app.py`), with 16 pages in 4 groups, a horizon control (30 / 90 / 180 / 365 days), and honest `available: false` handling for steps a short window cannot run. |
 | Pipeline | A single deterministic flow: season → generate → preprocess → 51 behavioural features → StandardScaler → PCA (95%) → K-Means (evidence-based K) → explainability → profile + validate → seasonal + longitudinal → export artifacts. |
+=======
+
+## Results at a glance
+
+Default offline run (behavioral features, seed 42, config hash `6dff8faaa470d418`):
+
+| Item | Value |
+|------|--------|
+| Consumers / days | 200 / 30 (hourly), 144,000 records |
+| Modeling features | 51 behavioral |
+| PCA components | 14 (95% target; 0.9526 cumulative variance retained) |
+| Selected K | 3 |
+| Silhouette at K=3 | 0.3124 |
+| Stability (mean pairwise ARI over restarts) | 0.988 +/- 0.018 |
+| Cluster sizes | 94 / 57 / 49 |
+| Archetype recovery (ARI at K=3) | 0.614 |
+
+| Cluster | Name | Size | Peak hour | Peak-to-avg | CV |
+|---------|------|------|-----------|-------------|-----|
+| 0 | Midday-Peaking | 94 (47.0%) | 13:00 | 5.88 | 0.57 |
+| 1 | Flat All-Day | 57 (28.5%) | near-flat (nominal 19:00) | 3.52 | 0.27 |
+| 2 | Evening-Peaking | 49 (24.5%) | 20:00 | 7.08 | 0.67 |
+
+The three groups are timing shapes, not sizes. Midday-Peaking carries more of its day
+in the afternoon (share 0.33 vs population 0.29); Flat All-Day is the level curve (CV 0.27
+against 0.51, and its night share climbs to 0.21 vs 0.16); Evening-Peaking loads the
+evening (share 0.38 vs 0.29) and is the spikiest.
+
+Separation is modest and stated as such: a silhouette of 0.31 means the clusters touch at
+their edges rather than sitting far apart. What is strong is stability - the same grouping
+reappears across random restarts (ARI 0.988). Both are true at once, and the dashboard
+reports the awkward number as plainly as the flattering one. All figures below are from
+this run; the authoritative record is [`outputs/reports/analysis_summary.md`](outputs/reports/analysis_summary.md).
+>>>>>>> Stashed changes
 
 ---
 
@@ -594,8 +629,51 @@ py run_module.py export_artifacts
 # interactive simulator (16 pages; http://localhost:8501)
 py -m streamlit run streamlit_app.py
 
+<<<<<<< Updated upstream
 # Vercel web app (Vite dev server; build with `npm run build` in web/)
 npm run dev --prefix web
+=======
+Dashboard: `http://localhost:8501`
+
+Pages: Overview, How it works, The data, Features, Principal components, Choosing K, The clusters, Stability, Validation, Insights, Research, Limitations. Every number the dashboard shows comes from a single `AnalysisResults` object; in-session parameter changes run in a private temp directory and never overwrite the committed artifacts.
+
+### Hosting
+
+**Vercel cannot run this dashboard.** Vercel Python expects a serverless `app` / `handler` (Flask or FastAPI). Streamlit is a long-running server. If the GitHub repo is connected to Vercel, it now deploys a static landing page from `public/` instead of failing on `app/app.py`.
+
+To host the interactive app:
+
+1. [Streamlit Community Cloud](https://share.streamlit.io/): point at `streamlit_app.py`.
+2. Render: `render.yaml` in this repo.
+3. Docker: `docker build -t energy-pca . && docker run -p 8501:8501 energy-pca`
+
+---
+
+## Project structure
+
+```
+├── streamlit_app.py           # Streamlit dashboard
+├── public/                    # Static landing page for Vercel
+├── vercel.json                # Vercel: static site, not Python functions
+├── src/
+│   ├── data_loader.py         # Archetype synthetic generator
+│   ├── preprocessing.py       # Panel-aware cleaning
+│   ├── feature_engineering.py # Behavioral / scale / combined sets
+│   ├── pca_analysis.py        # PCA with variance threshold
+│   ├── clustering.py          # Multi-metric K + stability
+│   ├── cluster_profiling.py   # Profiles and names
+│   ├── recommendation_engine.py
+│   ├── energy_analysis.py     # End-to-end orchestrator
+│   ├── run_ablation_study.py
+│   └── validate_dataset.py
+├── tests/
+├── models/                    # Scaler, PCA, K-Means, metadata
+├── outputs/{figures,metrics,reports}/
+├── baseline/                  # Frozen pre-fix artifacts
+├── docs/
+├── audit_report.md
+└── requirements.txt
+>>>>>>> Stashed changes
 ```
 
 ---
