@@ -1,4 +1,4 @@
-# Design system — Energy Consumption Pattern Analysis deck
+# Design system - Energy Consumption Pattern Analysis deck
 
 A 20-slide, 1920×1080 conference deck for `presentation/`. It reads like a thesis
 defense or a conference talk about this project, not like a page a website
@@ -8,9 +8,9 @@ generator produced. This file is the contract; every rule below is enforced in
 The deck is the third surface of one design language. The other two already
 exist in this repo:
 
-- `src/dashboard_ui.py` — the Streamlit dashboard (MIDNIGHT canvas, CYAN/GREEN/
+- `src/dashboard_ui.py` - the Streamlit dashboard (MIDNIGHT canvas, CYAN/GREEN/
   AMBER/INDIGO accents, four-band day-part shading, distinct-hue cluster palette).
-- `web/` — the Vercel app (`web/public/data/*.json` contract files, `dark_mode_plots`).
+- `web/` - the Vercel app (`web/public/data/*.json` contract files, `dark_mode_plots`).
 
 The deck keeps its own cinematic black-canvas, large-serif-display instinct
 (it already reads like a keynote), but borrows the dashboard's accent hues, its
@@ -54,7 +54,7 @@ the first four, in order, for clusters 0–3:
 | 2 | VIOLET | `#B085F5` |
 | 3 | GREEN | `#4FD1A5` |
 
-Every occurrence of a cluster hue carries its name as a label — never color
+Every occurrence of a cluster hue carries its name as a label - never color
 alone. (Rule: *never color alone*.)
 
 ### 1.2 Day-part bands (reused motif)
@@ -81,7 +81,7 @@ Surface fills are flat. No gradients, no box-shadows, no inner glows.
 - Panel surface: `var(--panel)` fill, `1px solid var(--line)` border,
   radius `6px` (matching the diagram-node radius in §4).
 - Emphasis card: `color-mix(in srgb, var(--accent) 11%, var(--panel-hi))` fill
-  with a `3px` top border in the accent — the same recipe as the dashboard's
+  with a `3px` top border in the accent - the same recipe as the dashboard's
   `arch-card`. Used for cluster cards and other genuinely-emphasized elements
   only; not for every card.
 - Containers that are purely structural (a table wrapper, a figure frame) use a
@@ -125,7 +125,7 @@ Tiers, with size / weight / line-height / letter-spacing. Body floor is 18px.
 - **No italics.**
 - **No single-word accent** inside a headline (no one word italic, bold, or a
   different color to "pop").
-- **No middle-dot meta strings** (`A · B · C`), **no `WORD — fragment` labels**.
+- **No middle-dot meta strings** (`A · B · C`), **no `WORD - fragment` labels**.
   When a slide needs a provenance line it is a plain mono sentence: `Source:
   web/public/data/clustering.json · config 99c7a6631340d301`.
 - **Line length < 80 chars** for body copy (serif display may exceed).
@@ -136,7 +136,7 @@ Tiers, with size / weight / line-height / letter-spacing. Body floor is 18px.
 ## 3. Layout
 
 - Slides are fixed 1920×1080 (`--slide-width` / `--slide-height`), content
-  column max 1560px, side padding 80px. Left-aligned throughout — this is a
+  column max 1560px, side padding 80px. Left-aligned throughout - this is a
   conference deck, not a landing page.
 - One idea per slide. The headline is a complete sentence that states the
   slide's conclusion, not a topic label.
@@ -155,7 +155,7 @@ Tiers, with size / weight / line-height / letter-spacing. Body floor is 18px.
 
 ## 4. Diagrams (draw.io style, inline SVG)
 
-Exactly three diagrams ship in the deck, each redrawn as inline SVG — never
+Exactly three diagrams ship in the deck, each redrawn as inline SVG - never
 screenshots, never Mermaid renders. Spec:
 
 - Nodes 160×64 on an 8px grid; rounded rect, corner radius 6px; stroke 1.5px;
@@ -201,7 +201,7 @@ The three diagrams:
   (with a label, never color alone).
 - Hour-of-day charts get the day-part bands from §1.2.
 - Any figure whose `docs/verification.md` status is not VALIDATED is marked
-  `pending` on the slide in a mono caption — never a plausible-looking number.
+  `pending` on the slide in a mono caption - never a plausible-looking number.
 
 ---
 
@@ -303,7 +303,7 @@ lists its headline, its non-text element(s), and its source contract.
     `outputs/reports/analysis_summary.md`.
 18. **05 · Same method, two apps, one optional native kernel.** Delivery table:
     Streamlit dashboard, Vercel web app, optional C++ engine (K-Means 6.45×,
-    PCA 0.29× on the wide set — reported honestly). Source:
+    PCA 0.29× on the wide set - reported honestly). Source:
     `web/public/data/benchmark.json`, README.
 19. **05 · A 30-day window already broke this rule once.** Limitations, told
     with Run 1: seasonal `available: false`, no longitudinal, ARI 0.585 vs

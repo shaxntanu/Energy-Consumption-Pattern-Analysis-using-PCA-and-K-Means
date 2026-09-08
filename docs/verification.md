@@ -34,21 +34,21 @@ energy_analysis` (default 30-day) is re-run in this repo.
 
 | Claim | Value | Verified |
 |---|---|---|
-| Config hash | `6896387297178841` | ✓ (archived run) |
-| Consumers / days / records | 200 / 30 / 144,000 | ✓ |
-| Window | `2024-01-01` → `2024-01-30` | ✓ |
-| Features into PCA | 51 | ✓ |
-| Components retained / cumulative variance | 14 / 0.9547 | ✓ |
-| Kaiser / scree-elbow counts | 8 / 6 | ✓ |
-| Selected K | 3 | ✓ |
-| Silhouette at K=3 | 0.3134 | ✓ |
-| Stability at K=3 (mean ARI / sd / agreement) | 0.9911 / 0.0080 / 0.997 | ✓ |
-| Cluster sizes | [55, 86, 59] | ✓ |
-| Cluster names | Flat All-Day / Midday-Peaking / Evening-Peaking | ✓ |
-| ARI / NMI at K=3 | 0.5852 / 0.6570 | ✓ |
-| Best recovery K / ARI | 4 / 0.8376 | ✓ |
-| Seasonal | `available: false` (`"no 'season' column with >= 2 distinct values"`) | ✓ |
-| Longitudinal | `available: false` (needs ≥ 180 days) | ✓ |
+| Config hash | `6896387297178841` |  (archived run) |
+| Consumers / days / records | 200 / 30 / 144,000 |  |
+| Window | `2024-01-01` → `2024-01-30` |  |
+| Features into PCA | 51 |  |
+| Components retained / cumulative variance | 14 / 0.9547 |  |
+| Kaiser / scree-elbow counts | 8 / 6 |  |
+| Selected K | 3 |  |
+| Silhouette at K=3 | 0.3134 |  |
+| Stability at K=3 (mean ARI / sd / agreement) | 0.9911 / 0.0080 / 0.997 |  |
+| Cluster sizes | [55, 86, 59] |  |
+| Cluster names | Flat All-Day / Midday-Peaking / Evening-Peaking |  |
+| ARI / NMI at K=3 | 0.5852 / 0.6570 |  |
+| Best recovery K / ARI | 4 / 0.8376 |  |
+| Seasonal | `available: false` (`"no 'season' column with >= 2 distinct values"`) |  |
+| Longitudinal | `available: false` (needs ≥ 180 days) |  |
 
 ## 3. 365-day flagship (config `99c7a6631340d301`, 200 consumers): VALIDATED via contract
 
@@ -137,14 +137,14 @@ Status **IMPLEMENTED**: run the command above to validate in this repo.
 
 | File under `web/public/data/` | Content | Verified against |
 |---|---|---|
-| `manifest.json` | contract_version 1.0.0, hash `99c7a6631340d301`, window, consumers, packages | `analysis_metadata.json` pattern ✓ |
-| `pca.json` | variance curve (10), criteria, top loadings per PC | `pca_results.csv`, `pca_loadings.csv`, `pca_metadata.json` ✓ |
-| `clustering.json` | sweep (9), stability (9), selection trace, selected K=4 | `clustering_metrics.csv`, `stability_results.csv`, `k_selection_trace.json` ✓ |
-| `profiles.json` | cluster profiles (4), load shapes (5 incl. population), baseline | `cluster_profiles.csv`, `cluster_load_shapes.csv`, `population_baseline.json` ✓ |
-| `validation.json` | recovery (9), crosstab (4×4), descriptive paragraph | `archetype_recovery.csv`, `archetype_crosstab.csv`, `validation_report.md` ✓ |
-| `seasonal.json` | `available: true`, amplitude 0.202, phase r 0.678, monthly/seasonal kWh | `seasonal_analysis_metrics.json` ✓ |
-| `longitudinal.json` | `available: true`, segment ARI [0.838, 0.892, 0.946, 0.851], mean 0.882 | `longitudinal_analysis_metrics.json` ✓ |
-| `explainability.json` | `available: true, method: "shap"`, cv 0.985, per-cluster drivers | exporter logic + `shap_importance.csv` ✓ |
+| `manifest.json` | contract_version 1.0.0, hash `99c7a6631340d301`, window, consumers, packages | `analysis_metadata.json` pattern  |
+| `pca.json` | variance curve (10), criteria, top loadings per PC | `pca_results.csv`, `pca_loadings.csv`, `pca_metadata.json`  |
+| `clustering.json` | sweep (9), stability (9), selection trace, selected K=4 | `clustering_metrics.csv`, `stability_results.csv`, `k_selection_trace.json`  |
+| `profiles.json` | cluster profiles (4), load shapes (5 incl. population), baseline | `cluster_profiles.csv`, `cluster_load_shapes.csv`, `population_baseline.json`  |
+| `validation.json` | recovery (9), crosstab (4×4), descriptive paragraph | `archetype_recovery.csv`, `archetype_crosstab.csv`, `validation_report.md`  |
+| `seasonal.json` | `available: true`, amplitude 0.202, phase r 0.678, monthly/seasonal kWh | `seasonal_analysis_metrics.json`  |
+| `longitudinal.json` | `available: true`, segment ARI [0.838, 0.892, 0.946, 0.851], mean 0.882 | `longitudinal_analysis_metrics.json`  |
+| `explainability.json` | `available: true, method: "shap"`, cv 0.985, per-cluster drivers | exporter logic + `shap_importance.csv`  |
 
 **Stale-artifact guard:** `export_artifacts.py` gates on `models/analysis_metadata.json`, so if the run metadata says a step was skipped (null), the contract emits `available: false` and never reads a stale metrics file. Regression guard: re-run `py run_module.py export_artifacts` after a short run and diff `web/public/data/seasonal.json` (must stay `available: false`).
 

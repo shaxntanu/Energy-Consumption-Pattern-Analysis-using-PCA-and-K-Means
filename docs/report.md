@@ -39,37 +39,37 @@ false` with a reason, in the code, in the reports, and in the web contract.
 
 ```
 Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
-├─ src/                            pipeline modules + dashboard helpers
-│  ├─ data_loader.py               synthetic generator; SeasonalConfig (Zephyr seam)
-│  ├─ preprocessing.py             PRE-PROCESSING (within-meter imputation)
-│  ├─ feature_engineering.py       behavioural, scale-invariant 51 features
-│  ├─ pca_analysis.py              scaling + PCA + loadings (weights vs r)
-│  ├─ clustering.py                evidence-based K selection
-│  ├─ validation.py                synthetic-branch NMI/ARI (controlled only)
-│  ├─ cluster_profiling.py         interpretation (24h shapes, period shares)
-│  ├─ recommendation_engine.py, eda.py
-│  ├─ energy_analysis.py           single source-of-truth pipeline (11 steps)
-│  ├─ seasonal_analysis.py         [NEW] Improvement 2
-│  ├─ longitudinal_analysis.py     [NEW] Improvement 1
-│  ├─ dataset_adapter.py           [NEW] Improvement 3 (UCI + generic CSV)
-│  ├─ realworld_ingest.py          [NEW] Improvement 3
-│  ├─ realworld_validate.py        [NEW] Improvement 3 (internal-only)
-│  ├─ run_realworld.py             [NEW] Improvement 3 orchestrator
-│  ├─ explainability.py            [NEW] SHAP / permutation fallback
-│  ├─ export_artifacts.py          [NEW] web/public/data contract exporter
-│  ├─ run_ablation_study.py        [NEW] feature-set ablation (5 arms)
-│  ├─ run_seed_robustness.py       [NEW] 20-dataset seed robustness
-│  └─ project_paths.py             anchor_to_project_root() + relative I/O
-├─ web/                            Vite 7 + React 19 explorer (carousel; reads analysisData.js)
-│  └─ public/data/                 artifact contract (8 JSON files) + CSV mirrors
-├─ outputs/                        reports/ · metrics/ · figures/ (audited trail)
-├─ models/                         analysis_metadata.json · pca_metadata.json · *.pkl
-├─ docs/                           report.md · verification.md · flow_diagram.md
-├─ presentation/                   HTML deck (index.html · src/script.js · src/styles/main.css)
-├─ streamlit_app.py + dashboard_*.py    interactive simulator (alt UI)
-├─ verify_compile.py · run_module.py · run_validation_battery.py   portable launchers
-├─ requirements.txt · Dockerfile · .gitignore · vercel.json
-└─ README.md                       (upgraded to the flagship project)
+ src/                            pipeline modules + dashboard helpers
+   data_loader.py               synthetic generator; SeasonalConfig (Zephyr seam)
+   preprocessing.py             PRE-PROCESSING (within-meter imputation)
+   feature_engineering.py       behavioural, scale-invariant 51 features
+   pca_analysis.py              scaling + PCA + loadings (weights vs r)
+   clustering.py                evidence-based K selection
+   validation.py                synthetic-branch NMI/ARI (controlled only)
+   cluster_profiling.py         interpretation (24h shapes, period shares)
+   recommendation_engine.py, eda.py
+   energy_analysis.py           single source-of-truth pipeline (11 steps)
+   seasonal_analysis.py         [NEW] Improvement 2
+   longitudinal_analysis.py     [NEW] Improvement 1
+   dataset_adapter.py           [NEW] Improvement 3 (UCI + generic CSV)
+   realworld_ingest.py          [NEW] Improvement 3
+   realworld_validate.py        [NEW] Improvement 3 (internal-only)
+   run_realworld.py             [NEW] Improvement 3 orchestrator
+   explainability.py            [NEW] SHAP / permutation fallback
+   export_artifacts.py          [NEW] web/public/data contract exporter
+   run_ablation_study.py        [NEW] feature-set ablation (5 arms)
+   run_seed_robustness.py       [NEW] 20-dataset seed robustness
+   project_paths.py             anchor_to_project_root() + relative I/O
+ web/                            Vite 7 + React 19 explorer (carousel; reads analysisData.js)
+   public/data/                 artifact contract (8 JSON files) + CSV mirrors
+ outputs/                        reports/ · metrics/ · figures/ (audited trail)
+ models/                         analysis_metadata.json · pca_metadata.json · *.pkl
+ docs/                           report.md · verification.md · flow_diagram.md
+ presentation/                   HTML deck (index.html · src/script.js · src/styles/main.css)
+ streamlit_app.py + dashboard_*.py    interactive simulator (alt UI)
+ verify_compile.py · run_module.py · run_validation_battery.py   portable launchers
+ requirements.txt · Dockerfile · .gitignore · vercel.json
+ README.md                       (upgraded to the flagship project)
 ```
 
 ---

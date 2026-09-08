@@ -89,22 +89,22 @@ claim about the clusters themselves.
 
 ```
 START
-  └─► DATA COLLECTION
-        ├─ ► Zephyr Station  (/api/weather + logging → month → season)
-        ├─ ► Synthetic data  (archetypes known)
-        └─ ► Real-world data (dataset_adapter → realworld_ingest; no ground truth)
-              └─► DATA VALIDATION (schema, duplicates, timestamps, within-meter imputation)
-                    └─► PRE-PROCESSING  (preprocess_pipeline: clean, impute, sort; drop archetype + seasonal_phase)
-                          └─► FEATURE ENGINEERING  (51 behavioural features, scale-invariant)
-                                └─► FEATURE SCALING  (StandardScaler)
-                                      └─► PCA  (variance threshold + loadings)
-                                            └─► K-MEANS  (evidence-based K)
-                                                  └─► EXPLAINABILITY (surrogate RF → SHAP / permutation → explainability.json)
-                                                        └─► MODEL EVALUATION
-                                                              ├─ synthetic branch ► NMI / ARI vs hidden archetype + silhouette/CH/DB + seed stability
-                                                              └─ real-world branch ► internal only (silhouette/CH/DB + seed + temporal stability)
-                                                                    └─► VISUALIZATION
-                                                                          └─► INTERPRETATION
-                                                                                └─► EXPORT (export_artifacts.py → web/public/data/*.json → Vercel)
-                                                                                      └─► END
+   DATA COLLECTION
+          Zephyr Station  (/api/weather + logging → month → season)
+          Synthetic data  (archetypes known)
+          Real-world data (dataset_adapter → realworld_ingest; no ground truth)
+               DATA VALIDATION (schema, duplicates, timestamps, within-meter imputation)
+                     PRE-PROCESSING  (preprocess_pipeline: clean, impute, sort; drop archetype + seasonal_phase)
+                           FEATURE ENGINEERING  (51 behavioural features, scale-invariant)
+                                 FEATURE SCALING  (StandardScaler)
+                                       PCA  (variance threshold + loadings)
+                                             K-MEANS  (evidence-based K)
+                                                   EXPLAINABILITY (surrogate RF → SHAP / permutation → explainability.json)
+                                                         MODEL EVALUATION
+                                                               synthetic branch  NMI / ARI vs hidden archetype + silhouette/CH/DB + seed stability
+                                                               real-world branch  internal only (silhouette/CH/DB + seed + temporal stability)
+                                                                     VISUALIZATION
+                                                                           INTERPRETATION
+                                                                                 EXPORT (export_artifacts.py → web/public/data/*.json → Vercel)
+                                                                                       END
 ```

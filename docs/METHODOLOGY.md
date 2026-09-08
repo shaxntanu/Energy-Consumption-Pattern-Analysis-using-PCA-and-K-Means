@@ -72,8 +72,8 @@ Loadings are interpreted descriptively only; signs are not causal.
 =======
 Candidate **K = 2…10**. For each K the pipeline records inertia, silhouette, Calinski-Harabasz, Davies-Bouldin, and stability across random restarts. The selection rule is fixed in advance and never sees the hidden archetype labels:
 
-1. Discard any K whose smallest cluster holds less than 5% of consumers (`MIN_CLUSTER_SHARE = 0.05`) — isolating a handful of outliers is not a segmentation.
-2. Discard any K whose mean pairwise Adjusted Rand Index across restarts falls below 0.60 (`MIN_STABILITY_ARI = 0.60`) — an unstable partition is not a finding.
+1. Discard any K whose smallest cluster holds less than 5% of consumers (`MIN_CLUSTER_SHARE = 0.05`) - isolating a handful of outliers is not a segmentation.
+2. Discard any K whose mean pairwise Adjusted Rand Index across restarts falls below 0.60 (`MIN_STABILITY_ARI = 0.60`) - an unstable partition is not a finding.
 3. Combine silhouette, Calinski-Harabasz and Davies-Bouldin (the last negated, so lower is better) into one composite by min-max normalizing each across the surviving candidates.
 4. Among candidates within 0.05 of the best composite (`SCORE_TOLERANCE`), take the smallest K, so two indistinguishable solutions resolve to the simpler one.
 
@@ -112,4 +112,4 @@ Five feature sets are run on the same data, the same seed and the same K-selecti
 | behavioral | shape + summary (the shipped set) | 51 | Primary scientific experiment |
 | combined | behaviour + magnitude | 58 | Interaction check |
 
-Higher silhouette on scale does **not** override the behavioral objective. The scale arm scores best on silhouette (0.52) yet its agreement with the hidden archetypes is zero (ARI -0.004) — exactly the case the rule was written to resist. On a single draw the rule can land on `shape`; the feature set is fixed from a 20-dataset seed-robustness study that selects `behavioral` on the pooled evidence. See `outputs/reports/ablation_study_report.md` and `outputs/reports/seed_robustness_report.md`.
+Higher silhouette on scale does **not** override the behavioral objective. The scale arm scores best on silhouette (0.52) yet its agreement with the hidden archetypes is zero (ARI -0.004) - exactly the case the rule was written to resist. On a single draw the rule can land on `shape`; the feature set is fixed from a 20-dataset seed-robustness study that selects `behavioral` on the pooled evidence. See `outputs/reports/ablation_study_report.md` and `outputs/reports/seed_robustness_report.md`.

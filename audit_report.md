@@ -1,4 +1,4 @@
-﻿# Phase 0 Audit Report
+# Phase 0 Audit Report
 
 ## Baseline Metrics Recorded
 

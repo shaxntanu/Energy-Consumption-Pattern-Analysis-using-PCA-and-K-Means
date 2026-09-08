@@ -95,40 +95,40 @@ GitHub and in the Streamlit app). In text form, the single deterministic flow is
 ```
 DATA COLLECTION (3 provenance seams: Zephyr weather API → season label,
                  synthetic generator → known archetypes, real-world adapter → no labels)
-        │
-        ▼
+        
+        
 DATA VALIDATION (schema, duplicates, timestamps, within-meter imputation)
-        │
-        ▼
+        
+        
 PRE-PROCESSING (dedupe, parse, impute, winsorize, sort; drop archetype + seasonal_phase)
-        │
-        ▼
+        
+        
 FEATURE ENGINEERING (51 behavioural features: 24-hour shape + 27 summaries)
-        │
-        ▼
+        
+        
 FEATURE SCALING (StandardScaler, fitted on consumers)
-        │
-        ▼
+        
+        
 PCA (95% cumulative variance → 10 components; Kaiser/scree reported for comparison)
-        │
-        ▼
+        
+        
 K-MEANS (sweep K = 2–10, composite rule + parsimony guard → K = 4)
-        │
-        ▼
+        
+        
 EXPLAINABILITY (surrogate random forest → SHAP TreeExplainer, or permutation fallback)
-        │
-        ▼
+        
+        
 PROFILING → RECOMMENDATIONS (in original units, evidence-based)
-        │
-        ▼
+        
+        
 MODEL EVALUATION (two branches)
-   ├─ synthetic: ARI/NMI vs hidden archetype + silhouette/CH/DB + seed stability
-   └─ real: internal metrics only + seed + temporal stability (never invented ARI)
-        │
-        ▼
+    synthetic: ARI/NMI vs hidden archetype + silhouette/CH/DB + seed stability
+    real: internal metrics only + seed + temporal stability (never invented ARI)
+        
+        
 VALIDATION RE-CHECK → SEASONAL ANALYSIS → LONGITUDINAL ANALYSIS
-        │
-        ▼
+        
+        
 EXPORT (export_artifacts.py → web/public/data/*.json → Vercel explorer)
 ```
 
@@ -457,7 +457,7 @@ independent check of the whole pipeline:
 |---|-----|-----|------------|
 | 2 | 0.288 | 0.457 | 0.294 |
 | 3 | 0.602 | 0.680 | 0.331 |
-| **4 ★** | **0.813** | **0.828** | 0.328 |
+| **4 ** | **0.813** | **0.828** | 0.328 |
 | 5 | 0.765 | 0.802 | **0.335** |
 | 6 | 0.753 | 0.782 | 0.324 |
 | 7 | 0.735 | 0.777 | 0.316 |
@@ -477,7 +477,7 @@ Recovery peaks exactly at the rule's choice, K = 4. The crosstab at K = 4:
 Diagonal dominance is near-complete; the small off-diagonal counts are exactly
 the sort of honest imperfection worth reporting. On the 30-day reference window
 (config `6896387297178841`) the same rule chose K = 3 with recovery ARI 0.61 and
-the weekend archetype scattered — on real data that gap would be undetectable,
+the weekend archetype scattered - on real data that gap would be undetectable,
 and the repo says so.
 
 ---
@@ -485,7 +485,7 @@ and the repo says so.
 ## 14. Longitudinal analysis (does the segmentation hold over time?)
 
 `src/longitudinal_analysis.py`, gated at `LONGITUDINAL_MIN_DAYS = 180`. The
-whole recipe — feature engineering, scaling, PCA, K selection — is re-fit
+whole recipe - feature engineering, scaling, PCA, K selection - is re-fit
 **inside each non-overlapping segment** of the same consumers, then segment
 labels are compared with the full-window labels by permutation-invariant ARI.
 
@@ -528,7 +528,7 @@ Flagship results (`web/public/data/seasonal.json`):
 | Pearson r, season-level estimate vs hidden phase (185 consumers with a phase) | **0.678** |
 | Peak-season label agreement | **0.885** |
 
-The amplitude estimate (0.202) is lower than the injected 0.25 — aggregation
+The amplitude estimate (0.202) is lower than the injected 0.25 - aggregation
 and noise damp the recovered signal, and the IQR shows the per-consumer spread.
 That gap is reported as is. A 30-day run returns `seasonal: {available: false}`
 ("no 'season' column with ≥ 2 distinct values").
@@ -554,7 +554,7 @@ rule selects each arm (`outputs/metrics/seed_robustness_*`, report in
 
 Exact paired permutation tests (`seed_robustness_tests.csv`, `method: exact`):
 **behavioral vs scale is highly significant** (raw p = 1.9×10⁻⁶, Holm-adjusted
-1.9×10⁻⁵) — magnitude alone carries essentially no information about the latent
+1.9×10⁻⁵) - magnitude alone carries essentially no information about the latent
 groups (its ARI ~ 0, and it still scores the highest silhouette, the trap the
 rule was written to avoid). **behavioral vs shape is not significant** (raw
 p = 0.123). The honest reading, stated in the report: behavioral has the best
@@ -567,7 +567,7 @@ shows the evidence instead.
 
 ## 17. Ablation study (does the feature engineering change the question?)
 
-`src/run_ablation_study.py` — 5 arms, identical seed, identical K rule, only
+`src/run_ablation_study.py` - 5 arms, identical seed, identical K rule, only
 the columns differ (`outputs/metrics/ablation_study_results.csv`,
 `outputs/reports/ablation_study_report.md`):
 
@@ -582,7 +582,7 @@ the columns differ (`outputs/metrics/ablation_study_results.csv`,
 What the study establishes: **the feature set changes the answer** (different K,
 different sizes, different sorting principle), and on this draw the arm serving
 the research question (shape) is *not* the one with the best internal score
-(scale) — the very case a silhouette-only pipeline would get wrong. It also
+(scale) - the very case a silhouette-only pipeline would get wrong. It also
 establishes nothing more: on single draws the same rule wanders (summary /
 behavioral / shape), which is why the shipped `feature_set` is fixed by the
 pooled 20-dataset study (section 16), not by this one.
@@ -601,8 +601,8 @@ tracks the clusters, not how "true" the clusters are.
 
 Flagship (`web/public/data/explainability.json`): method **"shap"**,
 `cv_balanced_accuracy` **0.9846** (README rounds to 0.985). Global mean-|SHAP|
-importance is led by the midday timing features — `hour_13_shape` (0.031),
-`harmonic_2_amplitude` (0.029), `hour_12_shape` (0.027) — the position of the
+importance is led by the midday timing features - `hour_13_shape` (0.031),
+`harmonic_2_amplitude` (0.029), `hour_12_shape` (0.027) - the position of the
 midday peak and the half-daily rhythm dominate on average across clusters.
 
 ---
@@ -621,10 +621,10 @@ to reproduce). The per-cluster driver summaries, as shipped in the artifact:
 | 2 (Evening-Peaking) | `hour_13_shape` 0.112, `harmonic_2_amplitude` 0.110, `hour_11_shape` 0.059 |
 | 3 (Evening-Peaking Weekend-Heavy) | `hour_13_shape` 0.049, `hour_12_shape` 0.049, `harmonic_2_amplitude` 0.042 |
 
-The drivers line up with the profile tables of section 13.1 — the flat group is
+The drivers line up with the profile tables of section 13.1 - the flat group is
 pulled apart by concentration and shape entropy, the evening spiker by the
 midday-hours contrast plus the half-daily `harmonic_2` rhythm, and the weekend
-group carries `weekend_ratio` inside its top ten (0.026) — which is the point
+group carries `weekend_ratio` inside its top ten (0.026) - which is the point
 of the surrogate design: explanation follows the clusters' actual separating
 logic.
 
@@ -636,7 +636,7 @@ When `shap` is not installed, the pipeline falls back to **one-vs-rest
 permutation importance** on the same surrogate: for each cluster, the surrogate
 is scored against that cluster's indicator, each feature is permuted, and the
 drop in balanced accuracy is the importance. The fallback is not a degraded
-afterthought — it is a tested lane with the same artifact contract (same JSON
+afterthought - it is a tested lane with the same artifact contract (same JSON
 keys, `method: "permutation_fallback"`), so a machine without SHAP produces the
 same dashboard, honestly labelled. SHAP's local-instance explanations are the
 only thing the fallback does not provide.
@@ -648,10 +648,10 @@ only thing the fallback does not provide.
 `src/recommendation_engine.py` derives recommendations from the profile tables
 in **original units** (the clustering space is never quoted). On the flagship it
 produced **11 recommendations** across the four clusters (table in
-`outputs/reports/analysis_summary.md`). They are correlational suggestions —
+`outputs/reports/analysis_summary.md`). They are correlational suggestions -
 e.g. the flat group and the midday/weekday group have room to shift load off-peak,
 the spiker group is the demand-response candidate, the weekend group's pattern
-is weekend-heavy — and the report explicitly states that **no savings claim is
+is weekend-heavy - and the report explicitly states that **no savings claim is
 made or implied**: the data is synthetic, and a recommendation is "the pattern
 suggests X", never "doing X saves Y%".
 
@@ -671,14 +671,14 @@ three functions (`cpp_engine/src/bindings.cpp`):
 
 `cpp_engine/benchmarks/bench_main.cpp` is a standalone pure-C++ benchmark (no
 Python involved). The Python side talks through `src/cpp_bridge.py`, which falls
-back to scikit-learn when the module is absent — the C++ engine is a
+back to scikit-learn when the module is absent - the C++ engine is a
 performance experiment, **never the scientific reference**. The requirement pin
 lives in `requirements-cpp.txt` (`pybind11>=2.12,<4`).
 
 One honesty note the repo keeps: `compile_info()` reports `cxx_standard:
 "199711"` (the MSVC default claimed by the binding), while the project
-documentation describes C++17 features. The artifact — what the compiler
-actually reported — is what the benchmark JSON quotes.
+documentation describes C++17 features. The artifact - what the compiler
+actually reported - is what the benchmark JSON quotes.
 
 ---
 
@@ -696,10 +696,10 @@ Per-kernel timings:
 | small (flagship 200×51) | 200×10 scores | 2.10 ms | 3.20 ms | 24.42 ms | **4.36 ms** |
 | medium (bootstrap 2000) | 2000×10 | 9.18 ms | 11.99 ms | 50.74 ms | **7.87 ms** |
 | large (bootstrap 20000) | 20000×10 | 47.04 ms | 105.67 ms | 52.08 ms | **41.98 ms** |
-| wide (2000×128 probe) | — | 50.73 ms | 174.07 ms | — | — |
+| wide (2000×128 probe) | - | 50.73 ms | 174.07 ms | - | - |
 
 Speedups: K-Means **5.60× / 6.45× / 1.24×** (small/medium/large). PCA is
-**slower in C++** (speedups 0.66 / 0.77 / 0.45 / 0.29) — on this small-scale
+**slower in C++** (speedups 0.66 / 0.77 / 0.45 / 0.29) - on this small-scale
 eigendecomposition the Python/BLAS path wins, and the report says so instead of
 cherry-picking.
 
@@ -717,7 +717,7 @@ End-to-end (30-day scratch benchmark, 200 consumers × 30 days, seed 42):
 **Python 6.999 s vs C++ 5.290 s → 1.32× overall**, identical labels (ARI 1.0),
 both engines choosing K = 2 with 14 PCA components at identical retained
 variance (0.9547). The cumulative lesson: K-Means (assignment-heavy) benefits
-from C++/OpenMP; PCA (eigendecomposition) does not at this scale — a
+from C++/OpenMP; PCA (eigendecomposition) does not at this scale - a
 nuanced, non-hype result.
 
 ---
@@ -733,13 +733,13 @@ The design's scalability story, all measured, none claimed:
   **20,000 consumers**; K-Means timing stays in the tens of milliseconds, and
   the C++ engine's OpenMP parallel assignment is where headroom lives
   (1.24–6.45× depending on size).
-- PCA on a 2000×128 wide probe runs in ~50 ms (Python) — the feature-width
+- PCA on a 2000×128 wide probe runs in ~50 ms (Python) - the feature-width
   regime is not the bottleneck either.
 - The real-world adapter ingests arbitrary panels and reports continuity
   accounting, so scale-up means fitting the same documented pipeline, not
   rewriting it.
 - Honest boundary: the two in-memory score plots are the only artifacts that
-  do not survive a run, and the k-sweep is executed per window — both are
+  do not survive a run, and the k-sweep is executed per window - both are
   documented rather than hidden.
 
 The C++ engine is not a crutch for scale; the Python reference is the
@@ -791,7 +791,7 @@ longitudinal are honestly `available: false`.
 | B. Data collection and pre-processing | **10 / 10** | Two honest collection paths (synthetic + Zephyr-season; real via documented adapters with citations), a validation layer (schema/timestamps/duplicates/within-meter imputation), and a first-class preprocessing stage that drops `archetype` + `seasonal_phase` before any statistic. |
 | C. Model development | **12 / 12** | A shared deterministic pipeline from preprocessing → feature engineering → scaling → PCA → K-Means; weights vs loadings kept separate; a cooperative K rule (composite + parsimony + stability) with a published trace; the real branch reuses the same method code. |
 | D. Performance evaluation and interpretation | **8 / 8** | Synthetic: ARI/NMI + internal metrics + seed stability, with the honest limit stated. Real: internal + seed + temporal stability, no invented ARI. Interpretation is loadings-led and profile-led (cluster cards). |
-| E. Innovation | **5 / 5** | Four implemented research improvements — configurable horizon + longitudinal gating, seasonal magnitude-vs-timing model, real-world adapter, versioned web-artifact contract — plus the SHAP/XAI bonus and the optional C++ engine with executed benchmarking. All present in code, tested, and surfaced in the apps. |
+| E. Innovation | **5 / 5** | Four implemented research improvements - configurable horizon + longitudinal gating, seasonal magnitude-vs-timing model, real-world adapter, versioned web-artifact contract - plus the SHAP/XAI bonus and the optional C++ engine with executed benchmarking. All present in code, tested, and surfaced in the apps. |
 | **Total** | **40 / 40** | Self-assessment. Line-by-line verification lives in `docs/report.md` and `docs/verification.md`. |
 
 ---
@@ -856,8 +856,8 @@ The repo is one pipeline, not a collection of demos. The connective tissue:
    decision to ship `behavioral` as the documented, evidence-based default.
 
 The result is a project where every claim in the documentation can be checked
-by pointing at a file in the repo, and where the limits — the 30-day K = 3
-undercount, the indistinguishable top arms, the slower C++ PCA — are reported
+by pointing at a file in the repo, and where the limits - the 30-day K = 3
+undercount, the indistinguishable top arms, the slower C++ PCA - are reported
 with the same machinery as the wins.
 
 ---
