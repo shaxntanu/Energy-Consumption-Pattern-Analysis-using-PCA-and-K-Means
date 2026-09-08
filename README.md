@@ -769,3 +769,6 @@ The SDG contribution is visualized in the [Vercel interactive explorer](https://
 - Real-meter validation on a full-year panel (≥ 180 days) to populate the longitudinal lane and stress-test the generic adapter.
 - A minimal inference API (an extra web-side shim) for ad-hoc "which cluster is this meter" queries without redeploying.
 - SHAP as a continuous deployment lane. It is currently an optional fallback. The promise is that the site always renders, never that it always renders SHAP.
+
+
+#Aarna Srivastava
