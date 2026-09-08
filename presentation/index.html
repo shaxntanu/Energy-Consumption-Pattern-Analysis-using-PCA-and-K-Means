@@ -4,669 +4,841 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Energy Consumption Pattern Analysis — PCA and K-Means</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="src/styles/main.css">
 </head>
 <body>
-    <!-- SLIDE 1: COVER -->
-    <section class="slide active" data-slide="1">
-        <div class="slide-content cover">
-            <h1 class="cover-title">Energy Consumption Pattern Analysis</h1>
-            <p class="cover-subtitle">Finding daily energy rhythms with machine learning</p>
-            <p class="cover-meta">PCA and K-Means Clustering · 200 Consumers · 365 Days · 1.75M Records</p>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
 
-    <!-- SLIDE 2: PROBLEM & OBJECTIVES -->
-    <section class="slide" data-slide="2">
-        <div class="slide-content">
-            <p class="slide-label">Problem Statement</p>
-            <h2 class="slide-title">Shape-first segmentation for demand response</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>🎯 Core Challenge</h3>
-                    <p>Group households by daily load curve <strong>shape</strong>, not total consumption. Similar rhythms deserve similar advice.</p>
-                </div>
-                <div class="content-card">
-                    <h3>📐 Scale Invariance</h3>
-                    <p>Two consumers with identical 24-hour profiles but different magnitudes should cluster together.</p>
-                </div>
-                <div class="content-card">
-                    <h3>⏰ Timing Critical</h3>
-                    <p>Same daily total but opposite peak hours means different behavioral patterns — must separate.</p>
-                </div>
-                <div class="content-card">
-                    <h3>✅ Goals</h3>
-                    <p>Reproducible pipeline, seasonal stability, real-world validation pathway, explainable clusters with SHAP.</p>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
+<!-- ============================================================
+     01 — COVER
+     ============================================================ -->
 
-    <!-- SLIDE 3: DATASET -->
-    <section class="slide" data-slide="3">
-        <div class="slide-content">
-            <p class="slide-label">Dataset Overview</p>
-            <h2 class="slide-title">Synthetic archetypes + Real-world adapter</h2>
-            <div class="stats-grid">
-                <div class="stat-card highlight-blue">
-                    <div class="stat-value">200</div>
-                    <div class="stat-label">Consumers</div>
-                </div>
-                <div class="stat-card highlight-blue">
-                    <div class="stat-value">365</div>
-                    <div class="stat-label">Days</div>
-                </div>
-                <div class="stat-card highlight-blue">
-                    <div class="stat-value">1.75M</div>
-                    <div class="stat-label">Records</div>
-                </div>
-                <div class="stat-card highlight-green">
-                    <div class="stat-value">4</div>
-                    <div class="stat-label">Archetypes</div>
-                </div>
-            </div>
-            <div class="content-grid" style="margin-top: 40px;">
-                <div class="content-card">
-                    <h3>Synthetic Foundation</h3>
-                    <p><strong>4 Ground-truth archetypes:</strong> Morning Riser, Night Owl, Steady Consumer, Peak Afternoon. Noise + seasonality + weekday/weekend variation.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Real-world Ready</h3>
-                    <p><strong>External adapter:</strong> Maps any meter dataset (consumer_id, timestamp, kWh). No changes to core pipeline.</p>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 4: PREPROCESSING PIPELINE -->
-    <section class="slide" data-slide="4">
-        <div class="slide-content">
-            <p class="slide-label">Data Pipeline</p>
-            <h2 class="slide-title">5-step preprocessing: Raw hourly kWh → Modeling table</h2>
-            <div class="pipeline-flow">
-                <div class="pipeline-step compact">
-                    <div class="step-icon">1</div>
-                    <h3>Load & Clean</h3>
-                    <p>Drop nulls, validate timestamps</p>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step compact">
-                    <div class="step-icon">2</div>
-                    <h3>Pivot Hourly</h3>
-                    <p>24 columns per day</p>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step compact">
-                    <div class="step-icon">3</div>
-                    <h3>Normalize</h3>
-                    <p>Z-score across hours</p>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step compact">
-                    <div class="step-icon">4</div>
-                    <h3>Aggregate</h3>
-                    <p>Consumer-level mean shape</p>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step compact">
-                    <div class="step-icon">5</div>
-                    <h3>Feature Engineering</h3>
-                    <p>51 behavioral features</p>
-                </div>
-            </div>
-            <div class="info-box mt-40">
-                <h4>Why normalize per-row?</h4>
-                <p>Scale invariance requirement: Z-score standardization makes 24-hour shape comparable regardless of total consumption magnitude.</p>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 5: FEATURE ENGINEERING -->
-    <section class="slide" data-slide="5">
-        <div class="slide-content">
-            <p class="slide-label">Feature Engineering</p>
-            <h2 class="slide-title">51 behavioral features = 24 shape + 27 summary</h2>
-            <div class="feature-groups">
-                <div class="feature-group shape">
-                    <div class="feature-header">
-                        <h3>Shape Features (24)</h3>
-                        <span class="feature-count">24</span>
-                    </div>
-                    <p>Normalized hourly profile (H00_norm to H23_norm). Captures when consumption happens during the day.</p>
-                </div>
-                <div class="feature-group summary">
-                    <div class="feature-header">
-                        <h3>Summary Statistics (27)</h3>
-                        <span class="feature-count">27</span>
-                    </div>
-                    <ul class="feature-list">
-                        <li><strong>Temporal:</strong> peak_hour, off_peak_hour, morning_usage, afternoon_usage, evening_usage, night_usage</li>
-                        <li><strong>Variability:</strong> daily_range, coefficient_of_variation, kurtosis, skewness</li>
-                        <li><strong>Behavioral:</strong> weekday_avg, weekend_avg, weekday_weekend_ratio, seasonal metrics</li>
-                        <li><strong>Distribution:</strong> percentiles (p10, p25, p50, p75, p90), interquartile range</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 6: PCA DIMENSIONALITY REDUCTION -->
-    <section class="slide" data-slide="6">
-        <div class="slide-content">
-            <p class="slide-label">Dimensionality Reduction</p>
-            <h2 class="slide-title">PCA: 51 features → 10 components (95.05% variance)</h2>
-            <div class="stats-grid">
-                <div class="stat-card highlight-blue">
-                    <div class="stat-value">10</div>
-                    <div class="stat-label">Components</div>
-                </div>
-                <div class="stat-card highlight-green">
-                    <div class="stat-value">95%</div>
-                    <div class="stat-label">Variance Retained</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">51→10</div>
-                    <div class="stat-label">Compression</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">80%</div>
-                    <div class="stat-label">By PC5</div>
-                </div>
-            </div>
-            <div class="visualization-container mt-60">
-                <img src="../dark_mode_plots/figures/explained_variance.png" alt="PCA Explained Variance" class="full-width-viz">
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 7: PCA COMPONENT LOADINGS -->
-    <section class="slide" data-slide="7">
-        <div class="slide-content">
-            <p class="slide-label">PCA Interpretation</p>
-            <h2 class="slide-title">Top 5 principal components capture timing and variability</h2>
-            <div class="loadings-grid">
-                <div class="loading-card">
-                    <h3>PC1 (35.2%)</h3>
-                    <ul class="loading-list">
-                        <li><span class="feature-name">daily_range</span><span class="loading-value">0.89</span></li>
-                        <li><span class="feature-name">H14_norm</span><span class="loading-value">0.82</span></li>
-                        <li><span class="feature-name">peak_hour</span><span class="loading-value">0.76</span></li>
-                    </ul>
-                </div>
-                <div class="loading-card">
-                    <h3>PC2 (18.7%)</h3>
-                    <ul class="loading-list">
-                        <li><span class="feature-name">morning_usage</span><span class="loading-value">0.91</span></li>
-                        <li><span class="feature-name">H07_norm</span><span class="loading-value">0.84</span></li>
-                        <li><span class="feature-name">H08_norm</span><span class="loading-value">0.79</span></li>
-                    </ul>
-                </div>
-                <div class="loading-card">
-                    <h3>PC3 (14.3%)</h3>
-                    <ul class="loading-list">
-                        <li><span class="feature-name">evening_usage</span><span class="loading-value">0.88</span></li>
-                        <li><span class="feature-name">H19_norm</span><span class="loading-value">0.81</span></li>
-                        <li><span class="feature-name">H20_norm</span><span class="loading-value">0.77</span></li>
-                    </ul>
-                </div>
-                <div class="loading-card">
-                    <h3>PC4 (12.1%)</h3>
-                    <ul class="loading-list">
-                        <li><span class="feature-name">weekend_avg</span><span class="loading-value">0.86</span></li>
-                        <li><span class="feature-name">ratio_wd_we</span><span class="loading-value">-0.74</span></li>
-                        <li><span class="feature-name">cv</span><span class="loading-value">0.68</span></li>
-                    </ul>
-                </div>
-                <div class="loading-card">
-                    <h3>PC5 (9.8%)</h3>
-                    <ul class="loading-list">
-                        <li><span class="feature-name">night_usage</span><span class="loading-value">0.83</span></li>
-                        <li><span class="feature-name">H02_norm</span><span class="loading-value">0.79</span></li>
-                        <li><span class="feature-name">skewness</span><span class="loading-value">0.71</span></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 8: K-MEANS CLUSTERING -->
-    <section class="slide" data-slide="8">
-        <div class="slide-content">
-            <p class="slide-label">K-Means Clustering</p>
-            <h2 class="slide-title">Evidence-based K=4 selection</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>Elbow Method</h3>
-                    <p>Inertia plateau at K=4 indicates diminishing returns beyond 4 clusters.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Silhouette Score</h3>
-                    <p><strong>0.3283</strong> at K=4 — best balance between cohesion and separation across K=2 to K=10.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Davies-Bouldin</h3>
-                    <p>Lowest at K=4, confirming well-separated compact clusters.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Calinski-Harabasz</h3>
-                    <p>Peak at K=4, indicating maximum between-cluster variance.</p>
-                </div>
-            </div>
-            <div class="visualization-container">
-                <img src="../dark_mode_plots/figures/elbow_curve.png" alt="K Selection Elbow Curve" class="half-width-viz">
-                <img src="../dark_mode_plots/figures/k_selection_metrics.png" alt="K Selection Metrics" class="half-width-viz">
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 9: CLUSTER DISTRIBUTION & PROFILES -->
-    <section class="slide" data-slide="9">
-        <div class="slide-content">
-            <p class="slide-label">Cluster Results</p>
-            <h2 class="slide-title">4 discovered archetypes with balanced distribution</h2>
-            <div class="cluster-sizes">
-                <h3>Cluster Size Distribution</h3>
-                <div class="cluster-bars">
-                    <div class="cluster-bar">
-                        <span class="bar-label">Cluster 0</span>
-                        <div class="bar" style="width: 20%;">39</div>
-                    </div>
-                    <div class="cluster-bar">
-                        <span class="bar-label">Cluster 1</span>
-                        <div class="bar" style="width: 26%;">52</div>
-                    </div>
-                    <div class="cluster-bar">
-                        <span class="bar-label">Cluster 2</span>
-                        <div class="bar" style="width: 24%;">47</div>
-                    </div>
-                    <div class="cluster-bar">
-                        <span class="bar-label">Cluster 3</span>
-                        <div class="bar" style="width: 31%;">62</div>
-                    </div>
-                </div>
-            </div>
-            <div class="visualization-container">
-                <img src="../dark_mode_plots/figures/hourly_patterns.png" alt="Hourly Consumption Patterns" class="full-width-viz">
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 10: VALIDATION - ARCHETYPE RECOVERY -->
-    <section class="slide" data-slide="10">
-        <div class="slide-content">
-            <p class="slide-label">Validation</p>
-            <h2 class="slide-title">Archetype recovery: ARI = 0.81 (strong agreement)</h2>
-            <div class="stats-grid">
-                <div class="stat-card highlight-green">
-                    <div class="stat-value">0.81</div>
-                    <div class="stat-label">ARI Score</div>
-                </div>
-                <div class="stat-card highlight-blue">
-                    <div class="stat-value">0.33</div>
-                    <div class="stat-label">Silhouette</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">89%</div>
-                    <div class="stat-label">Correctly Assigned</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">4/4</div>
-                    <div class="stat-label">Archetypes Found</div>
-                </div>
-            </div>
-            <div class="findings-list mt-40">
-                <div class="finding-item">
-                    <h3>✅ Strong Archetype Recovery</h3>
-                    <p>ARI of 0.81 confirms K-Means recovered ground-truth behavioral patterns with minimal confusion.</p>
-                </div>
-                <div class="finding-item">
-                    <h3>📊 Silhouette Analysis</h3>
-                    <p>All clusters show positive silhouette scores. Cluster 1 (Night Owl) has tightest cohesion (0.42), Cluster 2 shows moderate overlap (0.24).</p>
-                </div>
-            </div>
-            <div class="visualization-container mt-60">
-                <img src="../dark_mode_plots/figures/silhouette_scores.png" alt="Silhouette Analysis" class="full-width-viz">
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 11: EXPLAINABILITY - SHAP -->
-    <section class="slide" data-slide="11">
-        <div class="slide-content">
-            <p class="slide-label">Explainability</p>
-            <h2 class="slide-title">SHAP: Which features drive each cluster assignment?</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>Cluster 0 — Morning Riser</h3>
-                    <p><strong>Top drivers:</strong> morning_usage (+), H07_norm (+), H08_norm (+). Early peak hours dominate.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Cluster 1 — Night Owl</h3>
-                    <p><strong>Top drivers:</strong> evening_usage (+), H20_norm (+), H21_norm (+). Late-night activity signature.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Cluster 2 — Steady Consumer</h3>
-                    <p><strong>Top drivers:</strong> coefficient_of_variation (-), daily_range (-). Low variability, flat profile.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Cluster 3 — Peak Afternoon</h3>
-                    <p><strong>Top drivers:</strong> afternoon_usage (+), H14_norm (+), peak_hour (14-16). Midday spike.</p>
-                </div>
-            </div>
-            <div class="info-box mt-40">
-                <h4>Why SHAP?</h4>
-                <p>Post-hoc explainability reveals which engineered features most influenced K-Means distance calculations. Validates that timing features (not just magnitude) drive segmentation.</p>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 12: SEASONAL ANALYSIS -->
-    <section class="slide" data-slide="12">
-        <div class="slide-content">
-            <p class="slide-label">Seasonal Analysis</p>
-            <h2 class="slide-title">Clusters remain stable across seasons</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>Amplitude Variation</h3>
-                    <p>Summer shows 15-20% higher peak magnitudes. Winter spreads consumption more evenly across hours.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Phase Consistency</h3>
-                    <p>Peak hour timing shifts <1 hour seasonally. Morning Risers stay morning, Night Owls stay late.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Cluster Stability</h3>
-                    <p>Re-clustering each season yields ARI > 0.75 vs. annual clusters. Behavioral patterns persist.</p>
-                </div>
-                <div class="content-card">
-                    <h3>Weekday/Weekend</h3>
-                    <p>Weekday-weekend ratio remains cluster-defining. Steady Consumers show minimal difference.</p>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 13: LONGITUDINAL STABILITY -->
-    <section class="slide" data-slide="13">
-        <div class="slide-content">
-            <p class="slide-label">Longitudinal Stability</p>
-            <h2 class="slide-title">Quarterly re-clustering: ARI > 0.89 (highly stable)</h2>
-            <div class="stats-grid">
-                <div class="stat-card highlight-green">
-                    <div class="stat-value">0.92</div>
-                    <div class="stat-label">Q1 vs Q2</div>
-                </div>
-                <div class="stat-card highlight-green">
-                    <div class="stat-value">0.89</div>
-                    <div class="stat-label">Q2 vs Q3</div>
-                </div>
-                <div class="stat-card highlight-green">
-                    <div class="stat-value">0.91</div>
-                    <div class="stat-label">Q3 vs Q4</div>
-                </div>
-                <div class="stat-card highlight-blue">
-                    <div class="stat-value">0.88</div>
-                    <div class="stat-label">Q1 vs Q4</div>
-                </div>
-            </div>
-            <div class="findings-list mt-40">
-                <div class="finding-item">
-                    <h3>✅ Temporal Consistency</h3>
-                    <p>Cluster assignments remain stable across 90-day windows. Consumers don't switch behavioral archetypes frequently.</p>
-                </div>
-                <div class="finding-item">
-                    <h3>📈 Production Readiness</h3>
-                    <p>High ARI across quarters validates that monthly/quarterly re-segmentation would preserve cluster identity for demand-response programs.</p>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 14: TECHNOLOGY STACK -->
-    <section class="slide" data-slide="14">
-        <div class="slide-content">
-            <p class="slide-label">Technology Architecture</p>
-            <h2 class="slide-title">Python pipeline + C++ engine + Web platform</h2>
-            <div class="tech-grid">
-                <div class="tech-card">
-                    <h3>Python Core</h3>
-                    <ul>
-                        <li>pandas, NumPy</li>
-                        <li>scikit-learn (PCA, K-Means)</li>
-                        <li>matplotlib, seaborn</li>
-                        <li>SHAP explainability</li>
-                    </ul>
-                </div>
-                <div class="tech-card">
-                    <h3>C++ Engine</h3>
-                    <ul>
-                        <li>Eigen (linear algebra)</li>
-                        <li>pybind11 bindings</li>
-                        <li>3x faster K-Means</li>
-                        <li>Google Benchmark</li>
-                    </ul>
-                </div>
-                <div class="tech-card">
-                    <h3>Web Frontend</h3>
-                    <ul>
-                        <li>Next.js + TypeScript</li>
-                        <li>Recharts + Plotly</li>
-                        <li>Vercel deployment</li>
-                        <li>Responsive dashboard</li>
-                    </ul>
-                </div>
-                <div class="tech-card">
-                    <h3>Simulator</h3>
-                    <ul>
-                        <li>Streamlit</li>
-                        <li>Interactive sliders</li>
-                        <li>Real-time clustering</li>
-                        <li>Cloud deployment</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="info-box mt-40">
-                <h4>Hybrid Performance</h4>
-                <p>Python handles data wrangling, visualization, and contract generation. C++ accelerates K-Means iterations for large-scale deployment.</p>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 15: WEB APPLICATION -->
-    <section class="slide" data-slide="15">
-        <div class="slide-content">
-            <p class="slide-label">Web Platform</p>
-            <h2 class="slide-title">Two interfaces: Explorer (production) + Simulator (research)</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>🌐 Vercel Explorer</h3>
-                    <p><strong>Production dashboard:</strong> Browse cluster profiles, view hourly patterns, compare archetypes. Reads versioned JSON contract.</p>
-                    <p><code>https://energy-consumption-pattern.vercel.app</code></p>
-                </div>
-                <div class="content-card">
-                    <h3>🎛️ Streamlit Simulator</h3>
-                    <p><strong>Interactive research tool:</strong> Adjust K, PCA components, feature weights. Re-run clustering live. Explore parameter sensitivity.</p>
-                    <p><code>https://energy-consumption-pattern-vqrh.streamlit.app</code></p>
-                </div>
-            </div>
-            <div class="demo-links mt-40">
-                <a href="https://energy-consumption-pattern.vercel.app" class="demo-button" target="_blank">Open Explorer →</a>
-                <a href="https://energy-consumption-pattern-vqrh.streamlit.app" class="demo-button secondary" target="_blank">Try Simulator →</a>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 16: FEATURE ABLATION -->
-    <section class="slide" data-slide="16">
-        <div class="slide-content">
-            <p class="slide-label">Ablation Studies</p>
-            <h2 class="slide-title">Which features matter? Shape vs. Summary vs. Both</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">0.68</div>
-                    <div class="stat-label">Shape Only ARI</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">0.52</div>
-                    <div class="stat-label">Summary Only ARI</div>
-                </div>
-                <div class="stat-card highlight-green">
-                    <div class="stat-value">0.81</div>
-                    <div class="stat-label">Combined ARI</div>
-                </div>
-                <div class="stat-card highlight-blue">
-                    <div class="stat-value">+19%</div>
-                    <div class="stat-label">Improvement</div>
-                </div>
-            </div>
-            <div class="findings-list mt-40">
-                <div class="finding-item">
-                    <h3>🔬 Key Finding</h3>
-                    <p>Shape features alone capture 68% of ground truth. Summary statistics boost recovery to 81%. Both feature types are complementary.</p>
-                </div>
-                <div class="finding-item">
-                    <h3>📊 Implication</h3>
-                    <p>Timing features (hourly profile) dominate segmentation. Magnitude-invariant approach successfully groups by rhythm, not scale.</p>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 17: KEY RESULTS & FINDINGS -->
-    <section class="slide" data-slide="17">
-        <div class="slide-content">
-            <p class="slide-label">Results Summary</p>
-            <h2 class="slide-title">4 behavioral archetypes discovered</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>🌅 Morning Riser (Cluster 0)</h3>
-                    <p><strong>39 consumers.</strong> Peak 7-9am. High morning_usage, low evening. Weekday-dominant. Ideal for early demand response.</p>
-                </div>
-                <div class="content-card">
-                    <h3>🌙 Night Owl (Cluster 1)</h3>
-                    <p><strong>52 consumers.</strong> Peak 8-11pm. High evening_usage, late night activity. Weekend spikes. Late-shift programs.</p>
-                </div>
-                <div class="content-card">
-                    <h3>📊 Steady Consumer (Cluster 2)</h3>
-                    <p><strong>47 consumers.</strong> Flat profile, low variability. Minimal peak differentiation. Predictable load, low DR potential.</p>
-                </div>
-                <div class="content-card">
-                    <h3>☀️ Peak Afternoon (Cluster 3)</h3>
-                    <p><strong>62 consumers.</strong> Peak 2-4pm. High afternoon_usage, solar alignment opportunity. Midday interventions.</p>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 18: LIMITATIONS & FUTURE WORK -->
-    <section class="slide" data-slide="18">
-        <div class="slide-content">
-            <p class="slide-label">Limitations</p>
-            <h2 class="slide-title">Known constraints and planned improvements</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>⚠️ Synthetic Data</h3>
-                    <p>Ground-truth archetypes enable ARI validation but lack real-world noise complexity. External adapter tested on 1 meter dataset.</p>
-                </div>
-                <div class="content-card">
-                    <h3>🔧 Fixed K</h3>
-                    <p>K=4 validated for this dataset. Real deployments need adaptive K selection or hierarchical clustering for variable populations.</p>
-                </div>
-                <div class="content-card">
-                    <h3>📅 Annual Scope</h3>
-                    <p>365-day analysis captures seasonality but assumes stationarity. Multi-year data would reveal long-term behavioral drift.</p>
-                </div>
-                <div class="content-card">
-                    <h3>🎯 Feature Engineering</h3>
-                    <p>51 features manually curated. Automated feature discovery (deep learning embeddings) could uncover hidden patterns.</p>
-                </div>
-            </div>
-            <div class="info-box mt-40">
-                <h4>Next Steps</h4>
-                <p>Deploy on 3+ real-world meter datasets, integrate with demand-response APIs, A/B test intervention effectiveness per cluster.</p>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 19: PRODUCTION READINESS -->
-    <section class="slide" data-slide="19">
-        <div class="slide-content">
-            <p class="slide-label">Production Readiness</p>
-            <h2 class="slide-title">Deployment checklist: ✅ Ready for pilot</h2>
-            <div class="content-grid">
-                <div class="content-card">
-                    <h3>✅ Reproducibility</h3>
-                    <p>Versioned contracts, pytest coverage, deterministic random seeds, Docker containerization.</p>
-                </div>
-                <div class="content-card">
-                    <h3>✅ Scalability</h3>
-                    <p>C++ engine benchmarks: 3x faster K-Means. Tested on 200 consumers × 365 days. Scales to 10K+ consumers.</p>
-                </div>
-                <div class="content-card">
-                    <h3>✅ Explainability</h3>
-                    <p>SHAP values exported per cluster. Transparent feature importance for regulatory compliance and user trust.</p>
-                </div>
-                <div class="content-card">
-                    <h3>✅ Real-world Adapter</h3>
-                    <p>External meter data ingestion tested. Maps (consumer_id, timestamp, kWh) → clustering without pipeline changes.</p>
-                </div>
-            </div>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- SLIDE 20: CONCLUSION & DEMO -->
-    <section class="slide" data-slide="20">
-        <div class="slide-content center">
-            <h1 class="conclusion-title">Shape-first segmentation works.<br>4 archetypes discovered.<br>Ready for demand response.</h1>
-            <div class="demo-links mt-60">
-                <a href="https://energy-consumption-pattern.vercel.app" class="demo-button" target="_blank">Explore Live Dashboard</a>
-                <a href="https://energy-consumption-pattern-vqrh.streamlit.app" class="demo-button secondary" target="_blank">Try Interactive Simulator</a>
-                <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means" class="demo-button outline" target="_blank">View Code on GitHub</a>
-            </div>
-            <p class="conclusion-meta mt-60">Energy Consumption Pattern Analysis · PCA and K-Means · 2024</p>
-        </div>
-        <div class="sunee-logo"><img src="../sunee-pitch-deck/sunee-mascot.png" alt="SUNEE"></div>
-    </section>
-
-    <!-- NAVIGATION CONTROLS -->
-    <div class="nav-controls">
-        <button class="nav-btn" id="prev-btn">←</button>
-        <span class="slide-counter" id="slide-counter">1 / 20</span>
-        <button class="nav-btn" id="next-btn">→</button>
+<!-- Slide 1 — 01 Cover -->
+<section class="slide active" data-slide="1">
+    <div class="slide-content cover">
+        <p class="slide-label">01 — Cover</p>
+        <h1 class="cover-title">Grouped by when a home uses power, not how much.</h1>
+        <p class="cover-subtitle">A shape-first clustering pipeline for residential energy: 200 synthetic consumers with four hidden archetypes and one real weather feed.</p>
+        <p class="cover-meta">200 consumers × 365 days × 24 hours = 1,752,000 records · 4 archetypes · 51 features · K = 4 · config 99c7a6631340d301</p>
+        <p class="source">Source: RESULTS.md §4 · web/public/data/profiles.json</p>
     </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
 
-    <!-- EXPORT BUTTON -->
-    <button class="export-btn" id="export-btn">Export to PowerPoint</button>
+<!-- ============================================================
+     02 — DATA (slides 2–4)
+     ============================================================ -->
 
-    <!-- PROGRESS BAR -->
-    <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill"></div>
+<!-- Slide 2 — Same bill, different shape (conceptual illustration) -->
+<section class="slide" data-slide="2">
+    <div class="slide-content">
+        <p class="slide-label">02 — Data · why shape</p>
+        <h1 class="slide-title">Two homes can share a bill and share nothing else.</h1>
+        <div class="diagram-frame" aria-label="Two 24-hour load curves with equal area and different timing">
+            <svg viewBox="0 0 1400 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fig2t fig2d">
+                <title id="fig2t">Equal area, different timing</title>
+                <desc id="fig2d">Two households with the same daily total kWh and completely different hourly shapes.</desc>
+                <defs>
+                    <linearGradient id="gCyan" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3BC9DE" stop-opacity="0.30"/><stop offset="100%" stop-color="#3BC9DE" stop-opacity="0"/></linearGradient>
+                    <linearGradient id="gAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F5A524" stop-opacity="0.30"/><stop offset="100%" stop-color="#F5A524" stop-opacity="0"/></linearGradient>
+                </defs>
+                <!-- panel border -->
+                <rect x="0.5" y="0.5" width="1399" height="359" rx="6" fill="none" stroke="#262E3D"/>
+                <!-- day-part bands -->
+                <rect x="70" y="36" width="310" height="260" fill="rgba(108,140,255,0.06)"/>
+                <rect x="380" y="36" width="310" height="260" fill="rgba(59,201,222,0.06)"/>
+                <rect x="690" y="36" width="310" height="260" fill="rgba(79,209,165,0.06)"/>
+                <rect x="1000" y="36" width="330" height="260" fill="rgba(245,165,36,0.06)"/>
+                <!-- band labels -->
+                <text x="225" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">night</text>
+                <text x="535" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">morning</text>
+                <text x="845" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">afternoon</text>
+                <text x="1165" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">evening</text>
+                <!-- x labels -->
+                <text x="70" y="320" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">00</text>
+                <text x="380" y="320" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">06</text>
+                <text x="690" y="320" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">12</text>
+                <text x="1000" y="320" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">18</text>
+                <text x="1308" y="320" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">24</text>
+                <text x="700" y="346" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#5B657A">hour of day</text>
+                <!-- Home A: morning peak -->
+                <!-- points roughly: morning rise, afternoon low, evening modest -->
+                <path d="M 70 220 C 140 218, 200 210, 280 170 C 340 130, 400 90, 460 110 S 560 220, 620 235 S 730 245, 800 220 S 900 190, 960 200 S 1060 240, 1110 238 S 1220 236, 1330 238" fill="none" stroke="#3BC9DE" stroke-width="2.3"/>
+                <path d="M 70 220 C 140 218, 200 210, 280 170 C 340 130, 400 90, 460 110 S 560 220, 620 235 S 730 245, 800 220 S 900 190, 960 200 S 1060 240, 1110 238 S 1220 236, 1330 238 L 1330 296 L 70 296 Z" fill="url(#gCyan)"/>
+                <!-- Home B: evening peak -->
+                <path d="M 70 235 C 160 238, 260 240, 360 238 S 520 234, 620 220 S 740 160, 840 140 S 940 120, 1020 90 C 1070 68, 1140 75, 1190 96 S 1280 180, 1330 218" fill="none" stroke="#F5A524" stroke-width="2.3"/>
+                <path d="M 70 235 C 160 238, 260 240, 360 238 S 520 234, 620 220 S 740 160, 840 140 S 940 120, 1020 90 C 1070 68, 1140 75, 1190 96 S 1280 180, 1330 218 L 1330 296 L 70 296 Z" fill="url(#gAmber)"/>
+                <!-- legend -->
+                <line x1="1040" y1="328" x2="1070" y2="328" stroke="#3BC9DE" stroke-width="2.3"/>
+                <text x="1076" y="332" font-family="Inter, sans-serif" font-size="13" fill="#EAECEF">Home A — morning peak</text>
+                <line x1="1040" y1="346" x2="1070" y2="346" stroke="#F5A524" stroke-width="2.3"/>
+                <text x="1076" y="350" font-family="Inter, sans-serif" font-size="13" fill="#EAECEF">Home B — evening peak</text>
+                <!-- equal-area badge -->
+                <g transform="translate(540,72)">
+                    <rect x="0" y="0" width="260" height="28" rx="14" fill="#1B2230" stroke="#262E3D"/>
+                    <text x="130" y="18" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#8A93A6">same daily total kWh — different shapes</text>
+                </g>
+            </svg>
+            <p class="diagram-caption">Conceptual illustration of the shape-first premise. The two curves enclose the same area (identical daily total) but peak at different hours — magnitude alone would call them the same, timing separates them.</p>
+        </div>
+        <p class="source">Source: conceptual illustration for the brief (shape-first motivation). Real curves: slide 12 · web/public/data/profiles.json</p>
     </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
 
-    <!-- KEYBOARD HINT -->
-    <div class="keyboard-hint">Use arrow keys or space to navigate · F for fullscreen · P for presentation mode</div>
+<!-- Slide 3 — Timing features table -->
+<section class="slide" data-slide="3">
+    <div class="slide-content">
+        <p class="slide-label">02 — Data · why timing matters</p>
+        <h1 class="slide-title">Timing tells a utility what magnitude alone cannot.</h1>
+        <div class="content-card" style="margin-bottom: var(--sp-4);">
+            <table class="data-table" aria-label="Three timing-sensitive features by cluster">
+                <thead>
+                    <tr><th>Feature</th><th>Population mean</th><th>Midday cluster (0)</th><th>Flat cluster (1)</th><th>Evening cluster (2)</th><th>Evening + weekend (3)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td style="color: var(--ink);">evening share</td><td>0.29</td><td>0.24</td><td>0.26</td><td style="color: var(--violet); font-weight: 600;">0.40</td><td style="color: var(--green); font-weight: 600;">0.36</td></tr>
+                    <tr><td style="color: var(--ink);">peak to average ratio</td><td>1.58</td><td>1.63</td><td>1.31</td><td style="color: var(--violet); font-weight: 600;">1.88</td><td>1.59</td></tr>
+                    <tr><td style="color: var(--ink);">weekend ratio</td><td>1.04</td><td>1.06</td><td>0.99</td><td>1.03</td><td style="color: var(--green); font-weight: 600;">1.14</td></tr>
+                </tbody>
+            </table>
+            <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Timing descriptors are drawn from the 51-feature engineering set (slide 7). Evening share and peak-to-average are shape-native; weekend ratio captures calendar behaviour. Values shown are per-cluster means of the standardized feature matrix described in profiles.json.</p>
+        </div>
+        <div class="info-box">
+            <p>A bill sees totals. A grid sees hours. The evening cluster spends 40 percent of its day in the 18:00–24:00 window — the flat cluster closer to 26 percent — even when their totals overlap.</p>
+        </div>
+        <p class="source">Source: web/public/data/profiles.json · timing descriptors from the 51-feature set (doc: RESULTS.md §4)</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
 
-    <!-- SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-    <script src="src/script.js"></script>
+<!-- Slide 4 — Dataset facts -->
+<section class="slide" data-slide="4">
+    <div class="slide-content">
+        <p class="slide-label">02 — Data · the panel</p>
+        <h1 class="slide-title">200 consumers, four hidden rhythms, one real weather feed.</h1>
+        <div class="content-grid cols-2">
+            <div class="content-card">
+                <table class="data-table">
+                    <tbody>
+                        <tr><td>Consumers</td><td class="highlight">200</td></tr>
+                        <tr><td>Days</td><td class="highlight">365 (all four seasons)</td></tr>
+                        <tr><td>Hourly records</td><td class="highlight">1,752,000</td></tr>
+                        <tr><td>Hidden archetypes</td><td class="highlight">4</td></tr>
+                        <tr><td>Behavioural features</td><td class="highlight">51 (slide 7)</td></tr>
+                        <tr><td>Config hash</td><td style="font-family: var(--font-mono); font-size: 15px;">99c7a6631340d301</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="content-card">
+                <h3 style="color: var(--cyan);">Zephyr weather provenance</h3>
+                <p>Hourly weather is drawn from a recorded Zephyr Station feed with a 0.25 amplitude seasonal model (slide 15) and a 1.0-hour seasonal shape shift. Ninety percent of consumers carry a seasonal phase (std 20 days).</p>
+                <h3 style="color: var(--green); margin-top: var(--sp-3);">Real-world adapter (Case A)</h3>
+                <p>Twenty-four audited meters with the same ingestion pathway and report format. The demo pathway is reported only with internal metrics — never with invented labels (see slide 18).</p>
+            </div>
+        </div>
+        <p class="source">Source: RESULTS.md §4 (run 2) · docs/verification.md · models/analysis_metadata.json</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- ============================================================
+     03 — METHOD (slides 5–11)
+     ============================================================ -->
+
+<!-- Slide 5 — Pipeline SVG #1 -->
+<section class="slide" data-slide="5">
+    <div class="slide-content">
+        <p class="slide-label">03 — Method · pipeline</p>
+        <h1 class="slide-title">One deterministic path from meter to validated cluster.</h1>
+        <div class="diagram-frame" aria-label="End-to-end pipeline from synthetic generation to validation and export">
+            <svg viewBox="0 0 1500 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p5t p5d">
+                <title id="p5t">End-to-end pipeline</title>
+                <desc id="p5d">Generate, validate, preprocess with leakage boundary, engineer 51 features, standardize and reduce with PCA, sweep K 2–10 and select by rule, explain with a surrogate, evaluate, then branch to synthetic and real-world validation.</desc>
+                <!-- helpers -->
+                <defs>
+                    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8A93A6"/></marker>
+                    <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5B657A"/></marker>
+                </defs>
+                <style>
+                    .n0{fill:#141A24;stroke:#3BC9DE;stroke-width:1.5}
+                    .n1{fill:#141A24;stroke:#6C8CFF;stroke-width:1.5}
+                    .n2{fill:#141A24;stroke:#262E3D;stroke-width:1.5}
+                    .n3{fill:#141A24;stroke:#F5A524;stroke-width:1.5}
+                    .n4{fill:#141A24;stroke:#4FD1A5;stroke-width:1.5}
+                    .n5{fill:#141A24;stroke:#B085F5;stroke-width:1.5}
+                    .tl{font-family:Inter,sans-serif;font-size:13px;font-weight:600;fill:#EAECEF}
+                    .sl{font-family:IBM Plex Mono,monospace;font-size:11px;fill:#8A93A6}
+                    .el{stroke:#262E3D;stroke-width:1.5;fill:none;marker-end:url(#arr)}
+                    .eld{stroke:#5B657A;stroke-width:1.4;fill:none;stroke-dasharray:6 5;marker-end:url(#arr2)}
+                </style>
+                <!-- Row 1 nodes (y=20) -->
+                <!-- 1 Generate -->
+                <g transform="translate(10,20)">
+                    <rect x="0" y="0" width="170" height="64" rx="6" class="n0"/>
+                    <text x="85" y="22" text-anchor="middle" class="tl">Generate</text>
+                    <text x="85" y="36" text-anchor="middle" class="sl">200 consumers, 4 archetypes</text>
+                    <text x="85" y="50" text-anchor="middle" class="sl">365 days, Zephyr weather</text>
+                </g>
+                <!-- 2 Validate provenance -->
+                <g transform="translate(200,20)">
+                    <rect x="0" y="0" width="170" height="64" rx="6" class="n0"/>
+                    <text x="85" y="22" text-anchor="middle" class="tl">Validate provenance</text>
+                    <text x="85" y="36" text-anchor="middle" class="sl">weather + archetype truth</text>
+                    <text x="85" y="50" text-anchor="middle" class="sl">kept for eval, not for fit</text>
+                </g>
+                <!-- 3 Preprocess (leakage boundary shown as separate badge) -->
+                <g transform="translate(390,20)">
+                    <rect x="0" y="0" width="190" height="64" rx="6" class="n1"/>
+                    <text x="95" y="22" text-anchor="middle" class="tl">Preprocess</text>
+                    <text x="95" y="36" text-anchor="middle" class="sl">leakage boundary (slide 6)</text>
+                    <text x="95" y="50" text-anchor="middle" class="sl">meter + calendar only</text>
+                </g>
+                <!-- 4 Engineer 51 -->
+                <g transform="translate(600,20)">
+                    <rect x="0" y="0" width="190" height="64" rx="6" class="n1"/>
+                    <text x="95" y="22" text-anchor="middle" class="tl">Engineer features</text>
+                    <text x="95" y="36" text-anchor="middle" class="sl">51 descriptors (slide 7)</text>
+                    <text x="95" y="50" text-anchor="middle" class="sl">24 hourly + 27 summary</text>
+                </g>
+                <!-- 5 Standardize + PCA -->
+                <g transform="translate(810,20)">
+                    <rect x="0" y="0" width="190" height="64" rx="6" class="n1"/>
+                    <text x="95" y="22" text-anchor="middle" class="tl">Standardize and reduce</text>
+                    <text x="95" y="36" text-anchor="middle" class="sl">PCA, 0.95 threshold</text>
+                    <text x="95" y="50" text-anchor="middle" class="sl">10 components (95.05%)</text>
+                </g>
+                <!-- 6 Sweep K select -->
+                <g transform="translate(1020,20)">
+                    <rect x="0" y="0" width="190" height="64" rx="6" class="n3"/>
+                    <text x="95" y="22" text-anchor="middle" class="tl">Sweep K 2–10, select</text>
+                    <text x="95" y="36" text-anchor="middle" class="sl">composite rule (slide 10)</text>
+                    <text x="95" y="50" text-anchor="middle" class="sl">K = 4</text>
+                </g>
+                <!-- 7 Explain -->
+                <g transform="translate(1230,20)">
+                    <rect x="0" y="0" width="160" height="64" rx="6" class="n5"/>
+                    <text x="80" y="22" text-anchor="middle" class="tl">Explain</text>
+                    <text x="80" y="36" text-anchor="middle" class="sl">SHAP surrogate (CV 0.985)</text>
+                    <text x="80" y="50" text-anchor="middle" class="sl">post-hoc, never feedback</text>
+                </g>
+
+                <!-- Row 1 connectors -->
+                <path d="M 180 52 H 200" class="el"/>
+                <path d="M 370 52 H 390" class="el"/>
+                <path d="M 580 52 H 600" class="el"/>
+                <path d="M 790 52 H 810" class="el"/>
+                <path d="M 1000 52 H 1020" class="el"/>
+                <path d="M 1210 52 H 1230" class="el"/>
+
+                <!-- Row 2: Evaluate + branches -->
+                <!-- Evaluate -->
+                <g transform="translate(810,140)">
+                    <rect x="0" y="0" width="190" height="64" rx="6" class="n4"/>
+                    <text x="95" y="22" text-anchor="middle" class="tl">Evaluate</text>
+                    <text x="95" y="36" text-anchor="middle" class="sl">internal + stability</text>
+                    <text x="95" y="50" text-anchor="middle" class="sl">silhouette / CH / DB</text>
+                </g>
+                <!-- Synthetic branch -->
+                <g transform="translate(560,260)">
+                    <rect x="0" y="0" width="280" height="64" rx="6" class="n4"/>
+                    <text x="140" y="22" text-anchor="middle" class="tl">Synthetic branch — ARI / NMI vs archetypes</text>
+                    <text x="140" y="36" text-anchor="middle" class="sl">ARI 0.813 · NMI 0.828 · best K = 4</text>
+                    <text x="140" y="50" text-anchor="middle" class="sl">slide 13</text>
+                </g>
+                <!-- Real branch -->
+                <g transform="translate(880,260)">
+                    <rect x="0" y="0" width="320" height="64" rx="6" class="n4"/>
+                    <text x="160" y="22" text-anchor="middle" class="tl">Real branch — internal + stability</text>
+                    <text x="160" y="36" text-anchor="middle" class="sl">Case A: 24 meters · internal only</text>
+                    <text x="160" y="50" text-anchor="middle" class="sl">no invented labels — slide 18</text>
+                </g>
+                <!-- Export -->
+                <g transform="translate(1240,260)">
+                    <rect x="0" y="0" width="150" height="64" rx="6" class="n5"/>
+                    <text x="75" y="22" text-anchor="middle" class="tl">Export</text>
+                    <text x="75" y="36" text-anchor="middle" class="sl">contracts, reports,</text>
+                    <text x="75" y="50" text-anchor="middle" class="sl">figures</text>
+                </g>
+
+                <!-- Vertical + branch connectors -->
+                <!-- Sweep -> Evaluate (down) -->
+                <path d="M 1115 84 V 140" class="el"/>
+                <!-- Evaluate -> two branches -->
+                <path d="M 840 204 V 240 H 700" class="el"/>
+                <path d="M 975 204 V 240 H 1040" class="el"/>
+                <!-- Explain -> Evaluate (diagonal) -->
+                <path d="M 1270 84 V 116 H 1015" class="eld"/>
+                <text x="1140" y="108" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">surrogate</text>
+                <!-- branches -> export -->
+                <path d="M 700 292 H 810 V 292" class="el" style="opacity:0"/>
+                <path d="M 840 292 H 880" class="el"/>
+                <path d="M 1200 292 H 1240" class="el"/>
+            </svg>
+            <p class="diagram-caption">Inline figure. Solid edges are the fitting path. The dashed edge from Explain is post-hoc and never feeds back. The two evaluation branches share the same K; their metrics differ by what truth is available.</p>
+        </div>
+        <p class="source">Source: docs/flow_diagram.md · outputs/reports/analysis_summary.md · RESULTS.md §4</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 6 — Leakage boundary SVG #3 -->
+<section class="slide" data-slide="6">
+    <div class="slide-content">
+        <p class="slide-label">03 — Method · honesty</p>
+        <h1 class="slide-title">The answer key never reaches the model.</h1>
+        <div class="diagram-frame" aria-label="Leakage boundary between raw panel and clustering inputs">
+            <svg viewBox="0 0 1500 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p6t p6d">
+                <title id="p6t">Leakage boundary</title>
+                <desc id="p6d">Truth columns are dropped before any feature engineering or fitting. Clustering sees only meter and calendar observables; labels are used only in evaluation.</desc>
+                <defs>
+                    <marker id="arr6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8A93A6"/></marker>
+                    <marker id="arr6b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4FD1A5"/></marker>
+                </defs>
+                <style>
+                    .tl6{font-family:Inter,sans-serif;font-size:13px;font-weight:600;fill:#EAECEF}
+                    .sl6{font-family:IBM Plex Mono,monospace;font-size:11px;fill:#8A93A6}
+                    .el6{stroke:#262E3D;stroke-width:1.5;fill:none;marker-end:url(#arr6)}
+                    .el6g{stroke:#4FD1A5;stroke-width:1.5;fill:none;marker-end:url(#arr6b)}
+                </style>
+                <!-- Row: Raw panel -> boundary -> fit inputs, and labels -> eval only -->
+                <!-- Raw panel -->
+                <g transform="translate(20,40)">
+                    <rect x="0" y="0" width="300" height="160" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.5"/>
+                    <text x="150" y="26" text-anchor="middle" class="tl6">Raw panel</text>
+                    <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer × hour)</text>
+                    <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">meter reads: consumer, timestamp, kWh — keep</text>
+                    <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">calendar: hour, weekday, season — keep</text>
+                    <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(242,109,109,0.12)" stroke="#F26D6D"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#F26D6D">truth: archetype, seasonal phase — drop</text>
+                </g>
+                <!-- Boundary (diamond) -->
+                <g transform="translate(380,70)">
+                    <polygon points="90,0 180,70 90,140 0,70" fill="rgba(108,140,255,0.10)" stroke="#6C8CFF" stroke-width="1.5"/>
+                    <text x="90" y="64" text-anchor="middle" class="tl6" style="font-size:12px">Drop truth</text>
+                    <text x="90" y="80" text-anchor="middle" class="sl6">before any</text>
+                    <text x="90" y="93" text-anchor="middle" class="sl6">feature</text>
+                </g>
+                <!-- Fit inputs -->
+                <g transform="translate(600,40)">
+                    <rect x="0" y="0" width="300" height="160" rx="6" fill="rgba(59,201,222,0.10)" stroke="#3BC9DE" stroke-width="1.5"/>
+                    <text x="150" y="26" text-anchor="middle" class="tl6">What the model ever sees</text>
+                    <text x="150" y="48" text-anchor="middle" class="sl6">meter + calendar observables only</text>
+                    <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">51 features engineered here (slide 7)</text>
+                    <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">standardize → PCA → K-Means</text>
+                    <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(59,201,222,0.12)" stroke="#3BC9DE"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#3BC9DE">no label ever enters fit</text>
+                </g>
+                <!-- Labels held aside -->
+                <g transform="translate(960,40)">
+                    <rect x="0" y="0" width="300" height="160" rx="6" fill="rgba(79,209,165,0.08)" stroke="#4FD1A5" stroke-width="1.5" stroke-dasharray="6 5"/>
+                    <text x="150" y="26" text-anchor="middle" class="tl6">Held for evaluation only</text>
+                    <text x="150" y="48" text-anchor="middle" class="sl6">ground truth never used to fit</text>
+                    <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#4FD1A5"/><text x="150" y="81" text-anchor="middle" class="sl6" style="fill:#4FD1A5">ARI / NMI vs archetypes</text>
+                    <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#4FD1A5"/><text x="150" y="109" text-anchor="middle" class="sl6" style="fill:#4FD1A5">seasonal phase recovery</text>
+                    <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(79,209,165,0.12)" stroke="#4FD1A5"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#4FD1A5">read-only, after clustering</text>
+                </g>
+                <!-- Arrows -->
+                <path d="M 320 110 H 380" class="el6"/>
+                <path d="M 560 110 H 600" class="el6"/>
+                <!-- dropped branch to held -->
+                <path d="M 460 140 C 520 200, 720 220, 960 130" stroke="#5B657A" stroke-width="1.4" fill="none" stroke-dasharray="6 5" marker-end="url(#arr6)"/>
+                <text x="720" y="218" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">labels separated here</text>
+                <!-- eval arrow -->
+                <path d="M 900 110 H 960" class="el6g"/>
+                <text x="910" y="100" font-family="IBM Plex Mono, monospace" font-size="11" fill="#4FD1A5">evaluate after</text>
+                <!-- bottom note -->
+                <text x="750" y="290" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" fill="#8A93A6">Nothing a meter and a calendar could not observe reaches the clustering. Truth is read-only and only after the assignments exist.</text>
+            </svg>
+        </div>
+        <p class="source">Source: docs/verification.md · docs/flow_diagram.md · pipeline source (leakage guard)</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 7 — 51 features -->
+<section class="slide" data-slide="7">
+    <div class="slide-content">
+        <p class="slide-label">03 — Method · features</p>
+        <h1 class="slide-title">51 features, not one of them is size.</h1>
+        <div class="content-grid cols-2">
+            <div class="content-card">
+                <h3>24 hourly shape bins</h3>
+                <p style="margin-bottom: var(--sp-2);">Fraction of the day spent in each hour (<span style="font-family: var(--font-mono);">hour 0 shape</span> through <span style="font-family: var(--font-mono);">hour 23 shape</span>). Together they are the normalized 24-hour profile — scale-free by construction.</p>
+                <p style="font-family: var(--font-mono); font-size: 14px; color: var(--slate);">hour 0 shape · hour 1 shape · … · hour 23 shape</p>
+            </div>
+            <div class="content-card">
+                <h3>27 summary descriptors</h3>
+                <ul class="feature-list" style="columns: 1;">
+                    <li>Day-period shares (morning, afternoon, evening, night)</li>
+                    <li>Peak hour sin and cos, peak concentration, ramp</li>
+                    <li>Weekend ratio and weekend CV ratio</li>
+                    <li>Base-load share, harmonics (amplitudes), Haar details</li>
+                    <li>Shape entropy and Gini, coefficient of variation</li>
+                    <li>Skewness, kurtosis, daily-total CV, P90 to median ratio</li>
+                </ul>
+            </div>
+        </div>
+        <div class="info-box">
+            <p>Design intent is shape invariance: no feature encodes how much a home uses in total. A small flat and a large flat look the same on purpose — timing, not totals, drives the grouping.</p>
+        </div>
+        <p class="source">Source: RESULTS.md §4 (51 features: 24 hourly + 27 summary) · web/public/data/profiles.json</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 8 — PCA collapse -->
+<section class="slide" data-slide="8">
+    <div class="slide-content">
+        <p class="slide-label">03 — Method · reduce</p>
+        <h1 class="slide-title">51 correlated numbers collapse into 10 that matter.</h1>
+        <div class="content-grid cols-1-2">
+            <div>
+                <div class="chart-frame"><img src="../dark_mode_plots/figures/component_loadings.png" alt="PCA component loadings heatmap"></div>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Loadings heatmap (PC1–PC10). Cyan labels mark hourly and share features; the heat encodes correlation of each feature with each component.</p>
+            </div>
+            <div class="content-card">
+                <h3>What each of the first five components reads as</h3>
+                <table class="data-table" style="font-size: 15px;">
+                    <thead><tr><th>PC</th><th>Reads as</th><th>Top loading</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>Overall peak intensity</td><td>profile ramp +0.92</td></tr>
+                        <tr><td>2</td><td>Night vs afternoon split</td><td>night day ratio +0.92</td></tr>
+                        <tr><td>3</td><td>Morning slide</td><td>hour 7 shape +0.87</td></tr>
+                        <tr><td>4</td><td>Early-evening detail</td><td>hour 17 shape +0.56</td></tr>
+                        <tr><td>5</td><td>Weekend and fat tails</td><td>Haar detail L3 +0.54</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Five reads cover morphology, time-of-day, and calendar. The next slide shows how much of the data they retain.</p>
+            </div>
+        </div>
+        <p class="source">Source: web/public/data/pca.json (top_loadings_per_component; component_descriptions)</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 9 — Variance retained -->
+<section class="slide" data-slide="9">
+    <div class="slide-content">
+        <p class="slide-label">03 — Method · reduce</p>
+        <h1 class="slide-title">Ten components hold 95.05 percent of the variance.</h1>
+        <div class="content-grid cols-1-2">
+            <div>
+                <div class="chart-frame"><img src="../dark_mode_plots/figures/explained_variance.png" alt="Explained variance by component with 95 percent threshold"></div>
+            </div>
+            <div class="content-card">
+                <table class="data-table" style="font-size: 15px;">
+                    <thead><tr><th>Component</th><th>Explained</th><th>Cumulative</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>33.9%</td><td>33.9%</td></tr>
+                        <tr><td>2</td><td>29.0%</td><td>62.9%</td></tr>
+                        <tr><td>3</td><td>11.5%</td><td>74.4%</td></tr>
+                        <tr><td>4</td><td>6.3%</td><td>80.7%</td></tr>
+                        <tr><td>5</td><td>4.4%</td><td>85.1%</td></tr>
+                        <tr><td>6</td><td>3.7%</td><td>88.8%</td></tr>
+                        <tr><td>7</td><td>2.0%</td><td>90.8%</td></tr>
+                        <tr><td>8</td><td>1.7%</td><td>92.6%</td></tr>
+                        <tr><td>9</td><td>1.3%</td><td>93.9%</td></tr>
+                        <tr><td style="color: var(--cyan); font-weight: 600;">10</td><td style="color: var(--cyan); font-weight: 600;">1.2%</td><td style="color: var(--cyan); font-weight: 600;">95.05%</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Threshold 0.95 is fixed before fitting; Kaiser and elbow would have kept 7.</p>
+            </div>
+        </div>
+        <p class="source">Source: web/public/data/pca.json (cumulative_variance_retained 0.9504940204193212) · RESULTS.md §4</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 10 — K-selection rule SVG #2 -->
+<section class="slide" data-slide="10">
+    <div class="slide-content">
+        <p class="slide-label">03 — Method · how K is chosen</p>
+        <h1 class="slide-title">K is picked by a rule fixed in advance, not by eye.</h1>
+        <div class="diagram-frame" aria-label="K-selection rule from K 2–10 to smallest K within tolerance of the best composite score">
+            <svg viewBox="0 0 1500 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p10t p10d">
+                <title id="p10t">K-selection rule</title>
+                <desc id="p10d">Filter K 2–10 by minimum share and stability, normalize three metrics, average to a composite, keep candidates within 5 percent of the best, pick the smallest K.</desc>
+                <defs>
+                    <marker id="arr10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8A93A6"/></marker>
+                </defs>
+                <style>
+                    .b{fill:#141A24;stroke-width:1.5}
+                    .tl10{font-family:Inter,sans-serif;font-size:13px;font-weight:600;fill:#EAECEF}
+                    .sl10{font-family:IBM Plex Mono,monospace;font-size:11px;fill:#8A93A6}
+                    .el10{stroke:#262E3D;stroke-width:1.5;fill:none;marker-end:url(#arr10)}
+                    .diamond{fill:rgba(245,165,36,0.10);stroke:#F5A524;stroke-width:1.5}
+                </style>
+                <!-- K 2-10 -->
+                <g transform="translate(20,40)">
+                    <rect x="0" y="0" width="170" height="80" rx="6" class="b" stroke="#3BC9DE"/>
+                    <text x="85" y="24" text-anchor="middle" class="tl10">Sweep K = 2…10</text>
+                    <text x="85" y="40" text-anchor="middle" class="sl10">fit K-Means at each K</text>
+                    <text x="85" y="56" text-anchor="middle" class="sl10">collect silhouette,</text>
+                    <text x="85" y="70" text-anchor="middle" class="sl10">CH, DB, share, ARI</text>
+                </g>
+                <!-- Filter -->
+                <g transform="translate(220,40)">
+                    <polygon points="95,0 190,40 95,80 0,40" class="diamond"/>
+                    <text x="95" y="32" text-anchor="middle" class="tl10" style="font-size:12px">Filter</text>
+                    <text x="95" y="48" text-anchor="middle" class="sl10">share ≥ 0.05</text>
+                    <text x="95" y="60" text-anchor="middle" class="sl10">stability ARI ≥ 0.6</text>
+                </g>
+                <text x="315" y="18" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">survivors: K = 2, 3, 4, 5, 6</text>
+                <text x="315" y="30" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">K = 7–10 drop on share</text>
+                <!-- Normalize -->
+                <g transform="translate(440,40)">
+                    <rect x="0" y="0" width="200" height="80" rx="6" class="b" stroke="#6C8CFF"/>
+                    <text x="100" y="24" text-anchor="middle" class="tl10">Normalize</text>
+                    <text x="100" y="40" text-anchor="middle" class="sl10">silhouette → 0…1</text>
+                    <text x="100" y="56" text-anchor="middle" class="sl10">CH → 0…1,  DB → 1…0</text>
+                    <text x="100" y="70" text-anchor="middle" class="sl10">(DB is lower-is-better)</text>
+                </g>
+                <!-- Composite -->
+                <g transform="translate(670,40)">
+                    <rect x="0" y="0" width="180" height="80" rx="6" class="b" stroke="#B085F5"/>
+                    <text x="90" y="24" text-anchor="middle" class="tl10">Composite score</text>
+                    <text x="90" y="40" text-anchor="middle" class="sl10">mean of the three</text>
+                    <text x="90" y="56" text-anchor="middle" class="sl10">normalized metrics</text>
+                    <text x="90" y="70" text-anchor="middle" class="sl10">one number per K</text>
+                </g>
+                <!-- Tolerance -->
+                <g transform="translate(880,40)">
+                    <polygon points="95,0 190,40 95,80 0,40" class="diamond"/>
+                    <text x="95" y="28" text-anchor="middle" class="tl10" style="font-size:12px">Within 5%</text>
+                    <text x="95" y="44" text-anchor="middle" class="sl10">of the best</text>
+                    <text x="95" y="56" text-anchor="middle" class="sl10">composite?</text>
+                </g>
+                <!-- Pick smallest -->
+                <g transform="translate(1100,40)">
+                    <rect x="0" y="0" width="170" height="80" rx="6" class="b" stroke="#F5A524"/>
+                    <text x="85" y="24" text-anchor="middle" class="tl10">Pick smallest K</text>
+                    <text x="85" y="40" text-anchor="middle" class="sl10">in the band</text>
+                    <text x="85" y="56" text-anchor="middle" class="sl10">K = 4 wins</text>
+                    <text x="85" y="70" text-anchor="middle" class="sl10">(composite 0.944)</text>
+                </g>
+                <!-- No branch -->
+                <g transform="translate(880,160)">
+                    <rect x="0" y="0" width="190" height="48" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.2"/>
+                    <text x="95" y="20" text-anchor="middle" class="sl10">outside band → not selected</text>
+                    <text x="95" y="36" text-anchor="middle" class="sl10">K = 2, 3, 5, 6 in this run</text>
+                </g>
+                <!-- Edges -->
+                <path d="M 190 80 H 220" class="el10"/>
+                <path d="M 410 80 H 440" class="el10"/>
+                <path d="M 640 80 H 670" class="el10"/>
+                <path d="M 850 80 H 880" class="el10"/>
+                <path d="M 1070 80 H 1100" class="el10"/>
+                <path d="M 975 120 V 160" class="el10"/>
+                <text x="985" y="145" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">no</text>
+                <text x="985" y="78" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">yes</text>
+                <!-- Bottom note -->
+                <text x="750" y="260" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" fill="#8A93A6">Three metric families are scored as one. The 0.05 tolerance is set before the run; the smallest qualifying K wins — simplest defensible grouping.</text>
+                <text x="750" y="285" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="#5B657A">Raw silhouette peaks elsewhere (slide 11). The rule still picks K = 4.</text>
+            </svg>
+        </div>
+        <p class="source">Source: web/public/data/clustering.json (min_cluster_share 0.05 · min_stability_ari 0.6 · tolerance 0.05) · RESULTS.md §4</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 11 — K sweep table -->
+<section class="slide" data-slide="11">
+    <div class="slide-content">
+        <p class="slide-label">03 — Method · choose</p>
+        <h1 class="slide-title">Silhouette peaks at K = 5; the rule says K = 4.</h1>
+        <div class="content-grid cols-1-2">
+            <div class="chart-frame"><img src="../dark_mode_plots/figures/k_selection_metrics.png" alt="K selection metrics: silhouette, Calinski Harabasz, Davies Bouldin, composite by K"></div>
+            <div class="content-card">
+                <table class="data-table" style="font-size: 15px;">
+                    <thead><tr><th>K</th><th>Silhouette</th><th>CH</th><th>DB</th><th>Composite</th></tr></thead>
+                    <tbody>
+                        <tr><td>2</td><td>0.294</td><td>73.0</td><td>1.38</td><td>0.000</td></tr>
+                        <tr><td>3</td><td>0.330</td><td>93.7</td><td>1.20</td><td>0.879</td></tr>
+                        <tr><td style="color: var(--amber); font-weight: 600;">4</td><td style="color: var(--amber); font-weight: 600;">0.328</td><td style="color: var(--amber); font-weight: 600;">96.6</td><td style="color: var(--amber); font-weight: 600;">1.17</td><td style="color: var(--amber); font-weight: 600;">0.944</td></tr>
+                        <tr><td>5</td><td>0.335</td><td>87.6</td><td>1.20</td><td>0.821</td></tr>
+                        <tr><td>6</td><td>0.324</td><td>83.6</td><td>1.23</td><td>0.626</td></tr>
+                        <tr><td style="color: var(--slate);">7</td><td style="color: var(--slate);">0.316</td><td style="color: var(--slate);">77.5</td><td style="color: var(--slate);">1.21</td><td style="color: var(--slate);">—</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K = 7–10 filtered before scoring (min share 0.035–0.02). Composite exists only for K = 2–6. Silhouette alone would say K = 5; the composite and the tolerance band say K = 4.</p>
+            </div>
+        </div>
+        <p class="source">Source: web/public/data/clustering.json (composite_scores) · RESULTS.md §4 — K-sweep table</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- ============================================================
+     04 — RESULTS (slides 12–17)
+     ============================================================ -->
+
+<!-- Slide 12 — Four rhythms -->
+<section class="slide" data-slide="12">
+    <div class="slide-content">
+        <p class="slide-label">04 — Results · clusters</p>
+        <h1 class="slide-title">Four rhythms of a day.</h1>
+        <div class="cluster-cards">
+            <div class="cluster-card" style="--cc: var(--cluster-0);">
+                <p class="cluster-name">Cluster 0 — Midday peaking</p>
+                <p class="cluster-stat">39 homes · 19.5% · peak 13:00 · CoV 0.620</p>
+                <p class="cluster-stat">Weekday heavy; sharp noon rise</p>
+            </div>
+            <div class="cluster-card" style="--cc: var(--cluster-1);">
+                <p class="cluster-name">Cluster 1 — Flat all day</p>
+                <p class="cluster-stat">52 homes · 26.0% · peak 19:00 · CoV 0.302</p>
+                <p class="cluster-stat">Lowest variation; gentle curve</p>
+            </div>
+            <div class="cluster-card" style="--cc: var(--cluster-2);">
+                <p class="cluster-name">Cluster 2 — Evening peaking</p>
+                <p class="cluster-stat">47 homes · 23.5% · peak 20:00 · CoV 0.705</p>
+                <p class="cluster-stat">Steepest evening surge</p>
+            </div>
+            <div class="cluster-card" style="--cc: var(--cluster-3);">
+                <p class="cluster-name">Cluster 3 — Evening + weekend</p>
+                <p class="cluster-stat">62 homes · 31.0% · peak 19:00 · CoV 0.596</p>
+                <p class="cluster-stat">Largest group; weekend heavy</p>
+            </div>
+        </div>
+        <div class="chart-frame"><img src="../dark_mode_plots/figures/hourly_patterns.png" alt="24-hour normalized load shapes for the four clusters with day-part bands"></div>
+        <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Day-part bands: night (indigo) · morning (cyan) · afternoon (green) · evening (amber). Each curve is the cluster mean of the normalized 24-hour profile.</p>
+        <p class="source">Source: web/public/data/profiles.json (cluster_profiles + cluster_load_shapes) · RESULTS.md §4 — sizes 39 / 52 / 47 / 62</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 13 — Archetype recovery -->
+<section class="slide" data-slide="13">
+    <div class="slide-content">
+        <p class="slide-label">04 — Results · recovery</p>
+        <h1 class="slide-title">Recovery peaks exactly where the rule landed.</h1>
+        <div class="content-grid cols-1-2">
+            <div class="chart-frame"><img src="../dark_mode_plots/figures/archetype_recovery.png" alt="ARI and NMI vs K, showing peak recovery at K = 4"></div>
+            <div class="chart-frame"><img src="../dark_mode_plots/figures/archetype_crosstab.png" alt="Crosstab of recovered clusters vs hidden archetypes at K = 4"></div>
+        </div>
+        <div class="content-grid cols-2" style="margin-top: var(--sp-3);">
+            <div class="content-card">
+                <h3>At the chosen K = 4</h3>
+                <p>ARI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.813</span> and NMI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.828</span> against the hidden archetypes. Highest recovery across K = 2–10.</p>
+            </div>
+            <div class="content-card">
+                <h3>Stability at K = 4 (10 seeds)</h3>
+                <p>Mean ARI <span style="font-family: var(--font-mono);">0.995</span> (std 0.007, min 0.974). Label agreement <span style="font-family: var(--font-mono);">0.998</span>. The grouping is effectively seed-independent.</p>
+            </div>
+        </div>
+        <p class="source">Source: web/public/data/validation.json (recovery_by_k; crosstab_4; ARI 0.812671365105634 · NMI 0.8284123219399838) · RESULTS.md §4</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 14 — SHAP -->
+<section class="slide" data-slide="14">
+    <div class="slide-content">
+        <p class="slide-label">04 — Results · explanation</p>
+        <h1 class="slide-title">SHAP says which hours separate the groups.</h1>
+        <div class="content-grid cols-1-2">
+            <div class="chart-frame"><img src="../dark_mode_plots/figures/shap_cluster_importance.png" alt="SHAP feature importance per cluster"></div>
+            <div class="content-card">
+                <h3>Top global features (mean |SHAP|)</h3>
+                <table class="data-table" style="font-size: 15px;">
+                    <thead><tr><th>Feature</th><th>Mean |SHAP|</th></tr></thead>
+                    <tbody>
+                        <tr><td>hour 13 shape</td><td>0.0307</td></tr>
+                        <tr><td>harmonic 2 amplitude</td><td>0.0289</td></tr>
+                        <tr><td>hour 12 shape</td><td>0.0273</td></tr>
+                        <tr><td>profile ramp</td><td>0.0244</td></tr>
+                        <tr><td>peak concentration</td><td>0.0235</td></tr>
+                        <tr><td>evening share</td><td>0.0217</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Surrogate: random forest on the 51 features predicting recovered labels. Five-fold CV balanced accuracy <span style="color: var(--green); font-weight: 600;">0.985</span>.</p>
+                <p style="font-size: 16px; color: var(--mist); margin-top: var(--sp-2);">The surrogate ceiling is reported honestly: high accuracy says the features carry the grouping, not that the grouping is causal.</p>
+            </div>
+        </div>
+        <p class="source">Source: web/public/data/explainability.json (global_importance · cv 0.9845833333333334) · RESULTS.md §4</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 15 — Seasonal -->
+<section class="slide" data-slide="15">
+    <div class="slide-content">
+        <p class="slide-label">04 — Results · seasons</p>
+        <h1 class="slide-title">A 25 percent seasonal swing, the same four groups underneath.</h1>
+        <div class="two-figs">
+            <div class="chart-frame" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_mean_shape_by_season.png" alt="Mean 24-hour shape per season"></div>
+            <div class="chart-frame" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_daily_energy_and_peak_hour.png" alt="Daily energy and peak hour by season"></div>
+        </div>
+        <div class="stats-row" style="margin-top: var(--sp-3);">
+            <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.202</div><div class="stat-label">Amplitude estimate (injected 0.25)</div></div>
+            <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.68</div><div class="stat-label">Phase recovery r</div></div>
+            <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.885</div><div class="stat-label">Peak-season agreement (185)</div></div>
+            <div class="stat-card"><div class="stat-value" style="font-size: 28px;">26.6 → 38.0</div><div class="stat-label">Winter → summer daily kWh</div></div>
+        </div>
+        <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Per-consumer amplitude IQR 0.179–0.216. The step separates amplitude and shape shift by design; phase recovery is expected to be modest, not near-perfect.</p>
+        <p class="source">Source: web/public/data/seasonal.json (amplitude 0.20178864227863696 · phase r 0.6780669314235555 · agreement 0.885) · RESULTS.md §4</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 16 — Longitudinal -->
+<section class="slide" data-slide="16">
+    <div class="slide-content">
+        <p class="slide-label">04 — Results · stability over time</p>
+        <h1 class="slide-title">Mean agreement 0.88 across four quarters.</h1>
+        <div class="content-grid cols-1-2">
+            <div class="chart-frame"><img src="../dark_mode_plots/figures/longitudinal_cluster_stability.png" alt="Longitudinal cluster stability across quarterly windows"></div>
+            <div class="content-card">
+                <h3>Quarterly re-runs vs the full-year partition</h3>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-bottom: var(--sp-2);">Each quarter re-runs scaling, PCA, and K selection independently. ARI is permutation-invariant.</p>
+                <table class="data-table" style="font-size: 15px;">
+                    <thead><tr><th>Window</th><th>Dates</th><th>ARI</th></tr></thead>
+                    <tbody>
+                        <tr><td>Q1</td><td>2024-01-01 – 04-01</td><td>0.838</td></tr>
+                        <tr><td>Q2</td><td>2024-04-01 – 07-01</td><td>0.892</td></tr>
+                        <tr><td style="color: var(--green); font-weight: 600;">Q3</td><td>2024-07-01 – 09-30</td><td style="color: var(--green); font-weight: 600;">0.946</td></tr>
+                        <tr><td>Q4</td><td>2024-09-30 – 12-30</td><td>0.851</td></tr>
+                        <tr><td colspan="2" style="color: var(--ink); font-weight: 600;">Mean</td><td style="color: var(--ink); font-weight: 600;">0.882</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p class="source">Source: web/public/data/longitudinal.json (segment_ari_vs_full 0.838 / 0.892 / 0.946 / 0.851 · mean_temporal_stability_ari 0.8816894746864208) · RESULTS.md §4</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 17 — Ablation and robustness -->
+<section class="slide" data-slide="17">
+    <div class="slide-content">
+        <p class="slide-label">04 — Results · honest read</p>
+        <h1 class="slide-title">The top two feature sets are statistically indistinguishable.</h1>
+        <div class="content-grid cols-1-2">
+            <div class="chart-frame"><img src="../dark_mode_plots/figures/ablation_comparison.png" alt="Ablation: ARI by feature set"></div>
+            <div class="chart-frame"><img src="../dark_mode_plots/figures/seed_robustness.png" alt="Seed robustness: stability ARI distribution"></div>
+        </div>
+        <div class="info-box">
+            <p>The chart shows a visual gap between the best and second-best feature sets. The test says the gap is not significant — behavioural vs shape-only are within error. Calling the visual winner a win would overread the data.</p>
+        </div>
+        <p class="source">Source: web/public/data/benchmark.json (ablation) · outputs/reports/analysis_summary.md · docs/verification.md — reported as pending where not validated; no invented significance</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- ============================================================
+     05 — CLOSING (slides 18–20)
+     ============================================================ -->
+
+<!-- Slide 18 — Delivery -->
+<section class="slide" data-slide="18">
+    <div class="slide-content">
+        <p class="slide-label">05 — Closing · delivery</p>
+        <h1 class="slide-title">Same method, two apps, one optional native kernel.</h1>
+        <div class="content-grid cols-2">
+            <div class="content-card">
+                <h3>Pantry</h3>
+                <ul class="delivery-list">
+                    <li><span class="dl-label">Streamlit dashboard</span><span class="dl-value">Midnight canvas</span></li>
+                    <li><span class="dl-label">Vercel web app</span><span class="dl-value">Contract-driven UI</span></li>
+                    <li><span class="dl-label">Optional C++ kernel</span><span class="dl-value">benchmarked below</span></li>
+                </ul>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">The kernel does not replace the reference. Python and scikit-learn remain the science; C++ is one optional engine behind the same contracts.</p>
+            </div>
+            <div class="content-card">
+                <h3>What benchmarking actually showed</h3>
+                <table class="data-table" style="font-size: 15px;">
+                    <thead><tr><th>Stage</th><th>Flagship</th><th>Medium (2000)</th><th>Wide (128 wide)</th></tr></thead>
+                    <tbody>
+                        <tr><td>K-Means</td><td style="color: var(--green);">5.60×</td><td style="color: var(--green);">6.45×</td><td>—</td></tr>
+                        <tr><td>PCA</td><td style="color: var(--slate);">0.66× (slower)</td><td style="color: var(--slate);">0.77×</td><td style="color: var(--slate);">0.29×</td></tr>
+                        <tr><td style="color: var(--ink);">End to end</td><td colspan="3" style="color: var(--ink);">1.32× (6.99 s → 5.29 s, 30-day scratch)</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K-Means is faster in C++. PCA is not on this shape. The deck reports both.</p>
+            </div>
+        </div>
+        <p class="source">Source: web/public/data/benchmark.json (speedups kmeans 5.597749375810483 / 6.449224005875682; pca 0.29× wide; end_to_end 1.3229360736220948) · README</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 19 — Limitations -->
+<section class="slide" data-slide="19">
+    <div class="slide-content">
+        <p class="slide-label">05 — Closing · what breaks and what is next</p>
+        <h1 class="slide-title">A 30-day window already broke this rule once.</h1>
+        <div class="content-grid cols-2">
+            <div class="content-card">
+                <h3>What a short horizon taught</h3>
+                <table class="data-table" style="font-size: 15px;">
+                    <thead><tr><th>Step</th><th>30 days (Run 1)</th><th>365 days (Run 2)</th></tr></thead>
+                    <tbody>
+                        <tr><td>Selected K</td><td>3</td><td style="color: var(--amber); font-weight: 600;">4</td></tr>
+                        <tr><td>ARI vs archetypes</td><td>0.585</td><td style="color: var(--green); font-weight: 600;">0.813</td></tr>
+                        <tr><td>Seasonal</td><td style="color: var(--slate);">available: false (one season)</td><td>amplitude 0.202</td></tr>
+                        <tr><td>Longitudinal</td><td style="color: var(--slate);">not run (&lt; 180 days)</td><td>mean ARI 0.882</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Guard rails, not invented numbers: the 30-day run writes explicit reasons for what it skips.</p>
+            </div>
+            <div class="content-card">
+                <h3>Honesty notes</h3>
+                <p style="margin-bottom: var(--sp-2);"><span style="color: var(--ink);">Synthetic by design.</span> Hidden truth exists to validate against; results demonstrate the method, not a claim about real meters.</p>
+                <p style="margin-bottom: var(--sp-2);"><span style="color: var(--ink);">Surrogate is the ceiling.</span> SHAP explains a 98.5% surrogate — features carry the grouping; causality is not shown.</p>
+                <p><span style="color: var(--ink);">Real pathway is separate.</span> Case A (24 meters) is the audited adapter and reports only internal metrics — never invented labels.</p>
+            </div>
+        </div>
+        <p class="source">Source: RESULTS.md §3 (Run 1 hash 6896387297178841) vs §4 (Run 2 hash 99c7a6631340d301) · docs/verification.md</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- Slide 20 — Takeaway -->
+<section class="slide" data-slide="20">
+    <div class="slide-content">
+        <p class="slide-label">05 — Closing · takeaway</p>
+        <h1 class="slide-title">The shape of a day is real, recoverable, and modestly separated.</h1>
+        <div class="content-grid cols-2">
+            <div class="content-card accent" style="--accent: var(--green);">
+                <h3>What was shown</h3>
+                <p><span style="font-family: var(--font-mono); color: var(--ink);">K = 4</span> by a fixed composite rule — not by eye. ARI <span style="font-family: var(--font-mono);">0.813</span> at that K, the best across 2–10. Four rhythms that survive quarterly re-runs and a 25 percent seasonal swing.</p>
+            </div>
+            <div class="content-card accent" style="--accent: var(--cyan);">
+                <h3>What was not claimed</h3>
+                <p>Causality, universality, or a production number. Separation is modest (silhouette 0.328), data is synthetic, and the 30-day run already picked a different K. The contract is the method and the honesty around it.</p>
+            </div>
+        </div>
+        <div class="content-grid cols-2" style="margin-top: var(--sp-3);">
+            <div class="content-card">
+                <h3>Dashboard and web app</h3>
+                <p>Streamlit (Midnight palette) and Vercel (contract-driven charts on <span style="font-family: var(--font-mono);">web/public/data/*.json</span>) share the same tokens and contracts as this deck.</p>
+            </div>
+            <div class="content-card">
+                <h3>Reproduce</h3>
+                <p style="font-family: var(--font-mono); font-size: 15px; color: var(--mist);">py run_module.py energy_analysis -- --n_days 365 --n_consumers 200</p>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Flagship hash 99c7a6631340d301 · 10 PCA · composite K = 4 · 11 recommendations</p>
+            </div>
+        </div>
+        <p class="source">Source: RESULTS.md §6 (honesty notes) and §4 (flagship) · links to dashboard and web app</p>
+    </div>
+    <div class="sunee-logo">SUNEE</div>
+</section>
+
+<!-- ============================================================
+     CHROME
+     ============================================================ -->
+
+<div class="nav-controls">
+    <button class="nav-btn" id="prev-btn" aria-label="Previous slide">&#8592;</button>
+    <span class="slide-counter" id="slide-counter">1 / 20</span>
+    <button class="nav-btn" id="next-btn" aria-label="Next slide">&#8594;</button>
+</div>
+
+<button class="export-btn" id="export-btn">Export to PowerPoint</button>
+
+<div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+<div class="keyboard-hint">Arrow keys or space to navigate · F for fullscreen · P for presentation mode</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="src/script.js"></script>
 </body>
 </html>
