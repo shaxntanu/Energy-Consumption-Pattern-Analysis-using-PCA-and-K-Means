@@ -70,14 +70,34 @@ Complete technical presentation deck for the Energy Consumption Pattern Analysis
 
 ### Local Development
 
-1. Open `presentation/index.html` in a modern browser:
-   ```cmd
-   start presentation\index.html
-   ```
+**IMPORTANT:** Images will NOT load if you open `index.html` directly in a browser due to CORS restrictions. You must use a local web server.
 
-2. Navigate with arrow keys or on-screen controls
+#### Quick Start (Windows)
+1. Double-click `start_server.bat` in the presentation folder
+2. Open http://localhost:8000/index.html in your browser
 
-3. Press `F` for fullscreen, `P` for presentation mode
+#### Option 1: Python HTTP Server
+```cmd
+cd presentation
+python -m http.server 8000
+```
+Then navigate to `http://localhost:8000/index.html`
+
+#### Option 2: VS Code Live Server
+1. Install the "Live Server" extension
+2. Right-click `index.html` and select "Open with Live Server"
+
+#### Option 3: Node.js http-server
+```cmd
+npx http-server presentation -p 8000
+```
+Then navigate to `http://localhost:8000/index.html`
+
+### Once the server is running:
+
+1. Navigate with arrow keys or on-screen controls
+
+2. Press `F` for fullscreen, `P` for presentation mode
 
 ### Live Presentation
 
