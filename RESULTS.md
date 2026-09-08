@@ -196,7 +196,7 @@ The grouping is effectively seed-independent.
 
 - Method: **shap** (TreeExplainer on a post-hoc surrogate random forest; the
   surrogate never feeds back into the clustering).
-- Surrogate 5-fold balanced accuracy: **0.9845833333333334** — the honest
+- Surrogate 5-fold balanced accuracy: **0.9845833333333334** - the honest
   ceiling on how much the features explain the grouping.
 - Global mean |SHAP| feature importance:
 
@@ -229,7 +229,7 @@ both against the hidden truth:
   estimates is:
   - q25: **0.1785855522965766**
   - q75: **0.2161481442491843**
-- **Phase recovery: r = 0.6780669314235555** (0.678) — the estimated seasonal
+- **Phase recovery: r = 0.6780669314235555** (0.678) - the estimated seasonal
   phase correlates with the hidden `seasonal_phase`. Positive, and expected to
   be modest rather than near-perfect: the module says so in its own docs.
 - **Peak-season agreement: 0.885** on the **185** consumers whose hidden phase
@@ -273,7 +273,7 @@ The audited demo panel (24 meters over the real ingestion pathway):
 - Seed stability **1.0**, temporal stability **1.0**.
 
 The real branch reports internal quality and stability only. It never reports
-ARI/NMI — there are no invented labels to validate against.
+ARI/NMI - there are no invented labels to validate against.
 
 ---
 
@@ -283,7 +283,7 @@ ARI/NMI — there are no invented labels to validate against.
   skipped with `available: false` + reason (one season present) and the
   longitudinal step does not run (< 180 days). Neither fabricates numbers.
 - **Surrogate accuracy is the ceiling.** The shap values explain a 98.5%
-  accurate surrogate of the recovered labels — that says the features carry
+  accurate surrogate of the recovered labels - that says the features carry
   the grouping, not that the grouping is causal.
 - **Synthetic by design.** Both runs use the controlled synthetic panel so the
   hidden archetypes, phases, and injected seasonal swing exist to validate
@@ -313,13 +313,13 @@ joblib 1.5.3.
 
 ## 8. Artifacts
 
-- `models/analysis_metadata.json` — the authoritative run record (config,
+- `models/analysis_metadata.json` - the authoritative run record (config,
   outputs, package versions).
-- `outputs/metrics/*.json` — clustering, PCA, validation, explainability,
+- `outputs/metrics/*.json` - clustering, PCA, validation, explainability,
   seasonal, longitudinal metrics.
-- `outputs/reports/analysis_summary.md` — generated narrative report.
-- `web/public/data/*.json` — the contract files the web app renders
+- `outputs/reports/analysis_summary.md` - generated narrative report.
+- `web/public/data/*.json` - the contract files the web app renders
   (`seasonal.json`, `longitudinal.json`, `explainability.json`, `clusters.json`,
   `pca.json`, `clustering.json`, `profiles.json`, `manifest.json`).
-- `web/public/results/dark/*.png` and `outputs/figures/*.png` — the figures,
+- `web/public/results/dark/*.png` and `outputs/figures/*.png` - the figures,
   including the three seasonal charts shown in the web app's Seasons band.

@@ -155,14 +155,27 @@ class PresentationController {
             slide.addText(title, { x: 0.5, y: 0.75, w: 9, h: 0.9, fontSize: 30, fontFace: 'Georgia', color: 'EAECEF', valign: 'top' });
         }
 
-        // Charts
+        // Charts - PLACEHOLDER FOR MANUAL IMAGE INSERTION
+        // Images cannot be loaded from file:// URLs due to CORS restrictions
+        // To add charts to exported PowerPoint:
+        // 1. Export the presentation
+        // 2. Open the .pptx file
+        // 3. Manually insert images from dark_mode_plots/figures/ folder
+        // 4. Position them in the main content area
+        
         const imgs = el.querySelectorAll('img[src*="dark_mode_plots"]');
         let yOff = 1.8;
-        imgs.forEach((img, i) => {
-            try {
-                slide.addImage({ path: img.src, x: 0.5, y: yOff + i * 0.15, w: 9, h: 3, sizing: { type: 'contain' } });
-            } catch (e) { console.warn('Image skip:', img.src); }
-        });
+        if (imgs.length > 0) {
+            slide.addText('[CHART PLACEHOLDER - Insert image manually from dark_mode_plots/figures/]', 
+                { x: 0.5, y: yOff, w: 9, h: 1, fontSize: 14, color: '5B657A', fontFace: 'Courier New', valign: 'middle', align: 'center' });
+        }
+        
+        // Original image code (commented out due to CORS):
+        // imgs.forEach((img, i) => {
+        //     try {
+        //         slide.addImage({ path: img.src, x: 0.5, y: yOff + i * 0.15, w: 9, h: 3, sizing: { type: 'contain' } });
+        //     } catch (e) { console.warn('Image skip:', img.src); }
+        // });
 
         // Tables (export as text)
         const tables = el.querySelectorAll('.data-table');

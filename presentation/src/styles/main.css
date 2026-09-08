@@ -298,14 +298,20 @@ p, li {
     border-radius: 6px;
     overflow: hidden;
     border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .chart-frame img {
     display: block;
     width: 100%;
     height: auto;
+    object-fit: contain;
 }
 .chart-frame.half img { max-height: 420px; object-fit: contain; background: var(--canvas); }
 .chart-frame.full img { max-height: 540px; object-fit: contain; background: var(--canvas); }
+.chart-frame.compact { padding: 0; }
+.chart-frame.compact img { max-height: 460px; }
 
 /* --- Diagram container (inline SVGs) --- */
 .diagram-frame {

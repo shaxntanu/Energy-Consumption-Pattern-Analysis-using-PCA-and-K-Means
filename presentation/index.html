@@ -167,8 +167,8 @@
                     .n3{fill:#141A24;stroke:#F5A524;stroke-width:1.5}
                     .n4{fill:#141A24;stroke:#4FD1A5;stroke-width:1.5}
                     .n5{fill:#141A24;stroke:#B085F5;stroke-width:1.5}
-                    .tl{font-family:Inter,sans-serif;font-size:13px;font-weight:600;fill:#EAECEF}
-                    .sl{font-family:IBM Plex Mono,monospace;font-size:11px;fill:#8A93A6}
+                    .tl{font-family:Inter,sans-serif;font-size:11px;font-weight:600;fill:#EAECEF}
+                    .sl{font-family:IBM Plex Mono,monospace;font-size:10px;fill:#8A93A6}
                     .el{stroke:#262E3D;stroke-width:1.5;fill:none;marker-end:url(#arr)}
                     .eld{stroke:#5B657A;stroke-width:1.4;fill:none;stroke-dasharray:6 5;marker-end:url(#arr2)}
                 </style>
@@ -296,8 +296,8 @@
                     <marker id="arr6b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4FD1A5"/></marker>
                 </defs>
                 <style>
-                    .tl6{font-family:Inter,sans-serif;font-size:13px;font-weight:600;fill:#EAECEF}
-                    .sl6{font-family:IBM Plex Mono,monospace;font-size:11px;fill:#8A93A6}
+                    .tl6{font-family:Inter,sans-serif;font-size:11px;font-weight:600;fill:#EAECEF}
+                    .sl6{font-family:IBM Plex Mono,monospace;font-size:10px;fill:#8A93A6}
                     .el6{stroke:#262E3D;stroke-width:1.5;fill:none;marker-end:url(#arr6)}
                     .el6g{stroke:#4FD1A5;stroke-width:1.5;fill:none;marker-end:url(#arr6b)}
                 </style>
@@ -307,7 +307,7 @@
                     <rect x="0" y="0" width="300" height="160" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.5"/>
                     <text x="150" y="26" text-anchor="middle" class="tl6">Raw panel</text>
                     <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer × hour)</text>
-                    <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">meter reads: consumer, timestamp, kWh — keep</text>
+                    <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">meter reads: consumer, timestamp, kWh</text>
                     <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">calendar: hour, weekday, season — keep</text>
                     <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(242,109,109,0.12)" stroke="#F26D6D"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#F26D6D">truth: archetype, seasonal phase — drop</text>
                 </g>
@@ -392,7 +392,7 @@
         <h1 class="slide-title">51 correlated numbers collapse into 10 that matter.</h1>
         <div class="content-grid cols-1-2">
             <div>
-                <div class="chart-frame"><img src="../dark_mode_plots/figures/component_loadings.png" alt="PCA component loadings heatmap"></div>
+                <div class="chart-frame compact"><img src="../dark_mode_plots/figures/component_loadings.png" alt="PCA component loadings heatmap"></div>
                 <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Loadings heatmap (PC1–PC10). Cyan labels mark hourly and share features; the heat encodes correlation of each feature with each component.</p>
             </div>
             <div class="content-card">
@@ -419,10 +419,10 @@
 <section class="slide" data-slide="9">
     <div class="slide-content">
         <p class="slide-label">03 — Method · reduce</p>
-        <h1 class="slide-title">Ten components hold 95.05 percent of the variance.</h1>
+        <h1 class="slide-title">10 components hold 95.05 percent of the variance.</h1>
         <div class="content-grid cols-1-2">
             <div>
-                <div class="chart-frame"><img src="../dark_mode_plots/figures/explained_variance.png" alt="Explained variance by component with 95 percent threshold"></div>
+                <div class="chart-frame compact"><img src="../dark_mode_plots/figures/explained_variance.png" alt="Explained variance by component with 95 percent threshold"></div>
             </div>
             <div class="content-card">
                 <table class="data-table" style="font-size: 15px;">
@@ -462,8 +462,8 @@
                 </defs>
                 <style>
                     .b{fill:#141A24;stroke-width:1.5}
-                    .tl10{font-family:Inter,sans-serif;font-size:13px;font-weight:600;fill:#EAECEF}
-                    .sl10{font-family:IBM Plex Mono,monospace;font-size:11px;fill:#8A93A6}
+                    .tl10{font-family:Inter,sans-serif;font-size:11px;font-weight:600;fill:#EAECEF}
+                    .sl10{font-family:IBM Plex Mono,monospace;font-size:10px;fill:#8A93A6}
                     .el10{stroke:#262E3D;stroke-width:1.5;fill:none;marker-end:url(#arr10)}
                     .diamond{fill:rgba(245,165,36,0.10);stroke:#F5A524;stroke-width:1.5}
                 </style>
@@ -546,7 +546,7 @@
         <p class="slide-label">03 — Method · choose</p>
         <h1 class="slide-title">Silhouette peaks at K = 5; the rule says K = 4.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/k_selection_metrics.png" alt="K selection metrics: silhouette, Calinski Harabasz, Davies Bouldin, composite by K"></div>
+            <div class="chart-frame compact"><img src="../dark_mode_plots/figures/k_selection_metrics.png" alt="K selection metrics: silhouette, Calinski Harabasz, Davies Bouldin, composite by K"></div>
             <div class="content-card">
                 <table class="data-table" style="font-size: 15px;">
                     <thead><tr><th>K</th><th>Silhouette</th><th>CH</th><th>DB</th><th>Composite</th></tr></thead>
@@ -635,7 +635,7 @@
         <p class="slide-label">04 — Results · explanation</p>
         <h1 class="slide-title">SHAP says which hours separate the groups.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/shap_cluster_importance.png" alt="SHAP feature importance per cluster"></div>
+            <div class="chart-frame compact"><img src="../dark_mode_plots/figures/shap_cluster_importance.png" alt="SHAP feature importance per cluster"></div>
             <div class="content-card">
                 <h3>Top global features (mean |SHAP|)</h3>
                 <table class="data-table" style="font-size: 15px;">
@@ -664,8 +664,8 @@
         <p class="slide-label">04 — Results · seasons</p>
         <h1 class="slide-title">A 25 percent seasonal swing, the same four groups underneath.</h1>
         <div class="two-figs">
-            <div class="chart-frame" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_mean_shape_by_season.png" alt="Mean 24-hour shape per season"></div>
-            <div class="chart-frame" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_daily_energy_and_peak_hour.png" alt="Daily energy and peak hour by season"></div>
+            <div class="chart-frame compact" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_mean_shape_by_season.png" alt="Mean 24-hour shape per season"></div>
+            <div class="chart-frame compact" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_daily_energy_and_peak_hour.png" alt="Daily energy and peak hour by season"></div>
         </div>
         <div class="stats-row" style="margin-top: var(--sp-3);">
             <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.202</div><div class="stat-label">Amplitude estimate (injected 0.25)</div></div>
@@ -685,7 +685,7 @@
         <p class="slide-label">04 — Results · stability over time</p>
         <h1 class="slide-title">Mean agreement 0.88 across four quarters.</h1>
         <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/longitudinal_cluster_stability.png" alt="Longitudinal cluster stability across quarterly windows"></div>
+            <div class="chart-frame compact"><img src="../dark_mode_plots/figures/longitudinal_cluster_stability.png" alt="Longitudinal cluster stability across quarterly windows"></div>
             <div class="content-card">
                 <h3>Quarterly re-runs vs the full-year partition</h3>
                 <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-bottom: var(--sp-2);">Each quarter re-runs scaling, PCA, and K selection independently. ARI is permutation-invariant.</p>

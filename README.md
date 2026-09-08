@@ -13,7 +13,7 @@
 
 ![Energy Consumption Pattern Analysis](public/Energy_Consumption_Pattern_Analysis.png)
 
-### 📊 Dark Mode Visualizations
+###  Dark Mode Visualizations
 
 Premium dark-themed visualizations optimized for presentations are available in [`dark_mode_plots/`](dark_mode_plots/). All 45+ plots feature:
 - High-contrast neon color palette on dark backgrounds
@@ -242,7 +242,7 @@ The variance curve (explained + cumulative) is rendered on the **PCA** slide of 
 |---|---------|------------|-------------------|----------------|---------------|
 | 2 | 7083.5 | 0.2939 | 73.0 | 1.3823 | 0.9958 |
 | 3 | 4968.5 | 0.3305 | 93.7 | 1.1957 | 0.9852 |
-| **4 ★** | **3911.1** | **0.3283** | **96.6** | **1.1691** | **0.9947** |
+| **4 ** | **3911.1** | **0.3283** | **96.6** | **1.1691** | **0.9947** |
 | 5 | 3466.1 | 0.3352 | 87.6 | 1.2023 | 0.9587 |
 | 6 | 3072.5 | 0.3238 | 83.6 | 1.2326 | 0.9909 |
 | 7 | 2844.6 | 0.3164 | 77.5 | 1.2094 | 0.8931 |
@@ -289,7 +289,7 @@ Recovery against the hidden archetypes (from `web/public/data/validation.json`).
 |---|-----|-----|------------|
 | 2 | 0.2875 | 0.4565 | 0.2939 |
 | 3 | 0.6017 | 0.6801 | 0.3305 |
-| **4 ★** | **0.8127** | **0.8284** | 0.3283 |
+| **4 ** | **0.8127** | **0.8284** | 0.3283 |
 | 5 | 0.7653 | 0.8021 | **0.3352** |
 | 6 | 0.7528 | 0.7816 | 0.3238 |
 | 7 | 0.7347 | 0.7768 | 0.3164 |
@@ -652,27 +652,27 @@ To host the interactive app:
 ## Project structure
 
 ```
-├── streamlit_app.py           # Streamlit dashboard
-├── public/                    # Static landing page for Vercel
-├── vercel.json                # Vercel: static site, not Python functions
-├── src/
-│   ├── data_loader.py         # Archetype synthetic generator
-│   ├── preprocessing.py       # Panel-aware cleaning
-│   ├── feature_engineering.py # Behavioral / scale / combined sets
-│   ├── pca_analysis.py        # PCA with variance threshold
-│   ├── clustering.py          # Multi-metric K + stability
-│   ├── cluster_profiling.py   # Profiles and names
-│   ├── recommendation_engine.py
-│   ├── energy_analysis.py     # End-to-end orchestrator
-│   ├── run_ablation_study.py
-│   └── validate_dataset.py
-├── tests/
-├── models/                    # Scaler, PCA, K-Means, metadata
-├── outputs/{figures,metrics,reports}/
-├── baseline/                  # Frozen pre-fix artifacts
-├── docs/
-├── audit_report.md
-└── requirements.txt
+ streamlit_app.py           # Streamlit dashboard
+ public/                    # Static landing page for Vercel
+ vercel.json                # Vercel: static site, not Python functions
+ src/
+    data_loader.py         # Archetype synthetic generator
+    preprocessing.py       # Panel-aware cleaning
+    feature_engineering.py # Behavioral / scale / combined sets
+    pca_analysis.py        # PCA with variance threshold
+    clustering.py          # Multi-metric K + stability
+    cluster_profiling.py   # Profiles and names
+    recommendation_engine.py
+    energy_analysis.py     # End-to-end orchestrator
+    run_ablation_study.py
+    validate_dataset.py
+ tests/
+ models/                    # Scaler, PCA, K-Means, metadata
+ outputs/{figures,metrics,reports}/
+ baseline/                  # Frozen pre-fix artifacts
+ docs/
+ audit_report.md
+ requirements.txt
 >>>>>>> Stashed changes
 ```
 
