@@ -706,19 +706,38 @@
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 17 — Ablation and robustness -->
+<!-- Slide 17 — SDG Impact -->
 <section class="slide" data-slide="17">
     <div class="slide-content">
-        <p class="slide-label">04 — Results · honest read</p>
-        <h1 class="slide-title">The top two feature sets are statistically indistinguishable.</h1>
-        <div class="content-grid cols-1-2">
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/ablation_comparison.png" alt="Ablation: ARI by feature set"></div>
-            <div class="chart-frame"><img src="../dark_mode_plots/figures/seed_robustness.png" alt="Seed robustness: stability ARI distribution"></div>
+        <p class="slide-label">04 — Results · impact</p>
+        <h1 class="slide-title">Five UN Sustainable Development Goals, ranked by directness.</h1>
+        <div class="content-grid cols-2">
+            <div class="content-card accent" style="--accent: var(--green);">
+                <h3>SDG 7 - Affordable and Clean Energy (Primary)</h3>
+                <p style="margin-bottom: var(--sp-2);">Load-shape clustering produces data-driven energy management insights. Utilities can design efficiency programs, cut waste, and improve energy access.</p>
+                <p style="font-family: var(--font-mono); font-size: 14px; color: var(--slate);">Evidence: 4 clusters, ARI 0.81, seasonal shape analysis, longitudinal quarterly ARI 0.88</p>
+            </div>
+            <div class="content-card">
+                <h3>SDG 9 - Industry, Innovation (Supported)</h3>
+                <p style="margin-bottom: var(--sp-1); font-size: 17px;">PCA with K-Means, SHAP explainability, hybrid Python/C++ engine, production-grade infrastructure.</p>
+                <h3 style="margin-top: var(--sp-2);">SDG 12 - Responsible Consumption (Supported)</h3>
+                <p style="font-size: 17px;">Per-cluster peak hour ID, base-to-peak ratio, seasonal energy variation, weekday/weekend differentiation.</p>
+            </div>
         </div>
-        <div class="info-box">
-            <p>The chart shows a visual gap between the best and second-best feature sets. The test says the gap is not significant — behavioural vs shape-only are within error. Calling the visual winner a win would overread the data.</p>
+        <div class="content-grid cols-2" style="margin-top: var(--sp-3);">
+            <div class="content-card">
+                <h3>SDG 11 - Sustainable Cities (Indirect)</h3>
+                <p style="font-size: 17px;">Aggregate cluster shares for demand forecasting, seasonal infrastructure stress modeling, scalable to 150M+ meters.</p>
+            </div>
+            <div class="content-card">
+                <h3>SDG 13 - Climate Action (Indirect)</h3>
+                <p style="font-size: 17px;">Targeted demand-response program design, load-shifting to lower-carbon generation periods, infrastructure avoidance through improved planning.</p>
+            </div>
         </div>
-        <p class="source">Source: web/public/data/benchmark.json (ablation) · outputs/reports/analysis_summary.md · docs/verification.md — reported as pending where not validated; no invented significance</p>
+        <div class="info-box" style="margin-top: var(--sp-3);">
+            <p>Classifications follow UN SDG target definitions. Primary means core output directly addresses targets. Supported means enabling capabilities. Indirect means downstream benefits requiring deployment. No direct savings claims without empirical deployment evidence.</p>
+        </div>
+        <p class="source">Source: README.md section 22.5 - UN SDG contribution hierarchy - web/public/data/profiles.json</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
