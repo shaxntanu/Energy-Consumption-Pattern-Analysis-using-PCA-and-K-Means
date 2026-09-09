@@ -19,7 +19,7 @@
         <p class="slide-label">01 — Cover</p>
         <h1 class="cover-title">Grouped by when a home uses power, not how much.</h1>
         <p class="cover-subtitle">A shape-first clustering pipeline for residential energy: 200 synthetic consumers with four hidden archetypes and one real weather feed.</p>
-        <p class="cover-meta">200 consumers × 365 days × 24 hours = 1,752,000 records · 4 archetypes · 51 features · K = 4 · config 99c7a6631340d301</p>
+        <p class="cover-meta">200 consumers �- 365 days �- 24 hours = 1,752,000 records · 4 archetypes · 51 features · K = 4 · config 99c7a6631340d301</p>
         <p class="source">Source: RESULTS.md §4 · web/public/data/profiles.json</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
@@ -306,7 +306,7 @@
                 <g transform="translate(20,40)">
                     <rect x="0" y="0" width="300" height="160" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.5"/>
                     <text x="150" y="26" text-anchor="middle" class="tl6">Raw panel</text>
-                    <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer × hour)</text>
+                    <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer �- hour)</text>
                     <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">meter reads: consumer, timestamp, kWh</text>
                     <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">calendar: hour, weekday, season — keep</text>
                     <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(242,109,109,0.12)" stroke="#F26D6D"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#F26D6D">truth: archetype, seasonal phase — drop</text>
@@ -766,15 +766,15 @@
                 <table class="data-table" style="font-size: 15px;">
                     <thead><tr><th>Stage</th><th>Flagship</th><th>Medium (2000)</th><th>Wide (128 wide)</th></tr></thead>
                     <tbody>
-                        <tr><td>K-Means</td><td style="color: var(--green);">5.60×</td><td style="color: var(--green);">6.45×</td><td>—</td></tr>
-                        <tr><td>PCA</td><td style="color: var(--slate);">0.66× (slower)</td><td style="color: var(--slate);">0.77×</td><td style="color: var(--slate);">0.29×</td></tr>
-                        <tr><td style="color: var(--ink);">End to end</td><td colspan="3" style="color: var(--ink);">1.32× (6.99 s → 5.29 s, 30-day scratch)</td></tr>
+                        <tr><td>K-Means</td><td style="color: var(--green);">5.60�-</td><td style="color: var(--green);">6.45�-</td><td>—</td></tr>
+                        <tr><td>PCA</td><td style="color: var(--slate);">0.66�- (slower)</td><td style="color: var(--slate);">0.77�-</td><td style="color: var(--slate);">0.29�-</td></tr>
+                        <tr><td style="color: var(--ink);">End to end</td><td colspan="3" style="color: var(--ink);">1.32�- (6.99 s → 5.29 s, 30-day scratch)</td></tr>
                     </tbody>
                 </table>
                 <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K-Means is faster in C++. PCA is not on this shape. The deck reports both.</p>
             </div>
         </div>
-        <p class="source">Source: web/public/data/benchmark.json (speedups kmeans 5.597749375810483 / 6.449224005875682; pca 0.29× wide; end_to_end 1.3229360736220948) · README</p>
+        <p class="source">Source: web/public/data/benchmark.json (speedups kmeans 5.597749375810483 / 6.449224005875682; pca 0.29�- wide; end_to_end 1.3229360736220948) · README</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
