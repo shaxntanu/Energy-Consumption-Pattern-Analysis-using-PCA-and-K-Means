@@ -31,9 +31,9 @@
     --cluster-3: #4FD1A5;
 
     /* Typography */
-    --font-display: 'Charter', 'Georgia', 'Times New Roman', serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-mono: 'IBM Plex Mono', 'SF Mono', 'Consolas', monospace;
+    --font-display: 'Times New Roman', 'Georgia', 'Charter', serif;
+    --font-body: 'Times New Roman', 'Georgia', 'Times', serif;
+    --font-mono: 'Times New Roman', 'Courier New', 'Courier', monospace;
 
     /* Spacing (8px grid) */
     --sp-1: 8px;
@@ -320,16 +320,18 @@ p, li {
     border: 1px solid var(--line);
     border-radius: 6px;
     padding: var(--sp-3);
-    overflow-x: auto;
+    overflow: visible;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 .diagram-frame svg {
     display: block;
     max-width: 100%;
     height: auto;
     margin: 0 auto;
+    width: auto;
 }
 .diagram-caption {
     font-family: var(--font-mono);
