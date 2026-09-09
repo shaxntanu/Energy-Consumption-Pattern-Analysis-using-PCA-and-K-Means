@@ -26,7 +26,7 @@
 </section>
 
 <!-- ============================================================
- 02 - DATA (slides 2- 4)
+ 02 - DATA (slides 2- 4)
  ============================================================ -->
 
 <!-- Slide 2 - Same bill, different shape (conceptual illustration) -->
@@ -105,7 +105,7 @@
  <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Timing descriptors are drawn from the 51-feature engineering set (slide 7). Evening share and peak-to-average are shape-native; weekend ratio captures calendar behaviour. Values shown are per-cluster means of the standardized feature matrix described in profiles.json.</p>
  </div>
  <div class="info-box">
- <p>A bill sees totals. A grid sees hours. The evening cluster spends 40 percent of its day in the 18:00- 24:00 window - the flat cluster closer to 26 percent - even when their totals overlap.</p>
+ <p>A bill sees totals. A grid sees hours. The evening cluster spends 40 percent of its day in the 18:00- 24:00 window - the flat cluster closer to 26 percent - even when their totals overlap.</p>
  </div>
  <p class="source">Source: web/public/data/profiles.json - timing descriptors from the 51-feature set (doc: RESULTS.md Section 4)</p>
  </div>
@@ -143,7 +143,7 @@
 </section>
 
 <!-- ============================================================
- 03 - METHOD (slides 5- 11)
+ 03 - METHOD (slides 5- 11)
  ============================================================ -->
 
 <!-- Slide 5 - Pipeline SVG #1 -->
@@ -154,7 +154,7 @@
  <div class="diagram-frame" aria-label="End-to-end pipeline from synthetic generation to validation and export">
  <svg viewBox="0 0 1500 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p5t p5d">
  <title id="p5t">End-to-end pipeline</title>
- <desc id="p5d">Generate, validate, preprocess with leakage boundary, engineer 51 features, standardize and reduce with PCA, sweep K 2- 10 and select by rule, explain with a surrogate, evaluate, then branch to synthetic and real-world validation.</desc>
+ <desc id="p5d">Generate, validate, preprocess with leakage boundary, engineer 51 features, standardize and reduce with PCA, sweep K 2- 10 and select by rule, explain with a surrogate, evaluate, then branch to synthetic and real-world validation.</desc>
  <!-- helpers -->
  <defs>
  <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8A93A6"/></marker>
@@ -211,7 +211,7 @@
  <!-- 6 Sweep K select -->
  <g transform="translate(1020,20)">
  <rect x="0" y="0" width="190" height="64" rx="6" class="n3"/>
- <text x="95" y="22" text-anchor="middle" class="tl">Sweep K 2- 10, select</text>
+ <text x="95" y="22" text-anchor="middle" class="tl">Sweep K 2- 10, select</text>
  <text x="95" y="36" text-anchor="middle" class="sl">composite rule (slide 10)</text>
  <text x="95" y="50" text-anchor="middle" class="sl">K = 4</text>
  </g>
@@ -306,7 +306,7 @@
  <g transform="translate(20,40)">
  <rect x="0" y="0" width="300" height="160" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.5"/>
  <text x="150" y="26" text-anchor="middle" class="tl6">Raw panel</text>
- <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer x  hour)</text>
+ <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer x  hour)</text>
  <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">meter reads: consumer, timestamp, kWh</text>
  <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">calendar: hour, weekday, season - keep</text>
  <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(242,109,109,0.12)" stroke="#F26D6D"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#F26D6D">truth: archetype, seasonal phase - drop</text>
@@ -324,7 +324,7 @@
  <text x="150" y="26" text-anchor="middle" class="tl6">What the model ever sees</text>
  <text x="150" y="48" text-anchor="middle" class="sl6">meter + calendar observables only</text>
  <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">51 features engineered here (slide 7)</text>
- <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">standardize -   PCA -   K-Means</text>
+ <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">standardize -   PCA -   K-Means</text>
  <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(59,201,222,0.12)" stroke="#3BC9DE"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#3BC9DE">no label ever enters fit</text>
  </g>
  <!-- Labels held aside -->
@@ -363,7 +363,7 @@
  <div class="content-card">
  <h3>24 hourly shape bins</h3>
  <p style="margin-bottom: var(--sp-2);">Fraction of the day spent in each hour (<span style="font-family: var(--font-mono);">hour 0 shape</span> through <span style="font-family: var(--font-mono);">hour 23 shape</span>). Together they are the normalized 24-hour profile - scale-free by construction.</p>
- <p style="font-family: var(--font-mono); font-size: 14px; color: var(--slate);">hour 0 shape - hour 1 shape - - ¦ - hour 23 shape</p>
+ <p style="font-family: var(--font-mono); font-size: 14px; color: var(--slate);">hour 0 shape - hour 1 shape ... hour 23 shape</p>
  </div>
  <div class="content-card">
  <h3>27 summary descriptors</h3>
@@ -393,7 +393,7 @@
  <div class="content-grid cols-1-2">
  <div>
  <div class="chart-frame compact"><img src="../dark_mode_plots/figures/component_loadings.png" alt="PCA component loadings heatmap"></div>
- <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Loadings heatmap (PC1- PC10). Cyan labels mark hourly and share features; the heat encodes correlation of each feature with each component.</p>
+ <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Loadings heatmap (PC1- PC10). Cyan labels mark hourly and share features; the heat encodes correlation of each feature with each component.</p>
  </div>
  <div class="content-card">
  <h3>What each of the first five components reads as</h3>
@@ -453,10 +453,10 @@
  <div class="slide-content">
  <p class="slide-label">03 - Method - how K is chosen</p>
  <h1 class="slide-title">K is picked by a rule fixed in advance, not by eye.</h1>
- <div class="diagram-frame" aria-label="K-selection rule from K 2- 10 to smallest K within tolerance of the best composite score">
+ <div class="diagram-frame" aria-label="K-selection rule from K 2- 10 to smallest K within tolerance of the best composite score">
  <svg viewBox="0 0 1500 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p10t p10d">
  <title id="p10t">K-selection rule</title>
- <desc id="p10d">Filter K 2- 10 by minimum share and stability, normalize three metrics, average to a composite, keep candidates within 5 percent of the best, pick the smallest K.</desc>
+ <desc id="p10d">Filter K 2- 10 by minimum share and stability, normalize three metrics, average to a composite, keep candidates within 5 percent of the best, pick the smallest K.</desc>
  <defs>
  <marker id="arr10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8A93A6"/></marker>
  </defs>
@@ -470,7 +470,7 @@
  <!-- K 2-10 -->
  <g transform="translate(20,40)">
  <rect x="0" y="0" width="170" height="80" rx="6" class="b" stroke="#3BC9DE"/>
- <text x="85" y="24" text-anchor="middle" class="tl10">Sweep K = 2- ¦10</text>
+ <text x="85" y="24" text-anchor="middle" class="tl10">Sweep K = 2-10</text>
  <text x="85" y="40" text-anchor="middle" class="sl10">fit K-Means at each K</text>
  <text x="85" y="56" text-anchor="middle" class="sl10">collect silhouette,</text>
  <text x="85" y="70" text-anchor="middle" class="sl10">CH, DB, share, ARI</text>
@@ -479,17 +479,17 @@
  <g transform="translate(220,40)">
  <polygon points="95,0 190,40 95,80 0,40" class="diamond"/>
  <text x="95" y="32" text-anchor="middle" class="tl10" style="font-size:12px">Filter</text>
- <text x="95" y="48" text-anchor="middle" class="sl10">share -  ¥ 0.05</text>
- <text x="95" y="60" text-anchor="middle" class="sl10">stability ARI -  ¥ 0.6</text>
+ <text x="95" y="48" text-anchor="middle" class="sl10">share -  >= 0.05</text>
+ <text x="95" y="60" text-anchor="middle" class="sl10">stability ARI -  >= 0.6</text>
  </g>
  <text x="315" y="18" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">survivors: K = 2, 3, 4, 5, 6</text>
- <text x="315" y="30" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">K = 7- 10 drop on share</text>
+ <text x="315" y="30" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">K = 7- 10 drop on share</text>
  <!-- Normalize -->
  <g transform="translate(440,40)">
  <rect x="0" y="0" width="200" height="80" rx="6" class="b" stroke="#6C8CFF"/>
  <text x="100" y="24" text-anchor="middle" class="tl10">Normalize</text>
- <text x="100" y="40" text-anchor="middle" class="sl10">silhouette -   0- ¦1</text>
- <text x="100" y="56" text-anchor="middle" class="sl10">CH -   0- ¦1, DB -   1- ¦0</text>
+ <text x="100" y="40" text-anchor="middle" class="sl10">silhouette -   0-1</text>
+ <text x="100" y="56" text-anchor="middle" class="sl10">CH -   0-1, DB -   1- |0</text>
  <text x="100" y="70" text-anchor="middle" class="sl10">(DB is lower-is-better)</text>
  </g>
  <!-- Composite -->
@@ -518,7 +518,7 @@
  <!-- No branch -->
  <g transform="translate(880,160)">
  <rect x="0" y="0" width="190" height="48" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.2"/>
- <text x="95" y="20" text-anchor="middle" class="sl10">outside band -   not selected</text>
+ <text x="95" y="20" text-anchor="middle" class="sl10">outside band -   not selected</text>
  <text x="95" y="36" text-anchor="middle" class="sl10">K = 2, 3, 5, 6 in this run</text>
  </g>
  <!-- Edges -->
@@ -559,7 +559,7 @@
  <tr><td style="color: var(--slate);">7</td><td style="color: var(--slate);">0.316</td><td style="color: var(--slate);">77.5</td><td style="color: var(--slate);">1.21</td><td style="color: var(--slate);">- </td></tr>
  </tbody>
  </table>
- <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K = 7- 10 filtered before scoring (min share 0.035- 0.02). Composite exists only for K = 2- 6. Silhouette alone would say K = 5; the composite and the tolerance band say K = 4.</p>
+ <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K = 7- 10 filtered before scoring (min share 0.035- 0.02). Composite exists only for K = 2- 6. Silhouette alone would say K = 5; the composite and the tolerance band say K = 4.</p>
  </div>
  </div>
  <p class="source">Source: web/public/data/clustering.json (composite_scores) - RESULTS.md Section 4 - K-sweep table</p>
@@ -568,7 +568,7 @@
 </section>
 
 <!-- ============================================================
- 04 - RESULTS (slides 12- 17)
+ 04 - RESULTS (slides 12- 17)
  ============================================================ -->
 
 <!-- Slide 12 - Four rhythms -->
@@ -617,7 +617,7 @@
  <div class="content-grid cols-2" style="margin-top: var(--sp-3);">
  <div class="content-card">
  <h3>At the chosen K = 4</h3>
- <p>ARI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.813</span> and NMI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.828</span> against the hidden archetypes. Highest recovery across K = 2- 10.</p>
+ <p>ARI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.813</span> and NMI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.828</span> against the hidden archetypes. Highest recovery across K = 2- 10.</p>
  </div>
  <div class="content-card">
  <h3>Stability at K = 4 (10 seeds)</h3>
@@ -671,9 +671,9 @@
  <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.202</div><div class="stat-label">Amplitude estimate (injected 0.25)</div></div>
  <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.68</div><div class="stat-label">Phase recovery r</div></div>
  <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.885</div><div class="stat-label">Peak-season agreement (185)</div></div>
- <div class="stat-card"><div class="stat-value" style="font-size: 28px;">26.6 -   38.0</div><div class="stat-label">Winter -   summer daily kWh</div></div>
+ <div class="stat-card"><div class="stat-value" style="font-size: 28px;">26.6 -   38.0</div><div class="stat-label">Winter -   summer daily kWh</div></div>
  </div>
- <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Per-consumer amplitude IQR 0.179- 0.216. The step separates amplitude and shape shift by design; phase recovery is expected to be modest, not near-perfect.</p>
+ <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Per-consumer amplitude IQR 0.179- 0.216. The step separates amplitude and shape shift by design; phase recovery is expected to be modest, not near-perfect.</p>
  <p class="source">Source: web/public/data/seasonal.json (amplitude 0.20178864227863696 - phase r 0.6780669314235555 - agreement 0.885) - RESULTS.md Section 4</p>
  </div>
  <div class="sunee-logo">SUNEE</div>
@@ -692,10 +692,10 @@
  <table class="data-table" style="font-size: 15px;">
  <thead><tr><th>Window</th><th>Dates</th><th>ARI</th></tr></thead>
  <tbody>
- <tr><td>Q1</td><td>2024-01-01 -  04-01</td><td>0.838</td></tr>
- <tr><td>Q2</td><td>2024-04-01 -  07-01</td><td>0.892</td></tr>
- <tr><td style="color: var(--green); font-weight: 600;">Q3</td><td>2024-07-01 -  09-30</td><td style="color: var(--green); font-weight: 600;">0.946</td></tr>
- <tr><td>Q4</td><td>2024-09-30 -  12-30</td><td>0.851</td></tr>
+ <tr><td>Q1</td><td>2024-01-01 -  04-01</td><td>0.838</td></tr>
+ <tr><td>Q2</td><td>2024-04-01 -  07-01</td><td>0.892</td></tr>
+ <tr><td style="color: var(--green); font-weight: 600;">Q3</td><td>2024-07-01 -  09-30</td><td style="color: var(--green); font-weight: 600;">0.946</td></tr>
+ <tr><td>Q4</td><td>2024-09-30 -  12-30</td><td>0.851</td></tr>
  <tr><td colspan="2" style="color: var(--ink); font-weight: 600;">Mean</td><td style="color: var(--ink); font-weight: 600;">0.882</td></tr>
  </tbody>
  </table>
@@ -743,7 +743,7 @@
 </section>
 
 <!-- ============================================================
- 05 - CLOSING (slides 18- 20)
+ 05 - CLOSING (slides 18- 20)
  ============================================================ -->
 
 <!-- Slide 18 - Delivery -->
@@ -766,15 +766,15 @@
  <table class="data-table" style="font-size: 15px;">
  <thead><tr><th>Stage</th><th>Flagship</th><th>Medium (2000)</th><th>Wide (128 wide)</th></tr></thead>
  <tbody>
- <tr><td>K-Means</td><td style="color: var(--green);">5.60x </td><td style="color: var(--green);">6.45x </td><td>- </td></tr>
- <tr><td>PCA</td><td style="color: var(--slate);">0.66x  (slower)</td><td style="color: var(--slate);">0.77x </td><td style="color: var(--slate);">0.29x </td></tr>
- <tr><td style="color: var(--ink);">End to end</td><td colspan="3" style="color: var(--ink);">1.32x  (6.99 s -   5.29 s, 30-day scratch)</td></tr>
+ <tr><td>K-Means</td><td style="color: var(--green);">5.60x </td><td style="color: var(--green);">6.45x </td><td>- </td></tr>
+ <tr><td>PCA</td><td style="color: var(--slate);">0.66x  (slower)</td><td style="color: var(--slate);">0.77x </td><td style="color: var(--slate);">0.29x </td></tr>
+ <tr><td style="color: var(--ink);">End to end</td><td colspan="3" style="color: var(--ink);">1.32x  (6.99 s -   5.29 s, 30-day scratch)</td></tr>
  </tbody>
  </table>
  <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K-Means is faster in C++. PCA is not on this shape. The deck reports both.</p>
  </div>
  </div>
- <p class="source">Source: web/public/data/benchmark.json (speedups kmeans 5.597749375810483 / 6.449224005875682; pca 0.29x  wide; end_to_end 1.3229360736220948) - README</p>
+ <p class="source">Source: web/public/data/benchmark.json (speedups kmeans 5.597749375810483 / 6.449224005875682; pca 0.29x  wide; end_to_end 1.3229360736220948) - README</p>
  </div>
  <div class="sunee-logo">SUNEE</div>
 </section>
@@ -818,7 +818,7 @@
  <div class="content-grid cols-2">
  <div class="content-card accent" style="--accent: var(--green);">
  <h3>What was shown</h3>
- <p><span style="font-family: var(--font-mono); color: var(--ink);">K = 4</span> by a fixed composite rule - not by eye. ARI <span style="font-family: var(--font-mono);">0.813</span> at that K, the best across 2- 10. Four rhythms that survive quarterly re-runs and a 25 percent seasonal swing.</p>
+ <p><span style="font-family: var(--font-mono); color: var(--ink);">K = 4</span> by a fixed composite rule - not by eye. ARI <span style="font-family: var(--font-mono);">0.813</span> at that K, the best across 2- 10. Four rhythms that survive quarterly re-runs and a 25 percent seasonal swing.</p>
  </div>
  <div class="content-card accent" style="--accent: var(--cyan);">
  <h3>What was not claimed</h3>
