@@ -307,6 +307,7 @@ p, li {
     width: 100%;
     height: auto;
     object-fit: contain;
+    margin: 0 auto;
 }
 .chart-frame.half img { max-height: 420px; object-fit: contain; background: var(--canvas); }
 .chart-frame.full img { max-height: 540px; object-fit: contain; background: var(--canvas); }
@@ -320,11 +321,15 @@ p, li {
     border-radius: 6px;
     padding: var(--sp-3);
     overflow-x: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .diagram-frame svg {
     display: block;
     max-width: 100%;
     height: auto;
+    margin: 0 auto;
 }
 .diagram-caption {
     font-family: var(--font-mono);
