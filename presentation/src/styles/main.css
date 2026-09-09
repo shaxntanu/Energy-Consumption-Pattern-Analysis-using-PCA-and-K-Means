@@ -321,13 +321,11 @@ p, li {
     border-radius: 6px;
     padding: var(--sp-3);
     overflow-x: auto;
-    text-align: center;
 }
 .diagram-frame svg {
-    display: inline-block;
+    display: block;
     max-width: 100%;
     height: auto;
-    vertical-align: middle;
 }
 .diagram-caption {
     font-family: var(--font-mono);
