@@ -320,18 +320,14 @@ p, li {
     border: 1px solid var(--line);
     border-radius: 6px;
     padding: var(--sp-3);
-    overflow: visible;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
+    overflow-x: auto;
+    text-align: center;
 }
 .diagram-frame svg {
-    display: block;
+    display: inline-block;
     max-width: 100%;
     height: auto;
-    margin: 0 auto;
-    width: auto;
+    vertical-align: middle;
 }
 .diagram-caption {
     font-family: var(--font-mono);
@@ -527,15 +523,7 @@ p, li {
 
 /* --- SUNEE logo --- */
 .sunee-logo {
-    position: fixed;
-    top: 32px; right: 40px;
-    z-index: 100;
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--slate);
-    opacity: 0.7;
+    display: none;
 }
 
 /* --- Keyboard hint --- */
