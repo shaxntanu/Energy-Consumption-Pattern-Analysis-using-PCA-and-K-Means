@@ -3,36 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Consumption Pattern Analysis — PCA and K-Means</title>
+    <title>Energy Consumption Pattern Analysis â PCA and K-Means</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="src/styles/main.css">
 </head>
 <body>
 
 <!-- ============================================================
-     01 — COVER
+     01 â COVER
      ============================================================ -->
 
-<!-- Slide 1 — 01 Cover -->
+<!-- Slide 1 â 01 Cover -->
 <section class="slide active" data-slide="1">
     <div class="slide-content cover">
-        <p class="slide-label">01 — Cover</p>
+        <p class="slide-label">01 â Cover</p>
         <h1 class="cover-title">Grouped by when a home uses power, not how much.</h1>
         <p class="cover-subtitle">A shape-first clustering pipeline for residential energy: 200 synthetic consumers with four hidden archetypes and one real weather feed.</p>
-        <p class="cover-meta">200 consumers �- 365 days �- 24 hours = 1,752,000 records · 4 archetypes · 51 features · K = 4 · config 99c7a6631340d301</p>
-        <p class="source">Source: RESULTS.md §4 · web/public/data/profiles.json</p>
+        <p class="cover-meta">200 consumers Ã- 365 days Ã- 24 hours = 1,752,000 records Â· 4 archetypes Â· 51 features Â· K = 4 Â· config 99c7a6631340d301</p>
+        <p class="source">Source: RESULTS.md Â§4 Â· web/public/data/profiles.json</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
 <!-- ============================================================
-     02 — DATA (slides 2–4)
+     02 â DATA (slides 2â4)
      ============================================================ -->
 
-<!-- Slide 2 — Same bill, different shape (conceptual illustration) -->
+<!-- Slide 2 â Same bill, different shape (conceptual illustration) -->
 <section class="slide" data-slide="2">
     <div class="slide-content">
-        <p class="slide-label">02 — Data · why shape</p>
+        <p class="slide-label">02 â Data Â· why shape</p>
         <h1 class="slide-title">Two homes can share a bill and share nothing else.</h1>
         <div class="diagram-frame" aria-label="Two 24-hour load curves with equal area and different timing">
             <svg viewBox="0 0 1400 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fig2t fig2d">
@@ -70,26 +70,26 @@
                 <path d="M 70 235 C 160 238, 260 240, 360 238 S 520 234, 620 220 S 740 160, 840 140 S 940 120, 1020 90 C 1070 68, 1140 75, 1190 96 S 1280 180, 1330 218 L 1330 296 L 70 296 Z" fill="url(#gAmber)"/>
                 <!-- legend -->
                 <line x1="1040" y1="328" x2="1070" y2="328" stroke="#3BC9DE" stroke-width="2.3"/>
-                <text x="1076" y="332" font-family="Inter, sans-serif" font-size="13" fill="#EAECEF">Home A — morning peak</text>
+                <text x="1076" y="332" font-family="Inter, sans-serif" font-size="13" fill="#EAECEF">Home A â morning peak</text>
                 <line x1="1040" y1="346" x2="1070" y2="346" stroke="#F5A524" stroke-width="2.3"/>
-                <text x="1076" y="350" font-family="Inter, sans-serif" font-size="13" fill="#EAECEF">Home B — evening peak</text>
+                <text x="1076" y="350" font-family="Inter, sans-serif" font-size="13" fill="#EAECEF">Home B â evening peak</text>
                 <!-- equal-area badge -->
                 <g transform="translate(540,72)">
                     <rect x="0" y="0" width="260" height="28" rx="14" fill="#1B2230" stroke="#262E3D"/>
-                    <text x="130" y="18" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#8A93A6">same daily total kWh — different shapes</text>
+                    <text x="130" y="18" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#8A93A6">same daily total kWh â different shapes</text>
                 </g>
             </svg>
-            <p class="diagram-caption">Conceptual illustration of the shape-first premise. The two curves enclose the same area (identical daily total) but peak at different hours — magnitude alone would call them the same, timing separates them.</p>
+            <p class="diagram-caption">Conceptual illustration of the shape-first premise. The two curves enclose the same area (identical daily total) but peak at different hours â magnitude alone would call them the same, timing separates them.</p>
         </div>
-        <p class="source">Source: conceptual illustration for the brief (shape-first motivation). Real curves: slide 12 · web/public/data/profiles.json</p>
+        <p class="source">Source: conceptual illustration for the brief (shape-first motivation). Real curves: slide 12 Â· web/public/data/profiles.json</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 3 — Timing features table -->
+<!-- Slide 3 â Timing features table -->
 <section class="slide" data-slide="3">
     <div class="slide-content">
-        <p class="slide-label">02 — Data · why timing matters</p>
+        <p class="slide-label">02 â Data Â· why timing matters</p>
         <h1 class="slide-title">Timing tells a utility what magnitude alone cannot.</h1>
         <div class="content-card" style="margin-bottom: var(--sp-4);">
             <table class="data-table" aria-label="Three timing-sensitive features by cluster">
@@ -105,17 +105,17 @@
             <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Timing descriptors are drawn from the 51-feature engineering set (slide 7). Evening share and peak-to-average are shape-native; weekend ratio captures calendar behaviour. Values shown are per-cluster means of the standardized feature matrix described in profiles.json.</p>
         </div>
         <div class="info-box">
-            <p>A bill sees totals. A grid sees hours. The evening cluster spends 40 percent of its day in the 18:00–24:00 window — the flat cluster closer to 26 percent — even when their totals overlap.</p>
+            <p>A bill sees totals. A grid sees hours. The evening cluster spends 40 percent of its day in the 18:00â24:00 window â the flat cluster closer to 26 percent â even when their totals overlap.</p>
         </div>
-        <p class="source">Source: web/public/data/profiles.json · timing descriptors from the 51-feature set (doc: RESULTS.md §4)</p>
+        <p class="source">Source: web/public/data/profiles.json Â· timing descriptors from the 51-feature set (doc: RESULTS.md Â§4)</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 4 — Dataset facts -->
+<!-- Slide 4 â Dataset facts -->
 <section class="slide" data-slide="4">
     <div class="slide-content">
-        <p class="slide-label">02 — Data · the panel</p>
+        <p class="slide-label">02 â Data Â· the panel</p>
         <h1 class="slide-title">200 consumers, four hidden rhythms, one real weather feed.</h1>
         <div class="content-grid cols-2">
             <div class="content-card">
@@ -134,27 +134,27 @@
                 <h3 style="color: var(--cyan);">Zephyr weather provenance</h3>
                 <p>Hourly weather is drawn from a recorded Zephyr Station feed with a 0.25 amplitude seasonal model (slide 15) and a 1.0-hour seasonal shape shift. Ninety percent of consumers carry a seasonal phase (std 20 days).</p>
                 <h3 style="color: var(--green); margin-top: var(--sp-3);">Real-world adapter (Case A)</h3>
-                <p>Twenty-four audited meters with the same ingestion pathway and report format. The demo pathway is reported only with internal metrics — never with invented labels (see slide 18).</p>
+                <p>Twenty-four audited meters with the same ingestion pathway and report format. The demo pathway is reported only with internal metrics â never with invented labels (see slide 18).</p>
             </div>
         </div>
-        <p class="source">Source: RESULTS.md §4 (run 2) · docs/verification.md · models/analysis_metadata.json</p>
+        <p class="source">Source: RESULTS.md Â§4 (run 2) Â· docs/verification.md Â· models/analysis_metadata.json</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
 <!-- ============================================================
-     03 — METHOD (slides 5–11)
+     03 â METHOD (slides 5â11)
      ============================================================ -->
 
-<!-- Slide 5 — Pipeline SVG #1 -->
+<!-- Slide 5 â Pipeline SVG #1 -->
 <section class="slide" data-slide="5">
     <div class="slide-content">
-        <p class="slide-label">03 — Method · pipeline</p>
+        <p class="slide-label">03 â Method Â· pipeline</p>
         <h1 class="slide-title">One deterministic path from meter to validated cluster.</h1>
         <div class="diagram-frame" aria-label="End-to-end pipeline from synthetic generation to validation and export">
             <svg viewBox="0 0 1500 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p5t p5d">
                 <title id="p5t">End-to-end pipeline</title>
-                <desc id="p5d">Generate, validate, preprocess with leakage boundary, engineer 51 features, standardize and reduce with PCA, sweep K 2–10 and select by rule, explain with a surrogate, evaluate, then branch to synthetic and real-world validation.</desc>
+                <desc id="p5d">Generate, validate, preprocess with leakage boundary, engineer 51 features, standardize and reduce with PCA, sweep K 2â10 and select by rule, explain with a surrogate, evaluate, then branch to synthetic and real-world validation.</desc>
                 <!-- helpers -->
                 <defs>
                     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8A93A6"/></marker>
@@ -211,7 +211,7 @@
                 <!-- 6 Sweep K select -->
                 <g transform="translate(1020,20)">
                     <rect x="0" y="0" width="190" height="64" rx="6" class="n3"/>
-                    <text x="95" y="22" text-anchor="middle" class="tl">Sweep K 2–10, select</text>
+                    <text x="95" y="22" text-anchor="middle" class="tl">Sweep K 2â10, select</text>
                     <text x="95" y="36" text-anchor="middle" class="sl">composite rule (slide 10)</text>
                     <text x="95" y="50" text-anchor="middle" class="sl">K = 4</text>
                 </g>
@@ -242,16 +242,16 @@
                 <!-- Synthetic branch -->
                 <g transform="translate(560,260)">
                     <rect x="0" y="0" width="280" height="64" rx="6" class="n4"/>
-                    <text x="140" y="22" text-anchor="middle" class="tl">Synthetic branch — ARI / NMI vs archetypes</text>
-                    <text x="140" y="36" text-anchor="middle" class="sl">ARI 0.813 · NMI 0.828 · best K = 4</text>
+                    <text x="140" y="22" text-anchor="middle" class="tl">Synthetic branch â ARI / NMI vs archetypes</text>
+                    <text x="140" y="36" text-anchor="middle" class="sl">ARI 0.813 Â· NMI 0.828 Â· best K = 4</text>
                     <text x="140" y="50" text-anchor="middle" class="sl">slide 13</text>
                 </g>
                 <!-- Real branch -->
                 <g transform="translate(880,260)">
                     <rect x="0" y="0" width="320" height="64" rx="6" class="n4"/>
-                    <text x="160" y="22" text-anchor="middle" class="tl">Real branch — internal + stability</text>
-                    <text x="160" y="36" text-anchor="middle" class="sl">Case A: 24 meters · internal only</text>
-                    <text x="160" y="50" text-anchor="middle" class="sl">no invented labels — slide 18</text>
+                    <text x="160" y="22" text-anchor="middle" class="tl">Real branch â internal + stability</text>
+                    <text x="160" y="36" text-anchor="middle" class="sl">Case A: 24 meters Â· internal only</text>
+                    <text x="160" y="50" text-anchor="middle" class="sl">no invented labels â slide 18</text>
                 </g>
                 <!-- Export -->
                 <g transform="translate(1240,260)">
@@ -277,15 +277,15 @@
             </svg>
             <p class="diagram-caption">Inline figure. Solid edges are the fitting path. The dashed edge from Explain is post-hoc and never feeds back. The two evaluation branches share the same K; their metrics differ by what truth is available.</p>
         </div>
-        <p class="source">Source: docs/flow_diagram.md · outputs/reports/analysis_summary.md · RESULTS.md §4</p>
+        <p class="source">Source: docs/flow_diagram.md Â· outputs/reports/analysis_summary.md Â· RESULTS.md Â§4</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 6 — Leakage boundary SVG #3 -->
+<!-- Slide 6 â Leakage boundary SVG #3 -->
 <section class="slide" data-slide="6">
     <div class="slide-content">
-        <p class="slide-label">03 — Method · honesty</p>
+        <p class="slide-label">03 â Method Â· honesty</p>
         <h1 class="slide-title">The answer key never reaches the model.</h1>
         <div class="diagram-frame" aria-label="Leakage boundary between raw panel and clustering inputs">
             <svg viewBox="0 0 1500 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p6t p6d">
@@ -306,10 +306,10 @@
                 <g transform="translate(20,40)">
                     <rect x="0" y="0" width="300" height="160" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.5"/>
                     <text x="150" y="26" text-anchor="middle" class="tl6">Raw panel</text>
-                    <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer �- hour)</text>
+                    <text x="150" y="48" text-anchor="middle" class="sl6">1,752,000 rows (consumer Ã- hour)</text>
                     <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">meter reads: consumer, timestamp, kWh</text>
-                    <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">calendar: hour, weekday, season — keep</text>
-                    <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(242,109,109,0.12)" stroke="#F26D6D"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#F26D6D">truth: archetype, seasonal phase — drop</text>
+                    <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">calendar: hour, weekday, season â keep</text>
+                    <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(242,109,109,0.12)" stroke="#F26D6D"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#F26D6D">truth: archetype, seasonal phase â drop</text>
                 </g>
                 <!-- Boundary (diamond) -->
                 <g transform="translate(380,70)">
@@ -324,7 +324,7 @@
                     <text x="150" y="26" text-anchor="middle" class="tl6">What the model ever sees</text>
                     <text x="150" y="48" text-anchor="middle" class="sl6">meter + calendar observables only</text>
                     <rect x="16" y="66" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="81" text-anchor="middle" class="sl6">51 features engineered here (slide 7)</text>
-                    <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">standardize → PCA → K-Means</text>
+                    <rect x="16" y="94" width="268" height="22" rx="4" fill="#1B2230" stroke="#262E3D"/><text x="150" y="109" text-anchor="middle" class="sl6">standardize â PCA â K-Means</text>
                     <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(59,201,222,0.12)" stroke="#3BC9DE"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#3BC9DE">no label ever enters fit</text>
                 </g>
                 <!-- Labels held aside -->
@@ -349,21 +349,21 @@
                 <text x="750" y="290" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" fill="#8A93A6">Nothing a meter and a calendar could not observe reaches the clustering. Truth is read-only and only after the assignments exist.</text>
             </svg>
         </div>
-        <p class="source">Source: docs/verification.md · docs/flow_diagram.md · pipeline source (leakage guard)</p>
+        <p class="source">Source: docs/verification.md Â· docs/flow_diagram.md Â· pipeline source (leakage guard)</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 7 — 51 features -->
+<!-- Slide 7 â 51 features -->
 <section class="slide" data-slide="7">
     <div class="slide-content">
-        <p class="slide-label">03 — Method · features</p>
+        <p class="slide-label">03 â Method Â· features</p>
         <h1 class="slide-title">51 features, not one of them is size.</h1>
         <div class="content-grid cols-2">
             <div class="content-card">
                 <h3>24 hourly shape bins</h3>
-                <p style="margin-bottom: var(--sp-2);">Fraction of the day spent in each hour (<span style="font-family: var(--font-mono);">hour 0 shape</span> through <span style="font-family: var(--font-mono);">hour 23 shape</span>). Together they are the normalized 24-hour profile — scale-free by construction.</p>
-                <p style="font-family: var(--font-mono); font-size: 14px; color: var(--slate);">hour 0 shape · hour 1 shape · … · hour 23 shape</p>
+                <p style="margin-bottom: var(--sp-2);">Fraction of the day spent in each hour (<span style="font-family: var(--font-mono);">hour 0 shape</span> through <span style="font-family: var(--font-mono);">hour 23 shape</span>). Together they are the normalized 24-hour profile â scale-free by construction.</p>
+                <p style="font-family: var(--font-mono); font-size: 14px; color: var(--slate);">hour 0 shape Â· hour 1 shape Â· â¦ Â· hour 23 shape</p>
             </div>
             <div class="content-card">
                 <h3>27 summary descriptors</h3>
@@ -378,22 +378,22 @@
             </div>
         </div>
         <div class="info-box">
-            <p>Design intent is shape invariance: no feature encodes how much a home uses in total. A small flat and a large flat look the same on purpose — timing, not totals, drives the grouping.</p>
+            <p>Design intent is shape invariance: no feature encodes how much a home uses in total. A small flat and a large flat look the same on purpose â timing, not totals, drives the grouping.</p>
         </div>
-        <p class="source">Source: RESULTS.md §4 (51 features: 24 hourly + 27 summary) · web/public/data/profiles.json</p>
+        <p class="source">Source: RESULTS.md Â§4 (51 features: 24 hourly + 27 summary) Â· web/public/data/profiles.json</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 8 — PCA collapse -->
+<!-- Slide 8 â PCA collapse -->
 <section class="slide" data-slide="8">
     <div class="slide-content">
-        <p class="slide-label">03 — Method · reduce</p>
+        <p class="slide-label">03 â Method Â· reduce</p>
         <h1 class="slide-title">51 correlated numbers collapse into 10 that matter.</h1>
         <div class="content-grid cols-1-2">
             <div>
                 <div class="chart-frame compact"><img src="../dark_mode_plots/figures/component_loadings.png" alt="PCA component loadings heatmap"></div>
-                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Loadings heatmap (PC1–PC10). Cyan labels mark hourly and share features; the heat encodes correlation of each feature with each component.</p>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Loadings heatmap (PC1âPC10). Cyan labels mark hourly and share features; the heat encodes correlation of each feature with each component.</p>
             </div>
             <div class="content-card">
                 <h3>What each of the first five components reads as</h3>
@@ -415,10 +415,10 @@
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 9 — Variance retained -->
+<!-- Slide 9 â Variance retained -->
 <section class="slide" data-slide="9">
     <div class="slide-content">
-        <p class="slide-label">03 — Method · reduce</p>
+        <p class="slide-label">03 â Method Â· reduce</p>
         <h1 class="slide-title">10 components hold 95.05 percent of the variance.</h1>
         <div class="content-grid cols-1-2">
             <div>
@@ -443,20 +443,20 @@
                 <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">Threshold 0.95 is fixed before fitting; Kaiser and elbow would have kept 7.</p>
             </div>
         </div>
-        <p class="source">Source: web/public/data/pca.json (cumulative_variance_retained 0.9504940204193212) · RESULTS.md §4</p>
+        <p class="source">Source: web/public/data/pca.json (cumulative_variance_retained 0.9504940204193212) Â· RESULTS.md Â§4</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 10 — K-selection rule SVG #2 -->
+<!-- Slide 10 â K-selection rule SVG #2 -->
 <section class="slide" data-slide="10">
     <div class="slide-content">
-        <p class="slide-label">03 — Method · how K is chosen</p>
+        <p class="slide-label">03 â Method Â· how K is chosen</p>
         <h1 class="slide-title">K is picked by a rule fixed in advance, not by eye.</h1>
-        <div class="diagram-frame" aria-label="K-selection rule from K 2–10 to smallest K within tolerance of the best composite score">
+        <div class="diagram-frame" aria-label="K-selection rule from K 2â10 to smallest K within tolerance of the best composite score">
             <svg viewBox="0 0 1500 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p10t p10d">
                 <title id="p10t">K-selection rule</title>
-                <desc id="p10d">Filter K 2–10 by minimum share and stability, normalize three metrics, average to a composite, keep candidates within 5 percent of the best, pick the smallest K.</desc>
+                <desc id="p10d">Filter K 2â10 by minimum share and stability, normalize three metrics, average to a composite, keep candidates within 5 percent of the best, pick the smallest K.</desc>
                 <defs>
                     <marker id="arr10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8A93A6"/></marker>
                 </defs>
@@ -470,7 +470,7 @@
                 <!-- K 2-10 -->
                 <g transform="translate(20,40)">
                     <rect x="0" y="0" width="170" height="80" rx="6" class="b" stroke="#3BC9DE"/>
-                    <text x="85" y="24" text-anchor="middle" class="tl10">Sweep K = 2…10</text>
+                    <text x="85" y="24" text-anchor="middle" class="tl10">Sweep K = 2â¦10</text>
                     <text x="85" y="40" text-anchor="middle" class="sl10">fit K-Means at each K</text>
                     <text x="85" y="56" text-anchor="middle" class="sl10">collect silhouette,</text>
                     <text x="85" y="70" text-anchor="middle" class="sl10">CH, DB, share, ARI</text>
@@ -479,17 +479,17 @@
                 <g transform="translate(220,40)">
                     <polygon points="95,0 190,40 95,80 0,40" class="diamond"/>
                     <text x="95" y="32" text-anchor="middle" class="tl10" style="font-size:12px">Filter</text>
-                    <text x="95" y="48" text-anchor="middle" class="sl10">share ≥ 0.05</text>
-                    <text x="95" y="60" text-anchor="middle" class="sl10">stability ARI ≥ 0.6</text>
+                    <text x="95" y="48" text-anchor="middle" class="sl10">share â¥ 0.05</text>
+                    <text x="95" y="60" text-anchor="middle" class="sl10">stability ARI â¥ 0.6</text>
                 </g>
                 <text x="315" y="18" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">survivors: K = 2, 3, 4, 5, 6</text>
-                <text x="315" y="30" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">K = 7–10 drop on share</text>
+                <text x="315" y="30" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">K = 7â10 drop on share</text>
                 <!-- Normalize -->
                 <g transform="translate(440,40)">
                     <rect x="0" y="0" width="200" height="80" rx="6" class="b" stroke="#6C8CFF"/>
                     <text x="100" y="24" text-anchor="middle" class="tl10">Normalize</text>
-                    <text x="100" y="40" text-anchor="middle" class="sl10">silhouette → 0…1</text>
-                    <text x="100" y="56" text-anchor="middle" class="sl10">CH → 0…1,  DB → 1…0</text>
+                    <text x="100" y="40" text-anchor="middle" class="sl10">silhouette â 0â¦1</text>
+                    <text x="100" y="56" text-anchor="middle" class="sl10">CH â 0â¦1,  DB â 1â¦0</text>
                     <text x="100" y="70" text-anchor="middle" class="sl10">(DB is lower-is-better)</text>
                 </g>
                 <!-- Composite -->
@@ -518,7 +518,7 @@
                 <!-- No branch -->
                 <g transform="translate(880,160)">
                     <rect x="0" y="0" width="190" height="48" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.2"/>
-                    <text x="95" y="20" text-anchor="middle" class="sl10">outside band → not selected</text>
+                    <text x="95" y="20" text-anchor="middle" class="sl10">outside band â not selected</text>
                     <text x="95" y="36" text-anchor="middle" class="sl10">K = 2, 3, 5, 6 in this run</text>
                 </g>
                 <!-- Edges -->
@@ -531,19 +531,19 @@
                 <text x="985" y="145" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">no</text>
                 <text x="985" y="78" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B657A">yes</text>
                 <!-- Bottom note -->
-                <text x="750" y="260" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" fill="#8A93A6">Three metric families are scored as one. The 0.05 tolerance is set before the run; the smallest qualifying K wins — simplest defensible grouping.</text>
+                <text x="750" y="260" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" fill="#8A93A6">Three metric families are scored as one. The 0.05 tolerance is set before the run; the smallest qualifying K wins â simplest defensible grouping.</text>
                 <text x="750" y="285" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="#5B657A">Raw silhouette peaks elsewhere (slide 11). The rule still picks K = 4.</text>
             </svg>
         </div>
-        <p class="source">Source: web/public/data/clustering.json (min_cluster_share 0.05 · min_stability_ari 0.6 · tolerance 0.05) · RESULTS.md §4</p>
+        <p class="source">Source: web/public/data/clustering.json (min_cluster_share 0.05 Â· min_stability_ari 0.6 Â· tolerance 0.05) Â· RESULTS.md Â§4</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 11 — K sweep table -->
+<!-- Slide 11 â K sweep table -->
 <section class="slide" data-slide="11">
     <div class="slide-content">
-        <p class="slide-label">03 — Method · choose</p>
+        <p class="slide-label">03 â Method Â· choose</p>
         <h1 class="slide-title">Silhouette peaks at K = 5; the rule says K = 4.</h1>
         <div class="content-grid cols-1-2">
             <div class="chart-frame compact"><img src="../dark_mode_plots/figures/k_selection_metrics.png" alt="K selection metrics: silhouette, Calinski Harabasz, Davies Bouldin, composite by K"></div>
@@ -556,59 +556,59 @@
                         <tr><td style="color: var(--amber); font-weight: 600;">4</td><td style="color: var(--amber); font-weight: 600;">0.328</td><td style="color: var(--amber); font-weight: 600;">96.6</td><td style="color: var(--amber); font-weight: 600;">1.17</td><td style="color: var(--amber); font-weight: 600;">0.944</td></tr>
                         <tr><td>5</td><td>0.335</td><td>87.6</td><td>1.20</td><td>0.821</td></tr>
                         <tr><td>6</td><td>0.324</td><td>83.6</td><td>1.23</td><td>0.626</td></tr>
-                        <tr><td style="color: var(--slate);">7</td><td style="color: var(--slate);">0.316</td><td style="color: var(--slate);">77.5</td><td style="color: var(--slate);">1.21</td><td style="color: var(--slate);">—</td></tr>
+                        <tr><td style="color: var(--slate);">7</td><td style="color: var(--slate);">0.316</td><td style="color: var(--slate);">77.5</td><td style="color: var(--slate);">1.21</td><td style="color: var(--slate);">â</td></tr>
                     </tbody>
                 </table>
-                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K = 7–10 filtered before scoring (min share 0.035–0.02). Composite exists only for K = 2–6. Silhouette alone would say K = 5; the composite and the tolerance band say K = 4.</p>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K = 7â10 filtered before scoring (min share 0.035â0.02). Composite exists only for K = 2â6. Silhouette alone would say K = 5; the composite and the tolerance band say K = 4.</p>
             </div>
         </div>
-        <p class="source">Source: web/public/data/clustering.json (composite_scores) · RESULTS.md §4 — K-sweep table</p>
+        <p class="source">Source: web/public/data/clustering.json (composite_scores) Â· RESULTS.md Â§4 â K-sweep table</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
 <!-- ============================================================
-     04 — RESULTS (slides 12–17)
+     04 â RESULTS (slides 12â17)
      ============================================================ -->
 
-<!-- Slide 12 — Four rhythms -->
+<!-- Slide 12 â Four rhythms -->
 <section class="slide" data-slide="12">
     <div class="slide-content">
-        <p class="slide-label">04 — Results · clusters</p>
+        <p class="slide-label">04 â Results Â· clusters</p>
         <h1 class="slide-title">Four rhythms of a day.</h1>
         <div class="cluster-cards">
             <div class="cluster-card" style="--cc: var(--cluster-0);">
-                <p class="cluster-name">Cluster 0 — Midday peaking</p>
-                <p class="cluster-stat">39 homes · 19.5% · peak 13:00 · CoV 0.620</p>
+                <p class="cluster-name">Cluster 0 â Midday peaking</p>
+                <p class="cluster-stat">39 homes Â· 19.5% Â· peak 13:00 Â· CoV 0.620</p>
                 <p class="cluster-stat">Weekday heavy; sharp noon rise</p>
             </div>
             <div class="cluster-card" style="--cc: var(--cluster-1);">
-                <p class="cluster-name">Cluster 1 — Flat all day</p>
-                <p class="cluster-stat">52 homes · 26.0% · peak 19:00 · CoV 0.302</p>
+                <p class="cluster-name">Cluster 1 â Flat all day</p>
+                <p class="cluster-stat">52 homes Â· 26.0% Â· peak 19:00 Â· CoV 0.302</p>
                 <p class="cluster-stat">Lowest variation; gentle curve</p>
             </div>
             <div class="cluster-card" style="--cc: var(--cluster-2);">
-                <p class="cluster-name">Cluster 2 — Evening peaking</p>
-                <p class="cluster-stat">47 homes · 23.5% · peak 20:00 · CoV 0.705</p>
+                <p class="cluster-name">Cluster 2 â Evening peaking</p>
+                <p class="cluster-stat">47 homes Â· 23.5% Â· peak 20:00 Â· CoV 0.705</p>
                 <p class="cluster-stat">Steepest evening surge</p>
             </div>
             <div class="cluster-card" style="--cc: var(--cluster-3);">
-                <p class="cluster-name">Cluster 3 — Evening + weekend</p>
-                <p class="cluster-stat">62 homes · 31.0% · peak 19:00 · CoV 0.596</p>
+                <p class="cluster-name">Cluster 3 â Evening + weekend</p>
+                <p class="cluster-stat">62 homes Â· 31.0% Â· peak 19:00 Â· CoV 0.596</p>
                 <p class="cluster-stat">Largest group; weekend heavy</p>
             </div>
         </div>
         <div class="chart-frame"><img src="../dark_mode_plots/figures/hourly_patterns.png" alt="24-hour normalized load shapes for the four clusters with day-part bands"></div>
-        <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Day-part bands: night (indigo) · morning (cyan) · afternoon (green) · evening (amber). Each curve is the cluster mean of the normalized 24-hour profile.</p>
-        <p class="source">Source: web/public/data/profiles.json (cluster_profiles + cluster_load_shapes) · RESULTS.md §4 — sizes 39 / 52 / 47 / 62</p>
+        <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Day-part bands: night (indigo) Â· morning (cyan) Â· afternoon (green) Â· evening (amber). Each curve is the cluster mean of the normalized 24-hour profile.</p>
+        <p class="source">Source: web/public/data/profiles.json (cluster_profiles + cluster_load_shapes) Â· RESULTS.md Â§4 â sizes 39 / 52 / 47 / 62</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 13 — Archetype recovery -->
+<!-- Slide 13 â Archetype recovery -->
 <section class="slide" data-slide="13">
     <div class="slide-content">
-        <p class="slide-label">04 — Results · recovery</p>
+        <p class="slide-label">04 â Results Â· recovery</p>
         <h1 class="slide-title">Recovery peaks exactly where the rule landed.</h1>
         <div class="content-grid cols-1-2">
             <div class="chart-frame"><img src="../dark_mode_plots/figures/archetype_recovery.png" alt="ARI and NMI vs K, showing peak recovery at K = 4"></div>
@@ -617,22 +617,22 @@
         <div class="content-grid cols-2" style="margin-top: var(--sp-3);">
             <div class="content-card">
                 <h3>At the chosen K = 4</h3>
-                <p>ARI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.813</span> and NMI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.828</span> against the hidden archetypes. Highest recovery across K = 2–10.</p>
+                <p>ARI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.813</span> and NMI <span style="font-family: var(--font-mono); color: var(--green); font-weight: 600;">0.828</span> against the hidden archetypes. Highest recovery across K = 2â10.</p>
             </div>
             <div class="content-card">
                 <h3>Stability at K = 4 (10 seeds)</h3>
                 <p>Mean ARI <span style="font-family: var(--font-mono);">0.995</span> (std 0.007, min 0.974). Label agreement <span style="font-family: var(--font-mono);">0.998</span>. The grouping is effectively seed-independent.</p>
             </div>
         </div>
-        <p class="source">Source: web/public/data/validation.json (recovery_by_k; crosstab_4; ARI 0.812671365105634 · NMI 0.8284123219399838) · RESULTS.md §4</p>
+        <p class="source">Source: web/public/data/validation.json (recovery_by_k; crosstab_4; ARI 0.812671365105634 Â· NMI 0.8284123219399838) Â· RESULTS.md Â§4</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 14 — SHAP -->
+<!-- Slide 14 â SHAP -->
 <section class="slide" data-slide="14">
     <div class="slide-content">
-        <p class="slide-label">04 — Results · explanation</p>
+        <p class="slide-label">04 â Results Â· explanation</p>
         <h1 class="slide-title">SHAP says which hours separate the groups.</h1>
         <div class="content-grid cols-1-2">
             <div class="chart-frame compact"><img src="../dark_mode_plots/figures/shap_cluster_importance.png" alt="SHAP feature importance per cluster"></div>
@@ -653,15 +653,15 @@
                 <p style="font-size: 16px; color: var(--mist); margin-top: var(--sp-2);">The surrogate ceiling is reported honestly: high accuracy says the features carry the grouping, not that the grouping is causal.</p>
             </div>
         </div>
-        <p class="source">Source: web/public/data/explainability.json (global_importance · cv 0.9845833333333334) · RESULTS.md §4</p>
+        <p class="source">Source: web/public/data/explainability.json (global_importance Â· cv 0.9845833333333334) Â· RESULTS.md Â§4</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 15 — Seasonal -->
+<!-- Slide 15 â Seasonal -->
 <section class="slide" data-slide="15">
     <div class="slide-content">
-        <p class="slide-label">04 — Results · seasons</p>
+        <p class="slide-label">04 â Results Â· seasons</p>
         <h1 class="slide-title">A 25 percent seasonal swing, the same four groups underneath.</h1>
         <div class="two-figs">
             <div class="chart-frame compact" style="flex:1"><img src="../dark_mode_plots/figures/seasonal_mean_shape_by_season.png" alt="Mean 24-hour shape per season"></div>
@@ -671,18 +671,18 @@
             <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.202</div><div class="stat-label">Amplitude estimate (injected 0.25)</div></div>
             <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.68</div><div class="stat-label">Phase recovery r</div></div>
             <div class="stat-card"><div class="stat-value" style="font-size: 28px;">0.885</div><div class="stat-label">Peak-season agreement (185)</div></div>
-            <div class="stat-card"><div class="stat-value" style="font-size: 28px;">26.6 → 38.0</div><div class="stat-label">Winter → summer daily kWh</div></div>
+            <div class="stat-card"><div class="stat-value" style="font-size: 28px;">26.6 â 38.0</div><div class="stat-label">Winter â summer daily kWh</div></div>
         </div>
-        <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Per-consumer amplitude IQR 0.179–0.216. The step separates amplitude and shape shift by design; phase recovery is expected to be modest, not near-perfect.</p>
-        <p class="source">Source: web/public/data/seasonal.json (amplitude 0.20178864227863696 · phase r 0.6780669314235555 · agreement 0.885) · RESULTS.md §4</p>
+        <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Per-consumer amplitude IQR 0.179â0.216. The step separates amplitude and shape shift by design; phase recovery is expected to be modest, not near-perfect.</p>
+        <p class="source">Source: web/public/data/seasonal.json (amplitude 0.20178864227863696 Â· phase r 0.6780669314235555 Â· agreement 0.885) Â· RESULTS.md Â§4</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 16 — Longitudinal -->
+<!-- Slide 16 â Longitudinal -->
 <section class="slide" data-slide="16">
     <div class="slide-content">
-        <p class="slide-label">04 — Results · stability over time</p>
+        <p class="slide-label">04 â Results Â· stability over time</p>
         <h1 class="slide-title">Mean agreement 0.88 across four quarters.</h1>
         <div class="content-grid cols-1-2">
             <div class="chart-frame compact"><img src="../dark_mode_plots/figures/longitudinal_cluster_stability.png" alt="Longitudinal cluster stability across quarterly windows"></div>
@@ -692,24 +692,24 @@
                 <table class="data-table" style="font-size: 15px;">
                     <thead><tr><th>Window</th><th>Dates</th><th>ARI</th></tr></thead>
                     <tbody>
-                        <tr><td>Q1</td><td>2024-01-01 – 04-01</td><td>0.838</td></tr>
-                        <tr><td>Q2</td><td>2024-04-01 – 07-01</td><td>0.892</td></tr>
-                        <tr><td style="color: var(--green); font-weight: 600;">Q3</td><td>2024-07-01 – 09-30</td><td style="color: var(--green); font-weight: 600;">0.946</td></tr>
-                        <tr><td>Q4</td><td>2024-09-30 – 12-30</td><td>0.851</td></tr>
+                        <tr><td>Q1</td><td>2024-01-01 â 04-01</td><td>0.838</td></tr>
+                        <tr><td>Q2</td><td>2024-04-01 â 07-01</td><td>0.892</td></tr>
+                        <tr><td style="color: var(--green); font-weight: 600;">Q3</td><td>2024-07-01 â 09-30</td><td style="color: var(--green); font-weight: 600;">0.946</td></tr>
+                        <tr><td>Q4</td><td>2024-09-30 â 12-30</td><td>0.851</td></tr>
                         <tr><td colspan="2" style="color: var(--ink); font-weight: 600;">Mean</td><td style="color: var(--ink); font-weight: 600;">0.882</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <p class="source">Source: web/public/data/longitudinal.json (segment_ari_vs_full 0.838 / 0.892 / 0.946 / 0.851 · mean_temporal_stability_ari 0.8816894746864208) · RESULTS.md §4</p>
+        <p class="source">Source: web/public/data/longitudinal.json (segment_ari_vs_full 0.838 / 0.892 / 0.946 / 0.851 Â· mean_temporal_stability_ari 0.8816894746864208) Â· RESULTS.md Â§4</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 17 — SDG Impact -->
+<!-- Slide 17 â SDG Impact -->
 <section class="slide" data-slide="17">
     <div class="slide-content">
-        <p class="slide-label">04 — Results · impact</p>
+        <p class="slide-label">04 â Results Â· impact</p>
         <h1 class="slide-title">Five UN Sustainable Development Goals, ranked by directness.</h1>
         <div class="content-grid cols-2">
             <div class="content-card accent" style="--accent: var(--green);">
@@ -743,13 +743,13 @@
 </section>
 
 <!-- ============================================================
-     05 — CLOSING (slides 18–20)
+     05 â CLOSING (slides 18â20)
      ============================================================ -->
 
-<!-- Slide 18 — Delivery -->
+<!-- Slide 18 â Delivery -->
 <section class="slide" data-slide="18">
     <div class="slide-content">
-        <p class="slide-label">05 — Closing · delivery</p>
+        <p class="slide-label">05 â Closing Â· delivery</p>
         <h1 class="slide-title">Same method, two apps, one optional native kernel.</h1>
         <div class="content-grid cols-2">
             <div class="content-card">
@@ -766,23 +766,23 @@
                 <table class="data-table" style="font-size: 15px;">
                     <thead><tr><th>Stage</th><th>Flagship</th><th>Medium (2000)</th><th>Wide (128 wide)</th></tr></thead>
                     <tbody>
-                        <tr><td>K-Means</td><td style="color: var(--green);">5.60�-</td><td style="color: var(--green);">6.45�-</td><td>—</td></tr>
-                        <tr><td>PCA</td><td style="color: var(--slate);">0.66�- (slower)</td><td style="color: var(--slate);">0.77�-</td><td style="color: var(--slate);">0.29�-</td></tr>
-                        <tr><td style="color: var(--ink);">End to end</td><td colspan="3" style="color: var(--ink);">1.32�- (6.99 s → 5.29 s, 30-day scratch)</td></tr>
+                        <tr><td>K-Means</td><td style="color: var(--green);">5.60Ã-</td><td style="color: var(--green);">6.45Ã-</td><td>â</td></tr>
+                        <tr><td>PCA</td><td style="color: var(--slate);">0.66Ã- (slower)</td><td style="color: var(--slate);">0.77Ã-</td><td style="color: var(--slate);">0.29Ã-</td></tr>
+                        <tr><td style="color: var(--ink);">End to end</td><td colspan="3" style="color: var(--ink);">1.32Ã- (6.99 s â 5.29 s, 30-day scratch)</td></tr>
                     </tbody>
                 </table>
                 <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-2);">K-Means is faster in C++. PCA is not on this shape. The deck reports both.</p>
             </div>
         </div>
-        <p class="source">Source: web/public/data/benchmark.json (speedups kmeans 5.597749375810483 / 6.449224005875682; pca 0.29�- wide; end_to_end 1.3229360736220948) · README</p>
+        <p class="source">Source: web/public/data/benchmark.json (speedups kmeans 5.597749375810483 / 6.449224005875682; pca 0.29Ã- wide; end_to_end 1.3229360736220948) Â· README</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 19 — Limitations -->
+<!-- Slide 19 â Limitations -->
 <section class="slide" data-slide="19">
     <div class="slide-content">
-        <p class="slide-label">05 — Closing · what breaks and what is next</p>
+        <p class="slide-label">05 â Closing Â· what breaks and what is next</p>
         <h1 class="slide-title">A 30-day window already broke this rule once.</h1>
         <div class="content-grid cols-2">
             <div class="content-card">
@@ -801,24 +801,24 @@
             <div class="content-card">
                 <h3>Honesty notes</h3>
                 <p style="margin-bottom: var(--sp-2);"><span style="color: var(--ink);">Synthetic by design.</span> Hidden truth exists to validate against; results demonstrate the method, not a claim about real meters.</p>
-                <p style="margin-bottom: var(--sp-2);"><span style="color: var(--ink);">Surrogate is the ceiling.</span> SHAP explains a 98.5% surrogate — features carry the grouping; causality is not shown.</p>
-                <p><span style="color: var(--ink);">Real pathway is separate.</span> Case A (24 meters) is the audited adapter and reports only internal metrics — never invented labels.</p>
+                <p style="margin-bottom: var(--sp-2);"><span style="color: var(--ink);">Surrogate is the ceiling.</span> SHAP explains a 98.5% surrogate â features carry the grouping; causality is not shown.</p>
+                <p><span style="color: var(--ink);">Real pathway is separate.</span> Case A (24 meters) is the audited adapter and reports only internal metrics â never invented labels.</p>
             </div>
         </div>
-        <p class="source">Source: RESULTS.md §3 (Run 1 hash 6896387297178841) vs §4 (Run 2 hash 99c7a6631340d301) · docs/verification.md</p>
+        <p class="source">Source: RESULTS.md Â§3 (Run 1 hash 6896387297178841) vs Â§4 (Run 2 hash 99c7a6631340d301) Â· docs/verification.md</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
 
-<!-- Slide 20 — Takeaway -->
+<!-- Slide 20 â Takeaway -->
 <section class="slide" data-slide="20">
     <div class="slide-content">
-        <p class="slide-label">05 — Closing · takeaway</p>
+        <p class="slide-label">05 â Closing Â· takeaway</p>
         <h1 class="slide-title">The shape of a day is real, recoverable, and modestly separated.</h1>
         <div class="content-grid cols-2">
             <div class="content-card accent" style="--accent: var(--green);">
                 <h3>What was shown</h3>
-                <p><span style="font-family: var(--font-mono); color: var(--ink);">K = 4</span> by a fixed composite rule — not by eye. ARI <span style="font-family: var(--font-mono);">0.813</span> at that K, the best across 2–10. Four rhythms that survive quarterly re-runs and a 25 percent seasonal swing.</p>
+                <p><span style="font-family: var(--font-mono); color: var(--ink);">K = 4</span> by a fixed composite rule â not by eye. ARI <span style="font-family: var(--font-mono);">0.813</span> at that K, the best across 2â10. Four rhythms that survive quarterly re-runs and a 25 percent seasonal swing.</p>
             </div>
             <div class="content-card accent" style="--accent: var(--cyan);">
                 <h3>What was not claimed</h3>
@@ -833,10 +833,10 @@
             <div class="content-card">
                 <h3>Reproduce</h3>
                 <p style="font-family: var(--font-mono); font-size: 15px; color: var(--mist);">py run_module.py energy_analysis -- --n_days 365 --n_consumers 200</p>
-                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Flagship hash 99c7a6631340d301 · 10 PCA · composite K = 4 · 11 recommendations</p>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--slate); margin-top: var(--sp-1);">Flagship hash 99c7a6631340d301 Â· 10 PCA Â· composite K = 4 Â· 11 recommendations</p>
             </div>
         </div>
-        <p class="source">Source: RESULTS.md §6 (honesty notes) and §4 (flagship) · links to dashboard and web app</p>
+        <p class="source">Source: RESULTS.md Â§6 (honesty notes) and Â§4 (flagship) Â· links to dashboard and web app</p>
     </div>
     <div class="sunee-logo">SUNEE</div>
 </section>
@@ -855,7 +855,7 @@
 
 <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
 
-<div class="keyboard-hint">Arrow keys or space to navigate · F for fullscreen · P for presentation mode</div>
+<div class="keyboard-hint">Arrow keys or space to navigate Â· F for fullscreen Â· P for presentation mode</div>
 
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script src="src/script.js"></script>
