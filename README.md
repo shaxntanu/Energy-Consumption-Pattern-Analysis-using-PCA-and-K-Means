@@ -720,3 +720,43 @@ The SDG contribution is visualized in the [Vercel interactive explorer](https://
 #Johnson Victor Yalangi
 #Harsh Rathi
 #Varun Srivastava
+
+---
+
+## Contributors
+
+This project was developed as part of an academic research initiative on energy consumption pattern analysis.
+
+### Team Members
+
+- **Shashwat Gupta (Shaxntanu)** - Lead Developer & Project Architect
+  - GitHub: [@shaxntanu](https://github.com/shaxntanu)
+  - Project Lead, Pipeline Architecture, C++ Engine, Web Platform, Documentation
+
+- **Aarna Srivastava** - Data Science & Feature Engineering
+  - Feature engineering pipeline, Statistical analysis, Validation framework
+
+- **Johnson Victor Yalangi** - Machine Learning & Algorithms
+  - PCA implementation, K-Means optimization, Clustering evaluation
+
+- **Harsh Rathi** - Visualization & Frontend
+  - Dark mode visualizations, Interactive explorer, Dashboard design
+
+- **Varun Srivastava** - Testing & Quality Assurance
+  - Test framework, Code quality, Performance benchmarking
+
+### Special Acknowledgments
+
+- **Zephyr Station** weather API integration
+- UCI Machine Learning Repository for the household power consumption dataset
+- Open source community for libraries: scikit-learn, pandas, numpy, matplotlib, streamlit, and pybind11
+
+---
+
+## License
+
+This project is available under the MIT License. See LICENSE file for details.
+
+---
+
+**Built with precision for technical and academic audiences. Every component is documented, every claim is backed by evidence.**
