@@ -126,7 +126,6 @@ export default function HeroAsciiOne() {
       </div>
       <div className="ascii-hero__corners" aria-hidden="true"><i /><i /><i /><i /></div>
       <div className="ascii-hero__topline">
-        <span>LOAD SHAPE LAB</span>
         <span>PCA / K-MEANS</span>
       </div>
       <div className="ascii-hero__content">

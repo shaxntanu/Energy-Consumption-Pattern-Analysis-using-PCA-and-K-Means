@@ -7,7 +7,7 @@
   overflow: hidden;
   background: #000;
   color: #fff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: 'Times New Roman', Times, serif;
   scroll-margin-top: 5rem;
 }
 .ascii-hero__stars,
@@ -29,6 +29,22 @@
 }
 .ascii-hero__scene { width: 100%; height: 100%; opacity: 0; transition: opacity 350ms ease; }
 .ascii-hero__scene.is-ready { opacity: 1; }
+/* Suppress the UnicornStudio runtime's own branding badge. The scene wrapper
+   is already inert + aria-hidden, so nothing injected can be focused or
+   clicked; these rules reinforce that and also hide injected interactive
+   chrome (<a>/<button> credits, the usual form a player badge takes), so the
+   "Unicorn Studio" credit is not shown twice — once here and once in the page
+   footer. Only injected chrome is targeted; the canvas animation is untouched. */
+.ascii-hero__scene {
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+.ascii-hero__scene a,
+.ascii-hero__scene button {
+  display: none !important;
+  pointer-events: none !important;
+}
 .ascii-hero__corners { z-index: 1; pointer-events: none; }
 .ascii-hero__corners i { position: absolute; width: 36px; height: 36px; border: solid #ffffff66; border-width: 0; }
 .ascii-hero__corners i:nth-child(1) { top: 0; left: 0; border-width: 2px 0 0 2px; }
@@ -52,7 +68,6 @@
 .ascii-hero__topline > :first-child { font-size: 1rem; font-weight: 700; font-style: italic; color: #fff; }
 .ascii-hero__content { display: flex; align-items: center; justify-content: flex-end; padding: 4rem clamp(1.5rem, 6vw, 6rem); }
 .ascii-hero__copy { width: min(52%, 650px); padding: 1.5rem; background: #000b; }
-.ascii-hero__copy :is(h1, p) { user-select: text; -webkit-user-select: text; }
 .ascii-hero__rule,
 .ascii-hero__notation { display: flex; align-items: center; gap: .75rem; color: #b8b8b8; font-size: .65rem; }
 .ascii-hero__rule { margin-bottom: 1.5rem; }
