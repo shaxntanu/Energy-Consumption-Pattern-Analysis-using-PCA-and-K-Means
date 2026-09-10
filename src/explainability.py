@@ -235,9 +235,13 @@ def _permutation_importance(X: np.ndarray, labels: np.ndarray,
                                      random_state=RANDOM_STATE,
                                      n_jobs=SURROGATE_N_JOBS)
         clf.fit(X, binary)
+        # Match the report's metric. The estimator's default score is ordinary
+        # accuracy, which overweights the majority in each one-vs-rest task.
+        # This remains descriptive, training-set importance, not a held-out
+        # estimate of generalization or a causal effect.
         result = permutation_importance(
             clf, X, binary, n_repeats=5, random_state=RANDOM_STATE,
-            n_jobs=SURROGATE_N_JOBS
+            n_jobs=SURROGATE_N_JOBS, scoring='balanced_accuracy'
         )
         mean_imp = result.importances_mean
         global_abs += mean_imp
