@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import './hero-ascii-one.css';
 
 const PROJECT_ID = 'OMzqyUv6M3kSnv0JeAtC';
@@ -130,6 +131,18 @@ export default function HeroAsciiOne() {
     if (status === 'ready' || status === 'unavailable') setLoaderDone(true);
   }, [status]);
 
+  // True while the intro lock is up. While it is, the page cannot scroll and
+  // the opaque fixed overlay swallows every interaction (nav, links, the Sunee
+  // mascot message) — the whole project, not just the hero, starts only once
+  // the loader is done and the hero visual is alive.
+  const loaderAlive = eligible && !loaderDone;
+  useEffect(() => {
+    if (!loaderAlive) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [loaderAlive]);
+
   const statusLabel = {
     static: 'STATIC.VIEW', loading: 'SCENE.LOADING', ready: 'SCENE.READY', unavailable: 'STATIC.FALLBACK',
   }[status];
@@ -150,7 +163,10 @@ export default function HeroAsciiOne() {
           the visual covers that region; solid black blends into the hero so the
           patch itself is invisible, it only hides the badge. */}
       <div className="ascii-hero__watermark-cover" aria-hidden="true" />
-      {eligible && (
+      {/* Rendered through a portal into document.body so it sits at the root
+          stacking context (above the sticky nav) and the opaque fixed overlay
+          covers the entire page — not just the hero — while loading. */}
+      {eligible && createPortal(
         <div
           className={`ascii-hero__loader${loaderDone ? ' is-hidden' : ''}`}
           aria-hidden="true"
@@ -165,7 +181,8 @@ export default function HeroAsciiOne() {
           <div className="longfazers">
             <span /><span /><span /><span />
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
       <div className="ascii-hero__topline">
         <span>PCA / K-MEANS</span>

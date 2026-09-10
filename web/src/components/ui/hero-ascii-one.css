@@ -66,8 +66,8 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 240px;
-  height: 26px;
+  width: 320px;
+  height: 36px;
   background: #000;
   pointer-events: none;
   user-select: none;
@@ -182,14 +182,17 @@
    opaque backdrop dims to 0% and the overlay dissolves (transition below). It
    is decorative only (pointer-events: none, aria-hidden already set in JSX). */
 .ascii-hero__loader {
-  position: absolute;
+  /* Fixed, full-viewport, frontmost: while the loader is alive it covers the
+     entire site — an opaque black backdrop with pointer-events: auto, so every
+     click (nav, links, the Sunee mascot) is swallowed and nothing of the
+     project is usable until the hero scene reports ready. The page behind is
+     pure black. */
+  position: fixed;
   inset: 0;
-  z-index: 3;
+  z-index: 9999;
   display: block;
-  /* Fully opaque from the first paint so the first thing seen is the loader
-     with no hero text or scene showing through behind it. */
   background: #000;
-  pointer-events: none;
+  pointer-events: auto;
   user-select: none;
   -webkit-user-select: none;
   transition: opacity 700ms ease, background-color 700ms ease;
@@ -197,6 +200,7 @@
 .ascii-hero__loader.is-hidden {
   opacity: 0;
   background: rgba(0, 0, 0, 0);
+  pointer-events: none;
 }
 /* Speeder (centre of the hero). #000 -> #fff for the brand. */
 .ascii-hero__loader .loader {
