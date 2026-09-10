@@ -70,6 +70,10 @@ export default function HeroAsciiOne() {
   // fades out) once the animation reaches a terminal state, so the first thing
   // a user sees is an opaque loader with nothing behind it.
   const [loaderDone, setLoaderDone] = useState(false);
+  // Gates the scene (and with it the Sunee mascot's messages). Starts false so
+  // the scene stays inert during the loader, and only flips true 5s AFTER the
+  // loader ends so Sunee's messages can't begin until then.
+  const [suneeReady, setSuneeReady] = useState(false);
   const active = eligible;
 
   useEffect(() => {
@@ -131,6 +135,14 @@ export default function HeroAsciiOne() {
     if (status === 'ready' || status === 'unavailable') setLoaderDone(true);
   }, [status]);
 
+  // After the loader ends, hold the scene inert for 5s more so Sunee's messages
+  // only start coming 5 seconds after the loader has gone.
+  useEffect(() => {
+    if (!loaderDone) return;
+    const t = window.setTimeout(() => setSuneeReady(true), 5000);
+    return () => window.clearTimeout(t);
+  }, [loaderDone]);
+
   // True while the intro lock is up. While it is, the page cannot scroll and
   // the opaque fixed overlay swallows every interaction (nav, links, the Sunee
   // mascot message) — the whole project, not just the hero, starts only once
@@ -151,7 +163,11 @@ export default function HeroAsciiOne() {
     <header className="ascii-hero" id="top" aria-labelledby="ascii-hero-title">
       <div className="ascii-hero__stars" aria-hidden="true" />
       {/* Decorative only: the external animation is never evidence of ML results. */}
-      <div className="ascii-hero__visual" aria-hidden="true" inert>
+      <div
+        className="ascii-hero__visual"
+        aria-hidden="true"
+        inert={!suneeReady}
+      >
         <div
           className={`ascii-hero__scene${status === 'ready' ? ' is-ready' : ''}`}
           data-us-project={active ? PROJECT_ID : undefined}
