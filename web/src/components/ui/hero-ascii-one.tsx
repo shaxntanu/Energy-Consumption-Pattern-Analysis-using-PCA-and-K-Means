@@ -53,9 +53,8 @@ function destroyScenes(scenes: Scene[]) {
 
 export default function HeroAsciiOne() {
   const [eligible, setEligible] = useState(false);
-  const [paused, setPaused] = useState(false);
   const [status, setStatus] = useState<Status>('static');
-  const active = eligible && !paused;
+  const active = eligible;
 
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 1024px)');
@@ -113,6 +112,10 @@ export default function HeroAsciiOne() {
   const statusLabel = {
     static: 'STATIC.VIEW', loading: 'SCENE.LOADING', ready: 'SCENE.READY', unavailable: 'STATIC.FALLBACK',
   }[status];
+  // The speeder loader overlays the hero from the moment the animation starts
+  // loading until the scene reports ready; once ready its backdrop dims to 0%
+  // and the whole overlay fades away.
+  const loaderActive = status === 'loading' || status === 'ready';
 
   return (
     <header className="ascii-hero" id="top" aria-labelledby="ascii-hero-title">
@@ -125,6 +128,23 @@ export default function HeroAsciiOne() {
         />
       </div>
       <div className="ascii-hero__corners" aria-hidden="true"><i /><i /><i /><i /></div>
+      {loaderActive && (
+        <div
+          className={`ascii-hero__loader${status === 'ready' ? ' is-hidden' : ''}`}
+          aria-hidden="true"
+        >
+          <div className="loader">
+            <span><span /><span /><span /><span /></span>
+            <div className="base">
+              <span />
+              <div className="face" />
+            </div>
+          </div>
+          <div className="longfazers">
+            <span /><span /><span /><span />
+          </div>
+        </div>
+      )}
       <div className="ascii-hero__topline">
         <span>PCA / K-MEANS</span>
       </div>
@@ -155,13 +175,6 @@ export default function HeroAsciiOne() {
         </div>
         <div className="ascii-hero__footer-group">
           <span role="status" aria-live="polite">{statusLabel}</span>
-          {eligible && <button type="button" aria-pressed={paused} tabIndex={-1} onClick={() => {
-            /* Pause toggle intentionally disabled: the button is occluded by a
-               black strip and must not toggle on any input. Keeping this no-op
-               means keyboard activation never reaches the paused state. */
-          }}>
-            {paused ? 'Resume visual' : 'Pause visual'}
-          </button>}
           <a href="https://www.unicorn.studio/" target="_blank" rel="noopener noreferrer">Visual: Unicorn Studio<span className="ascii-hero__sr-only"> (opens in a new tab)</span></a>
         </div>
       </div>
