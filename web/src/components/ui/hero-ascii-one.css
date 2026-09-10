@@ -114,6 +114,21 @@
 .ascii-hero__notation { margin-top: 1.75rem; }
 .ascii-hero__footer { border-top: 1px solid #ffffff33; }
 .ascii-hero__footer-group { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+/* Cover the interactive footer controls (the scene-status, the pause/ resume
+   button, and the Unicorn Studio credit link) with an opaque black strip. The
+   strip hides them visually and, with pointer-events: auto, blocks any click
+   on them. The leading SYNTHETIC.STUDY group stays untouched. */
+.ascii-hero__footer { position: relative; }
+.ascii-hero__footer > .ascii-hero__footer-group:last-child { position: relative; }
+.ascii-hero__footer > .ascii-hero__footer-group:last-child::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 5;
+  pointer-events: auto;
+  cursor: default;
+}
 .ascii-hero__meters { display: flex; align-items: end; gap: 3px; height: 16px; }
 .ascii-hero__meters i { display: block; width: 4px; background: #ffffff66; }
 .ascii-hero__footer button { min-height: 44px; padding: .5rem; font: inherit; color: #fff; background: transparent; border: 1px solid #ffffff66; cursor: pointer; }

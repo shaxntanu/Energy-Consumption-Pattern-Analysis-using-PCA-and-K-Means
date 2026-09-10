@@ -136,7 +136,7 @@ export default function HeroAsciiOne() {
           <div className="ascii-hero__dots" aria-hidden="true" />
           <p className="ascii-hero__description">
             A synthetic year of household electricity readings. Behavioural features,
-            PCA and K-Means reveal daily rhythms—then we check their stability across
+            PCA and K-Means reveal daily rhythms, and then we check their stability across
             seasons and time. A controlled study, not a claim about real households.
           </p>
           <div className="ascii-hero__actions">
@@ -155,7 +155,11 @@ export default function HeroAsciiOne() {
         </div>
         <div className="ascii-hero__footer-group">
           <span role="status" aria-live="polite">{statusLabel}</span>
-          {eligible && <button type="button" aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
+          {eligible && <button type="button" aria-pressed={paused} tabIndex={-1} onClick={() => {
+            /* Pause toggle intentionally disabled: the button is occluded by a
+               black strip and must not toggle on any input. Keeping this no-op
+               means keyboard activation never reaches the paused state. */
+          }}>
             {paused ? 'Resume visual' : 'Pause visual'}
           </button>}
           <a href="https://www.unicorn.studio/" target="_blank" rel="noopener noreferrer">Visual: Unicorn Studio<span className="ascii-hero__sr-only"> (opens in a new tab)</span></a>
