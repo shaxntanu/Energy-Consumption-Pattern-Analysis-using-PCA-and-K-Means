@@ -52,7 +52,15 @@
 }
 
 /* --- Reset --- */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*, *::before, *::after { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
 html, body {
     width: 100%; height: 100%;
     overflow: hidden;
@@ -565,4 +573,14 @@ body.presentation-mode:hover .export-btn { opacity: 1; }
 @media print {
     .slide { page-break-after: always; display: block !important; position: relative; width: 1920px; height: 1080px; }
     .nav-controls, .export-btn, .progress-bar, .keyboard-hint, .sunee-logo { display: none !important; }
+}
+
+/* Hide any external badges or watermarks */
+[class*="unicorn"], [id*="unicorn"], 
+[class*="made-with"], [id*="made-with"],
+a[href*="unicorn.studio"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
