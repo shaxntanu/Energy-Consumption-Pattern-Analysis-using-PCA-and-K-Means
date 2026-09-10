@@ -581,8 +581,21 @@ class EnergyAnalysis:
             )
         logger.info("=" * 70)
 
-        # Every committed run leaves the stable web/ artifact contract behind, so
-        # the Vercel explorer always describes the same run as the README.
+        self._export_web_artifacts()
+        return self.results
+
+    def _export_web_artifacts(self) -> None:
+        """Publish only runs whose outputs belong to the canonical export source.
+
+        The exporter reads models/ and outputs/ under the project root. A
+        dashboard, test or experiment using other directories must not export
+        stale canonical data or write into the shared web artifact directory.
+        """
+        root = Path(__file__).resolve().parents[1]
+        if (Path(self.config.output_dir).resolve() != root / 'outputs'
+                or Path(self.config.model_dir).resolve() != root / 'models'):
+            logger.info("Web artifact export skipped for an isolated analysis run")
+            return
         try:
             exported = export_artifacts()
             logger.info(
@@ -591,8 +604,6 @@ class EnergyAnalysis:
             )
         except Exception as exc:  # pragma: no cover - defensive
             logger.warning(f"Could not export the artifact contract: {exc}")
-
-        return self.results
 
     @staticmethod
     def _save_metadata(metadata: dict, path: Path) -> None:
