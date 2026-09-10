@@ -18,6 +18,7 @@ import { Component, useCallback, useEffect, useRef, useState } from 'react'
 import Avatar from '../vendor/bible-strong/Avatar.jsx'
 import sunee from './sunee.avatar.json'
 import { buildFacts } from './projectFacts.js'
+import { canReplaceMessage, nextFactIndex, canOfferAutomaticFact } from './companionBehavior.js'
 import {
   BUBBLE_MS,
   INTRO_BUBBLE_MS,
@@ -66,17 +67,14 @@ const usePrefersReducedMotion = () => {
 }
 
 function ProjectCompanion() {
-  if (facts.length === 0) return null
-
   const avatarRef = useRef(null)
   const hostRef = useRef(null)
   const [message, setMessage] = useState(null)
   const [bubbleKey, setBubbleKey] = useState(0)
   const prefersReducedMotion = usePrefersReducedMotion()
-
-  // Refs the outside-of-render callbacks can read (timers, state mirrors).
+  // Update the arbitration ref synchronously with each accepted transition.
+  // React may batch renders, but timer/click callbacks must see the latest state.
   const messageRef = useRef(null)
-  messageRef.current = message
   const hideTimerRef = useRef(null)
   const introTimerRef = useRef(null)
   const factTimerRef = useRef(null)
@@ -84,17 +82,15 @@ function ProjectCompanion() {
   const reactionTimerRef = useRef(null)
   const busyUntilRef = useRef(0)
   const navHoldUntilRef = useRef(0)
-  const lastFactRef = useRef(null)
+  const lastFactRef = useRef(-1)
   const lastNavRef = useRef(null)
   const lastNavAtRef = useRef(0)
   const lastActivityRef = useRef(Date.now())
-  const emotionRef = useRef(0) // 0 idle/engaged, 1 bored, 2 impatient, 3 angry
+  const emotionRef = useRef(0)
   const reactingRef = useRef(false)
   const cycleMessageShownRef = useRef(false)
   const gazeRef = useRef(null)
 
-  // Re-assert whatever state the avatar should be in right now. Used after a
-  // bubble hides or a gaze ends, so the emotion tier (or plain idle) resumes.
   const assertEmotion = useCallback(() => {
     const index = emotionRef.current
     avatarRef.current?.play(
@@ -107,25 +103,35 @@ function ProjectCompanion() {
       window.clearTimeout(hideTimerRef.current)
       hideTimerRef.current = null
     }
+    // Do not lose keyboard focus when the close button disappears.
+    if (document.activeElement?.closest?.('.companion-bubble-close')) {
+      hostRef.current?.querySelector('button')?.focus({ preventScroll: true })
+    }
+    messageRef.current = null
     setMessage(null)
     assertEmotion()
   }, [assertEmotion])
 
   const showMessage = useCallback(
     (candidate, durationMs) => {
-      const current = messageRef.current
-      if (current && candidate.priority <= current.priority) return false
-      if (hideTimerRef.current) {
-        window.clearTimeout(hideTimerRef.current)
-        hideTimerRef.current = null
+      if (document.hidden || !canReplaceMessage(messageRef.current, candidate)) return false
+      if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current)
+      if (reactionTimerRef.current) window.clearTimeout(reactionTimerRef.current)
+      reactionTimerRef.current = null
+      reactingRef.current = false
+      // A message owns the pose. Stop gaze work and re-arm on the next move
+      // after the message instead of leaving a competing frame loop running.
+      const gaze = gazeRef.current
+      if (gaze) {
+        cancelAnimationFrame(gaze.raf)
+        gaze.on = false
+        gaze.armed = false
       }
+      messageRef.current = candidate
       setMessage(candidate)
       setBubbleKey((key) => key + 1)
       if (candidate.animation) avatarRef.current?.play(candidate.animation)
-      hideTimerRef.current = window.setTimeout(
-        hideMessage,
-        durationMs ?? BUBBLE_MS
-      )
+      hideTimerRef.current = window.setTimeout(hideMessage, durationMs ?? BUBBLE_MS)
       return true
     },
     [hideMessage]
@@ -133,26 +139,29 @@ function ProjectCompanion() {
 
   const showFact = useCallback(
     (via) => {
-      if (document.hidden) return
-      if (via === 'manual' && Date.now() < busyUntilRef.current) return
-      if (Date.now() < navHoldUntilRef.current) return
-      let next = facts[Math.floor(Math.random() * facts.length)]
-      if (facts.length > 1) {
-        while (next === lastFactRef.current) {
-          next = facts[Math.floor(Math.random() * facts.length)]
-        }
+      const now = Date.now()
+      if (document.hidden || now < navHoldUntilRef.current) return
+      if (via === 'manual' && now < busyUntilRef.current) return
+      if (via !== 'manual' && !canOfferAutomaticFact({
+        hidden: document.hidden,
+        idleMs: now - lastActivityRef.current,
+        boredAfterMs: inactivityConfig.tiers[0].afterMs,
+        focusedInteractive: Boolean(document.activeElement?.closest?.(
+          'input, textarea, select, [contenteditable="true"], [role="slider"]'
+        )),
+      })) return
+      const index = nextFactIndex(lastFactRef.current, facts.length)
+      if (index < 0) return
+      const next = facts[index]
+      const shown = showMessage({
+        kind: 'fact', priority: MESSAGE_PRIORITY[via],
+        animation: next.animation, text: next.text,
+      }, BUBBLE_MS)
+      // Rejected messages consume neither a fact nor the manual-click cooldown.
+      if (shown) {
+        lastFactRef.current = index
+        busyUntilRef.current = now + factConfig.clickCooldownMs
       }
-      lastFactRef.current = next
-      busyUntilRef.current = Date.now() + factConfig.clickCooldownMs
-      showMessage(
-        {
-          kind: 'fact',
-          priority: MESSAGE_PRIORITY[via],
-          animation: next.animation,
-          text: next.text,
-        },
-        BUBBLE_MS
-      )
     },
     [showMessage]
   )
