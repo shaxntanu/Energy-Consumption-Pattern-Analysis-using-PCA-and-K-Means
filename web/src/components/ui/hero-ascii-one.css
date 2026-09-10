@@ -36,6 +36,7 @@
    "Unicorn Studio" credit is not shown twice — once here and once in the page
    footer. Only injected chrome is targeted; the canvas animation is untouched. */
 .ascii-hero__scene {
+  position: relative;
   pointer-events: none !important;
   user-select: none !important;
   -webkit-user-select: none !important;
@@ -44,6 +45,14 @@
 .ascii-hero__scene button {
   display: none !important;
   pointer-events: none !important;
+}
+/* Hide the player's injected "Made with Unicorn Studio" overlay badge. It
+   renders as HTML chrome around the animation canvas, so target non-canvas
+   injected children: keep the canvas and any direct container that holds it
+   (:has(canvas)), hide every other injected child so external branding no
+   longer renders. */
+.ascii-hero__scene > *:not(canvas):not(:has(canvas)) {
+  display: none !important;
 }
 .ascii-hero__corners { z-index: 1; pointer-events: none; }
 .ascii-hero__corners i { position: absolute; width: 36px; height: 36px; border: solid #ffffff66; border-width: 0; }
