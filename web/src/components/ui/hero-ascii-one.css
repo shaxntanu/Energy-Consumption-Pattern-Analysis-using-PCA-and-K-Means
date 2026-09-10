@@ -55,6 +55,24 @@
   display: none !important;
 }
 .ascii-hero__corners { z-index: 1; pointer-events: none; }
+/* A small opaque black patch covering the injected player badge on the
+   animation. The hero is pure black, so the patch is invisible on its own — it
+   only occludes the "Made with Unicorn Studio" watermark drawn into the video/
+   canvas. Layered above the visual (-1) but under the loader (3); adjust
+   left/top/size to track wherever the badge actually sits. */
+.ascii-hero__watermark-cover {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 240px;
+  height: 26px;
+  background: #000;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 .ascii-hero__corners i { position: absolute; width: 36px; height: 36px; border: solid #ffffff66; border-width: 0; }
 .ascii-hero__corners i:nth-child(1) { top: 0; left: 0; border-width: 2px 0 0 2px; }
 .ascii-hero__corners i:nth-child(2) { top: 0; right: 0; border-width: 2px 2px 0 0; }
@@ -168,7 +186,9 @@
   inset: 0;
   z-index: 3;
   display: block;
-  background: rgba(0, 0, 0, 0.95);
+  /* Fully opaque from the first paint so the first thing seen is the loader
+     with no hero text or scene showing through behind it. */
+  background: #000;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;

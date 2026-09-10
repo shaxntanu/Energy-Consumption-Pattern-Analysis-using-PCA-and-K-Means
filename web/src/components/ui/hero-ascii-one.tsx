@@ -52,8 +52,23 @@ function destroyScenes(scenes: Scene[]) {
 }
 
 export default function HeroAsciiOne() {
-  const [eligible, setEligible] = useState(false);
+  // Resolve eligibility synchronously so the loader's opacity (and whether it
+  // renders at all) is correct on the very first paint — no frame where the
+  // hero text shows ahead of the loader, and no loader at all on environments
+  // that never run the animation (small screens, reduced motion, hidden tab).
+  const [eligible, setEligible] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(min-width: 1024px)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+      !document.hidden
+    );
+  });
   const [status, setStatus] = useState<Status>('static');
+  // Starts false = the loader is up straight away. It only flips to done (and
+  // fades out) once the animation reaches a terminal state, so the first thing
+  // a user sees is an opaque loader with nothing behind it.
+  const [loaderDone, setLoaderDone] = useState(false);
   const active = eligible;
 
   useEffect(() => {
@@ -109,13 +124,15 @@ export default function HeroAsciiOne() {
     };
   }, [active]);
 
+  // Once the scene is ready, the loader's backdrop dims to 0% and the overlay
+  // fades away; on the 20s static-fallback it fades out too rather than linger.
+  useEffect(() => {
+    if (status === 'ready' || status === 'unavailable') setLoaderDone(true);
+  }, [status]);
+
   const statusLabel = {
     static: 'STATIC.VIEW', loading: 'SCENE.LOADING', ready: 'SCENE.READY', unavailable: 'STATIC.FALLBACK',
   }[status];
-  // The speeder loader overlays the hero from the moment the animation starts
-  // loading until the scene reports ready; once ready its backdrop dims to 0%
-  // and the whole overlay fades away.
-  const loaderActive = status === 'loading' || status === 'ready';
 
   return (
     <header className="ascii-hero" id="top" aria-labelledby="ascii-hero-title">
@@ -128,9 +145,14 @@ export default function HeroAsciiOne() {
         />
       </div>
       <div className="ascii-hero__corners" aria-hidden="true"><i /><i /><i /><i /></div>
-      {loaderActive && (
+      {/* The injected player watermark is drawn onto the animation itself (that
+          is why CSS cannot remove it). A small opaque black patch layered above
+          the visual covers that region; solid black blends into the hero so the
+          patch itself is invisible, it only hides the badge. */}
+      <div className="ascii-hero__watermark-cover" aria-hidden="true" />
+      {eligible && (
         <div
-          className={`ascii-hero__loader${status === 'ready' ? ' is-hidden' : ''}`}
+          className={`ascii-hero__loader${loaderDone ? ' is-hidden' : ''}`}
           aria-hidden="true"
         >
           <div className="loader">
