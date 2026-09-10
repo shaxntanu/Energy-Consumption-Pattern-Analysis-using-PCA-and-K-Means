@@ -3037,12 +3037,31 @@ function App() {
         </div>
       </nav>
 
+      {/* While the lazy hero chunk loads, show a full-viewport black overlay
+          instead of any page content. Fixed at the root stacking context with
+          z-index 9999, it also covers the sticky nav, so the very first paint
+          is the loader's black backdrop — never a flash of content ahead of
+          it. Once HeroAsciiOne mounts its own opaque loader takes over. */}
       <React.Suspense fallback={
-        <header className="hero" id="top" style={{ minHeight: '80svh' }}>
-          <h1>Energy use is a pattern, not just a number.</h1>
-          <p>A controlled synthetic study using PCA and K-Means.</p>
-          <a className="button primary" href="#charts">Explore the charts</a>
-        </header>
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: '#000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fff',
+            fontFamily: "'Times New Roman', Times, serif",
+            letterSpacing: '0.12em',
+            fontSize: '0.8rem',
+            textTransform: 'uppercase',
+            userSelect: 'none',
+          }}
+        >
+          Loading visual
+        </div>
       }>
         <HeroAsciiOne />
       </React.Suspense>
