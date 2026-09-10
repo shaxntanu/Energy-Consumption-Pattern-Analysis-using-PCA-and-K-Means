@@ -578,9 +578,29 @@ body.presentation-mode:hover .export-btn { opacity: 1; }
 /* Hide any external badges or watermarks */
 [class*="unicorn"], [id*="unicorn"], 
 [class*="made-with"], [id*="made-with"],
-a[href*="unicorn.studio"] {
+a[href*="unicorn.studio"],
+div[style*="position: fixed"],
+div[style*="position: absolute"][style*="z-index"] {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
+}
+
+/* Hide any overlays in top corners */
+body > div:not([class]):not([id]),
+body > div[style*="top"][style*="right"],
+body > div[style*="top"][style*="left"] {
+    display: none !important;
+}
+
+/* Force Times New Roman on all elements */
+* {
+    font-family: 'Times New Roman', Times, serif !important;
+}
+
+/* Ensure text is unselectable everywhere */
+::selection {
+    background: transparent;
+    color: inherit;
 }
