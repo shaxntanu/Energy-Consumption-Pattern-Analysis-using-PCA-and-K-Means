@@ -61,20 +61,21 @@
    canvas. Layered above the visual (-1) but under the loader (3); adjust
    left/top/size to track wherever the badge actually sits. */
 .ascii-hero__watermark-cover {
-  /* Sits at the scene's centre (where the player's "Made with Unicorn Studio"
-     button-badge renders) and is tall/wide enough to swallow the whole badge
-     with margin, not just its middle — otherwise the badge's edges peek out
-     and it reads as dimmed rather than gone. Solid black blends into the hero,
-     so the patch is invisible except for the badge it occludes. */
+  /* A compact opaque black rectangle overlayed in front of the badge. The
+     badge is drawn into the video/canvas pixels, so it cannot be removed with
+     CSS — it can only be occluded, and a solid black patch blends invisibly
+     into the hero while hiding just the badge. Positioned per the report: the
+     badge sits under the "Explore the charts / Understand the method" buttons,
+     horizontally centred. top: 62% drops it below the headline so it no longer
+     covers the title. Adjust left/top/width/height to track the badge. */
   position: absolute;
   z-index: 2;
   left: 50%;
-  top: 50%;
+  top: 62%;
   transform: translate(-50%, -50%);
-  width: 420px;
-  height: 72px;
+  width: 220px;
+  height: 50px;
   background: #000;
-  border-radius: 10px;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
