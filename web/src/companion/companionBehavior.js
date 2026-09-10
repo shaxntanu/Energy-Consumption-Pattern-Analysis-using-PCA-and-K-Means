@@ -10,7 +10,9 @@ export function nextFactIndex(previous, count) {
   return count > 0 ? (previous + 1) % count : -1
 }
 
-export function canOfferAutomaticFact({ hidden, idleMs, focusedInteractive }) {
-  // Offer facts only after a short pause, never during input or a bored cycle.
-  return !hidden && !focusedInteractive && idleMs >= 2500 && idleMs < 30000
+export function canOfferAutomaticFact({ hidden, idleMs, focusedInteractive, boredAfterMs }) {
+  // Offer facts after a short pause, never during input or a bored cycle.
+  // The boredom boundary comes from the existing inactivity configuration.
+  const quietMs = 2500
+  return !hidden && !focusedInteractive && idleMs >= quietMs && idleMs < boredAfterMs
 }
