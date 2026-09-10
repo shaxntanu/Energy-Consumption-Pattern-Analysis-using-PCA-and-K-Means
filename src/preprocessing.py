@@ -81,10 +81,9 @@ def handle_missing_values(df: pd.DataFrame, strategy: str = 'forward_fill',
                     df_clean[col] = df_clean.groupby(group_by)[col].transform(
                         lambda x: x.fillna(x.mean())
                     )
-            # Fill remaining with global mean
-            df_clean[numeric_cols] = df_clean[numeric_cols].fillna(
-                df_clean[numeric_cols].mean()
-            )
+            # An entirely missing consumer series has no within-group mean.
+            # Leave it missing rather than borrow another consumer's readings
+            # or manufacture a numeric consumer identifier from a global mean.
         else:
             df_clean[numeric_cols] = df_clean[numeric_cols].fillna(
                 df_clean[numeric_cols].mean()
