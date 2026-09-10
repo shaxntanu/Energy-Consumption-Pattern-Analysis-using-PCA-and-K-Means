@@ -74,7 +74,7 @@
   top: 71%;
   /* translateY(150px) carries it a fixed 150px further down on top of the
      top:71% anchor so it tracks the badge regardless of viewport height. */
-  transform: translate(-50%, -50%) translateY(175px);
+  transform: translate(-50%, -50%) translateY(178px);
   width: 220px;
   height: 50px;
   background: #000;
