@@ -232,3 +232,54 @@ window.addEventListener('popstate', () => {
     const n = parseInt(window.location.hash.replace('#', ''));
     if (n && !isNaN(n)) window.presentation?.goToSlide(n);
 });
+
+
+// ============================================
+// REMOVE EXTERNAL OVERLAYS AND BADGES
+// ============================================
+function removeExternalOverlays() {
+    // Remove any divs that contain "unicorn", "made with", "SCENE", "Visual:", "Pause"
+    const searchTerms = ['unicorn', 'made with', 'SCENE', 'Visual:', 'Pause visual', 'studio'];
+    
+    document.querySelectorAll('div, a, span, button').forEach(el => {
+        const text = el.textContent?.toLowerCase() || '';
+        const hasMatch = searchTerms.some(term => text.includes(term.toLowerCase()));
+        
+        if (hasMatch) {
+            // Check if it's not part of our slide content
+            if (!el.closest('.slide-content') && !el.closest('.slide')) {
+                el.remove();
+            }
+        }
+    });
+    
+    // Remove any fixed/absolute positioned divs in corners
+    document.querySelectorAll('div').forEach(el => {
+        const style = window.getComputedStyle(el);
+        const pos = style.position;
+        
+        if ((pos === 'fixed' || pos === 'absolute') && 
+            !el.classList.contains('nav-controls') &&
+            !el.classList.contains('progress-bar') &&
+            !el.classList.contains('export-btn') &&
+            !el.classList.contains('keyboard-hint') &&
+            !el.classList.contains('sunee-logo')) {
+            
+            // Check if it's in a corner (top 100px or bottom 100px)
+            const rect = el.getBoundingClientRect();
+            if (rect.top < 100 || rect.bottom > window.innerHeight - 100) {
+                el.remove();
+            }
+        }
+    });
+}
+
+// Run immediately and after a delay (in case overlays are added dynamically)
+removeExternalOverlays();
+setTimeout(removeExternalOverlays, 500);
+setTimeout(removeExternalOverlays, 1000);
+setTimeout(removeExternalOverlays, 2000);
+
+// Watch for new elements being added
+const observer = new MutationObserver(removeExternalOverlays);
+observer.observe(document.body, { childList: true, subtree: true });
