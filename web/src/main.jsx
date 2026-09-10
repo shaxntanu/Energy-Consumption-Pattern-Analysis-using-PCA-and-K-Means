@@ -3019,6 +3019,8 @@ function SeasonBand() {
   );
 }
 
+const HeroAsciiOne = React.lazy(() => import("./components/ui/hero-ascii-one.tsx"));
+
 function App() {
   return (
     <div>
@@ -3035,29 +3037,20 @@ function App() {
         </div>
       </nav>
 
-      <header className="hero" id="top">
-        <div className="hero-copy">
-          <span className="eyebrow">PCA plus K-Means energy clustering</span>
-          <div className="hero-text">
-            {/* hero-text: title, then subtitle, then actions, one above the other.
-                The slideshow sits below this whole block as the next hero child. */}
-            <h1>Energy use is a pattern, not just a number.</h1>
-            <p className="hero-subtitle">
-              This project simulates a full year of household electricity readings, turns
-              each day into a load shape, compresses the features with PCA, and uses K-Means
-              to find daily rhythms that are easier to explain, then checks how the clusters
-              hold up across seasons, over time, and on a real-world demo panel.
-            </p>
-            <div className="hero-actions">
-              <a className="button primary" href="#charts">Explore the charts</a>
-              <a className="button secondary" href="#about">What is this project about?</a>
-            </div>
-          </div>
-        </div>
+      <React.Suspense fallback={
+        <header className="hero" id="top" style={{ minHeight: '80svh' }}>
+          <h1>Energy use is a pattern, not just a number.</h1>
+          <p>A controlled synthetic study using PCA and K-Means.</p>
+          <a className="button primary" href="#charts">Explore the charts</a>
+        </header>
+      }>
+        <HeroAsciiOne />
+      </React.Suspense>
+      <section className="hero" aria-label="Animated analysis walkthrough">
         <div className="hero-panel chart-panel tall">
           <LoadShapeCarousel tall />
         </div>
-      </header>
+      </section>
 
       <main>
         <section className="band" id="about">
