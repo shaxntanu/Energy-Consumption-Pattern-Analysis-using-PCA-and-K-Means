@@ -96,32 +96,32 @@ export const sectionSummaries = {
   about: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'About - 1.75 million hourly readings from 200 synthetic consumers, distilled into 51 shape features and 4 archetypes. A simple way to find daily energy rhythms.',
+    text: 'About - a controlled synthetic study of daily energy rhythms. The recovered clusters describe load patterns, not verified household identities.',
   },
   charts: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'Charts - the matplotlib results rebuilt for the web: load-shape brush, K selection, PCA variance, and cluster radar. K = 4 with a 0.328 silhouette.',
+    text: 'Charts - compare load shapes, the evidence used to choose K, retained PCA variance and cluster profiles. These charts display a committed analysis snapshot.',
   },
   seasons: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'Seasons - the same 200 households across all four seasons: mean daily energy climbs from 26.6 kWh in winter to 38.0 in summer, and the recovered seasonal phase matches the hidden truth with r = 0.678.',
+    text: 'Seasons - compare daily energy and peak-hour timing across seasons. Hidden seasonal phase is used for validation, not as a clustering feature.',
   },
   performance: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'excited',
-    text: 'Performance - the same PCA and K-Means kernels compiled to native C++ (optional engine), with scikit-learn kept as the scientific reference.',
+    text: 'Performance - optional native C++ PCA and K-Means kernels, with scikit-learn kept as the scientific reference.',
   },
   references: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'curious',
-    text: 'References - the research behind the method: PCA (Abdi & Williams), silhouette (Rousseeuw), plus MacQueen, Davies-Bouldin, and our Zephyr Station weather API.',
+    text: 'References - the research behind PCA and clustering validation. Zephyr Station provides project context; the synthetic pipeline derives seasons from timestamps without a live weather API call.',
   },
   simulator: {
     priority: MESSAGE_PRIORITY.navigation,
     animation: 'proud',
-    text: 'Simulator - the interactive Streamlit app opens in a new tab: generate a synthetic year and run the whole pipeline live.',
+    text: 'Simulator - Streamlit opens in a new tab, where you can generate synthetic data and recompute the analysis with different settings.',
   },
 }
 
