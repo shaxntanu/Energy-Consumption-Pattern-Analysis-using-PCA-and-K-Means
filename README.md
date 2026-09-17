@@ -703,7 +703,7 @@ This project was developed as part of an academic research initiative on energy 
 
 ### Team Members
 
-- **Shashwat Gupta (Shaxntanu)** - Lead Developer & Project Architect
+- **Shantanu** - Lead Developer & Project Architect
   - GitHub: [@shaxntanu](https://github.com/shaxntanu)
   - Project Lead, Pipeline Architecture, C++ Engine, Web Platform, Documentation
 
