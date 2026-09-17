@@ -13,3 +13,6 @@ plotly==6.5.2
 streamlit==1.62.0
 joblib==1.5.3
 pytest==8.4.2
+# Required by the production TreeExplainer path. This release provides wheels
+# compatible with the Python 3.14 / NumPy 2 stack pinned above.
+shap==0.52.0

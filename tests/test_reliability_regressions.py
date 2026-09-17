@@ -1,4 +1,6 @@
 """Regression tests for export isolation and descriptive ML correctness."""
+import builtins
+import logging
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -11,7 +13,7 @@ from sklearn.metrics import get_scorer
 
 import energy_analysis
 from energy_analysis import AnalysisConfig, EnergyAnalysis
-from explainability import _permutation_importance
+from explainability import _load_shap, _permutation_importance
 from preprocessing import handle_missing_values
 
 
@@ -99,3 +101,18 @@ def test_permutation_importance_uses_balanced_accuracy(monkeypatch):
     assert all(item['top_features'][0]['feature'] == 'a' for item in per_cluster)
     assert all(item['top_features'][0]['direction'] is None for item in per_cluster)
     assert global_importance['top_features'][0]['importance'] == pytest.approx(0.2)
+
+
+def test_shap_import_failure_is_logged_with_its_actual_exception(monkeypatch, caplog):
+    real_import = builtins.__import__
+
+    def broken_shap_import(name, *args, **kwargs):
+        if name == 'shap':
+            raise ImportError('simulated incompatible SHAP binary')
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, '__import__', broken_shap_import)
+    with caplog.at_level(logging.WARNING, logger='explainability'):
+        assert _load_shap() is None
+
+    assert 'ImportError: simulated incompatible SHAP binary' in caplog.text
