@@ -151,7 +151,7 @@
  <p class="slide-label">03 - Method - pipeline</p>
  <h1 class="slide-title">One deterministic path from meter to validated cluster.</h1>
  <div class="diagram-frame" aria-label="End-to-end pipeline from synthetic generation to validation and export">
- <svg viewBox="0 0 1500 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p5t p5d">
+ <svg viewBox="0 0 1400 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p5t p5d">
  <title id="p5t">End-to-end pipeline</title>
  <desc id="p5d">Generate, validate, preprocess with leakage boundary, engineer 51 features, standardize and reduce with PCA, sweep K 2- 10 and select by rule, explain with a surrogate, evaluate, then branch to synthetic and real-world validation.</desc>
  <!-- helpers -->
@@ -232,28 +232,28 @@
 
  <!-- Row 2: Evaluate + branches -->
  <!-- Evaluate -->
- <g transform="translate(810,140)">
+ <g transform="translate(605,130)">
  <rect x="0" y="0" width="190" height="64" rx="6" class="n4"/>
  <text x="95" y="22" text-anchor="middle" class="tl">Evaluate</text>
  <text x="95" y="36" text-anchor="middle" class="sl">internal + stability</text>
  <text x="95" y="50" text-anchor="middle" class="sl">silhouette / CH / DB</text>
  </g>
  <!-- Synthetic branch -->
- <g transform="translate(560,260)">
+ <g transform="translate(270,245)">
  <rect x="0" y="0" width="280" height="64" rx="6" class="n4"/>
  <text x="140" y="22" text-anchor="middle" class="tl">Synthetic branch - ARI / NMI vs archetypes</text>
  <text x="140" y="36" text-anchor="middle" class="sl">ARI 0.813 - NMI 0.828 - best K = 4</text>
  <text x="140" y="50" text-anchor="middle" class="sl">slide 13</text>
  </g>
  <!-- Real branch -->
- <g transform="translate(880,260)">
+ <g transform="translate(590,245)">
  <rect x="0" y="0" width="320" height="64" rx="6" class="n4"/>
  <text x="160" y="22" text-anchor="middle" class="tl">Real branch - internal + stability</text>
  <text x="160" y="36" text-anchor="middle" class="sl">Case A: 24 meters - internal only</text>
  <text x="160" y="50" text-anchor="middle" class="sl">no invented labels - slide 18</text>
  </g>
  <!-- Export -->
- <g transform="translate(1240,260)">
+ <g transform="translate(950,245)">
  <rect x="0" y="0" width="150" height="64" rx="6" class="n5"/>
  <text x="75" y="22" text-anchor="middle" class="tl">Export</text>
  <text x="75" y="36" text-anchor="middle" class="sl">contracts, reports,</text>
@@ -262,17 +262,16 @@
 
  <!-- Vertical + branch connectors -->
  <!-- Sweep -> Evaluate (down) -->
- <path d="M 1115 84 V 140" class="el"/>
+ <path d="M 1115 84 V 108 H 700 V 130" class="el"/>
  <!-- Evaluate -> two branches -->
- <path d="M 840 204 V 240 H 700" class="el"/>
- <path d="M 975 204 V 240 H 1040" class="el"/>
+ <path d="M 660 194 V 225 H 410 V 245" class="el"/>
+ <path d="M 740 194 V 225 H 750 V 245" class="el"/>
  <!-- Explain -> Evaluate (diagonal) -->
- <path d="M 1270 84 V 116 H 1015" class="eld"/>
- <text x="1140" y="108" font-family="Times New Roman, Times, serif" font-size="11" fill="#5B657A">surrogate</text>
+ <path d="M 1310 84 V 112 H 795 V 130" class="eld"/>
+ <text x="1050" y="104" font-family="Times New Roman, Times, serif" font-size="11" fill="#5B657A">surrogate</text>
  <!-- branches -> export -->
- <path d="M 700 292 H 810 V 292" class="el" style="opacity:0"/>
- <path d="M 840 292 H 880" class="el"/>
- <path d="M 1200 292 H 1240" class="el"/>
+ <path d="M 550 277 H 590" class="el"/>
+ <path d="M 910 277 H 950" class="el"/>
  </svg>
  <p class="diagram-caption">Inline figure. Solid edges are the fitting path. The dashed edge from Explain is post-hoc and never feeds back. The two evaluation branches share the same K; their metrics differ by what truth is available.</p>
  </div>
@@ -287,7 +286,7 @@
  <p class="slide-label">03 - Method - honesty</p>
  <h1 class="slide-title">The answer key never reaches the model.</h1>
  <div class="diagram-frame" aria-label="Leakage boundary between raw panel and clustering inputs">
- <svg viewBox="0 0 1500 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p6t p6d">
+ <svg viewBox="0 0 1280 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p6t p6d">
  <title id="p6t">Leakage boundary</title>
  <desc id="p6d">Truth columns are dropped before any feature engineering or fitting. Clustering sees only meter and calendar observables; labels are used only in evaluation.</desc>
  <defs>
@@ -336,14 +335,14 @@
  <rect x="16" y="122" width="268" height="22" rx="4" fill="rgba(79,209,165,0.12)" stroke="#4FD1A5"/><text x="150" y="137" text-anchor="middle" class="sl6" style="fill:#4FD1A5">read-only, after clustering</text>
  </g>
  <!-- Arrows -->
- <path d="M 320 110 H 380" class="el6"/>
- <path d="M 560 110 H 600" class="el6"/>
+ <path d="M 320 120 H 352 V 140 H 380" class="el6"/>
+ <path d="M 560 140 H 578 V 120 H 600" class="el6"/>
  <!-- dropped branch to held -->
- <path d="M 460 140 C 520 200, 720 220, 960 130" stroke="#5B657A" stroke-width="1.4" fill="none" stroke-dasharray="6 5" marker-end="url(#arr6)"/>
- <text x="720" y="218" font-family="Times New Roman, Times, serif" font-size="11" fill="#5B657A">labels separated here</text>
+ <path d="M 470 210 C 550 260, 800 260, 960 170" stroke="#5B657A" stroke-width="1.4" fill="none" stroke-dasharray="6 5" marker-end="url(#arr6)"/>
+ <text x="720" y="258" font-family="Times New Roman, Times, serif" font-size="11" fill="#5B657A">labels separated here</text>
  <!-- eval arrow -->
- <path d="M 900 110 H 960" class="el6g"/>
- <text x="910" y="100" font-family="Times New Roman, Times, serif" font-size="11" fill="#4FD1A5">evaluate after</text>
+ <path d="M 900 120 H 960" class="el6g"/>
+ <text x="930" y="105" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#4FD1A5">evaluate after</text>
  <!-- bottom note -->
  <text x="750" y="290" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#8A93A6">Nothing a meter and a calendar could not observe reaches the clustering. Truth is read-only and only after the assignments exist.</text>
  </svg>
@@ -453,7 +452,7 @@
  <p class="slide-label">03 - Method - how K is chosen</p>
  <h1 class="slide-title">K is picked by a rule fixed in advance, not by eye.</h1>
  <div class="diagram-frame" aria-label="K-selection rule from K 2- 10 to smallest K within tolerance of the best composite score">
- <svg viewBox="0 0 1500 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p10t p10d">
+ <svg viewBox="0 0 1290 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="p10t p10d">
  <title id="p10t">K-selection rule</title>
  <desc id="p10d">Filter K 2- 10 by minimum share and stability, normalize three metrics, average to a composite, keep candidates within 5 percent of the best, pick the smallest K.</desc>
  <defs>
@@ -515,7 +514,7 @@
  <text x="85" y="70" text-anchor="middle" class="sl10">(composite 0.944)</text>
  </g>
  <!-- No branch -->
- <g transform="translate(880,160)">
+ <g transform="translate(880,164)">
  <rect x="0" y="0" width="190" height="48" rx="6" fill="#141A24" stroke="#262E3D" stroke-width="1.2"/>
  <text x="95" y="20" text-anchor="middle" class="sl10">outside band -   not selected</text>
  <text x="95" y="36" text-anchor="middle" class="sl10">K = 2, 3, 5, 6 in this run</text>
@@ -526,12 +525,13 @@
  <path d="M 640 80 H 670" class="el10"/>
  <path d="M 850 80 H 880" class="el10"/>
  <path d="M 1070 80 H 1100" class="el10"/>
- <path d="M 975 120 V 160" class="el10"/>
- <text x="985" y="145" font-family="Times New Roman, Times, serif" font-size="11" fill="#5B657A">no</text>
+ <path d="M 975 120 V 154" class="el10"/>
+ <path d="M 975 154 V 164" stroke="#262E3D" stroke-width="1.5" fill="none"/>
+ <text x="987" y="146" font-family="Times New Roman, Times, serif" font-size="11" fill="#5B657A">no</text>
  <text x="985" y="78" font-family="Times New Roman, Times, serif" font-size="11" fill="#5B657A">yes</text>
  <!-- Bottom note -->
- <text x="750" y="260" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#8A93A6">Three metric families are scored as one. The 0.05 tolerance is set before the run; the smallest qualifying K wins - simplest defensible grouping.</text>
- <text x="750" y="285" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#5B657A">Raw silhouette peaks elsewhere (slide 11). The rule still picks K = 4.</text>
+ <text x="645" y="260" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#8A93A6">Three metric families are scored as one. The 0.05 tolerance is set before the run; the smallest qualifying K wins - simplest defensible grouping.</text>
+ <text x="645" y="285" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#5B657A">Raw silhouette peaks elsewhere (slide 11). The rule still picks K = 4.</text>
  </svg>
  </div>
  <p class="source">Source: web/public/data/clustering.json (min_cluster_share 0.05 - min_stability_ari 0.6 - tolerance 0.05) - RESULTS.md Section 4</p>
