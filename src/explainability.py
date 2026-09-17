@@ -74,7 +74,14 @@ def _load_shap():
         import shap  # type: ignore
         return shap
     except Exception as exc:  # pragma: no cover, environment dependent
-        logger.info("shap not available; using permutation fallback")
+        # Keep the dashboard's fallback clean, but retain the actionable import
+        # failure in the server/development log.  ``import shap`` can fail even
+        # when it is listed as a dependency (for example, after an ABI conflict).
+        logger.warning(
+            "Unable to import SHAP (%s: %s); using permutation fallback",
+            type(exc).__name__,
+            exc,
+        )
         return None
 
 
@@ -327,7 +334,11 @@ def run_explainability(features: pd.DataFrame,
         except Exception as exc:  # pragma: no cover, environment dependent
             # A broken shap install must never take the pipeline down with it.
             # Fall back to permutation importance and say so honestly.
-            logger.warning(f"SHAP explainer failed ({exc}); using permutation fallback")
+            logger.warning(
+                "SHAP TreeExplainer failed (%s: %s); using permutation fallback",
+                type(exc).__name__,
+                exc,
+            )
             method = 'permutation_fallback'
             per_cluster, global_importance = _permutation_importance(
                 X_std, labels, feature_names

@@ -558,9 +558,6 @@ Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
 # from the project root
 py -m pip install -r requirements.txt
 
-# optional (enables the SHAP lane rather than the permutation fallback)
-py -m pip install "shap>=0.44"
-
 # sanity gates
 py verify_compile.py
 py run_module.py energy_analysis
@@ -713,7 +710,7 @@ The SDG contribution is visualized in the [Vercel interactive explorer](https://
 - Longer, heterogeneous synthetic horizons and a broader archetype library to tighten the seasonal amplitude and phase recovery bounds.
 - Real-meter validation on a full-year panel (≥ 180 days) to populate the longitudinal lane and stress-test the generic adapter.
 - A minimal inference API (an extra web-side shim) for ad-hoc "which cluster is this meter" queries without redeploying.
-- SHAP as a continuous deployment lane. It is currently an optional fallback. The promise is that the site always renders, never that it always renders SHAP.
+- SHAP is installed in the production dependency set. The permutation lane remains an emergency fallback for a genuine SHAP import or runtime failure, so the site can still render diagnostically rather than mislabeling substitute results as SHAP.
 
 
 #Aarna Srivastava
