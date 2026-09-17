@@ -9,31 +9,9 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://energy-consumption-pattern.vercel.app)
 [![Interactive Simulator](https://img.shields.io/badge/Simulator-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://energy-consumption-pattern-vqrh.streamlit.app/)
-[![Academic Presentation](https://img.shields.io/badge/Presentation-GitHub%20Pages-222222?style=for-the-badge&logo=github)](https://shaxntanu.github.io/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/)
+[![Academic Presentation](https://img.shields.io/badge/Presentation-Google%20Slides-FBBC04?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/d/1_YOUR_GOOGLE_SLIDES_ID_HERE/edit?usp=sharing)
 
 ![Energy Consumption Pattern Analysis](public/Energy_Consumption_Pattern_Analysis.png)
-
-###  Dark Mode Visualizations
-
-Premium dark-themed visualizations optimized for presentations are available in [`dark_mode_plots/`](dark_mode_plots/). All 45+ plots feature:
-- High-contrast neon color palette on dark backgrounds
-- Optimized for projection and slide decks
-- 300 DPI resolution for print quality
-- Consistent visual language across all charts
-
-**Main Visualizations:** [`dark_mode_plots/figures/`](dark_mode_plots/figures/) - EDA, PCA, Clustering, Validation, Studies  
-**Ablation Studies:** [`dark_mode_plots/ablation/`](dark_mode_plots/ablation/) - Feature-set comparisons (scale, shape, summary, behavioral, combined)
-
-<details>
-<summary><b>View Sample Dark Mode Plots</b></summary>
-
-| Analysis Category | Dark Mode Preview |
-|------------------|-------------------|
-| **Clustering** | ![Elbow Curve](dark_mode_plots/figures/elbow_curve.png) |
-| **PCA** | ![Explained Variance](dark_mode_plots/figures/explained_variance.png) |
-| **Patterns** | ![Hourly Patterns](dark_mode_plots/figures/hourly_patterns.png) |
-
-</details>
 
 ---
 
@@ -532,7 +510,6 @@ Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/
 |  |- public/data/   manifest · pca · clustering · profiles · validation · seasonal · longitudinal · explainability · benchmark
 |  `- vercel.json
 |- streamlit_app.py               # interactive simulator (pages)
-|- presentation/                  # HTML slide deck: index.html · src/script.js · src/styles/main.css (figures load from dark_mode_plots/)
 |- sunee-pitch-deck/              # brand deck + mascot: index.html · styles.css · script.js · sunee-mascot.png
 |- dark_mode_plots/               # committed dark-mode PNG store: figures/ (20) · ablation/ (25)
 |- outputs/
@@ -660,7 +637,7 @@ The benchmark report (`outputs/benchmarks/benchmark_results.json`) always states
 
 ### 22.3 Dark-mode Matplotlib charts
 
-The dark-mode set ships as committed static outputs, not as a standalone generator. `dark_mode_plots/figures/` holds the 20-chart core set (EDA, PCA, clustering, validation, studies), and `dark_mode_plots/ablation/` holds the per-feature-set ablation charts (5 arms × 5 figures). The same figures are mirrored under `web/public/results/dark/` for the Vercel explorer gallery, and the `presentation/` deck references this set directly.
+The dark-mode set ships as committed static outputs, not as a standalone generator. `dark_mode_plots/figures/` holds the 20-chart core set (EDA, PCA, clustering, validation, studies), and `dark_mode_plots/ablation/` holds the per-feature-set ablation charts (5 arms × 5 figures). The same figures are mirrored under `web/public/results/dark/` for the Vercel explorer gallery.
 
 There is no one-command re-render for the dark set in this repo. Every figure is a result of the analysis run that produced it, so regenerating one means re-running that pipeline step with `py run_module.py energy_analysis ...` (flagship: `-- --n_days 365 --n_consumers 200`). The light-mode equivalents written by the same runs live in `outputs/figures/`, and the per-arm ablation figures in `outputs/ablation/<arm>/figures/`; the dark copies are committed exports of those.
 
