@@ -9,7 +9,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://energy-consumption-pattern.vercel.app)
 [![Interactive Simulator](https://img.shields.io/badge/Simulator-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://energy-consumption-pattern-vqrh.streamlit.app/)
-[![Academic Presentation](https://img.shields.io/badge/Presentation-Google%20Slides-FBBC04?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/d/1_YOUR_GOOGLE_SLIDES_ID_HERE/edit?usp=sharing)
+[![Academic Presentation](https://img.shields.io/badge/Presentation-Google%20Slides-FBBC04?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/d/1MDuqluVIVA2VCmYWPoI2TEvCN6ZLHZWgzFX1eGzS4PQ/edit?usp=sharing)
 
 ![Energy Consumption Pattern Analysis](public/Energy_Consumption_Pattern_Analysis.png)
 
