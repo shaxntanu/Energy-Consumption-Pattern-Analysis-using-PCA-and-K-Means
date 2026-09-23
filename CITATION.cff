@@ -7,17 +7,8 @@ url: "https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA
 repository-code: "https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means"
 type: software
 authors:
-  - family-names: "[Last Name]"
-    given-names: "Shantanu"
-    orcid: "https://orcid.org/0000-0000-0000-0000"
-  - family-names: "Srivastava"
-    given-names: "Aarna"
-  - family-names: "Yalangi"
-    given-names: "Johnson Victor"
-  - family-names: "Rathi"
-    given-names: "Harsh"
-  - family-names: "Srivastava"
-    given-names: "Varun"
+  - given-names: "Shantanu"
+    orcid: "https://orcid.org/0009-0008-4403-0670"
 keywords:
   - energy consumption
   - clustering
