@@ -1,0 +1,104 @@
+\documentclass[11pt,a4paper]{article}
+
+% ============================================================================
+% PACKAGES
+% ============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+
+% ============================================================================
+% BIBLIOGRAPHY
+% ============================================================================
+\addbibresource{references.bib}
+
+% ============================================================================
+% FORMATTING
+% ============================================================================
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\captionsetup{font=small,labelfont=bf}
+
+% ============================================================================
+% METADATA
+% ============================================================================
+\title{\textbf{Shape-First Behavioral Segmentation of Household Energy Consumption: A Reproducible Framework with Evidence-Based K-Selection and Controlled Validation}}
+
+\author{
+  [Author Name]$^{1}$ \and
+  [Author Name]$^{1}$ \and
+  [Author Name]$^{1}$ \and
+  [Author Name]$^{1}$ \and
+  [Author Name]$^{1}$\\[6pt]
+  \small $^{1}$[Institution/Department]\\
+  \small \texttt{\{email addresses\}}
+}
+
+\date{}
+
+% ============================================================================
+% DOCUMENT
+% ============================================================================
+\begin{document}
+
+\maketitle
+
+% ============================================================================
+% ABSTRACT
+% ============================================================================
+\begin{abstract}
+Household energy consumption segmentation typically groups consumers by total usage magnitude, overlooking temporal behavioral patterns critical for demand response and grid management. We present a reproducible framework that separates consumption magnitude from temporal usage behavior through shape-normalized feature engineering, enabling behavioral clustering that reflects \emph{when} energy is consumed rather than \emph{how much}. The framework employs 51 scale-invariant features derived from normalized 24-hour load profiles, applies PCA to retain 95\% variance (10 components), and selects the number of clusters K via a pre-registered multi-criterion composite rule combining silhouette coefficient, Calinski-Harabasz index, Davies-Bouldin index, and multi-seed stability analysis. Validated on a controlled synthetic dataset of 200 consumers over 365 days with known ground-truth behavioral archetypes, the framework achieves K=4 with Adjusted Rand Index (ARI) 0.813 against hidden labels never used during clustering. Multi-seed stability yields mean pairwise ARI 0.995, and temporal stability across quarterly segments achieves mean ARI 0.882, demonstrating robust behavioral groupings independent of seasonal magnitude variations. A comprehensive ablation study shows magnitude-only features achieve near-zero archetype recovery (ARI $\approx$ 0.00) despite highest silhouette scores (0.52), confirming successful separation of scale from behavior. The framework includes complete reproducibility infrastructure with cryptographic configuration hashing, deterministic execution, versioned artifacts, and documented pathways for real-world data adaptation. All code, synthetic data generation, experimental protocols, and results are publicly available. This work contributes methodological rigor and reproducibility standards for behavioral energy analytics rather than novel clustering algorithms.
+
+\textbf{Keywords:} household energy consumption, load profile clustering, behavioral segmentation, shape normalization, PCA, K-means, evidence-based K selection, reproducible research, smart meter analytics, demand response
+\end{abstract}
+
+% ============================================================================
+% MAIN CONTENT
+% ============================================================================
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/methodology}
+\input{sections/experiments}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+% ============================================================================
+% ACKNOWLEDGMENTS
+% ============================================================================
+\section*{Acknowledgments}
+The authors acknowledge the use of the Zephyr Station weather API for seasonal data integration. This research was conducted as part of an academic project on energy consumption pattern analysis.
+
+% ============================================================================
+% DATA AVAILABILITY
+% ============================================================================
+\section*{Data Availability}
+The synthetic dataset generator, complete analysis pipeline, experimental configurations, and all results are publicly available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. Configuration hash for flagship run: \texttt{99c7a6631340d301}. Interactive results explorer: \url{https://energy-consumption-pattern.vercel.app}.
+
+% ============================================================================
+% CODE AVAILABILITY
+% ============================================================================
+\section*{Code Availability}
+All source code is released under MIT License. Core modules: data generation (\texttt{src/data\_loader.py}), preprocessing (\texttt{src/preprocessing.py}), feature engineering (\texttt{src/feature\_engineering.py}), PCA (\texttt{src/pca\_analysis.py}), clustering (\texttt{src/clustering.py}), validation (\texttt{src/validation.py}), and stability analysis (\texttt{src/longitudinal\_analysis.py}, \texttt{src/seasonal\_analysis.py}). Complete test suite available in \texttt{tests/}.
+
+% ============================================================================
+% BIBLIOGRAPHY
+% ============================================================================
+\printbibliography
+
+\end{document}

@@ -1,0 +1,59 @@
+%% Experimental Architecture
+%% Configuration, execution, artifact generation
+
+flowchart LR
+    subgraph CONFIG[Configuration]
+        PARAMS[Parameters<br/>N=200, days=365,<br/>seed=42]
+        HASH[Config Hash<br/>99c7a6631340d301]
+        PARAMS --> HASH
+    end
+    
+    subgraph DATA[Data Layer]
+        SYN[Synthetic Generator<br/>4 archetypes]
+        REAL[Real-World Adapter<br/>UCI pathway]
+        SYN -.->|not executed| REAL
+    end
+    
+    subgraph PIPELINE[Analysis Pipeline]
+        P1[Preprocessing]
+        P2[Feature Engineering]
+        P3[PCA]
+        P4[K-Means]
+        P5[Validation]
+        P1 --> P2 --> P3 --> P4 --> P5
+    end
+    
+    subgraph EXPERIMENTS[Experiments]
+        FLAGSHIP[Flagship<br/>365-day]
+        ABLATION[Ablation<br/>5 feature sets]
+        ROBUST[Robustness<br/>20 datasets]
+        
+        FLAGSHIP -.->|30-day| ABLATION
+        ABLATION --> ROBUST
+    end
+    
+    subgraph ARTIFACTS[Artifacts]
+        METRICS[metrics/<br/>CSV files]
+        MODELS[models/<br/>PKL files]
+        WEB[web/public/data/<br/>JSON contract]
+        FIGS[figures/<br/>PNG plots]
+    end
+    
+    subgraph PAPER[Research Paper]
+        TABLES[LaTeX Tables]
+        FIGURES[Publication Figures]
+        MANUSCRIPT[main.tex]
+        
+        TABLES --> MANUSCRIPT
+        FIGURES --> MANUSCRIPT
+    end
+    
+    CONFIG --> DATA
+    DATA --> PIPELINE
+    PIPELINE --> EXPERIMENTS
+    EXPERIMENTS --> ARTIFACTS
+    ARTIFACTS --> PAPER
+    
+    style CONFIG fill:#e1f5e1
+    style ARTIFACTS fill:#fff4e1
+    style PAPER fill:#f0e1ff

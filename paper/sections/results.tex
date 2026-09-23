@@ -1,0 +1,294 @@
+\section{Results}
+\label{sec:results}
+
+This section presents results from the flagship 365-day experiment (configuration hash \texttt{99c7a6631340d301}), ablation study, and robustness analyses. All numerical values are traceable to \texttt{outputs/reports/analysis\_summary.md} and \texttt{models/analysis\_metadata.json}.
+
+\subsection{PCA Dimensionality Reduction}
+
+Applying PCA to the standardized 51-feature matrix with 95\% cumulative variance threshold yields:
+
+\begin{table}[h]
+\centering
+\caption{PCA Results (Flagship Configuration)}
+\label{tab:pca_results}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Parameter & Value & Notes \\
+\midrule
+Input features & 51 & Behavioral features \\
+Components retained & 10 & Threshold: 95\% variance \\
+Cumulative variance & 95.05\% & Target: 95\% \\
+Kaiser criterion & 7 components & Eigenvalue $> 1$ \\
+Scree elbow & 7 components & Visual inspection \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 10-component solution balances dimensionality reduction with information preservation. Figure~\ref{fig:pca_variance} shows explained and cumulative variance curves.
+
+\textbf{Top PC Interpretations (via loadings):}
+\begin{itemize}
+    \item \textbf{PC1} (profile shape): \texttt{profile\_ramp} +0.92, \texttt{peak\_concentration} +0.88, \texttt{harmonic\_2\_amplitude} +0.88
+    \item \textbf{PC2} (day/night balance): \texttt{night\_day\_ratio} +0.92, \texttt{afternoon\_share} $-0.87$
+    \item \textbf{PC3} (morning pattern): \texttt{hour\_7\_shape} +0.87, \texttt{hour\_8\_shape} +0.87
+    \item \textbf{PC4} (evening timing): \texttt{hour\_17\_shape} +0.56, \texttt{hour\_18\_shape} +0.54
+    \item \textbf{PC5} (weekend behavior): \texttt{weekend\_ratio} $-0.51$, \texttt{haar\_detail\_l3} +0.54
+\end{itemize}
+
+These interpretations confirm PCA captures complementary behavioral dimensions: overall profile shape, diurnal balance, specific hour patterns, and weekend effects.
+
+\subsection{K Selection}
+
+Algorithm~\ref{alg:kselection} applied to candidates K=2 to 10 yields complete sweep results (Table~\ref{tab:k_sweep}).
+
+\begin{table}[h]
+\centering
+\small
+\caption{K-Selection Sweep (Flagship, 365 days, 200 consumers)}
+\label{tab:k_sweep}
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+K & Inertia & Silhouette & CH & DB & Stability ARI \\
+\midrule
+2 & 7083.5 & 0.2939 & 73.0 & 1.3823 & 0.9958 \\
+3 & 4968.5 & 0.3305 & 93.7 & 1.1957 & 0.9852 \\
+\textbf{4} & \textbf{3911.1} & \textbf{0.3283} & \textbf{96.6} & \textbf{1.1691} & \textbf{0.9947} \\
+5 & 3466.1 & \textbf{0.3352} & 87.6 & 1.2023 & 0.9587 \\
+6 & 3072.5 & 0.3238 & 83.6 & 1.2326 & 0.9909 \\
+7 & 2844.6 & 0.3164 & 77.5 & 1.2094 & 0.8931 \\
+8 & 2670.3 & 0.3072 & 72.2 & 1.2950 & 0.8651 \\
+9 & 2490.6 & 0.3111 & 69.1 & 1.2015 & 0.8156 \\
+10 & 2361.6 & 0.2760 & 65.6 & 1.3180 & 0.7581 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Selection Outcome:} K=4 selected with composite score 0.9444. K=5 has marginally higher silhouette (0.3352 vs 0.3283) but lower composite (0.8210). No other K within 0.05 tolerance, so parsimony rule not invoked. K=7-10 rejected for producing sub-5\% clusters.
+
+\textbf{Inertia Elbow:} Visual elbow also at K=4, providing independent confirmation.
+
+\subsection{Cluster Characteristics}
+
+Table~\ref{tab:cluster_profiles} summarizes the four recovered clusters in original feature space.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Cluster Profiles (K=4, Flagship)}
+\label{tab:cluster_profiles}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Characteristic & Cluster 0 & Cluster 1 & Cluster 2 & Cluster 3 & Population \\
+\midrule
+Size (N) & 39 & 52 & 47 & 62 & 200 \\
+Share (\%) & 19.5 & 26.0 & 23.5 & 31.0 & 100 \\
+Peak hour & 13:00 & 19:00 & 20:00 & 19:00 & --- \\
+Evening share & 0.212 & 0.258 & \textbf{0.380} & 0.299 & 0.290 \\
+Afternoon share & \textbf{0.357} & 0.271 & 0.229 & 0.310 & 0.290 \\
+Weekend ratio & \textbf{0.747} & 0.952 & 1.026 & \textbf{1.313} & 1.041 \\
+Peak-to-avg & 8.83 & \textbf{4.92} & \textbf{11.32} & 9.45 & 8.59 \\
+CV & 0.620 & \textbf{0.302} & 0.705 & 0.596 & 0.550 \\
+\midrule
+Assigned name & Midday- & Flat & Evening- & Evening- & --- \\
+ & Peaking & All-Day & Peaking & Peaking & \\
+ & Weekday- &  &  & Weekend- & \\
+ & Heavy &  &  & Heavy & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item \textbf{Cluster 0} (Midday-Peaking Weekday-Heavy): Afternoon peak (13:00), elevated afternoon share (0.357), depressed weekend ratio (0.747)
+    \item \textbf{Cluster 1} (Flat All-Day): Lowest peak-to-average (4.92), lowest CV (0.302), near-uniform distribution
+    \item \textbf{Cluster 2} (Evening-Peaking): Highest evening share (0.380), highest peak-to-average (11.32), concentrated evening demand
+    \item \textbf{Cluster 3} (Evening-Peaking Weekend-Heavy): Evening peak with elevated weekend ratio (1.313)
+\end{itemize}
+
+\textbf{Mean Consumption Context:} Mean kWh/record for clusters [1.30, 1.38, 1.38, 1.32] vs population 1.35---approximately uniform, confirming magnitude does not drive clustering.
+
+\subsection{Ground Truth Recovery (Synthetic Validation)}
+
+Comparing recovered clusters against hidden behavioral archetypes (never used during modeling):
+
+\begin{table}[h]
+\centering
+\caption{External Validation: Recovery by K}
+\label{tab:recovery_by_k}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+K & ARI & NMI & Silhouette \\
+\midrule
+2 & 0.288 & 0.457 & 0.294 \\
+3 & 0.602 & 0.680 & 0.331 \\
+\textbf{4} & \textbf{0.813} & \textbf{0.828} & 0.328 \\
+5 & 0.765 & 0.802 & \textbf{0.335} \\
+6 & 0.753 & 0.782 & 0.324 \\
+7-10 & $<0.74$ & $<0.78$ & $<0.32$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Finding:} ARI peaks at K=4 (0.813), exactly where evidence-based rule selected. This independent validation confirms the selection was correct.
+
+\textbf{Confusion Matrix at K=4:}
+
+\begin{table}[h]
+\centering
+\caption{Archetype $\times$ Cluster Crosstab}
+\label{tab:crosstab}
+\begin{tabular}{@{}lcccc|c@{}}
+\toprule
+Archetype & Cluster 0 & Cluster 1 & Cluster 2 & Cluster 3 & Total \\
+\midrule
+daytime & \textbf{39} & 1 & 0 & 10 & 50 \\
+evening & 0 & 0 & \textbf{47} & 3 & 50 \\
+flat & 0 & \textbf{50} & 0 & 0 & 50 \\
+weekend & 0 & 1 & 0 & \textbf{49} & 50 \\
+\midrule
+Total & 39 & 52 & 47 & 62 & 200 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three archetypes recover near-perfectly (evening 47/50, flat 50/50, weekend 49/50). Daytime archetype splits: 39/50 in Cluster 0, 10/50 in Cluster 3, reflecting behavioral overlap between midday-peaking and evening-peaking patterns when weekend behavior differs.
+
+\subsection{Multi-Seed Stability}
+
+Refitting K-means at K=4 with 10 random seeds yields:
+\begin{itemize}
+    \item Mean pairwise ARI: \textbf{0.9947 $\pm$ 0.0071}
+    \item Min ARI: 0.9736
+    \item Assignment agreement: 0.998
+\end{itemize}
+
+\textbf{Interpretation:} Partition is highly robust across initializations. Near-perfect stability (ARI $>$ 0.99) indicates clustering captures real structure, not random artifacts.
+
+\subsection{Temporal Stability (Longitudinal Analysis)}
+
+Quarterly segments re-analyzed independently:
+
+\begin{table}[h]
+\centering
+\caption{Temporal Stability Across Quarters}
+\label{tab:temporal_stability}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Segment & Period & Selected K & ARI vs Full Window \\
+\midrule
+Q1 & 2024-01-01 to 2024-04-01 & 4 & 0.838 \\
+Q2 & 2024-04-01 to 2024-07-01 & 4 & 0.892 \\
+Q3 & 2024-07-01 to 2024-09-30 & 4 & \textbf{0.946} \\
+Q4 & 2024-09-30 to 2024-12-30 & 4 & 0.851 \\
+\midrule
+\multicolumn{3}{l}{\textbf{Mean Temporal Stability}} & \textbf{0.882} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item All segments independently select K=4, confirming evidence-based rule consistency
+    \item High temporal ARI ($>0.84$ all quarters, mean 0.882) demonstrates consumer groups persist across seasons
+    \item Q3 (summer) shows strongest alignment (0.946); Q1 (winter) weakest (0.838) but still strong
+\end{itemize}
+
+\textbf{Interpretation:} Behavioral groupings are stable properties of consumers, not seasonal artifacts. Despite magnitude variations (monthly mean kWh: Jan 26.1 $\rightarrow$ Jun 39.4 $\rightarrow$ Dec 25.3), temporal patterns remain coherent.
+
+\subsection{Seasonal Analysis}
+
+Seasonal model separately estimates magnitude and timing channels:
+
+\begin{itemize}
+    \item \textbf{Magnitude amplitude} (fractional daily swing): 0.202
+    \item \textbf{Phase correlation} (vs hidden seasonal phase): Pearson $r$ = 0.678
+    \item \textbf{Peak-season agreement}: 88.5\%
+\end{itemize}
+
+\textbf{Mean daily kWh by season:} Winter 26.6, Spring 35.2, Summer 38.0, Autumn 29.4
+
+\textbf{Peak hour by season:} Autumn/Winter 19:00, Spring/Summer 20:00
+
+\textbf{Interpretation:} Seasonal effects primarily affect consumption magnitude (amplitude 0.20) rather than timing. Phase estimation achieves moderate correlation (0.68) with hidden truth, but phase was drawn independently of archetype, so timing shifts do not create spurious clusters.
+
+\subsection{Explainability (SHAP Analysis)}
+
+Post-hoc random forest surrogate achieves cross-validated balanced accuracy 0.985, indicating features strongly distinguish clusters. SHAP attribution (top 3 features per cluster):
+
+\begin{table}[h]
+\centering
+\small
+\caption{Cluster-Discriminating Features (SHAP)}
+\label{tab:shap_features}
+\begin{tabular}{@{}lp{8cm}@{}}
+\toprule
+Cluster & Top 3 Features (SHAP importance) \\
+\midrule
+0 (Midday Weekday) & \texttt{afternoon\_share} (0.142), \texttt{hour\_14\_shape} (0.109), \texttt{hour\_2\_shape} (0.076) \\
+1 (Flat) & \texttt{base\_load\_share} (0.175), \texttt{coefficient\_of\_variation} (0.091), \texttt{shape\_entropy} (0.060) \\
+2 (Evening) & \texttt{evening\_share} (0.126), \texttt{peak\_concentration} (0.123), \texttt{harmonic\_2\_amplitude} (0.107) \\
+3 (Evening Weekend) & \texttt{weekend\_ratio} (0.250), \texttt{peak\_hour\_cos} (0.091), \texttt{peak\_hour\_sin} (0.049) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interpretation:} Each cluster distinguished by semantically meaningful features. Flat cluster driven by uniformity descriptors (base load, low CV, entropy). Weekend cluster strongly distinguished by weekend ratio (0.250 importance), confirming behavioral naming is grounded.
+
+\subsection{Ablation Study}
+
+Five feature sets compared on 30-day window with identical protocol:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Ablation Study: Feature Set Comparison}
+\label{tab:ablation}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Feature Set & Features & K & Silhouette & Stability ARI & Archetype ARI \\
+\midrule
+scale & 7 & 2 & \textbf{0.521} & 0.983 & \textbf{-0.004} \\
+shape & 24 & 4 & 0.323 & 0.987 & 0.646 \\
+summary & 27 & 2 & 0.321 & 0.986 & 0.321 \\
+\textbf{behavioral} & \textbf{51} & \textbf{3} & 0.312 & 0.988 & \textbf{0.614} \\
+combined & 58 & 3 & 0.279 & 0.983 & 0.623 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Critical Finding:} Scale-only features achieve highest silhouette (0.521) but \emph{zero} archetype recovery (ARI $-0.004$). This demonstrates internal quality metrics alone cannot validate behavioral segmentation. High silhouette on magnitude simply confirms consumers with different totals are well-separated---but this is the wrong research question.
+
+Behavioral and combined feature sets achieve similar recovery (0.614, 0.623), with behavioral slightly simpler (51 vs 58 features). Shape-only achieves 0.646, suggesting raw hourly bins carry strong signal, but behavioral descriptors add interpretability.
+
+\subsection{Seed Robustness Study}
+
+Twenty independent 30-day datasets (seeds 1-19, 42), five feature sets each:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Robustness Across 20 Datasets (Mean $\pm$ SD)}
+\label{tab:robustness}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Feature Set & Archetype ARI & Silhouette & K Modal (Range) \\
+\midrule
+\textbf{behavioral} & \textbf{0.641 $\pm$ 0.115} & 0.311 & 3 (3-4) \\
+summary & 0.610 $\pm$ 0.240 & 0.319 & 3 (2-4) \\
+combined & 0.601 $\pm$ 0.032 & 0.279 & 3 (3-3) \\
+shape & 0.589 $\pm$ 0.073 & 0.317 & 3 (3-5) \\
+scale & 0.013 $\pm$ 0.036 & \textbf{0.521} & 2 (2-6) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Statistical Tests (Paired Permutation):}
+\begin{itemize}
+    \item Behavioral vs scale: $p = 1.9 \times 10^{-6}$ (highly significant)
+    \item Behavioral vs shape: $p = 0.123$ (not significant)
+    \item Behavioral vs summary: Close, indistinguishable
+\end{itemize}
+
+\textbf{Interpretation:} Top three feature sets (behavioral, summary, shape) statistically indistinguishable in recovery. Behavioral selected as shipped feature set based on best mean ARI (0.641) with reasonable interpretability story. Honest reporting: behavioral is not uniquely optimal, but provides best mean performance with scale-invariant design.
+
+Scale features consistently fail ($\text{ARI} \approx 0.01$) despite highest silhouette (0.521), confirming magnitude-timing separation is critical for behavioral segmentation.

@@ -1,0 +1,108 @@
+\section{Experimental Design}
+\label{sec:experiments}
+
+\subsection{Dataset Configuration}
+
+The flagship experimental configuration (hash \texttt{99c7a6631340d301}) comprises:
+\begin{itemize}
+    \item Consumers: $N = 200$
+    \item Observation window: 365 days (2024-01-01 to 2024-12-30)
+    \item Sampling: Hourly measurements
+    \item Total records: 1,752,000 (after preprocessing)
+    \item Hidden archetypes: 4 (daytime, evening, flat, weekend)
+    \item Random seed: 42 (deterministic)
+\end{itemize}
+
+A reference 30-day configuration (hash \texttt{6896387297178841}) is maintained for short-horizon comparison.
+
+\subsection{Experimental Protocol}
+
+\subsubsection{Single-Run Flagship Experiment}
+
+The primary evaluation uses the 365-day configuration with complete pipeline execution:
+\begin{enumerate}
+    \item Generate synthetic panel with hidden archetypes
+    \item Validate dataset integrity (archetype-magnitude independence)
+    \item Drop ground truth columns
+    \item Preprocess (within-consumer imputation, no leakage)
+    \item Engineer 51 behavioral features
+    \item Standardize and apply PCA (95\% threshold)
+    \item Sweep K=2 to 10 with multi-metric evaluation
+    \item Select K via Algorithm~\ref{alg:kselection}
+    \item Profile clusters in original feature space
+    \item Validate against hidden archetypes (ARI, NMI)
+    \item Assess multi-seed stability (10 restarts)
+    \item Assess temporal stability (4 quarterly segments)
+    \item Apply SHAP explainability
+\end{enumerate}
+
+\subsubsection{Ablation Study}
+
+To validate magnitude-timing separation, we compare five feature sets on a 30-day window:
+\begin{itemize}
+    \item \textbf{scale}: 7 magnitude features (mean, max, sum energy, current)
+    \item \textbf{shape}: 24 normalized hourly bins only
+    \item \textbf{summary}: 27 derived behavioral scalars
+    \item \textbf{behavioral}: 51 features (shape + summary, \textbf{shipped})
+    \item \textbf{combined}: 58 features (behavioral + scale)
+\end{itemize}
+
+All arms use identical data, seed, and K-selection rule. Only feature set varies.
+
+\subsubsection{Seed Robustness Study}
+
+To assess generalizability, we repeat the ablation across 20 independent datasets (seeds 1-19, 42), each 30-day window with 200 consumers. This evaluates:
+\begin{itemize}
+    \item Mean and variance of archetype recovery per feature set
+    \item Frequency of K-selection choices
+    \item Statistical significance of feature set differences
+\end{itemize}
+
+Paired permutation tests assess whether feature sets differ significantly.
+
+\subsection{Implementation}
+
+\subsubsection{Software Stack}
+
+\begin{itemize}
+    \item Python 3.11
+    \item pandas 3.0.0, numpy 2.3.5
+    \item scikit-learn 1.9.0, scipy 1.18.0
+    \item matplotlib 3.10.8, seaborn 0.13.2
+    \item SHAP (TreeExplainer for post-hoc explanation)
+\end{itemize}
+
+All dependencies pinned in \texttt{requirements.txt} for reproducibility.
+
+\subsubsection{Reproducibility Mechanisms}
+
+\begin{itemize}
+    \item Configuration hashing: Cryptographic hash of all parameters
+    \item Deterministic execution: Fixed random seeds throughout
+    \item Artifact versioning: Timestamped outputs with metadata
+    \item Contract versioning: JSON artifacts with semantic versioning (v1.0.0)
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+
+See Section~\ref{sec:validation} for metric definitions. Summary:
+\begin{itemize}
+    \item \textbf{Internal:} Silhouette, Calinski-Harabasz, Davies-Bouldin, stability ARI
+    \item \textbf{External (synthetic only):} ARI, NMI vs. hidden archetypes
+    \item \textbf{Temporal:} Segment-wise ARI vs. full window
+\end{itemize}
+
+\subsection{Computational Environment}
+
+Experiments executed on standard desktop hardware. Flagship run completion time: approximately 15 minutes for full pipeline including all stability analyses. Ablation study (5 arms × 20 seeds): approximately 2 hours total.
+
+\subsection{Dataset Integrity Validation}
+
+Before modeling, we verify:
+\begin{enumerate}
+    \item Mean consumer shapes match archetype templates
+    \item Weekend effects present in weekend-archetype consumers
+    \item Magnitude $B_i$ uncorrelated with archetype label (Pearson $r < 0.05$)
+\end{enumerate}
+
+This confirms the synthetic generator produces the intended structure with independent magnitude-behavior channels.

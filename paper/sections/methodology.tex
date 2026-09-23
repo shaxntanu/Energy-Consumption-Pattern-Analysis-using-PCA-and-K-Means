@@ -1,0 +1,289 @@
+\section{Methodology}
+\label{sec:methodology}
+
+This section details the complete analytical pipeline from data generation through cluster profiling. Figure~\ref{fig:pipeline} illustrates the end-to-end workflow.
+
+\subsection{Dataset Generation}
+\label{sec:dataset}
+
+\subsubsection{Synthetic Data Rationale}
+
+Real household smart meter data with known behavioral ground truth is unavailable due to privacy constraints and absence of labels. Synthetic data enables controlled validation: each consumer is assigned a behavioral archetype, allowing quantitative assessment of clustering recovery while maintaining the independence property critical for evaluating magnitude-timing separation.
+
+\subsubsection{Archetype-Based Generator}
+
+The synthetic generator produces hourly electricity consumption for $N$ consumers over $D$ days. Each consumer $i$ is assigned to one of four behavioral archetypes $\mathcal{A} = \{\text{daytime}, \text{evening}, \text{flat}, \text{weekend}\}$:
+
+\begin{itemize}
+    \item \textbf{Daytime:} Peaks 12:00-14:00, lower evening demand (home office, midday HVAC)
+    \item \textbf{Evening:} Peaks 18:00-21:00, lower daytime demand (commuter, evening cooking/entertainment)
+    \item \textbf{Flat:} Approximately uniform 24-hour distribution (commercial-like, always-on baseline)
+    \item \textbf{Weekend:} Evening-peaking with elevated weekend consumption (lifestyle-driven weekly variation)
+\end{itemize}
+
+For consumer $i$ at hour $h$ on day $d$:
+
+\begin{equation}
+E_{i,h,d} = B_i \cdot S_{\mathcal{A}_i}(h) \cdot M_i(d) \cdot (1 + \epsilon_{i,h,d})
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $B_i \sim \text{Uniform}(0.5, 3.0)$ is base consumption magnitude (kW), drawn \emph{independently} of archetype $\mathcal{A}_i$
+    \item $S_{\mathcal{A}_i}(h)$ is the normalized 24-hour shape template for archetype $\mathcal{A}_i$ (sums to 1)
+    \item $M_i(d)$ is the seasonal magnitude multiplier for consumer $i$ on day $d$ (mean-corrected, independent of $\mathcal{A}_i$)
+    \item $\epsilon_{i,h,d} \sim \mathcal{N}(0, \sigma^2)$ is Gaussian noise
+\end{itemize}
+
+\textbf{Critical Property:} Magnitude $B_i$ and seasonal phase are drawn independently of archetype $\mathcal{A}_i$. This construction ensures that consumption scale carries no information about behavioral pattern, enabling validation of magnitude-timing separation.
+
+\subsubsection{Ground Truth Handling}
+
+Archetype labels $\mathcal{A}_i$ and seasonal phases are stored in the generated dataset but \textbf{dropped before any preprocessing or modeling}. These labels are used exclusively for post-hoc validation via Adjusted Rand Index (ARI) and never influence feature engineering, PCA, or K-means. This independence is verified through dataset integrity checks (Section~\ref{sec:experiments}).
+
+\subsection{Preprocessing}
+\label{sec:preprocessing}
+
+The preprocessing pipeline ensures data quality without information leakage:
+
+\begin{enumerate}
+    \item \textbf{Timestamp Parsing:} Robust parsing with failed-parse logging
+    \item \textbf{Deduplication:} Remove exact $(i, t)$ duplicates
+    \item \textbf{Sorting:} Sort by $(i, t)$ for contiguous consumer-level access
+    \item \textbf{Gap Filling:} Within-consumer forward/backward fill (\emph{never} cross-consumer)
+    \item \textbf{Outlier Handling:} Configurable winsorization (preserves behavioral peaks rather than deletion)
+    \item \textbf{Validation:} Schema, continuity, value-range checks
+\end{enumerate}
+
+\textbf{Leakage Prevention:} Missing value imputation operates within consumer groups ($i$) only, preventing contamination across households. Ground truth columns $\mathcal{A}_i$ are explicitly dropped before any statistical computation.
+
+\subsection{Feature Engineering}
+\label{sec:features}
+
+Feature engineering is the core contribution, separating magnitude from temporal behavior through explicit normalization.
+
+\subsubsection{Shape Normalization}
+
+For each consumer $i$, compute mean hourly consumption $\mu_{i,h} = \frac{1}{D} \sum_{d=1}^{D} E_{i,h,d}$ across all days. The normalized 24-hour shape is:
+
+\begin{equation}
+\tilde{S}_{i,h} = \frac{\mu_{i,h}}{\sum_{h'=0}^{23} \mu_{i,h'}}
+\end{equation}
+
+This transformation ensures $\sum_{h=0}^{23} \tilde{S}_{i,h} = 1$ and makes the shape invariant to scalar multiplication: $\alpha E_{i,h,d} \rightarrow \tilde{S}_{i,h}$ (same shape).
+
+\subsubsection{Feature Groups}
+
+We engineer 51 behavioral features organized into five groups:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Behavioral Feature Groups}
+\label{tab:feature_groups}
+\begin{tabular}{@{}lcp{7cm}@{}}
+\toprule
+Group & Count & Description \\
+\midrule
+Shape & 24 & Normalized hourly bins $\tilde{S}_{i,0}, \ldots, \tilde{S}_{i,23}$ \\
+Timing & 11 & Period shares (morning, afternoon, evening, night), peak timing (sin/cos), weekend ratio, night-day ratio \\
+Shape Descriptors & 9 & Entropy, Gini, base-load share, Fourier harmonics (1-3), Haar wavelets (L1-L3) \\
+Variability & 4 & Peak-to-average, coefficient of variation, skewness, kurtosis \\
+Dispersion & 3 & Daily total CV, P90/median ratio, weekend CV ratio \\
+\midrule
+\textbf{Behavioral Total} & \textbf{51} & \textbf{All groups combined (shipped feature set)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Period Shares:} Define four 6-hour blocks (night 0-6, morning 6-12, afternoon 12-18, evening 18-24). The evening share is:
+\begin{equation}
+\text{evening\_share}_i = \sum_{h=18}^{23} \tilde{S}_{i,h}
+\end{equation}
+
+\textbf{Peak Timing:} Encode peak hour $h^*_i = \arg\max_h \tilde{S}_{i,h}$ as circular coordinates to handle midnight wrap:
+\begin{equation}
+\text{peak\_hour\_sin}_i = \sin\left(\frac{2\pi h^*_i}{24}\right), \quad
+\text{peak\_hour\_cos}_i = \cos\left(\frac{2\pi h^*_i}{24}\right)
+\end{equation}
+
+\textbf{Weekend Ratio:} Energy-based (not temporal):
+\begin{equation}
+\text{weekend\_ratio}_i = \frac{\text{mean}(E_{i,h,d} : \text{is\_weekend}(d))}{\text{mean}(E_{i,h,d} : \text{is\_weekday}(d))}
+\end{equation}
+
+\textbf{Shape Entropy:} Shannon entropy of normalized shape relative to flat profile:
+\begin{equation}
+H_i = -\sum_{h=0}^{23} \tilde{S}_{i,h} \log \tilde{S}_{i,h}, \quad
+\text{shape\_entropy}_i = H_i / \log(24)
+\end{equation}
+
+\textbf{Harmonic Amplitudes:} Fourier components capture diurnal and semi-diurnal periodicities:
+\begin{equation}
+\text{harmonic\_k\_amplitude}_i = \left| \sum_{h=0}^{23} \tilde{S}_{i,h} \exp\left(\frac{2\pi i k h}{24}\right) \right|
+\end{equation}
+for $k = 1, 2, 3$.
+
+\subsubsection{Scale Invariance Property}
+
+All behavioral features satisfy the scale invariance property: if consumer consumption is multiplied by constant $\alpha > 0$, features remain unchanged. This is verified in automated tests (Section~\ref{sec:experiments}).
+
+\subsection{Standardization and PCA}
+\label{sec:pca}
+
+\subsubsection{Standardization}
+
+The 51-feature matrix $\mathbf{X} \in \mathbb{R}^{N \times 51}$ is standardized to zero mean and unit variance using \texttt{StandardScaler} \cite{pedregosa2011scikit}:
+\begin{equation}
+\mathbf{Z} = (\mathbf{X} - \boldsymbol{\mu}) \oslash \boldsymbol{\sigma}
+\end{equation}
+where $\oslash$ denotes element-wise division. Standardization prevents variance-dominant features from overwhelming PCA.
+
+\subsubsection{PCA Application}
+
+Apply PCA to $\mathbf{Z}$:
+\begin{equation}
+\mathbf{Z} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^\top
+\end{equation}
+
+Retain components until cumulative explained variance reaches threshold $\tau = 0.95$:
+\begin{equation}
+m = \min \left\{ k : \frac{\sum_{j=1}^{k} \lambda_j}{\sum_{j=1}^{51} \lambda_j} \geq \tau \right\}
+\end{equation}
+where $\lambda_j$ are eigenvalues (variances along principal components).
+
+\textbf{Loadings vs. Weights:} PCA \texttt{components\_} are unit eigenvectors (weights). \emph{Loadings} are correlations between original features and component scores:
+\begin{equation}
+\text{loading}_{f,c} = \text{weight}_{f,c} \times \sqrt{\lambda_c}
+\end{equation}
+
+Loadings (bounded $[-1, 1]$) are used for interpretation; weights are used for projection.
+
+\subsection{K-Means Clustering}
+\label{sec:kmeans}
+
+Apply K-means \cite{lloyd1982least} with k-means++ initialization \cite{arthur2007kmeans} on PCA scores $\mathbf{T} \in \mathbb{R}^{N \times m}$:
+\begin{equation}
+\min_{\{\mathbf{c}_k\}, \{C_k\}} \sum_{k=1}^{K} \sum_{i \in C_k} \| \mathbf{t}_i - \mathbf{c}_k \|^2
+\end{equation}
+where $C_k$ is cluster $k$, $\mathbf{c}_k$ is centroid, $\mathbf{t}_i$ is consumer $i$'s PCA score.
+
+Configuration: $n\_init=10$ restarts, $max\_iter=300$, $tol=10^{-4}$, $random\_state=42$ for determinism.
+
+\subsection{Evidence-Based K Selection}
+\label{sec:kselection}
+
+Rather than heuristic K choice, we apply a pre-registered multi-criterion rule evaluated for $K \in \{2, \ldots, 10\}$.
+
+\subsubsection{Metrics Computed}
+
+For each candidate $K$:
+\begin{itemize}
+    \item \textbf{Silhouette} \cite{rousseeuw1987silhouettes}: $s_K \in [-1, 1]$, higher = better separation
+    \item \textbf{Calinski-Harabasz} \cite{calinski1974dendrite}: $CH_K > 0$, higher = better variance ratio
+    \item \textbf{Davies-Bouldin} \cite{davies1979cluster}: $DB_K > 0$, lower = better compactness
+    \item \textbf{Stability:} Refit K-means with 10 random seeds, compute mean pairwise ARI across partitions
+    \item \textbf{Balance:} Minimum cluster size as fraction of $N$
+\end{itemize}
+
+\subsubsection{Selection Rule}
+
+\begin{algorithm}[h]
+\caption{Evidence-Based K Selection}
+\label{alg:kselection}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Candidate set $\mathcal{K} = \{2, \ldots, 10\}$, metrics $s_K, CH_K, DB_K, \text{ARI}_K$, balance $b_K$
+\State \textbf{Parameters:} $\alpha_{balance} = 0.05$, $\alpha_{stability} = 0.60$, $\tau_{tolerance} = 0.05$
+
+\State Filter: $\mathcal{K}_1 \leftarrow \{K \in \mathcal{K} : b_K \geq \alpha_{balance}\}$ \Comment{Reject tiny clusters}
+\State Filter: $\mathcal{K}_2 \leftarrow \{K \in \mathcal{K}_1 : \text{ARI}_K \geq \alpha_{stability}\}$ \Comment{Reject unstable solutions}
+
+\State Normalize: $\tilde{s}_K \leftarrow (s_K - \min s) / (\max s - \min s)$ over $\mathcal{K}_2$
+\State Normalize: $\tilde{CH}_K \leftarrow (CH_K - \min CH) / (\max CH - \min CH)$
+\State Normalize: $\tilde{DB}_K \leftarrow (DB_{\max} - DB_K) / (DB_{\max} - DB_{\min})$ \Comment{Invert: lower is better}
+
+\State Composite: $\mathcal{C}_K \leftarrow \frac{1}{3}(\tilde{s}_K + \tilde{CH}_K + \tilde{DB}_K)$ for $K \in \mathcal{K}_2$
+
+\State $K^* \leftarrow \arg\max_{K} \mathcal{C}_K$
+\State $\mathcal{K}_{tol} \leftarrow \{K \in \mathcal{K}_2 : \mathcal{C}_K \geq \mathcal{C}_{K^*} - \tau_{tolerance}\}$ \Comment{Within tolerance}
+
+\State \textbf{Return:} $\min \mathcal{K}_{tol}$ \Comment{Simplest among tied solutions}
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Rationale:} Filters ensure non-degenerate, reproducible partitions. Composite score integrates complementary quality signals. Tolerance band with parsimony preference selects simplest statistically-indistinguishable solution.
+
+\subsection{Validation Metrics}
+\label{sec:validation}
+
+\subsubsection{Internal Validation (No Ground Truth)}
+
+\begin{itemize}
+    \item \textbf{Silhouette} \cite{rousseeuw1987silhouettes}: $s_i = (b_i - a_i) / \max(a_i, b_i)$ where $a_i$ is mean intra-cluster distance, $b_i$ is mean nearest-cluster distance
+    \item \textbf{Calinski-Harabasz} \cite{calinski1974dendrite}: Between-cluster to within-cluster variance ratio
+    \item \textbf{Davies-Bouldin} \cite{davies1979cluster}: Average similarity of each cluster to its most similar cluster
+\end{itemize}
+
+\subsubsection{External Validation (Synthetic Data Only)}
+
+\begin{itemize}
+    \item \textbf{Adjusted Rand Index (ARI)} \cite{gates2019adjusted}: Corrects Rand Index for chance agreement, ranges $[-1, 1]$, perfect agreement = 1
+    \item \textbf{Normalized Mutual Information (NMI)}: Information-theoretic similarity, ranges $[0, 1]$
+\end{itemize}
+
+\textbf{Critical:} ARI and NMI are computed \emph{after} clustering against hidden archetype labels, never used during modeling.
+
+\subsection{Stability Analysis}
+\label{sec:stability}
+
+\subsubsection{Multi-Seed Stability}
+
+For selected $K$, refit K-means with $R=10$ random seeds $\{r_1, \ldots, r_R\}$. Compute pairwise ARI between all partition pairs:
+\begin{equation}
+\text{Stability}_K = \frac{2}{R(R-1)} \sum_{i < j} \text{ARI}(\mathcal{P}_{r_i}, \mathcal{P}_{r_j})
+\end{equation}
+
+High mean ARI ($> 0.95$) indicates robust partition independent of initialization.
+
+\subsubsection{Temporal Stability (Longitudinal Analysis)}
+
+Partition observation window into $Q$ non-overlapping segments. Within each segment $q$:
+\begin{enumerate}
+    \item Re-compute all 51 behavioral features
+    \item Re-apply standardization and PCA (95\% threshold)
+    \item Re-run K-selection algorithm (may yield different $K_q$)
+    \item Compare segment partition with full-window partition via ARI
+\end{enumerate}
+
+\begin{equation}
+\text{Temporal\_Stability} = \frac{1}{Q} \sum_{q=1}^{Q} \text{ARI}(\mathcal{P}_q, \mathcal{P}_{full})
+\end{equation}
+
+High temporal ARI indicates behavioral groupings persist across seasons despite magnitude variations.
+
+\subsection{Explainability}
+\label{sec:explainability}
+
+K-means is unsupervised and has no native feature importance. We employ post-hoc explainability:
+
+\begin{enumerate}
+    \item Train random forest classifier $f: \mathbf{X} \rightarrow \{1, \ldots, K\}$ predicting recovered cluster labels from behavioral features
+    \item Evaluate surrogate via cross-validation (balanced accuracy)
+    \item Apply SHAP TreeExplainer \cite{lundberg2017shap} to surrogate
+\end{enumerate}
+
+\textbf{Interpretation:} SHAP values indicate which features most distinguish clusters in the surrogate. Cross-validation accuracy is the \emph{ceiling} on explanation quality---cannot explain more than the surrogate captures.
+
+\textbf{Critical:} Surrogate never feeds back into clustering; it is purely diagnostic.
+
+\subsection{Cluster Profiling}
+
+For each cluster $k$, compute statistics in \emph{original feature space}:
+\begin{itemize}
+    \item Mean hourly shape: $\bar{S}_{k,h} = \frac{1}{|C_k|} \sum_{i \in C_k} \tilde{S}_{i,h}$
+    \item Period shares: $\sum_{h \in \text{period}} \bar{S}_{k,h}$
+    \item Peak hour: $\arg\max_h \bar{S}_{k,h}$
+    \item Weekend ratio, peak-to-average, CV (mean across cluster members)
+\end{itemize}
+
+Profiles are compared against population baselines to identify deviations. Human-interpretable cluster names are assigned based on dominant characteristics (e.g., ``Evening-Peaking Weekend-Heavy'').

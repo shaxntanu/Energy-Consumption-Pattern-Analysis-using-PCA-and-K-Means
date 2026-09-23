@@ -1,0 +1,54 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The widespread deployment of smart meters has enabled high-resolution monitoring of household electricity consumption at unprecedented scale \cite{lazar2021investigating,kwac2014household}. This granular data enables segmentation of consumers into behaviorally distinct groups, supporting targeted demand response programs, dynamic pricing strategies, and infrastructure planning \cite{yan2021multiple,abdullah2025ml}. However, traditional clustering approaches often group households primarily by total consumption magnitude---\emph{how much} energy they use---rather than by temporal usage patterns---\emph{when} energy is consumed \cite{jin2016loadshape,rhodes2014clustering}.
+
+Magnitude-based segmentation conflates two independent dimensions: a household's energy intensity (driven by building size, occupancy, appliances) and its behavioral routine (driven by occupancy patterns, work schedules, lifestyle preferences). Two households with identical daily load shapes but different consumption scales will be separated by magnitude-driven clustering, while households with opposite peak hours but similar totals may be grouped together. For demand response applications, behavioral timing is often more actionable than aggregate consumption \cite{haben2016analysis}.
+
+\subsection{Motivation}
+
+Consider two households: one peaks at midday (home office, daytime HVAC), another peaks at evening (commuter, evening cooking and entertainment). If the first consumes 30 kWh/day and the second 25 kWh/day, magnitude-driven clustering may separate them despite nearly identical timing. Conversely, if both consume 30 kWh/day, they may cluster together despite opposite demand profiles. For a utility designing time-of-use rates or load-shifting incentives, the \emph{temporal pattern} is the actionable signal \cite{afzalan2020twostage,valdes2021smart}.
+
+Separating magnitude from timing requires explicit normalization: transforming each household's 24-hour load curve into a shape representation invariant to scalar multiplication. While shape-based clustering has been explored \cite{rahayu2021shape,jin2016loadshape}, comprehensive frameworks addressing feature engineering, dimensionality reduction, evidence-based K selection, stability validation, and reproducibility remain limited in the literature.
+
+\subsection{Research Gap}
+
+Existing household energy clustering studies face several methodological challenges:
+
+\begin{enumerate}
+    \item \textbf{Feature Engineering:} Many approaches use raw hourly values or magnitude-contaminated features, allowing consumption scale to dominate distance calculations \cite{kwac2014household,rhodes2014clustering}.
+    
+    \item \textbf{K Selection:} The number of clusters K is often chosen heuristically (e.g., ``3-5 for interpretability'') or via single metrics (elbow method, silhouette alone) without systematic evaluation \cite{hennig2020comparing}.
+    
+    \item \textbf{Validation:} Internal metrics (silhouette, Calinski-Harabasz) measure cluster quality but cannot confirm meaningful behavioral distinctions. External validation requires ground truth rarely available in real datasets \cite{gates2019adjusted}.
+    
+    \item \textbf{Stability:} Cluster robustness across random initializations and temporal windows is often unreported, leaving uncertainty about partition reliability \cite{henning2020adjusting}.
+    
+    \item \textbf{Reproducibility:} Many studies lack publicly available code, data, or sufficient methodological detail for independent replication \cite{peng2011reproducible}.
+\end{enumerate}
+
+\subsection{Contributions}
+
+This paper addresses these gaps through a comprehensive, reproducible framework for shape-first behavioral segmentation. Our specific contributions are:
+
+\begin{enumerate}
+    \item \textbf{Shape-Normalized Feature Engineering:} 51 scale-invariant behavioral features derived from normalized 24-hour load profiles, explicitly separating magnitude from temporal patterns (Section~\ref{sec:features}).
+    
+    \item \textbf{Evidence-Based K Selection:} Pre-registered multi-criterion composite rule combining silhouette, Calinski-Harabasz, Davies-Bouldin, cluster balance constraints, and multi-seed stability, with parsimony preference when solutions are statistically indistinguishable (Section~\ref{sec:kselection}).
+    
+    \item \textbf{Controlled Validation:} Synthetic dataset with known ground-truth behavioral archetypes enabling quantitative assessment of recovery (ARI=0.813), while explicitly hiding ground truth during all modeling steps (Section~\ref{sec:dataset}).
+    
+    \item \textbf{Comprehensive Stability Analysis:} Multi-seed clustering stability (mean ARI=0.995) and temporal stability across quarterly segments (mean ARI=0.882), confirming robust behavioral groupings independent of seasonal variations (Section~\ref{sec:stability}).
+    
+    \item \textbf{Rigorous Ablation Study:} Systematic comparison of five feature sets (magnitude-only, shape-only, behavioral, combined) demonstrating that magnitude-only features achieve near-zero behavioral recovery (ARI $\approx$ 0.00) despite highest internal quality metrics (Section~\ref{sec:ablation}).
+    
+    \item \textbf{Complete Reproducibility Infrastructure:} Deterministic configuration with cryptographic hashing, pinned dependencies, versioned artifacts, documented execution protocols, and publicly available implementation (Section~\ref{sec:reproducibility}).
+\end{enumerate}
+
+\subsection{Scope and Positioning}
+
+This work is a \textbf{methodology paper} emphasizing reproducible research practices for behavioral energy analytics. We do not claim novelty in PCA or K-means algorithms (both well-established \cite{jolliffe2002pca,lloyd1982least,arthur2007kmeans}), but rather contribute rigorous implementation, comprehensive validation, and reproducibility standards. The primary experimental validation uses synthetic data with known ground truth; a documented pathway for real-world data exists but is not executed in this study (discussed in Section~\ref{sec:limitations}).
+
+\subsection{Paper Organization}
+
+Section~\ref{sec:related} reviews related work on household energy clustering, PCA-based dimensionality reduction, and validation methodologies. Section~\ref{sec:methodology} details the complete analytical pipeline from data generation through cluster profiling. Section~\ref{sec:experiments} describes experimental design, configurations, and evaluation protocols. Section~\ref{sec:results} presents flagship results, ablation studies, and stability analyses. Section~\ref{sec:discussion} interprets findings and practical implications. Section~\ref{sec:limitations} acknowledges methodological constraints and dataset scope. Section~\ref{sec:conclusion} summarizes contributions and future directions.
