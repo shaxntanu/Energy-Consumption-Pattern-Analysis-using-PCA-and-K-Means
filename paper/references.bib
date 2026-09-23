@@ -1,0 +1,373 @@
+% ============================================================================
+% Bibliography for Energy Consumption Pattern Analysis Research Paper
+% Generated: 2026-09-23
+% ============================================================================
+
+% ===== LOAD PROFILING AND CLUSTERING =====
+
+@article{lazar2021investigating,
+  title={Investigating Underlying Drivers of Variability in Residential Energy Usage Patterns with Daily Load Shape Clustering of Smart Meter Data},
+  author={Lazar, Alina and others},
+  journal={arXiv preprint arXiv:2102.11027},
+  year={2021},
+  doi={10.48550/arXiv.2102.11027},
+  url={https://arxiv.org/abs/2102.11027},
+  note={Daily load shape clustering with adaptive K-means, temperature as primary driver}
+}
+
+@article{afzalan2020twostage,
+  title={Two-Stage Clustering of Household Electricity Load Shapes based on Temporal Pattern \& Peak Demand},
+  author={Afzalan, Milad and Jazizadeh, Farrokh and Eldardiry, Hoda},
+  journal={arXiv preprint arXiv:2008.04293},
+  year={2020},
+  url={https://arxiv.org/abs/2008.04293},
+  note={Separates temporal patterns from peak demand using DTW}
+}
+
+@article{jin2016loadshape,
+  title={Load Shape Clustering Using Residential Smart Meter Data: A Technical Memorandum},
+  author={Jin, Ling and Spurlock, Anna and Borgeson, Sam and others},
+  institution={Lawrence Berkeley National Laboratory},
+  year={2016},
+  number={LBNL-1006153},
+  url={http://eta-publications.lbl.gov/sites/default/files/jin_-_loadshape_paper.pdf},
+  note={Foundational LBNL work on smart meter clustering}
+}
+
+@article{chicco2021clustering,
+  title={Clustering Household Electricity Load Profiles in the UK Using Smart Meter and Survey Data},
+  author={Chicco, G and others},
+  journal={Proceedings of UrbanSim},
+  year={2024},
+  url={https://publications.ibpsa.org/proceedings/usim/2024/papers/usim2024_3A-1.pdf},
+  note={K-means with socio-demographic survey integration}
+}
+
+@article{favre-bulle2024clustering,
+  title={Clustering Residential Electricity Load Profiles},
+  author={Favre-Bulle, Valentin},
+  institution={University of Applied Sciences Western Switzerland},
+  year={2024},
+  url={https://www5.unine.ch/RePEc/ftp/irn/pdfs/WP26-03.pdf},
+  note={High-frequency data for heterogeneity analysis}
+}
+
+% ===== PCA AND DIMENSIONALITY REDUCTION =====
+
+@article{haben2019fpca,
+  title={Functional Principal Component Analysis as a Versatile Technique to Understand and Predict the Electric Consumption Patterns},
+  author={Haben, Stephen and others},
+  journal={arXiv preprint arXiv:1909.05237},
+  year={2019},
+  url={https://arxiv.org/abs/1909.05237},
+  note={Functional PCA for load forecasting at multiple horizons}
+}
+
+@book{jolliffe2002pca,
+  title={Principal Component Analysis},
+  author={Jolliffe, Ian T},
+  year={2002},
+  publisher={Springer},
+  edition={2nd},
+  note={Standard reference for PCA theory and applications}
+}
+
+@inproceedings{liao2016pattern,
+  title={Pattern-Based Energy Consumption Analysis by Chaining Principle Component Analysis and Logistic Regression},
+  author={Liao, Wei and others},
+  booktitle={International Conference on Database Systems for Advanced Applications},
+  pages={65--79},
+  year={2016},
+  publisher={Springer},
+  doi={10.1007/978-3-319-32729-7_5},
+  note={PCA for multicollinearity mitigation in energy analysis}
+}
+
+% ===== SHAPE NORMALIZATION AND BEHAVIORAL FEATURES =====
+
+@article{rahayu2021shape,
+  title={Shape-Based Approach to Household Load Curve Clustering and Prediction},
+  author={Rahayu, Sri and others},
+  journal={arXiv preprint arXiv:1702.01414},
+  year={2017},
+  url={https://arxiv.org/abs/1702.01414},
+  note={Dynamic Time Warping for shape-based clustering}
+}
+
+@article{valdes2021smart,
+  title={Smart Meters Time Series Clustering for Demand Response Applications in the Context of High Penetration of Renewable Energy Resources},
+  author={Vald{\'e}s, Ana and others},
+  journal={Energies},
+  volume={14},
+  number={12},
+  pages={3458},
+  year={2021},
+  publisher={MDPI},
+  doi={10.3390/en14123458},
+  note={Two-stage k-medoids with normalized load shapes}
+}
+
+% ===== VALIDATION AND STABILITY =====
+
+@article{gates2019adjusted,
+  title={Understanding the Adjusted Rand Index and Other Partition Comparison Indices Based on Counting Object Pairs},
+  author={Gates, Alexander J and Ahn, Yong-Yeol},
+  journal={arXiv preprint arXiv:1907.11505},
+  year={2019},
+  url={https://arxiv.org/abs/1907.11505},
+  note={Comprehensive review of ARI and clustering comparison metrics}
+}
+
+@article{henning2020adjusting,
+  title={Adjusting the Adjusted Rand Index},
+  author={Henning, Christian and others},
+  journal={arXiv preprint arXiv:2011.08708},
+  year={2020},
+  url={https://arxiv.org/abs/2011.08708},
+  note={Modified ARI (MARI) based on multinomial distribution}
+}
+
+@article{hennig2020comparing,
+  title={Comparing Clusterings and Numbers of Clusters by Aggregation of Calibrated Clustering Validity Indexes},
+  author={Hennig, Christian and Liao, Tim},
+  journal={arXiv preprint arXiv:2002.01822},
+  year={2020},
+  url={https://arxiv.org/abs/2002.01822},
+  note={Cluster validation and comparison methodology}
+}
+
+% ===== SYNTHETIC DATA GENERATION =====
+
+@article{meinrenken2022synthetic,
+  title={High-Resolution Synthetic Residential Energy Use Profiles for the United States},
+  author={Meinrenken, Christoph J and others},
+  journal={Scientific Data},
+  volume={9},
+  number={1},
+  pages={76},
+  year={2022},
+  publisher={Nature Publishing Group},
+  doi={10.1038/s41597-022-01914-1},
+  note={Bottom-up synthetic dataset with extensive validation}
+}
+
+@article{pfeifer2024synthetic,
+  title={Synthetic Smart Meter Generator for the Smart Grid},
+  author={Pfeifer, Martin and others},
+  journal={arXiv preprint arXiv:2404.04314},
+  year={2024},
+  url={https://arxiv.org/abs/2404.04314},
+  note={Conditional generation of household load profiles}
+}
+
+@article{makonin2020synd,
+  title={A Synthetic Energy Dataset for Non-Intrusive Load Monitoring in Households},
+  author={Makonin, Stephen and Ellert, Bradley and Baji{\'c}, Ivan V and Popowich, Fred},
+  journal={Scientific Data},
+  volume={7},
+  number={1},
+  pages={108},
+  year={2020},
+  publisher={Nature Publishing Group},
+  doi={10.1038/s41597-020-0434-6},
+  note={SynD: 180 days synthetic power data for NILM applications}
+}
+
+% ===== DEMAND RESPONSE =====
+
+@article{yan2021multiple,
+  title={Multiple Dynamic Pricing for Demand Response with Adaptive Clustering-based Customer Segmentation in Smart Grids},
+  author={Yan, Xin and Ozturk, Yigit and Hu, Zhaoyu and Song, Yonghua},
+  journal={IEEE Transactions on Smart Grid},
+  year={2021},
+  url={https://arxiv.org/abs/2106.05905},
+  note={Adaptive clustering for dynamic pricing programs}
+}
+
+@article{abdullah2025ml,
+  title={An ML-Based Aggregation and Segmentation Framework for Residential Consumption Users to Assist DR Programs},
+  author={Abdullah, Zeeshan and others},
+  journal={Sustainability},
+  volume={17},
+  number={4},
+  pages={1551},
+  year={2025},
+  publisher={MDPI},
+  doi={10.3390/su17041551},
+  note={Household Daily Load approach for DR segmentation}
+}
+
+% ===== K-MEANS CLUSTERING =====
+
+@article{lloyd1982least,
+  title={Least Squares Quantization in PCM},
+  author={Lloyd, Stuart},
+  journal={IEEE Transactions on Information Theory},
+  volume={28},
+  number={2},
+  pages={129--137},
+  year={1982},
+  publisher={IEEE},
+  doi={10.1109/TIT.1982.1056489},
+  note={Original K-means algorithm}
+}
+
+@inproceedings{arthur2007kmeans,
+  title={K-means++: The Advantages of Careful Seeding},
+  author={Arthur, David and Vassilvitskii, Sergei},
+  booktitle={Proceedings of the Eighteenth Annual ACM-SIAM Symposium on Discrete Algorithms},
+  pages={1027--1035},
+  year={2007},
+  organization={Society for Industrial and Applied Mathematics},
+  note={Improved initialization for K-means}
+}
+
+@article{ding2004kmeans,
+  title={K-means Clustering via Principal Component Analysis},
+  author={Ding, Chris and He, Xiaofeng},
+  journal={Proceedings of the 21st International Conference on Machine Learning},
+  pages={29},
+  year={2004},
+  url={https://ranger.uta.edu/~chqding/papers/KmeansPCA1.pdf},
+  note={Relationship between K-means and PCA}
+}
+
+% ===== CLUSTER QUALITY METRICS =====
+
+@article{rousseeuw1987silhouettes,
+  title={Silhouettes: A Graphical Aid to the Interpretation and Validation of Cluster Analysis},
+  author={Rousseeuw, Peter J},
+  journal={Journal of Computational and Applied Mathematics},
+  volume={20},
+  pages={53--65},
+  year={1987},
+  publisher={Elsevier},
+  doi={10.1016/0377-0427(87)90125-7},
+  note={Original silhouette coefficient paper}
+}
+
+@article{calinski1974dendrite,
+  title={A Dendrite Method for Cluster Analysis},
+  author={Cali{\'n}ski, Tadeusz and Harabasz, Jerzy},
+  journal={Communications in Statistics-Theory and Methods},
+  volume={3},
+  number={1},
+  pages={1--27},
+  year={1974},
+  publisher={Taylor \& Francis},
+  doi={10.1080/03610927408827101},
+  note={Calinski-Harabasz index (variance ratio criterion)}
+}
+
+@article{davies1979cluster,
+  title={A Cluster Separation Measure},
+  author={Davies, David L and Bouldin, Donald W},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  number={2},
+  pages={224--227},
+  year={1979},
+  publisher={IEEE},
+  doi={10.1109/TPAMI.1979.4766909},
+  note={Davies-Bouldin index for cluster compactness}
+}
+
+% ===== SMART METER DATASETS =====
+
+@misc{uci_household,
+  title={Individual Household Electric Power Consumption Data Set},
+  author={Hebrail, Georges and Berard, Alice},
+  year={2012},
+  howpublished={UCI Machine Learning Repository},
+  url={https://archive.ics.uci.edu/ml/datasets/individual+household+electric+power+consumption},
+  note={Widely used real-world household electricity dataset}
+}
+
+% ===== REPRODUCIBILITY AND BEST PRACTICES =====
+
+@article{peng2011reproducible,
+  title={Reproducible Research in Computational Science},
+  author={Peng, Roger D},
+  journal={Science},
+  volume={334},
+  number={6060},
+  pages={1226--1227},
+  year={2011},
+  publisher={American Association for the Advancement of Science},
+  doi={10.1126/science.1213847},
+  note={Importance of computational reproducibility}
+}
+
+@article{stodden2013setting,
+  title={Setting the Default to Reproducible: Reproducibility in Computational and Experimental Mathematics},
+  author={Stodden, Victoria and others},
+  journal={ICERM},
+  year={2013},
+  note={Standards for reproducible computational research}
+}
+
+% ===== EXPLAINABILITY =====
+
+@inproceedings{lundberg2017shap,
+  title={A Unified Approach to Interpreting Model Predictions},
+  author={Lundberg, Scott M and Lee, Su-In},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={30},
+  year={2017},
+  note={SHAP (SHapley Additive exPlanations) framework}
+}
+
+% ===== STANDARDIZATION =====
+
+@article{pedregosa2011scikit,
+  title={Scikit-learn: Machine Learning in Python},
+  author={Pedregosa, Fabian and Varoquaux, Ga{\"e}l and Gramfort, Alexandre and others},
+  journal={Journal of Machine Learning Research},
+  volume={12},
+  pages={2825--2830},
+  year={2011},
+  note={Primary machine learning library used in implementation}
+}
+
+% ===== TEMPORAL ANALYSIS =====
+
+@article{haben2016analysis,
+  title={Analysis and Clustering of Residential Customers Energy Behavioral Demand Using Smart Meter Data},
+  author={Haben, Stephen and Rowe, Michael and Greetham, Danica Vukadinović and others},
+  journal={IEEE Transactions on Smart Grid},
+  volume={7},
+  number={1},
+  pages={136--144},
+  year={2016},
+  publisher={IEEE},
+  doi={10.1109/TSG.2015.2409786},
+  note={Behavioral demand analysis with temporal patterns}
+}
+
+% ===== ENERGY ANALYTICS METHODOLOGY =====
+
+@article{kwac2014household,
+  title={Household Energy Consumption Segmentation Using Hourly Data},
+  author={Kwac, Jungsuk and Flora, June and Rajagopal, Ram},
+  journal={IEEE Transactions on Smart Grid},
+  volume={5},
+  number={1},
+  pages={420--430},
+  year={2014},
+  publisher={IEEE},
+  doi={10.1109/TSG.2013.2278477},
+  note={Hourly consumption segmentation methodology}
+}
+
+@article{rhodes2014clustering,
+  title={Clustering Analysis of Residential Electricity Demand Profiles},
+  author={Rhodes, Joshua D and Cole, Wesley J and Upshaw, Carey R and others},
+  journal={Applied Energy},
+  volume={135},
+  pages={461--471},
+  year={2014},
+  publisher={Elsevier},
+  doi={10.1016/j.apenergy.2014.08.111},
+  note={Hierarchical clustering for residential demand profiles}
+}
+
+% ===== END OF BIBLIOGRAPHY =====

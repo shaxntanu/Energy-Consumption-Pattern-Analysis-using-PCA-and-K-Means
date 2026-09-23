@@ -1,0 +1,64 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Household Energy Load Profiling}
+
+Smart meter deployment has enabled fine-grained analysis of residential electricity consumption \cite{kwac2014household,rhodes2014clustering}. Early work focused on aggregated load profiles for utility-level forecasting \cite{haben2016analysis}, but increasing attention has shifted to disaggregated household-level patterns revealing behavioral heterogeneity \cite{lazar2021investigating,jin2016loadshape}.
+
+Kwac et al.~\cite{kwac2014household} applied hierarchical clustering to hourly smart meter data, identifying distinct consumption patterns but noting that magnitude variations dominated the groupings. Rhodes et al.~\cite{rhodes2014clustering} used K-means on raw consumption features, achieving interpretable clusters but without systematic separation of scale from shape. Jin et al.~\cite{jin2016loadshape} at Lawrence Berkeley National Laboratory developed foundational clustering methodologies for residential smart meter data, emphasizing the importance of feature engineering and validation.
+
+Recent work increasingly recognizes the value of shape-based clustering. Lazar et al.~\cite{lazar2021investigating} applied adaptive K-means to daily load shapes, finding outdoor temperature as the dominant driver of variability in summer-peaking utilities. Afzalan et al.~\cite{afzalan2020twostage} proposed a two-stage approach separating temporal patterns from peak demand using Dynamic Time Warping, explicitly addressing shape misalignment. Vald\'es et al.~\cite{valdes2021smart} introduced two-stage k-medoids clustering of normalized load shapes for demand response in high-renewable contexts.
+
+\subsection{PCA and Dimensionality Reduction}
+
+Principal Component Analysis (PCA) is widely used for dimensionality reduction in energy analytics \cite{jolliffe2002pca}. Haben et al.~\cite{haben2019fpca} applied functional PCA to electric consumption patterns for multi-horizon forecasting, demonstrating PCA's effectiveness in capturing temporal load structure. Liao et al.~\cite{liao2016pattern} combined PCA with logistic regression for pattern-based energy consumption analysis, using PCA to mitigate multicollinearity among correlated features.
+
+Ding and He~\cite{ding2004kmeans} established theoretical connections between K-means and PCA, showing that K-means cluster indicators span the principal subspace under certain conditions. This relationship motivates PCA as a preprocessing step for K-means, reducing noise and computational cost while preserving cluster-relevant variance.
+
+\subsection{Shape Normalization and Feature Engineering}
+
+Several studies explicitly address magnitude-timing separation. Rahayu et al.~\cite{rahayu2021shape} proposed shape-based clustering using Dynamic Time Warping to align temporal patterns independent of magnitude. Afzalan et al.~\cite{afzalan2020twostage} extracted centroids accounting for shape misalignments before merging clusters of similar magnitude. Vald\'es et al.~\cite{valdes2021smart} normalized daily time series to unit sum, enabling clustering by temporal distribution rather than absolute consumption.
+
+However, most approaches focus on shape alignment or normalization of raw hourly sequences, without systematic engineering of scale-invariant behavioral descriptors (e.g., peak concentration, harmonic structure, weekend behavior, load variability). Our work contributes a comprehensive 51-feature behavioral representation explicitly designed for magnitude-timing separation.
+
+\subsection{Cluster Validation and K Selection}
+
+Determining optimal K remains a fundamental challenge in unsupervised clustering \cite{hennig2020comparing}. Common heuristics include elbow methods (inertia curve inflection), silhouette analysis \cite{rousseeuw1987silhouettes}, and variance-ratio criteria (Calinski-Harabasz \cite{calinski1974dendrite}). Davies-Bouldin index \cite{davies1979cluster} measures cluster compactness versus separation. However, single-metric approaches may yield conflicting recommendations, and internal metrics cannot confirm semantic meaningfulness \cite{gates2019adjusted}.
+
+Hennig and Liao~\cite{hennig2020comparing} proposed aggregating multiple calibrated validity indices, recognizing that different metrics capture complementary aspects of cluster quality. Gates and Ahn~\cite{gates2019adjusted} reviewed partition comparison indices including Adjusted Rand Index (ARI), emphasizing permutation-invariance and correction for chance agreement. Henning et al.~\cite{henning2020adjusting} proposed Modified ARI (MARI) based on multinomial rather than hypergeometric models, addressing bias in dependent clusterings.
+
+Our framework adopts a pre-registered composite rule combining multiple metrics with cluster balance and stability constraints, selecting the simplest (smallest K) solution within tolerance when multiple candidates are statistically indistinguishable.
+
+\subsection{Stability and Robustness Analysis}
+
+Clustering stability across random initializations is critical for reliable findings \cite{henning2020adjusting}. Pairwise ARI between partitions from different seeds quantifies reproducibility independent of ground truth. Temporal stability---assessing whether cluster structure persists across time windows---has received less attention in energy literature despite its practical importance for longitudinal demand response.
+
+Lazar et al.~\cite{lazar2021investigating} evaluated variability drivers across different time scales but did not systematically assess clustering stability. Afzalan et al.~\cite{afzalan2020twostage} focused on within-window cluster quality without temporal validation. Our work explicitly quantifies both multi-seed stability and temporal robustness through quarterly re-analysis with consistent protocols.
+
+\subsection{Synthetic Data for Validation}
+
+Controlled validation with known ground truth is rarely feasible with real smart meter data due to privacy constraints and absence of behavioral labels. Synthetic datasets enable quantitative assessment of clustering recovery \cite{meinrenken2022synthetic,makonin2020synd}.
+
+Meinrenken et al.~\cite{meinrenken2022synthetic} developed high-resolution synthetic residential energy profiles for the United States using bottom-up modeling with extensive validation against reported energy use. Makonin et al.~\cite{makonin2020synd} released SynD, 180 days of synthetic power data for non-intrusive load monitoring. Pfeifer et al.~\cite{pfeifer2024synthetic} proposed conditional generation of household load profiles for smart grid applications.
+
+Our synthetic generator assigns each consumer to a behavioral archetype (daytime-peaking, evening-peaking, flat, weekend-heavy) while drawing magnitude independently, enabling separation validation. Critically, archetype labels are hidden during all modeling steps and used only for post-hoc recovery assessment.
+
+\subsection{Reproducibility in Computational Research}
+
+Reproducibility is increasingly recognized as essential for scientific rigor \cite{peng2011reproducible,stodden2013setting}. Peng~\cite{peng2011reproducible} argues that computational research must provide code, data, and execution protocols to enable independent verification. Stodden et al.~\cite{stodden2013setting} advocate for reproducibility as the default standard in computational and experimental mathematics.
+
+In energy analytics, reproducibility remains limited. Many studies lack public code or sufficient detail for replication. Our framework contributes deterministic configuration with cryptographic hashing, pinned dependencies, versioned artifacts, and complete source code availability, aiming to set reproducibility standards for behavioral energy research.
+
+\subsection{Positioning of This Work}
+
+This paper synthesizes and extends prior work through:
+\begin{itemize}
+    \item Comprehensive 51-feature behavioral representation (beyond simple normalization \cite{valdes2021smart} or raw sequences \cite{kwac2014household})
+    \item Evidence-based K selection integrating multiple metrics, stability, and parsimony \cite{hennig2020comparing}
+    \item Controlled validation with synthetic ground truth hidden during modeling \cite{meinrenken2022synthetic}
+    \item Systematic stability analysis across both random seeds and temporal windows
+    \item Rigorous ablation demonstrating magnitude-timing separation
+    \item Complete reproducibility infrastructure \cite{peng2011reproducible}
+\end{itemize}
+
+We emphasize that our contribution is methodological integration and reproducibility, not algorithmic novelty in PCA \cite{jolliffe2002pca} or K-means \cite{lloyd1982least,arthur2007kmeans}, both well-established techniques.
