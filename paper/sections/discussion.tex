@@ -1,0 +1,83 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Principal Findings}
+
+This study demonstrates that shape-normalized behavioral features enable household energy clustering by temporal usage patterns independent of consumption magnitude. Four principal findings emerge:
+
+\textbf{1. Magnitude-Timing Separation is Achievable and Critical.} The ablation study (Table~\ref{tab:ablation}) provides conclusive evidence: magnitude-only features achieve near-zero behavioral recovery (ARI $-0.004$) despite highest internal quality (silhouette 0.521). This confirms that raw consumption scale dominates distance calculations when features are not explicitly normalized. The 51-feature behavioral representation successfully isolates timing from magnitude, achieving ARI 0.813 on the flagship 365-day experiment.
+
+\textbf{2. Evidence-Based K Selection Aligns with Ground Truth.} Algorithm~\ref{alg:kselection} selects K=4 using only internal metrics (silhouette, Calinski-Harabasz, Davies-Bouldin, stability), without seeing hidden archetypes. Independent validation confirms K=4 maximizes ARI (0.813) and NMI (0.828) against ground truth. This alignment suggests the composite multi-criterion approach with stability constraints effectively identifies meaningful structure.
+
+\textbf{3. Behavioral Groupings Are Robust Across Time and Initializations.} Multi-seed stability (ARI 0.995) and temporal stability (mean ARI 0.882 across quarters) demonstrate clusters are reproducible properties of consumers, not random artifacts or seasonal effects. Despite 47\% seasonal magnitude variation (Jun 39.4 kWh/day vs Dec 25.3), temporal patterns remain coherent, validating the magnitude-timing separation.
+
+\textbf{4. Internal Metrics Alone Cannot Validate Behavioral Segmentation.} The scale-only arm achieves highest silhouette (0.521) yet zero behavioral recovery, demonstrating that internal quality metrics measure cluster compactness but not semantic meaning. Ground truth validation (even synthetic) or domain expert review remains essential for confirming behavioral interpretability.
+
+\subsection{Comparison with Prior Work}
+
+Our framework extends prior household energy clustering studies \cite{kwac2014household,rhodes2014clustering,jin2016loadshape,lazar2021investigating} through systematic integration of: (1) comprehensive 51-feature behavioral representation beyond simple normalization \cite{valdes2021smart} or raw sequences \cite{kwac2014household}; (2) evidence-based K selection combining multiple metrics with stability rather than heuristic choice; (3) controlled validation quantifying recovery against hidden ground truth; (4) comprehensive stability analysis across both random seeds and temporal windows; (5) rigorous ablation demonstrating magnitude-timing separation; (6) complete reproducibility infrastructure.
+
+Afzalan et al.~\cite{afzalan2020twostage} proposed two-stage clustering separating shape from magnitude using DTW, but did not systematically assess temporal stability or provide controlled validation. Vald\'es et al.~\cite{valdes2021smart} normalized load shapes for demand response but focused on k-medoids without PCA or multi-criterion K selection. Lazar et al.~\cite{lazar2021investigating} identified temperature as dominant variability driver but did not validate clustering stability across time windows.
+
+Our contribution is methodological integration and reproducibility rather than algorithmic novelty in PCA \cite{jolliffe2002pca} or K-means \cite{lloyd1982least,arthur2007kmeans}.
+
+\subsection{Interpretation of Recovered Clusters}
+
+The four clusters exhibit semantically coherent behavioral patterns:
+
+\textbf{Cluster 0 (Midday-Peaking Weekday-Heavy, 19.5\%):} Afternoon peak (13:00), elevated afternoon share (0.357 vs 0.290), depressed weekend ratio (0.747). Consistent with home-office workers, daytime HVAC use, or retirees with daytime routines. Weekday focus suggests occupancy-driven consumption.
+
+\textbf{Cluster 1 (Flat All-Day, 26.0\%):} Lowest peak-to-average (4.92), lowest CV (0.302), near-uniform 24-hour distribution. Resembles commercial-like or always-on baseline consumption. May represent households with minimal occupancy variation or continuous appliance operation.
+
+\textbf{Cluster 2 (Evening-Peaking, 23.5\%):} Highest evening share (0.380), highest peak-to-average (11.32), concentrated 18:00-21:00 demand. Archetypal commuter pattern: minimal daytime use, sharp evening peak for cooking, entertainment, HVAC. Strongest candidate for time-of-use rate targeting.
+
+\textbf{Cluster 3 (Evening-Peaking Weekend-Heavy, 31.0\%):} Evening peak with elevated weekend ratio (1.313). Lifestyle-driven weekly variation: higher weekend consumption suggests recreational home use, social activities, or delayed tasks. Distinct from Cluster 2 by weekend behavior despite similar evening timing.
+
+These interpretations are grounded in SHAP analysis (Table~\ref{tab:shap_features}), which confirms each cluster distinguished by semantically appropriate features (e.g., weekend cluster driven by \texttt{weekend\_ratio} with SHAP importance 0.250).
+
+\subsection{Practical Implications for Demand Response}
+
+Behavioral segmentation enables targeted demand response strategies:
+
+\textbf{Time-of-Use Pricing:} Clusters 2 and 3 (combined 54.5\%) exhibit strong evening peaking, making them prime candidates for evening off-peak incentives. Cluster 0 (19.5\%) midday peakers could benefit from midday solar generation incentives.
+
+\textbf{Load Shifting Programs:} Cluster 2's concentrated evening demand (peak-to-average 11.32) suggests high flexibility potential for pre-cooling, appliance scheduling, or EV charging shifts. Cluster 1's flat profile (peak-to-average 4.92) indicates limited shifting opportunity without baseline reduction.
+
+\textbf{Weekend Programs:} Clusters 0 and 3 exhibit opposite weekend behavior (ratios 0.747 vs 1.313), enabling weekend-specific program targeting. Weekend-heavy consumers (Cluster 3, 31\%) may respond to weekend time-of-use rates differently than weekday-heavy (Cluster 0, 19.5\%).
+
+\textbf{Program Enrollment:} Rather than enrolling all consumers in uniform programs, utilities can design cluster-specific strategies: evening peakers receive evening shift incentives, flat consumers receive baseline reduction programs, weekend-heavy consumers receive weekend-specific rates.
+
+\subsection{Methodological Contributions}
+
+\subsubsection{Shape Normalization}
+
+The explicit separation of magnitude from timing through Equation~\ref{eq:shape_normalization} (section text) addresses a fundamental challenge in energy clustering. Prior work often used raw kWh features \cite{kwac2014household,rhodes2014clustering}, allowing scale to dominate. Simple normalization (z-score) preserves relative magnitude differences. Our approach---dividing by daily total---removes magnitude entirely, enabling pure behavioral clustering. The ablation study conclusively validates this design choice.
+
+\subsubsection{Evidence-Based K Selection}
+
+Algorithm~\ref{alg:kselection} synthesizes best practices from cluster validation literature \cite{hennig2020comparing,gates2019adjusted}: multiple complementary metrics (silhouette, CH, DB), balance constraints (no outlier isolation), stability validation (multi-seed ARI), and parsimony preference (simplest within tolerance). The alignment between selected K=4 and ground truth recovery peak demonstrates this composite approach outperforms single-metric heuristics.
+
+\subsubsection{Controlled Validation}
+
+Synthetic data with hidden archetypes enables quantitative recovery assessment impossible with real unlabeled data. Critical design: magnitude drawn independently of archetype, enabling validation of magnitude-timing separation. This controlled approach complements (not replaces) real-world validation, providing mechanistic understanding of method performance.
+
+\subsubsection{Temporal Stability}
+
+Most energy clustering studies report single-window results without temporal validation \cite{kwac2014household,rhodes2014clustering}. Our quarterly re-analysis with full pipeline re-execution (features, PCA, K-selection) per segment provides stronger evidence: mean ARI 0.882 demonstrates consumer groups are stable longitudinal properties, not seasonal artifacts. This finding has practical importance---consumer behavioral types persist, enabling long-term program targeting.
+
+\subsection{Limitations and Generalization}
+
+See Section~\ref{sec:limitations} for comprehensive discussion. Key constraints:
+\begin{itemize}
+    \item Primary validation uses synthetic data with simplified archetypes
+    \item Real-world pathway implemented but not executed in this study
+    \item Moderate scale (200 consumers) vs utility-scale thousands
+    \item K-means assumptions (spherical clusters, Euclidean distance)
+    \item PCA linearity assumptions
+\end{itemize}
+
+Generalization to real smart meter data requires: (1) executing real-world pathway with UCI or utility datasets; (2) domain expert validation of cluster interpretations; (3) assessment at utility scale; (4) comparison with alternative clustering methods (GMM, DBSCAN, hierarchical).
+
+\subsection{Reproducibility as Research Contribution}
+
+Beyond methodological findings, this work demonstrates reproducibility standards for computational energy analytics: deterministic configuration with cryptographic hashing (\texttt{99c7a6631340d301}), pinned dependencies, versioned artifacts, documented execution protocols, public code/data availability, and automated integrity validation. The 0.995 multi-seed stability and 0.882 temporal stability would be undetectable without explicit measurement. Future energy clustering studies should adopt similar reproducibility practices to enable independent verification and meta-analysis.

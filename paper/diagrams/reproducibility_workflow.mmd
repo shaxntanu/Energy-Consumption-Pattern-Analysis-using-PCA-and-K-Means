@@ -1,0 +1,45 @@
+%% Reproducibility Workflow
+%% From git clone to paper compilation
+
+flowchart TB
+    START([Researcher]) --> CLONE[git clone repository]
+    
+    CLONE --> DEPS[Install Dependencies<br/>requirements.txt<br/>Python 3.11+]
+    
+    DEPS --> CHECK[Verify Setup<br/>verify_compile.py]
+    
+    CHECK -->|Pass| RUN{Execute Pipeline}
+    CHECK -->|Fail| DEPS
+    
+    RUN -->|Flagship| FLAG[python src/energy_analysis.py<br/>--n_days 365 --n_consumers 200]
+    RUN -->|Ablation| ABL[python src/run_ablation_study.py]
+    RUN -->|Robustness| ROB[python src/run_seed_robustness.py]
+    
+    FLAG --> ARTIFACTS[Generated Artifacts<br/>outputs/, models/, web/public/data/]
+    ABL --> ARTIFACTS
+    ROB --> ARTIFACTS
+    
+    ARTIFACTS --> VIZ[Generate Visualizations]
+    
+    VIZ --> FIGSCRIPT[python paper/scripts/generate_figures.py]
+    VIZ --> TABSCRIPT[python paper/scripts/generate_tables.py]
+    
+    FIGSCRIPT --> FIGS[paper/figures/*.pdf]
+    TABSCRIPT --> TABS[paper/tables/*.tex]
+    
+    FIGS --> COMPILE[Compile Paper<br/>pdflatex + biber]
+    TABS --> COMPILE
+    
+    COMPILE --> PDF[main.pdf<br/>Publication-ready manuscript]
+    
+    PDF --> VERIFY[Verify Results<br/>Compare with<br/>analysis_summary.md]
+    
+    VERIFY -->|Match| SUCCESS([Reproduction Successful])
+    VERIFY -->|Differ| DEBUG[Debug<br/>Check config hash,<br/>seed, versions]
+    
+    DEBUG --> RUN
+    
+    style START fill:#e1f5e1
+    style SUCCESS fill:#e1ffe1
+    style ARTIFACTS fill:#fff4e1
+    style PDF fill:#f0e1ff

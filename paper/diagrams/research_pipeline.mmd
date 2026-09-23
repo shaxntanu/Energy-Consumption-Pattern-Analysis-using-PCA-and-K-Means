@@ -1,0 +1,47 @@
+%% Research Pipeline: End-to-End Workflow
+%% From raw data to validated clusters
+
+flowchart TB
+    START([Raw Energy Data]) --> GEN[Data Generation<br/>Synthetic: 4 archetypes<br/>Real: UCI adapter]
+    
+    GEN --> VAL[Data Validation<br/>Schema, timestamps,<br/>continuity checks]
+    
+    VAL --> PRE[Preprocessing<br/>Dedup, sort, impute<br/>Drop ground truth]
+    
+    PRE --> FEAT[Feature Engineering<br/>51 behavioral features<br/>Shape normalization]
+    
+    FEAT --> SCALE[Standardization<br/>Zero mean, unit variance]
+    
+    SCALE --> PCA[PCA<br/>95% variance threshold<br/>10 components retained]
+    
+    PCA --> KSWEEP[K-Means Sweep<br/>K = 2 to 10<br/>10 restarts each]
+    
+    KSWEEP --> KSEL[K Selection<br/>Algorithm 1:<br/>Composite + stability]
+    
+    KSEL --> CLUST[Final Clustering<br/>Selected K=4]
+    
+    CLUST --> EVAL{Evaluation Branch}
+    
+    EVAL -->|Synthetic| EXT[External Validation<br/>ARI, NMI vs archetypes]
+    EVAL -->|All Data| INT[Internal Validation<br/>Silhouette, CH, DB]
+    
+    EXT --> STAB[Stability Analysis]
+    INT --> STAB
+    
+    STAB --> SEED[Multi-Seed<br/>10 random restarts]
+    STAB --> TEMP[Temporal<br/>4 quarterly segments]
+    
+    SEED --> PROF[Cluster Profiling<br/>Mean shapes, statistics,<br/>behavioral naming]
+    TEMP --> PROF
+    
+    PROF --> XAI[Explainability<br/>SHAP analysis]
+    
+    XAI --> REPORT[Research Artifacts<br/>Figures, tables,<br/>metrics, paper]
+    
+    REPORT --> END([Publication])
+    
+    style START fill:#e1f5e1
+    style END fill:#ffe1e1
+    style KSEL fill:#fff4e1
+    style EVAL fill:#e1f0ff
+    style REPORT fill:#f0e1ff

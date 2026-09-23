@@ -1,0 +1,190 @@
+\section{Limitations}
+\label{sec:limitations}
+
+This section explicitly acknowledges methodological constraints, dataset scope, and generalization boundaries. Scientific integrity requires honest limitation reporting rather than concealment.
+
+\subsection{Dataset Limitations}
+
+\subsubsection{Synthetic Primary Dataset}
+
+The flagship validation uses synthetic data generated with four simplified behavioral archetypes (daytime, evening, flat, weekend). While controlled validation enables quantitative recovery assessment (ARI 0.813), it does not prove generalization to real household electricity consumption, which exhibits:
+\begin{itemize}
+    \item Greater archetype diversity (10-20+ distinct patterns)
+    \item Continuous behavior gradients rather than discrete types
+    \item Appliance-specific patterns (HVAC, EV charging, pool pumps)
+    \item Stochastic occupancy variations
+    \item Measurement errors and data quality issues
+\end{itemize}
+
+\textbf{Implication:} Real-world validation with utility smart meter data is essential before claiming practical deployment effectiveness.
+
+\subsubsection{Real-World Pathway Not Executed}
+
+A documented pathway for real-world data exists (\texttt{src/dataset\_adapter.py}, \texttt{src/realworld\_ingest.py}, \texttt{src/realworld\_validate.py}) with UCI Individual Household dataset adapter \cite{uci_household}. However, this pathway is \textbf{not executed} in the present study. Claims of real-world validation would be fabricated. The pathway is implementation-ready but requires:
+\begin{itemize}
+    \item Dataset acquisition and ethics approval
+    \item Privacy compliance (anonymization, aggregation)
+    \item Domain expert interpretation of clusters
+    \item Comparison with utility segmentation practices
+\end{itemize}
+
+\textbf{Recommendation:} Execute real-world pathway on UCI dataset or utility partnership data as immediate future work before journal submission.
+
+\subsubsection{Moderate Scale}
+
+The flagship configuration uses 200 consumers over 365 days (1.75 million records). Utility-scale deployments involve:
+\begin{itemize}
+    \item Thousands to millions of consumers
+    \item Multi-year longitudinal data
+    \item Heterogeneous building types, climates, demographics
+\end{itemize}
+
+\textbf{Scalability Unknown:} Computational complexity (PCA: $O(Np^2)$, K-means: $O(NKmI)$) is feasible for moderate N, but has not been stress-tested at utility scale. Feature engineering on millions of consumers may require distributed computation.
+
+\subsection{Methodological Limitations}
+
+\subsubsection{K-Means Assumptions}
+
+K-means assumes:
+\begin{itemize}
+    \item Spherical clusters (equal variance in all directions)
+    \item Euclidean distance appropriate for similarity
+    \item Convex cluster boundaries
+    \item Hard assignment (each consumer exactly one cluster)
+\end{itemize}
+
+\textbf{Reality:} Behavioral patterns may exhibit:
+\begin{itemize}
+    \item Elongated or non-spherical distributions
+    \item Overlapping gradients (soft memberships)
+    \item Non-convex structures
+\end{itemize}
+
+\textbf{Alternatives Not Evaluated:} Gaussian Mixture Models (soft assignment, elliptical clusters), DBSCAN (density-based, arbitrary shapes), hierarchical clustering (nested structures) may better capture complex behavioral distributions. Benchmark comparison is future work.
+
+\subsubsection{PCA Linearity}
+
+PCA assumes linear relationships between features. Behavioral patterns may involve:
+\begin{itemize}
+    \item Nonlinear interactions (e.g., quadratic temperature effects)
+    \item Multiplicative relationships
+    \item Threshold effects
+\end{itemize}
+
+\textbf{Alternative:} Kernel PCA, autoencoders, or nonlinear manifold learning (t-SNE, UMAP) may capture richer structure but sacrifice interpretability and increase computational cost.
+
+\subsubsection{Feature Engineering as Inductive Bias}
+
+The 51 behavioral features encode domain knowledge and design choices:
+\begin{itemize}
+    \item Period definitions (4 blocks of 6 hours)
+    \item Harmonic counts (3 components)
+    \item Haar wavelet levels (3)
+    \item Weekend definition (Saturday-Sunday)
+\end{itemize}
+
+\textbf{Limitation:} Different feature sets may yield different clusterings. The ablation study shows behavioral features outperform alternatives, but optimal feature engineering remains an open question. Learned representations (deep learning) may discover features humans miss.
+
+\subsubsection{Single Flagship Run Without Uncertainty}
+
+The 365-day flagship experiment is executed once (seed 42). While multi-seed stability at K=4 is high (ARI 0.995), we do not report:
+\begin{itemize}
+    \item Confidence intervals on ARI/NMI
+    \item Bootstrap uncertainty on cluster profiles
+    \item Sensitivity to small perturbations
+\end{itemize}
+
+\textbf{Robustness study} (20 datasets, 30-day) provides mean/variance estimates but on shorter window. Flagship uncertainty quantification is future work (bootstrap resampling recommended).
+
+\subsection{Validation Limitations}
+
+\subsubsection{Internal Metrics Are Heuristics}
+
+Silhouette, Calinski-Harabasz, and Davies-Bouldin measure cluster compactness and separation but do not confirm:
+\begin{itemize}
+    \item Semantic meaningfulness
+    \item Actionability for applications
+    \item Stability under real-world conditions
+\end{itemize}
+
+The scale-only ablation arm (silhouette 0.521, ARI $-0.004$) demonstrates internal metrics can mislead. \textbf{Domain validation essential.}
+
+\subsubsection{Ground Truth Limited to Synthetic Data}
+
+ARI=0.813 recovery validates the method \emph{on synthetic data with known archetypes}. Real households have no ground truth labels, so external validation metrics (ARI, NMI) are unavailable. Real-world validation must rely on:
+\begin{itemize}
+    \item Domain expert assessment
+    \item Comparison with utility segmentation
+    \item Intervention studies (demand response trials)
+\end{itemize}
+
+\subsubsection{Explainability is Post-Hoc}
+
+SHAP analysis explains a \emph{surrogate} random forest (CV accuracy 0.985), not the clustering directly. While high surrogate accuracy suggests features strongly distinguish clusters, the explanation is indirect. Clustering has no native feature importance, and SHAP values are model-dependent.
+
+\subsection{Temporal Scope}
+
+\subsubsection{Horizon Dependence}
+
+Shorter windows under-recover archetypes: 30-day reference selects K=3 (ARI 0.61) vs 365-day K=4 (ARI 0.81). \textbf{Implication:} Behavioral segmentation requires sufficient observation time to capture weekly and seasonal variations. Utilities implementing clustering should use $\geq$180 days (documented threshold for longitudinal analysis).
+
+\subsubsection{Single-Year Data}
+
+Flagship uses 2024 only. Multi-year patterns (e.g., household lifecycle changes, appliance upgrades) are not assessed. Longitudinal cluster membership stability over years is unknown.
+
+\subsection{Generalization Boundaries}
+
+\textbf{What This Study Demonstrates:}
+\begin{itemize}
+    \item Shape normalization successfully separates magnitude from timing
+    \item Evidence-based K selection aligns with ground truth on synthetic data
+    \item Behavioral features achieve high recovery (ARI 0.813)
+    \item Clusters are stable across seeds (ARI 0.995) and quarters (ARI 0.882)
+    \item Magnitude-only features fail behavioral recovery (ARI $-0.004$)
+\end{itemize}
+
+\textbf{What This Study Does NOT Demonstrate:}
+\begin{itemize}
+    \item Real-world clustering effectiveness (pathway not executed)
+    \item Generalization to diverse climates, building types, demographics
+    \item Utility-scale computational feasibility (tested at N=200)
+    \item Superiority over alternative methods (no benchmark comparison)
+    \item Demand response intervention effectiveness (observational study only)
+    \item Cost-effectiveness or return on investment
+\end{itemize}
+
+\subsection{Ethical and Privacy Considerations}
+
+While this study uses synthetic data, real-world deployment raises:
+\begin{itemize}
+    \item \textbf{Privacy:} Smart meter data reveals occupancy, appliance use, lifestyle patterns. Clustering amplifies re-identification risk through behavioral fingerprinting. Utilities must implement privacy-preserving aggregation, differential privacy, or secure multi-party computation.
+    \item \textbf{Equity:} Behavioral segmentation may create disparate impacts if clusters correlate with income, demographics, or vulnerability. Time-of-use pricing favoring flexible consumers may burden shift workers, caregivers, or those with inflexible schedules.
+    \item \textbf{Consent:} Consumers may not understand clustering implications. Transparent communication and opt-out mechanisms are essential.
+\end{itemize}
+
+\subsection{Addressing Limitations in Future Work}
+
+\textbf{High Priority:}
+\begin{enumerate}
+    \item Execute real-world pathway on UCI dataset or utility partnership
+    \item Add bootstrap confidence intervals for flagship metrics
+    \item Compare with GMM, DBSCAN, hierarchical clustering
+\end{enumerate}
+
+\textbf{Medium Priority:}
+\begin{enumerate}
+    \item Scale to utility-scale thousands of consumers
+    \item Multi-year longitudinal validation
+    \item Intervention study (demand response trial)
+\end{enumerate}
+
+\textbf{Low Priority:}
+\begin{enumerate}
+    \item Kernel PCA or autoencoder alternatives
+    \item Hyperparameter sensitivity analysis
+    \item Feature selection optimization
+\end{enumerate}
+
+\subsection{Conclusion on Limitations}
+
+These limitations do not invalidate the methodological contributions but establish boundaries on claims. This is a \textbf{methodology paper} demonstrating reproducible behavioral segmentation on controlled synthetic data. Real-world effectiveness requires additional validation before deployment recommendations.
