@@ -767,10 +767,10 @@ This project was developed as part of an academic research initiative on energy 
 **Technical Implementation** (Solo Development)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────┐
 │                        SHANTANU                              │
 │                  (Complete Technical Stack)                  │
-├─────────────────────────────────────────────────────────────┤
+├──────────────────────────────────────────────────────────────┤
 │ • Pipeline Architecture & Full Implementation                │
 │ • Data Generation & Feature Engineering (15 features)        │
 │ • PCA Implementation (Python + C++ engine)                   │
@@ -781,7 +781,7 @@ This project was developed as part of an academic research initiative on energy 
 │ • All Documentation & Research Infrastructure                │
 │ • Testing, Benchmarking, CI/CD                               │
 │ • Scientific Paper (LaTeX manuscript)                        │
-└─────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### Academic Presentation Flow
@@ -815,9 +815,9 @@ graph LR
 ### Team Contributions Summary
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
+┌───────────────────────────────────────────────────────────────────────┐
 │                    TECHNICAL IMPLEMENTATION                           │
-└──────────────────────────────────────────────────────────────────────┘
+└───────────────────────────────────────────────────────────────────────┘
     │
     └─── Shantanu (100%)
          • Complete codebase (Python, C++, TypeScript)
@@ -825,9 +825,9 @@ graph LR
          • Web platforms and documentation
          • Research paper and scientific writing
 
-┌──────────────────────────────────────────────────────────────────────┐
+┌───────────────────────────────────────────────────────────────────────┐
 │                   ACADEMIC PRESENTATION (Team)                        │
-└──────────────────────────────────────────────────────────────────────┘
+└───────────────────────────────────────────────────────────────────────┘
     │
     ├─── Harsh Rathi: Introduction & Context
     ├─── Johnson Victor Yalangi: PCA Theory & Application
