@@ -10,6 +10,8 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://energy-consumption-pattern.vercel.app)
 [![Interactive Simulator](https://img.shields.io/badge/Simulator-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://energy-consumption-pattern-vqrh.streamlit.app/)
 [![Academic Presentation](https://img.shields.io/badge/Presentation-Google%20Slides-FBBC04?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/d/1MDuqluVIVA2VCmYWPoI2TEvCN6ZLHZWgzFX1eGzS4PQ/edit?usp=sharing)
+[![Kaggle Notebook](https://img.shields.io/badge/Kaggle%20Notebook-20BEFF?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/code/shaxntanu/energy-consumption-pattern-analysis-pca-k-means)
+[![Kaggle Dataset](https://img.shields.io/badge/Kaggle%20Dataset-20BEFF?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/datasets/shaxntanu/energy-consumption-pattern-analysis-dataset)
 
 ![Energy Consumption Pattern Analysis](public/Energy_Consumption_Pattern_Analysis.png)
 
