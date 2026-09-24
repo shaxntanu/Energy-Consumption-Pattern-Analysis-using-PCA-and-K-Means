@@ -64,12 +64,6 @@ Loadings are interpreted descriptively only; signs are not causal.
 
 ## K-Means
 
-<<<<<<< Updated upstream
-- Evaluate **K = 2…10**.
-- Metrics per K: inertia, silhouette, Calinski-Harabasz, Davies-Bouldin.
-- Selection: multi-metric top-3 vote consensus, with **no hard-coded 3 to 6 preference**.
-- Stability: multi-seed Adjusted Rand Index when enabled.
-=======
 Candidate **K = 2…10**. For each K the pipeline records inertia, silhouette, Calinski-Harabasz, Davies-Bouldin, and stability across random restarts. The selection rule is fixed in advance and never sees the hidden archetype labels:
 
 1. Discard any K whose smallest cluster holds less than 5% of consumers (`MIN_CLUSTER_SHARE = 0.05`) - isolating a handful of outliers is not a segmentation.
@@ -80,7 +74,6 @@ Candidate **K = 2…10**. For each K the pipeline records inertia, silhouette, C
 If every candidate fails a filter, the filter is relaxed and the relaxation is logged, so a weak result is reported rather than silently invented. There is **no** preference for any particular K. The inertia elbow is computed and reported for comparison only; it does not drive the choice.
 
 - On the shipped run this selects **K = 3** (the elbow suggests 4; K in 6…10 are rejected for leaving a sub-5% cluster). See `outputs/reports/analysis_summary.md`.
->>>>>>> Stashed changes
 - Persist the exact fitted `KMeans` used for all downstream numbers.
 - K-to-metric display uses **dictionary lookup** (`silhouette_by_k[k]`), never `scores[k-2]`.
 

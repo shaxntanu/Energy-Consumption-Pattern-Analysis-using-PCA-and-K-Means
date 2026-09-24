@@ -15,18 +15,24 @@ py -m streamlit run streamlit_app.py
 
 ## Definition of Done
 
-| Criterion | Status |
-|-----------|--------|
-| Documented behavioral variation; synthetic labeled | Done |
-| Energy-based weekend metric; IDs excluded from PCA | Done |
-| Panel-aware preprocessing; leakage tested | Done |
-| PCA standardized + 95% variance threshold + artifacts | Done |
-| Transparent multi-metric K + stability | Done |
-| Profiles in original space; evidence recommendations | Done |
-| Dashboard = single `AnalysisResults` object | Done |
-| Pinned env + tests + metadata | Done |
-| Ablation shows FE changes the question | Done |
-| Baseline preserved under `baseline/` | Done |
+```infographic
+{
+  "type": "checklist",
+  "title": "Project Completion Status",
+  "items": [
+    {"text": "Documented behavioral variation; synthetic labeled", "status": "done"},
+    {"text": "Energy-based weekend metric; IDs excluded from PCA", "status": "done"},
+    {"text": "Panel-aware preprocessing; leakage tested", "status": "done"},
+    {"text": "PCA standardized + 95% variance threshold + artifacts", "status": "done"},
+    {"text": "Transparent multi-metric K + stability", "status": "done"},
+    {"text": "Profiles in original space; evidence recommendations", "status": "done"},
+    {"text": "Dashboard = single AnalysisResults object", "status": "done"},
+    {"text": "Pinned env + tests + metadata", "status": "done"},
+    {"text": "Ablation shows FE changes the question", "status": "done"},
+    {"text": "Baseline preserved under baseline/", "status": "done"}
+  ]
+}
+```
 
 ## Key results (behavioral primary, seed=42)
 

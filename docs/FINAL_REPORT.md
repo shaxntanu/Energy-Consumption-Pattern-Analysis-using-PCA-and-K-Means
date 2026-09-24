@@ -51,6 +51,55 @@ Sort `(consumer_id, timestamp)` → within-consumer fill → configurable invali
 | 9 | 4814.96 | 0.0376 | 7.78 | 2.822 |
 | 10 | 4760.85 | 0.0353 | 7.20 | 2.805 |
 
+```vega-lite
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "values": [
+      {"K": 2, "Inertia": 5889.82, "Silhouette": 0.1055, "CH": 16.60, "DB": 3.291},
+      {"K": 3, "Inertia": 5643.78, "Silhouette": 0.0478, "CH": 12.91, "DB": 3.359},
+      {"K": 4, "Inertia": 5431.22, "Silhouette": 0.0384, "CH": 11.46, "DB": 3.302},
+      {"K": 5, "Inertia": 5266.16, "Silhouette": 0.0411, "CH": 10.34, "DB": 3.179},
+      {"K": 6, "Inertia": 5086.36, "Silhouette": 0.0401, "CH": 9.90, "DB": 2.950},
+      {"K": 7, "Inertia": 4989.16, "Silhouette": 0.0386, "CH": 8.99, "DB": 2.966},
+      {"K": 8, "Inertia": 4910.51, "Silhouette": 0.0341, "CH": 8.23, "DB": 2.895},
+      {"K": 9, "Inertia": 4814.96, "Silhouette": 0.0376, "CH": 7.78, "DB": 2.822},
+      {"K": 10, "Inertia": 4760.85, "Silhouette": 0.0353, "CH": 7.20, "DB": 2.805}
+    ]
+  },
+  "hconcat": [
+    {
+      "mark": {"type": "line", "point": true},
+      "encoding": {
+        "x": {"field": "K", "type": "ordinal"},
+        "y": {"field": "Silhouette", "type": "quantitative", "title": "Silhouette"},
+        "color": {"value": "#48d7c2"}
+      },
+      "width": 200
+    },
+    {
+      "mark": {"type": "line", "point": true},
+      "encoding": {
+        "x": {"field": "K", "type": "ordinal"},
+        "y": {"field": "CH", "type": "quantitative", "title": "Calinski-Harabasz"},
+        "color": {"value": "#6c8cff"}
+      },
+      "width": 200
+    },
+    {
+      "mark": {"type": "line", "point": true},
+      "encoding": {
+        "x": {"field": "K", "type": "ordinal"},
+        "y": {"field": "DB", "type": "quantitative", "title": "Davies-Bouldin"},
+        "color": {"value": "#f2b04b"}
+      },
+      "width": 200
+    }
+  ],
+  "resolve": {"scale": {"color": "independent"}}
+}
+```
+
 **Selected K = 2** (multi-metric consensus; no hard-coded 3 to 6 preference).  
 **Stability:** mean ARI **0.791 ± 0.111** (10 seeds).
 

@@ -18,31 +18,77 @@ This dataset contains **synthetic hourly energy consumption data** for 200 house
 | **File Format** | CSV (UTF-8) |
 | **Size** | ~83.9 MB |
 
-## Files
+## Dataset Structure
 
-### 1. `energy_consumption_hourly.csv` (Main Dataset)
+The dataset consists of two main files:
 
-The primary dataset with 1,752,000 hourly consumption records.
+### energy_consumption_hourly.csv
+
+Hourly energy consumption records with the following schema:
+
+```plantuml
+@startuml
+skinparam backgroundColor #f8f9fa
+skinparam classAttributeBackgroundColor #e3f2fd
+skinparam classAttributeBorderColor #2196f3
+
+class "energy_consumption_hourly.csv" as Data {
+  + consumer_id: int64
+  + timestamp: datetime
+  + energy_consumption_kwh: float
+  --
+  200 consumers
+  365 days
+  1,752,000 records
+  hourly cadence
+}
+
+note right of Data
+  Primary consumption data
+  Used for feature engineering
+  Time series panel data
+end note
+@enduml
+```
 
 | Column | Type | Description |
 |--------|------|-------------|
-| `consumer_id` | int64 | Unique household identifier (0-199) |
-| `timestamp` | datetime64 | Hourly timestamp in UTC |
-| `energy_consumption_kwh` | float64 | Energy consumption in kilowatt-hours |
-| `season` | string | Season (spring/summer/fall/winter) from Zephyr Station weather API |
+| `consumer_id` | int64 | Household identifier |
+| `timestamp` | datetime | Timestamp of the reading (hourly) |
+| `energy_consumption_kwh` | float | Energy consumption in kilowatt-hours |
 
-**Sample:**
-```
-consumer_id,timestamp,energy_consumption_kwh,season
-0,2024-01-01 00:00:00,1.234,winter
-0,2024-01-01 01:00:00,0.987,winter
-1,2024-01-01 00:00:00,2.156,winter
-...
-```
-
-### 2. `ground_truth_archetypes.csv` (Validation Labels)
+### ground_truth_archetypes.csv
 
 Hidden behavioral archetypes for external validation purposes only. **These labels are NOT used during clustering** - they exist only to validate that unsupervised methods can recover the true groupings.
+
+```plantuml
+@startuml
+skinparam backgroundColor #f8f9fa
+skinparam classAttributeBackgroundColor #fff3e0
+skinparam classAttributeBorderColor #ff9800
+
+class "ground_truth_archetypes.csv" as Truth {
+  + consumer_id: int64
+  + archetype: string
+  --
+  4 archetypes:
+  - flat
+  - daytime
+  - evening
+  - weekend
+  --
+  200 consumers
+  Validation only
+  Hidden during training
+}
+
+note right of Truth
+  Answer key for validation
+  Never used in training
+  Measures clustering recovery
+end note
+@enduml
+```
 
 | Column | Type | Description |
 |--------|------|-------------|
