@@ -89,47 +89,100 @@ limitations section, and the real-world pathway therefore never claims ARI/NMI.
 
 ## 3. Pipeline diagram
 
-The canonical diagram lives in `docs/flow_diagram.md` (Mermaid, rendered on
-GitHub and in the Streamlit app). In text form, the single deterministic flow is:
+The canonical diagram lives in `docs/flow_diagram.md`. In PlantUML form, the single deterministic flow is:
 
-```
-DATA COLLECTION (3 provenance seams: Zephyr weather API → season label,
-                 synthetic generator → known archetypes, real-world adapter → no labels)
-        
-        
-DATA VALIDATION (schema, duplicates, timestamps, within-meter imputation)
-        
-        
-PRE-PROCESSING (dedupe, parse, impute, winsorize, sort; drop archetype + seasonal_phase)
-        
-        
-FEATURE ENGINEERING (51 behavioural features: 24-hour shape + 27 summaries)
-        
-        
-FEATURE SCALING (StandardScaler, fitted on consumers)
-        
-        
-PCA (95% cumulative variance → 10 components; Kaiser/scree reported for comparison)
-        
-        
-K-MEANS (sweep K = 2–10, composite rule + parsimony guard → K = 4)
-        
-        
-EXPLAINABILITY (surrogate random forest → SHAP TreeExplainer, or permutation fallback)
-        
-        
-PROFILING → RECOMMENDATIONS (in original units, evidence-based)
-        
-        
-MODEL EVALUATION (two branches)
-    synthetic: ARI/NMI vs hidden archetype + silhouette/CH/DB + seed stability
-    real: internal metrics only + seed + temporal stability (never invented ARI)
-        
-        
-VALIDATION RE-CHECK → SEASONAL ANALYSIS → LONGITUDINAL ANALYSIS
-        
-        
-EXPORT (export_artifacts.py → web/public/data/*.json → Vercel explorer)
+```plantuml
+@startuml
+skinparam backgroundColor #101722
+skinparam activityBackgroundColor #48d7c2
+skinparam activityBorderColor #48d7c2
+skinparam activityFontColor #101722
+skinparam noteBackgroundColor #6c8cff
+skinparam noteBorderColor #6c8cff
+skinparam noteFontColor #ffffff
+
+start
+:**DATA COLLECTION**;
+note right
+  3 provenance seams:
+  Zephyr weather API → season label
+  synthetic generator → known archetypes
+  real-world adapter → no labels
+end note
+
+:**DATA VALIDATION**;
+note right
+  schema, duplicates, timestamps
+  within-meter imputation
+end note
+
+:**PRE-PROCESSING**;
+note right
+  dedupe, parse, impute, winsorize, sort
+  drop archetype + seasonal_phase
+end note
+
+:**FEATURE ENGINEERING**;
+note right
+  51 behavioural features:
+  24-hour shape + 27 summaries
+end note
+
+:**FEATURE SCALING**;
+note right
+  StandardScaler, fitted on consumers
+end note
+
+:**PCA**;
+note right
+  95% cumulative variance → 10 components
+  Kaiser/scree reported for comparison
+end note
+
+:**K-MEANS**;
+note right
+  sweep K = 2–10
+  composite rule + parsimony guard → K = 4
+end note
+
+:**EXPLAINABILITY**;
+note right
+  surrogate random forest
+  → SHAP TreeExplainer
+  or permutation fallback
+end note
+
+:**PROFILING → RECOMMENDATIONS**;
+note right
+  in original units, evidence-based
+end note
+
+partition "MODEL EVALUATION" {
+  if (synthetic?) then (yes)
+    :ARI/NMI vs hidden archetype;
+    :silhouette/CH/DB + seed stability;
+  else (real)
+    :internal metrics only;
+    :seed + temporal stability;
+    note right
+      never invented ARI
+    end note
+  endif
+}
+
+:**VALIDATION RE-CHECK**;
+:**SEASONAL ANALYSIS**;
+:**LONGITUDINAL ANALYSIS**;
+
+:**EXPORT**;
+note right
+  export_artifacts.py
+  → web/public/data/*.json
+  → Vercel explorer
+end note
+
+stop
+@enduml
 ```
 
 The runtime log shows the same flow as 11 numbered steps

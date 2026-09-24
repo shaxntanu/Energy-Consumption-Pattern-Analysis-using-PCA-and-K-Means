@@ -407,32 +407,91 @@ The contract is **versioned** (`contract_version 1.0.0`), append-only, typed, wi
 
 The mandatory flow, as rendered at `docs/flow_diagram.md`:
 
-```mermaid
-flowchart LR
-    START([**START**]) --> COLLECT[/**DATA COLLECTION**/<br>two pathways/]
+```plantuml
+@startuml
+skinparam backgroundColor #101722
+skinparam activityBackgroundColor #48d7c2
+skinparam activityBorderColor #48d7c2
+skinparam activityFontColor #101722
+skinparam noteBackgroundColor #6c8cff
+skinparam noteBorderColor #6c8cff
+skinparam noteFontColor #ffffff
+skinparam decisionBackgroundColor #f2b04b
+skinparam decisionBorderColor #f2b04b
+skinparam decisionFontColor #101722
 
-    COLLECT --> SYN[**Synthetic data**<br>generate_synthetic_data<br>archetypes known]
-    COLLECT --> RW[**Real-world data**<br>dataset_adapter -> realworld_ingest<br>no ground truth]
+start
+:**START**;
 
-    SYN --> VAL[[**DATA VALIDATION**<br>schema, duplicates, timestamps,<br>within-meter imputation]]
-    RW --> VAL
+partition "DATA COLLECTION" {
+  :two pathways;
+}
 
-    VAL --> PRE[**PRE-PROCESSING**<br>preprocess_pipeline<br>clean, impute, sort]
-    PRE --> FEAT[**FEATURE ENGINEERING**<br>behavioural shape, scale-invariant]
-    FEAT --> SCALE[**FEATURE SCALING**<br>StandardScaler]
-    SCALE --> PCA[**PCA**<br>variance threshold + loadings]
-    PCA --> KM[**K-MEANS**<br>evidence-based K]
+if (Synthetic data?) then (yes)
+  :generate_synthetic_data;
+  note right
+    archetypes known
+  end note
+else (Real-world data)
+  :dataset_adapter -> realworld_ingest;
+  note right
+    no ground truth
+  end note
+endif
 
-    KM --> EVAL[/**MODEL EVALUATION**/]
+partition "DATA VALIDATION" {
+  :schema, duplicates, timestamps;
+  :within-meter imputation;
+}
 
-    EVAL -->|synthetic branch| ARI[**NMI / ARI vs hidden archetype**<br>+ silhouette / CH / DB<br>+ seed stability]
-    EVAL -->|real-world branch| INT[**Internal only**<br>silhouette / CH / DB<br>+ seed stability + temporal stability<br>(never ARI/NMI against invented labels)]
+partition "PRE-PROCESSING" {
+  :preprocess_pipeline;
+  :clean, impute, sort;
+}
 
-    ARI --> VIZ[**VISUALIZATION**<br>PCA, cluster, K-selection,<br>seasonal, longitudinal charts]
-    INT --> VIZ
+partition "FEATURE ENGINEERING" {
+  :behavioural shape, scale-invariant;
+}
 
-    VIZ --> INTERP[**INTERPRETATION**<br>cluster profiles + loadings<br>+ seasonal / longitudinal findings]
-    INTERP --> END([**END**])
+partition "FEATURE SCALING" {
+  :StandardScaler;
+}
+
+partition "PCA" {
+  :variance threshold + loadings;
+}
+
+partition "K-MEANS" {
+  :evidence-based K;
+}
+
+partition "MODEL EVALUATION" {
+  if (synthetic branch?) then (yes)
+    :NMI / ARI vs hidden archetype;
+    :silhouette / CH / DB;
+    :seed stability;
+  else (real-world branch)
+    :Internal only;
+    :silhouette / CH / DB;
+    :seed stability + temporal stability;
+    note right
+      never ARI/NMI against invented labels
+    end note
+  endif
+}
+
+partition "VISUALIZATION" {
+  :PCA, cluster, K-selection;
+  :seasonal, longitudinal charts;
+}
+
+partition "INTERPRETATION" {
+  :cluster profiles + loadings;
+  :seasonal / longitudinal findings;
+}
+
+stop
+@enduml
 ```
 
 **PRE-PROCESSING and VISUALIZATION are first-class, clearly visible stages.** They are distinct blocks in the diagram, distinct sections of this README, and their code lives in dedicated modules (`preprocessing.py`, the chart producers under `src/`, and the explorer).

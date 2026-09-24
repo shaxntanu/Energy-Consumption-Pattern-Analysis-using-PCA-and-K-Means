@@ -19,76 +19,76 @@ and what has been validated against tests or ground truth.
 
 ## 1. The complete pipeline
 
-### 1.1 Mermaid flowchart
+### 1.1 Pipeline flowchart
 
-```mermaid
-flowchart TD
-    subgraph DATA["Data"]
-        A1[generate_synthetic_data<br/>200 consumers x 365 days, hourly<br/>hidden archetype + independent magnitude]
-        A2[validate_dataset<br/>panel integrity: shapes, weekends, magnitude]
-    end
+```plantuml
+@startuml
+skinparam backgroundColor #101722
+skinparam activityBackgroundColor #48d7c2
+skinparam activityBorderColor #48d7c2
+skinparam activityFontColor #101722
+skinparam packageBackgroundColor #6c8cff
+skinparam packageBorderColor #6c8cff
+skinparam packageFontColor #ffffff
 
-    subgraph PREP["Preprocessing"]
-        B1[preprocess_pipeline<br/>parse timestamps, sort, impute within consumer]
-        B2[drop hidden truth cols<br/>archetype + seasonal_phase kept out]
-    end
+package "Data" #6c8cff {
+  activity "generate_synthetic_data\n200 consumers x 365 days, hourly\nhidden archetype + independent magnitude" as A1 #48d7c2
+  activity "validate_dataset\npanel integrity: shapes, weekends, magnitude" as A2 #48d7c2
+}
 
-    subgraph FE["Feature Engineering"]
-        C1[engineer_all_features<br/>24 hourly shape bins + 27 summary descriptors]
-        C2[select_features<br/>behavioral / scale / combined]
-        C3[StandardScaler<br/>zero mean, unit variance]
-    end
+package "Preprocessing" #6c8cff {
+  activity "preprocess_pipeline\nparse timestamps, sort, impute within consumer" as B1 #48d7c2
+  activity "drop hidden truth cols\narchetype + seasonal_phase kept out" as B2 #48d7c2
+}
 
-    subgraph ML["Machine Learning"]
-        D1[PCA<br/>covariance + Jacobi eigendecomposition<br/>keep 95% cumulative variance]
-        D2[Sweep K = 2..10<br/>K-Means kmeans++ n_init=10]
-        D3[Select optimal K<br/>filters + composite score + stability ARI]
-    end
+package "Feature Engineering" #6c8cff {
+  activity "engineer_all_features\n24 hourly shape bins + 27 summary descriptors" as C1 #48d7c2
+  activity "select_features\nbehavioral / scale / combined" as C2 #48d7c2
+  activity "StandardScaler\nzero mean, unit variance" as C3 #48d7c2
+}
 
-    subgraph EVAL["Evaluation"]
-        E1[Silhouette / CH / Davies-Bouldin]
-        E2[Stability across restarts ARI]
-        E3[Validation vs hidden archetypes ARI/NMI]
-    end
+package "Machine Learning" #6c8cff {
+  activity "PCA\ncovariance + Jacobi eigendecomposition\nkeep 95% cumulative variance" as D1 #6c8cff
+  activity "Sweep K = 2..10\nK-Means kmeans++ n_init=10" as D2 #6c8cff
+  activity "Select optimal K\nfilters + composite score + stability ARI" as D3 #6c8cff
+}
 
-    subgraph ANALYSIS["Analysis"]
-        F1[Cluster profiling<br/>real units vs population]
-        F2[Recommendation engine<br/>evidence-based, no savings claims]
-        F3[Explainability<br/>SHAP / permutation surrogate]
-        F4[Seasonal analysis<br/>magnitude vs timing]
-        F5[Longitudinal analysis<br/>segments re-fit, ARI vs full window]
-    end
+package "Evaluation" #6c8cff {
+  activity "Silhouette / CH / Davies-Bouldin" as E1 #48d7c2
+  activity "Stability across restarts ARI" as E2 #48d7c2
+  activity "Validation vs hidden archetypes ARI/NMI" as E3 #f2b04b
+}
 
-    subgraph ENG["Engineering"]
-        G1[Streamlit simulator<br/>interactive, per-run temp dirs]
-        G2[Web app Vercel<br/>Chart.js + React from committed JSON]
-        G3[C++ engine energy_cpp<br/>optional pybind11 kernel]
-        G4[Benchmark harness<br/>Python vs C++ on identical matrices]
-    end
+package "Analysis" #6c8cff {
+  activity "Cluster profiling\nreal units vs population" as F1 #48d7c2
+  activity "Recommendation engine\nevidence-based, no savings claims" as F2 #48d7c2
+  activity "Explainability\nSHAP / permutation surrogate" as F3 #48d7c2
+  activity "Seasonal analysis\nmagnitude vs timing" as F4 #b78cff
+  activity "Longitudinal analysis\nsegments re-fit, ARI vs full window" as F5 #48d7c2
+}
 
-    A1 --> B1 --> B2 --> C1 --> C2 --> C3 --> D1
-    A1 --> A2
-    D1 --> D2 --> D3 --> F1 --> F2
-    D3 --> E1
-    D3 --> E2
-    D3 --> E3
-    D3 --> F3
-    D1 --> F4
-    F1 --> F4
-    D3 --> F5
-    D3 --> G1
-    G3 --> G4
-    G1 --> G2
-    D3 --> G2
+package "Engineering" #6c8cff {
+  activity "Streamlit simulator\ninteractive, per-run temp dirs" as G1 #48d7c2
+  activity "Web app Vercel\nChart.js + React from committed JSON" as G2 #48d7c2
+  activity "C++ engine energy_cpp\noptional pybind11 kernel" as G3 #fb7185
+  activity "Benchmark harness\nPython vs C++ on identical matrices" as G4 #48d7c2
+}
 
-    style A1 fill:#101722,stroke:#48d7c2
-    style B1 fill:#101722,stroke:#48d7c2
-    style C1 fill:#101722,stroke:#48d7c2
-    style D1 fill:#101722,stroke:#6c8cff
-    style D3 fill:#101722,stroke:#6c8cff
-    style E3 fill:#101722,stroke:#f2b04b
-    style F4 fill:#101722,stroke:#b78cff
-    style G3 fill:#101722,stroke:#fb7185
+A1 --> B1 --> B2 --> C1 --> C2 --> C3 --> D1
+A1 --> A2
+D1 --> D2 --> D3 --> F1 --> F2
+D3 --> E1
+D3 --> E2
+D3 --> E3
+D3 --> F3
+D1 --> F4
+F1 --> F4
+D3 --> F5
+D3 --> G1
+G3 --> G4
+G1 --> G2
+D3 --> G2
+@enduml
 ```
 
 ### 1.2 The pipeline in plain language
