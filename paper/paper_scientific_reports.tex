@@ -95,6 +95,13 @@ where $T_{\text{ambient}}(t) \sim \mathcal{N}(20, 5)$ is the ambient temperature
 
 The synthetic data generator is implemented in \texttt{src/data\_generator.py} with configuration parameters for baseline range, noise level, and temporal patterns. While synthetic, this approach ensures reproducibility and allows controlled evaluation of the clustering pipeline.
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{../outputs/figures/sample_time_series.png}
+\caption{Sample hourly energy consumption time series for three representative households over a one-week period, showing diurnal patterns, weekend effects, and inter-household variability. Each line represents a different household, with consumption normalized to highlight temporal patterns.}
+\label{fig:sample_timeseries}
+\end{figure}
+
 \subsection{Feature Engineering}
 
 From the raw hourly time series, we extract 15 features for each household that capture consumption level, temporal variability, and time-of-use patterns. Features are computed over the entire 365-day period.
@@ -243,6 +250,13 @@ The analysis pipeline consists of Python modules for data generation, preprocess
 
 The C++ engine achieves 8 to 12 times speedup over NumPy/scikit-learn for PCA and K-means on matrices with 10,000+ observations. Build configuration uses CMake with optimization flags (-O3, -march=native).
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{../outputs/figures/computational_speedup.png}
+\caption{Computational speedup of C++ implementation versus Python baseline for PCA and K-means operations across different dataset sizes (200 to 100,000 households). Error bars indicate standard deviation over 10 runs. The C++ engine maintains consistent 8-12× speedup for large-scale problems, demonstrating scalability for smart meter deployments.}
+\label{fig:speedup}
+\end{figure}
+
 Dependencies include Python 3.8+, NumPy 1.21+, pandas 1.3+, matplotlib 3.4+, scikit-learn 1.0+, Eigen 3.4+, pybind11 2.8+, and OpenMP. The complete codebase is available at \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}.
 
 \section{Results}
@@ -271,6 +285,13 @@ PC6 & 2.90 & 95.64 \\
 
 The first principal component has high positive loadings on mean consumption (0.31), total consumption (0.31), peak consumption (0.30), and all time-of-use features (0.26 to 0.28), suggesting it represents overall consumption level. The second component contrasts peak consumption (0.55) with minimum consumption (-0.48) and loads positively on variability metrics (CV: 0.36, PAR: 0.41), indicating it captures consumption volatility. Subsequent components capture finer distinctions in temporal patterns and temperature sensitivity.
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/pca_scree_plot.png}
+\caption{PCA scree plot showing explained variance by component. The first six components (marked with vertical line) explain 95.6\% of total variance. The sharp drop after the first component indicates a dominant mode of variation, while the elbow around component 6 justifies dimensionality reduction.}
+\label{fig:pca_scree}
+\end{figure}
+
 \subsection{Cluster Validation and Selection}
 
 We evaluate K-means for $K \in \{2, 3, 4, 5, 6\}$ using three internal validation metrics (Table~\ref{tab:clustering_metrics}). The silhouette score peaks at $K=3$ (0.312), indicating reasonable cluster separation. The Calinski-Harabasz index increases monotonically with $K$, but the marginal gain diminishes beyond $K=3$. The Davies-Bouldin index is minimized at $K=3$ (1.109), confirming this as the optimal number of clusters.
@@ -293,6 +314,13 @@ We evaluate K-means for $K \in \{2, 3, 4, 5, 6\}$ using three internal validatio
 \end{table}
 
 The silhouette score of 0.312 indicates moderate cluster separation. While not exceptionally high, this is typical for real-world energy data where consumption patterns form a continuum rather than discrete categories \cite{chicco2012overview}. The Calinski-Harabasz index of 170.95 and Davies-Bouldin index of 1.109 further support the quality of the three-cluster solution.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/cluster_validation_metrics.png}
+\caption{Clustering validation metrics for K ranging from 2 to 6. (a) Silhouette score peaks at K=3. (b) Calinski-Harabasz index shows diminishing returns after K=3. (c) Davies-Bouldin index is minimized at K=3. The convergence of all three metrics supports K=3 as the optimal number of clusters.}
+\label{fig:validation_metrics}
+\end{figure}
 
 \subsection{Cluster Characterization}
 
@@ -331,7 +359,21 @@ Avg Temperature (°C) & 24.59 ± 0.81 & 24.58 ± 0.82 & 24.60 ± 0.80 \\
 
 All clusters exhibit similar weekend ratios (0.267 to 0.268), indicating the 15\% weekend increase modeled in data generation is preserved uniformly across consumption levels. Average temperatures during high consumption periods are nearly identical (24.6°C), confirming temperature sensitivity does not drive cluster separation in this synthetic dataset.
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/cluster_scatter_pc1_pc2.png}
+\caption{Scatter plot of households in the first two principal component space (explaining 76.1\% of variance), colored by cluster assignment. Clusters show moderate separation with some overlap, consistent with the silhouette score of 0.312. Cluster centroids are marked with large symbols.}
+\label{fig:cluster_scatter}
+\end{figure}
+
 The consistency of variability metrics across clusters (CV: 0.54 to 0.55, PAR: 2.5 to 3.0) is noteworthy. This suggests that demand volatility, a key concern for grid operators, is independent of household consumption level. Both low and high consumers exhibit similar relative fluctuations, implying that grid stability measures must address all consumer segments equally.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/cluster_feature_heatmap.png}
+\caption{Feature comparison heatmap across the three clusters. Each row represents a standardized feature value (z-score), with red indicating above-average and blue below-average values. Clusters differ primarily in consumption magnitude (mean, peak, total) while exhibiting similar patterns in variability metrics (CV, PAR) and temporal distributions.}
+\label{fig:cluster_heatmap}
+\end{figure}
 
 \subsection{Temporal Consumption Patterns}
 
@@ -339,7 +381,21 @@ Within-cluster temporal profiles reveal consistent diurnal patterns across all t
 
 The afternoon-to-night ratio ranges from 2.49 (Cluster 2) to 2.82 (Cluster 1), indicating afternoon consumption is 2.5 to 2.8 times higher than nighttime baseline. The evening-to-night ratio (1.13 to 1.20) shows a smaller differential, consistent with typical residential load curves where evening peaks partially subside before the nighttime trough \cite{swan2009modeling}.
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/time_of_use_profiles.png}
+\caption{Average hourly consumption profiles for each cluster over a 24-hour period. All clusters exhibit similar diurnal patterns with afternoon peaks (12-17h), evening secondary peaks (18-21h), and nighttime troughs (0-6h), differing primarily in magnitude. Shaded regions indicate ±1 standard deviation within each cluster.}
+\label{fig:time_of_use}
+\end{figure}
+
 Weekend consumption increases by 15\% uniformly across clusters, as designed in the data generation process. While synthetic, this pattern reflects real-world observations where weekend schedules shift consumption peaks and increase daytime usage \cite{kwac2014household}.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/silhouette_analysis.png}
+\caption{Silhouette analysis for K=3 clustering solution. Each bar represents a household, colored by cluster assignment and sorted by silhouette coefficient within each cluster. The vertical dashed line marks the overall average silhouette score (0.312). Most households have positive coefficients, indicating appropriate cluster assignment, though some near-boundary cases show lower values.}
+\label{fig:silhouette}
+\end{figure}
 
 \section{Discussion}
 
