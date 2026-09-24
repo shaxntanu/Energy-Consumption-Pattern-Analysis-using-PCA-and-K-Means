@@ -701,29 +701,105 @@ The SDG contribution is visualized in the [Vercel interactive explorer](https://
 
 This project was developed as part of an academic research initiative on energy consumption pattern analysis.
 
-### Team Members
+### 🏗️ Project Development
 
-- **Shantanu** - Lead Developer & Project Architect
+**Technical Implementation** (Solo Development)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        SHANTANU                              │
+│                  (Complete Technical Stack)                  │
+├─────────────────────────────────────────────────────────────┤
+│ • Pipeline Architecture & Full Implementation                │
+│ • Data Generation & Feature Engineering (15 features)        │
+│ • PCA Implementation (Python + C++ engine)                   │
+│ • K-Means Clustering (Python + C++ optimization)             │
+│ • Web Platform (Vercel + Streamlit)                          │
+│ • C++ Acceleration Engine (8-12× speedup)                    │
+│ • Explainability (SHAP/Permutation)                          │
+│ • All Documentation & Research Infrastructure                │
+│ • Testing, Benchmarking, CI/CD                               │
+│ • Scientific Paper (LaTeX manuscript)                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 🎤 Academic Presentation Flow
+
+The project was presented in a structured academic session with the following presentation sequence:
+
+```mermaid
+graph LR
+    A[Harsh Rathi<br/>Introduction & Overview] --> B[Johnson Victor Yalangi<br/>PCA Explained]
+    B --> C[Varun Srivastava<br/>K-Means Clustering]
+    C --> D[Shantanu<br/>xAI & Technical Deep-Dive]
+    D --> E[Aarna Srivastava<br/>SDGs & Conclusion]
+    
+    style A fill:#e1f5ff,stroke:#0288d1,stroke-width:2px
+    style B fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style C fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px
+    style D fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style E fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+```
+
+**Presentation Contributions:**
+
+| Presenter | Role | Topics Covered |
+|-----------|------|----------------|
+| **Harsh Rathi** | Opening & Introduction | Project motivation, problem statement, pipeline overview |
+| **Johnson Victor Yalangi** | PCA Methodology | Dimensionality reduction, explained variance, component interpretation |
+| **Varun Srivastava** | Clustering Algorithm | K-Means methodology, cluster validation, optimal K selection |
+| **Shantanu** | Technical Deep-Dive | Explainable AI (SHAP), feature importance, C++ acceleration, results |
+| **Aarna Srivastava** | Conclusion & Impact | Sustainable Development Goals alignment, summary, future directions |
+
+### 👥 Team Contributions Summary
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                    TECHNICAL IMPLEMENTATION                           │
+└──────────────────────────────────────────────────────────────────────┘
+    │
+    └─── Shantanu (100%)
+         • Complete codebase (Python, C++, TypeScript)
+         • All pipeline components and infrastructure
+         • Web platforms and documentation
+         • Research paper and scientific writing
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                   ACADEMIC PRESENTATION (Team)                        │
+└──────────────────────────────────────────────────────────────────────┘
+    │
+    ├─── Harsh Rathi: Introduction & Context
+    ├─── Johnson Victor Yalangi: PCA Theory & Application
+    ├─── Varun Srivastava: K-Means & Clustering Analysis  
+    ├─── Shantanu: xAI, Technical Details & Implementation
+    └─── Aarna Srivastava: SDGs Impact & Conclusion
+```
+
+### 🔗 Individual Links
+
+- **Shantanu** (Lead Developer & Architect)
   - GitHub: [@shaxntanu](https://github.com/shaxntanu)
-  - Project Lead, Pipeline Architecture, C++ Engine, Web Platform, Documentation
+  - ORCID: [0009-0008-4403-0670](https://orcid.org/0009-0008-4403-0670)
+  - Email: shxntanu@gmail.com
+  - Contributions: Complete technical stack, research, and documentation
 
-- **Aarna Srivastava** - Data Science & Feature Engineering
-  - Feature engineering pipeline, Statistical analysis, Validation framework
+- **Harsh Rathi** (Presentation - Introduction)
+  - Contributions: Project introduction, problem statement, pipeline overview
 
-- **Johnson Victor Yalangi** - Machine Learning & Algorithms
-  - PCA implementation, K-Means optimization, Clustering evaluation
+- **Johnson Victor Yalangi** (Presentation - PCA)
+  - Contributions: Explained PCA methodology and dimensionality reduction
 
-- **Harsh Rathi** - Visualization & Frontend
-  - Dark mode visualizations, Interactive explorer, Dashboard design
+- **Varun Srivastava** (Presentation - Clustering)
+  - Contributions: Presented K-Means algorithm and cluster validation
 
-- **Varun Srivastava** - Testing & Quality Assurance
-  - Test framework, Code quality, Performance benchmarking
+- **Aarna Srivastava** (Presentation - Conclusion)
+  - Contributions: SDGs alignment, project impact, and summary
 
-### Special Acknowledgments
+### 🙏 Special Acknowledgments
 
-- **Zephyr Station** weather API integration
-- UCI Machine Learning Repository for the household power consumption dataset
-- Open source community for libraries: scikit-learn, pandas, numpy, matplotlib, streamlit, and pybind11
+- **Zephyr Station** - Custom weather API developed by Shantanu for `season` data integration
+- **UCI Machine Learning Repository** - Household power consumption dataset (real-world pathway)
+- **Open Source Community** - scikit-learn, pandas, numpy, matplotlib, streamlit, pybind11, Eigen
 
 ---
 
