@@ -1,0 +1,495 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage{longtable,booktabs,array}
+\usepackage{multirow}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Energy Consumption Pattern Analysis using PCA and K-Means Clustering},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\protect\hypertarget{_Hlk78354194}{}{}Energy Consumption Pattern Analysis using PCA and K-Means Clustering}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\textbf{Shantanu\textsuperscript{1}} (10 pt)
+
+\textsuperscript{1}Department of Electronics and Communication Engineering, Thapar Institute of Engineering and Technology, Patiala, India (8 pt)
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3151}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.0319}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6530}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Article Info}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{ABSTRACT} (10 PT)
+\end{minipage} \\
+\midrule()
+\endhead
+\emph{\textbf{Article history:}}
+
+Received month dd, yyyy
+
+Revised month dd, yyyy
+
+Accepted month dd, yyyy & \multirow{3}{*}{} & \multirow{2}{*}{[Your abstract here - 100 to 200 words. A well-prepared abstract enables the reader to identify the basic content of a document quickly and accurately, to determine its relevance to their interests, and thus to decide whether to read the document in its entirety. The abstract should be informative and completely self-explanatory, provide a clear statement of the problem, the proposed approach or solution, and point out major findings and conclusions. References should be avoided, but if essential, then cite the author(s) and year(s). Standard nomenclature should be used, and non-standard or uncommon abbreviations should be avoided, but if essential they must be defined at their first mention in the abstract itself. No literature should be cited. The keyword list provides the opportunity to add 5 to 7 keywords, used by the indexing and abstracting services, in addition to those already present in the title (9 pt).} \\
+\multirow{2}{*}{\emph{\textbf{Keywords:}}
+
+Energy consumption
+
+Pattern analysis
+
+PCA
+
+K-Means clustering
+
+Data mining} \\
+& & \emph{This is an open access article under the
+\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC BY-SA}
+license.}
+
+% \includegraphics[width=1.15625in,height=0.40625in]{logo.png} \\
+\multicolumn{3}{@{}>{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{1.0000} + 4\tabcolsep}@{}}{%
+\begin{minipage}[t]{\linewidth}\raggedright
+\emph{\textbf{Corresponding Author:}}
+
+Shantanu\\
+Department of Electronics and Communication Engineering\\
+Thapar Institute of Engineering and Technology\\
+Patiala, Punjab, India\\
+Email: sshantanu_be25@thapar.edu\strut
+\end{minipage}} \\
+\bottomrule()
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{INTRODUCTION (10 PT)}
+\end{enumerate}
+
+[Your introduction text here. The main text format consists of a flat left-right columns on A4 paper (quarto). The margin text from the left and top are 2.5 cm, right and bottom are 2 cm. The manuscript is written in Microsoft Word, single space, Time New Roman 10 pt, and maximum 12 pages for original research article, or maximum 16 pages for review/survey paper.]
+
+The Introduction section should provide: i) a clear background, ii) a clear statement of the problem, iii) the relevant literature on the subject, iv) the proposed approach or solution, and v) the new value of research which is innovation (within 3-6 paragraphs). It should be understandable to colleagues from a broad range of scientific disciplines. Organization and citation of the bibliography are made in Institute of Electrical and Electronics Engineers (IEEE) style in sign {[}1{]}, {[}2{]} and so on. The terms in foreign languages are written italic (\emph{italic}). The text should be divided into sections, each with a separate heading and numbered consecutively {[}3{]}. The section or subsection headings should be typed on a separate line, e.g., 1. INTRODUCTION. A full article usually follows a standard structure: \textbf{1. INTRODUCTION, 2. THE COMPREHENSIVE THEORETICAL BASIS AND/OR THE PROPOSED METHOD/ALGORITHM} \emph{(optional)}\textbf{, 3. METHOD, 4. RESULTS AND DISCUSSION, and 5. CONCLUSION.} The structure is well-known as \textbf{IMRaD} style.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  \textbf{METHOD (10 PT)}
+\end{enumerate}
+
+Explaining the research chronologically, including the research design, research procedures (in the form of algorithms, Pseudocode, or other), how to test, and data acquisition {[}5{]}--{[}7{]}. The description of the course of research should be supported references, so the explanation can be accepted scientifically {[}2{]}, {[}4{]}. Figures and Tables are presented center, as shown below and cited in the manuscript {[}5{]}, {[}8{]}--{[}13{]}.
+
+% \includegraphics[width=4.18702in,height=1.94375in]{figure1.png}
+
+Figure 1. [Figure caption]
+
+Table 1. [Table caption]
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2933}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3544}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3523}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+Variable
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Parameter 1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Parameter 2
+\end{minipage} \\
+\midrule()
+\endhead
+x & 10 & 8.6 \\
+y & 15 & 12.4 \\
+z & 20 & 15.3 \\
+\bottomrule()
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  \textbf{RESULTS AND DISCUSSION (10 PT)}
+\end{enumerate}
+
+In this section, it is explained the results of research and at the same time is given the comprehensive discussion. Results can be presented in figures, graphs, tables and others that make the reader understand easily {[}14{]}, {[}15{]}. The discussion can be made in several sub-sections.
+
+\textbf{3.1. Sub section 1}
+
+Equations should be placed at the center of the line and provided consecutively with equation numbers in parentheses flushed to the right margin, as in (1). The use of Microsoft Equation Editor or MathType is preferred.
+
+\(E_{v} - E = \frac{h}{2.m}\ (k_{x}^{2} + k_{y}^{2}\)) (1)
+
+All symbols that have been used in the equations should be defined in the following text.
+
+\textbf{3.2. Sub section 2}
+
+Proper citation of other works should be made to avoid plagiarism. When referring to a reference item, please use the reference number as in {[}16{]} or {[}17{]} for multiple references. The use of ''Ref {[}18{]}...'' should be employed for any reference citation at the beginning of sentence. For any reference with more than 3 or more authors, only the first author is to be written followed by \emph{et al}. (e.g. in {[}19{]}). Examples of reference items of different categories shown in the References section. Each item in the references section should be typed using 8 pt font size {[}20{]}--{[}25{]}.
+
+\textbf{3.2.1. Subsub section 1}
+
+[Content]
+
+\textbf{3.2.2. Subsub section 2}
+
+[Content]
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\item
+  \textbf{CONCLUSION (10 PT)}
+\end{enumerate}
+
+Provide a statement that what is expected, as stated in the "INTRODUCTION" section can ultimately result in "RESULTS AND DISCUSSION" section, so there is compatibility. Moreover, the prospects for the development of research results and the application of further studies can also be added to the next (based on the results and discussion).
+
+\textbf{ACKNOWLEDGMENTS \emph{(if applicable)} (10 PT)}
+
+This section should acknowledge individuals who provided personal assistance to the work but do not meet the criteria for authorship, detailing their contributions. It is imperative to obtain consent from all individuals listed in the acknowledgments.
+
+\textbf{FUNDING INFORMATION \emph{(mandatory)} (10 PT)}
+
+This section should describe sources of funding agency that have supported the work. Authors should state how the research described in their article was funded, including grant numbers if applicable. Include the following (or similar) statement if there is no funding involved:
+Authors state no funding involved.
+
+\textbf{AUTHOR CONTRIBUTIONS STATEMENT \emph{(mandatory)} (10 PT)}
+
+This journal uses the Contributor Roles Taxonomy (CRediT) to recognize individual author contributions, reduce authorship disputes, and facilitate collaboration. \textbf{The recommended number of authors is at least two, with one of them designated as the corresponding author.} The corresponding author will be responsible for all correspondence related to the paper and must ensure that the other authors are included in the communication regarding submission, revision, and publication processes. We encourage authors to include a statement in the paper that shares and accurately describes each author\textquotesingle s contribution. \textbf{To be eligible for authorship, each individual must have contributed to at least one of the following: conceptualization, methodology, formal analysis, or investigation, as well as at least one aspect of writing (either original draft preparation or writing reviews and editing).}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.2400}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0537}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0542}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0548}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0557}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0551}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0546}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0551}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 28\tabcolsep) * \real{0.0555}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Name of Author}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{C}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{M}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{So}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Va}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Fo}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{I}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{R}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{D}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{O}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{E}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Vi}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Su}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{P}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Fu}
+\end{minipage} \\
+\midrule()
+\endhead
+Author 1 name & & & & & & & & & & & & & & \\
+Author 2 name & & & & & & & & & & & & & & \\
+Author 3 name & & & & & & & & & & & & & & \\
+\ldots.. & & & & & & & & & & & & & & \\
+Author x name & & & & & & & & & & & & & & \\
+\bottomrule()
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3266}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3715}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3019}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+C : \textbf{C}onceptualization
+
+M : \textbf{M}ethodology
+
+So : \textbf{So}ftware
+
+Va : \textbf{Va}lidation
+
+Fo : \textbf{Fo}rmal analysis
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+I : \textbf{I}nvestigation
+
+R : \textbf{R}esources
+
+D : \textbf{D}ata Curation
+
+O : Writing - \textbf{O}riginal Draft
+
+E : Writing - Review \& \textbf{E}diting
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Vi : \textbf{Vi}sualization
+
+Su : \textbf{Su}pervision
+
+P : \textbf{P}roject administration
+
+Fu : \textbf{Fu}nding acquisition
+\end{minipage} \\
+\midrule()
+\endhead
+\bottomrule()
+\end{longtable}
+
+\textbf{CONFLICT OF INTEREST STATEMENT \emph{(mandatory)} (10 PT)}
+
+To ensure fair and objective decision-making, authors must declare any associations that pose a conflict of interest (financial, personal, or professional) in connection with manuscripts. Non-financial competing interests include a declaration of political, personal, religious, ideological, academic, and intellectual competing interests. The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. If there are no conflicts of interest, please include the following author\textquotesingle s statement: Authors state no conflict of interest.
+
+\textbf{INFORMED CONSENT \emph{(if applicable)} (10 PT)}
+
+The protection of privacy is a legal right that must not be breached without individual informed consent. In cases where the identification of personal information is necessary for scientific reasons, authors should obtain full documentation of informed consent, including written permission from the patient prior to inclusion in the study. Incorporate the following (or a similar) statement: We have obtained informed consent from all individuals included in this study.
+
+\textbf{ETHICAL APPROVAL \emph{(if applicable)} (10 PT)}
+
+When papers talk about using people or animals, authors should make it clear that the research followed all national rules and institutional policies, and it was approved by the authors\textquotesingle{} institutional review board or a similar committee. The Helsinki Declaration\textquotesingle s tenets must guide all investigations involving human subjects. Authors must also identify the committee or review board approving the experiments and provide a statement indicating approval of the research. Incorporate the following (or a similar) statement: The research related to human use has been complied with all the relevant national regulations and institutional policies in accordance with the tenets of the Helsinki Declaration and has been approved by the authors\textquotesingle{} institutional review board or equivalent committee; or: The research related to animal use has been complied with all the relevant national regulations and institutional policies for the care and use of animals.
+
+\textbf{DATA AVAILABILITY \emph{(mandatory)} (10 PT)}
+
+The data availability statement is a valuable link between a paper's results and the supporting evidence. It is a brief statement about whether the authors of an article have made the evidence supporting their findings available, and if so, where readers may access it. Data availability statements help to promote transparency and reproducibility in research and to increase the visibility of valuable evidence produced or gathered during the course of research. As part of our commitment to supporting open research, our journal now requires all manuscripts to include a data availability statement in order to be accepted for publication. Examples:
+
+\begin{itemize}
+\item
+  The data that support the findings of this study are openly available in {[}repository name{]} at http://doi.org/{[}doi{]}, reference number {[}reference number{]}.
+\item
+  The data that support the findings of this study will be available in {[}repository name{]} {[}URL / DOI link{]} following a {[}6 month{]} embargo from the date of publication to allow for the commercialization of research findings.
+\item
+  The data that support the findings of this study are available on request from the corresponding author, {[}initials: AB{]}. The data, which contain information that could compromise the privacy of research participants, are not publicly available due to certain restrictions.
+\item
+  Derived data supporting the findings of this study are available from the corresponding author {[}initials: AB{]} on request.
+\item
+  The data that support the findings of this study are available from {[}third party{]}. Restrictions apply to the availability of these data, which were used under license for this study. Data are available {[}from the authors / at URL{]} with the permission of {[}third party{]}.
+\item
+  The authors confirm that the data supporting the findings of this study are available within the article {[}and/or its supplementary materials{]}.
+\item
+  The data that support the findings of this study are available from the corresponding author, {[}initials: AB{]}, upon reasonable request.
+\item
+  Data availability is not applicable to this paper as no new data were created or analyzed in this study.
+\end{itemize}
+
+\textbf{REFERENCES (10 PT)}
+
+The main references are international journals and proceedings. All references should be to the most pertinent, \textbf{up-to-date sources}, and the \textbf{minimum number of references} should be \textbf{25} (for original research papers) and \textbf{50} (for review papers). References are written in IEEE style. You can access a more comprehensive guide at http://ipmuonline.com/guide/refstyle.pdf. Use a tool such as EndNote, Mendeley, or Zotero for reference management and formatting; choose IEEE style. Please use a consistent format for references---see examples (8 pt):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Journal/Periodicals}
+\end{enumerate}
+
+\emph{Basic Format:}
+
+J. K. Author, ``Title of paper,'' \emph{Abbrev. Title of Journal/Periodical}, vol. \emph{x,} no. \emph{x,} pp\emph{. xxx-xxx,} Abbrev. Month, year, doi: \emph{xxx}.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  \textbf{Conference Proceedings}
+\end{enumerate}
+
+\emph{Basic Format:}
+
+J. K. Author, ``Title of paper,'' in \emph{Abbreviated Name of Conf.}, (location of conference is optional), year, pp. \emph{xxx--xxx}, doi: \emph{xxx}.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  \textbf{Book}
+\end{enumerate}
+
+\emph{Basic Format:}
+
+J. K. Author, ``Title of chapter in the book,'' in \emph{Title of His Published Book}, X. Editor, Ed., \emph{x}th ed. City of Publisher, State (only U.S.), Country: Abbrev. of Publisher, year, ch. \emph{x}, sec. \emph{x}, pp. \emph{xxx--xxx}.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\item
+  \textbf{M. Theses (B.S., M.S.) and Dissertations (Ph.D.)}
+\end{enumerate}
+
+\emph{Basic Format:}
+
+J. K. Author, ``Title of thesis,'' M.S. thesis, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
+
+J. K. Author, ``Title of dissertation,'' Ph.D. dissertation, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
+
+*In the reference list, however, list all the authors for up to six authors. Use \emph{et al.} only if: 1) The names are not given and 2) List of authors more than 6. \emph{Example}: J. D. Bellamy \emph{et al.}, Computer Telephony Integration, New York: Wiley, 2010.
+
+\textbf{REFERENCES}
+
+{[}1{]} [First reference here]
+
+{[}2{]} [Second reference here]
+
+\textbf{BIOGRAPHIES OF AUTHORS (10 PT)}
+
+In this section, authors are required to provide their professional biography, which should include their academic background, current position, research interests, and any significant contributions to the current study. Additionally, authors should include links to their professional profiles, such as ORCID (\emph{mandatory)} and, \emph{if applicable,} Google Scholar, Scopus Author ID, or Web of Science (WoS) ResearcherID. This helps establish the author's academic identity and enhances the visibility of their research.
+
+\textbf{Required Information:}
+
+\begin{itemize}
+\item
+  \begin{quote}
+  \textbf{Full name}: Include the author\textquotesingle s full name as it appears in official records. If preferred, authors may use the format consistent with his/her Scopus profile.
+  \end{quote}
+\item
+  \begin{quote}
+  \textbf{Email address for each author}: Provide the author\textquotesingle s professional email address to facilitate correspondence.
+  \end{quote}
+\item
+  \begin{quote}
+  \textbf{Social media account:}
+  \end{quote}
+\end{itemize}
+
+\begin{itemize}
+\item
+  \begin{quote}
+  \textbf{ORCID iD}: This is a mandatory. Each author must include their ORCID iD (https://orcid.org/), which helps link his/her research output to their identity.
+  \end{quote}
+\item
+  \begin{quote}
+  \textbf{Google Scholar Profile:} Include the link to the author\textquotesingle s Google Scholar profile. If the author does not have a Google Scholar profile, they may create a new one and include the link.
+  \end{quote}
+\item
+  \begin{quote}
+  \textbf{Scopus Author ID:} If available, include the Scopus Author ID to enhance visibility on Scopus.
+  \end{quote}
+\item
+  \begin{quote}
+  \textbf{Web of Science (WoS) ResearcherID:} Include the Web of Science ResearcherID. If the author does not have a WoS profile, they may create a new one and include the link.
+  \end{quote}
+\end{itemize}
+
+\begin{itemize}
+\item
+  \begin{quote}
+  \textbf{Brief biography:} Provide a concise overview of the author\textquotesingle s academic background, research interests, notable publications, and contributions to the current paper. This should be no longer than 150 to 200 words (9 pt).
+  \end{quote}
+\item
+  \begin{quote}
+  \textbf{Professional achievements:} If available, mention any important awards, recognition, or research projects the author has been involved in.
+  \end{quote}
+\item
+  \begin{quote}
+  \textbf{Photo Submission:} Authors must submit a clear, professional headshot (3x4 cm). The photo should be of high quality, well-lit, and not blurry. Avoid using photos that are overly casual or low resolution.
+  \end{quote}
+\end{itemize}
+
+\textbf{BIOGRAPHIES OF AUTHORS (10 PT)}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2158}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7842}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+% \includegraphics[width=1.1811in,height=1.5748in]{shantanu_photo.jpg}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Shantanu}
+\href{https://orcid.org/0009-0008-4403-0670}{\includegraphics[width=0.12598in,height=0.12598in]{orcid.png}}
+% \includegraphics[width=0.12598in,height=0.12598in]{google_scholar.png}
+% \includegraphics[width=0.12598in,height=0.12598in]{scopus.png}
+% \includegraphics[width=0.12598in,height=0.12598in]{wos.png}
+[Brief biography here - 150 to 200 words. Include academic background, research interests, and contributions to this paper.]
+\end{minipage} \\
+\bottomrule()
+\end{longtable}
+
+\end{document}
