@@ -1,13 +1,14 @@
 cff-version: 1.2.0
-message: "If you use this software or methodology, please cite it as below."
-title: "Shape-First Behavioral Segmentation of Household Energy Consumption: A Reproducible Framework"
+message: "If you use this software or dataset, please cite it as below."
+title: "Energy Consumption Pattern Analysis using PCA and K-Means"
 version: 1.0.0
 date-released: 2026-09-23
 url: "https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means"
 repository-code: "https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means"
 type: software
 authors:
-  - given-names: "Shantanu"
+  - family-names: "Shantanu"
+    email: "shaxntanu@gmail.com"
     orcid: "https://orcid.org/0009-0008-4403-0670"
 keywords:
   - energy consumption
@@ -18,6 +19,8 @@ keywords:
   - demand response
   - behavioral segmentation
   - reproducible research
+  - machine learning
+  - unsupervised learning
 license: MIT
 abstract: >
   A reproducible framework for shape-first behavioral segmentation of 
@@ -25,15 +28,5 @@ abstract: >
   patterns through 51 scale-invariant features, PCA dimensionality 
   reduction, and evidence-based K selection with comprehensive stability 
   validation. Achieves ARI=0.813 recovery on controlled synthetic data 
-  with 200 consumers over 365 days.
-references:
-  - type: article
-    title: "Shape-First Behavioral Segmentation of Household Energy Consumption"
-    authors:
-      - family-names: "[To be finalized]"
-    year: 2026
-    notes: "Manuscript in preparation"
-identifiers:
-  - type: other
-    value: "99c7a6631340d301"
-    description: "Configuration hash for flagship experiment"
+  with 200 consumers over 365 days. Includes interactive web explorer 
+  and Streamlit simulator for real-time analysis.

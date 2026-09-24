@@ -701,7 +701,7 @@ The SDG contribution is visualized in the [Vercel interactive explorer](https://
 
 This project was developed as part of an academic research initiative on energy consumption pattern analysis.
 
-### 🏗️ Project Development
+### Project Development
 
 **Technical Implementation** (Solo Development)
 
@@ -723,7 +723,7 @@ This project was developed as part of an academic research initiative on energy 
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 🎤 Academic Presentation Flow
+### Academic Presentation Flow
 
 The project was presented in a structured academic session with the following presentation sequence:
 
@@ -751,7 +751,7 @@ graph LR
 | **Shantanu** | Technical Deep-Dive | Explainable AI (SHAP), feature importance, C++ acceleration, results |
 | **Aarna Srivastava** | Conclusion & Impact | Sustainable Development Goals alignment, summary, future directions |
 
-### 👥 Team Contributions Summary
+### Team Contributions Summary
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -775,7 +775,7 @@ graph LR
     └─── Aarna Srivastava: SDGs Impact & Conclusion
 ```
 
-### 🔗 Individual Links
+### Individual Links
 
 - **Shantanu** (Lead Developer & Architect)
   - GitHub: [@shaxntanu](https://github.com/shaxntanu)
@@ -795,7 +795,7 @@ graph LR
 - **Aarna Srivastava** (Presentation - Conclusion)
   - Contributions: SDGs alignment, project impact, and summary
 
-### 🙏 Special Acknowledgments
+### Special Acknowledgments
 
 - **Zephyr Station** - Custom weather API developed by Shantanu for `season` data integration
 - **UCI Machine Learning Repository** - Household power consumption dataset (real-world pathway)
