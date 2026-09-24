@@ -1,0 +1,73 @@
+{
+  "name": "Household Energy Consumption - Synthetic Behavioral Dataset",
+  "version": "1.0.0",
+  "dataset_type": "synthetic",
+  "generation_date": "2026-09-24T04:21:30.217224Z",
+  "source_repository": "https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means",
+  "release": "v1.0.0",
+  "config_hash": "99c7a6631340d301",
+  "dimensions": {
+    "consumers": 200,
+    "observations": 1752000,
+    "time_resolution": "hourly",
+    "observation_period_days": 365,
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-30"
+  },
+  "schema": {
+    "consumer_id": {
+      "type": "int64",
+      "description": "Unique household identifier (0-199)"
+    },
+    "timestamp": {
+      "type": "datetime64",
+      "description": "Hourly timestamp (UTC)"
+    },
+    "energy_consumption_kwh": {
+      "type": "float64",
+      "description": "Energy consumption in kilowatt-hours"
+    },
+    "season": {
+      "type": "string",
+      "description": "Season derived from Zephyr Station weather data (spring/summer/fall/winter)"
+    }
+  },
+  "ground_truth": {
+    "available": true,
+    "file": "ground_truth_archetypes.csv",
+    "description": "Hidden behavioral archetypes used only for external validation (flat, daytime, evening, weekend)",
+    "archetypes": {
+      "flat": "Uniform consumption across all hours",
+      "daytime": "Peak consumption 9am-5pm",
+      "evening": "Peak consumption 5pm-10pm",
+      "weekend": "Increased weekend consumption"
+    }
+  },
+  "generation": {
+    "method": "Controlled synthetic generation with realistic temporal dynamics",
+    "generator": "src/data_loader.py::generate_synthetic_data_archetype_based",
+    "random_seed": 42,
+    "seasonal_model": "Enabled with 25% amplitude variation",
+    "noise": "Gaussian noise with 10% standard deviation"
+  },
+  "intended_uses": [
+    "Unsupervised clustering and behavioral segmentation",
+    "Principal Component Analysis (PCA) benchmarking",
+    "Time-series pattern discovery",
+    "Smart grid load profiling",
+    "Explainable AI (XAI) demonstrations",
+    "Reproducible machine learning research"
+  ],
+  "limitations": [
+    "Synthetic data - not real household measurements",
+    "Four predefined archetypes may not capture all real-world patterns",
+    "Seasonal model is simplified (single sinusoidal component)",
+    "No appliance-level granularity",
+    "Uniform hourly sampling (no sub-hourly dynamics)"
+  ],
+  "license": "MIT",
+  "citation": {
+    "text": "Shantanu. (2026). Shape-First Behavioral Segmentation of Household Energy Consumption. https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means",
+    "bibtex": "@misc{shantanu2026energy,\\n  author = {Shantanu},\\n  title = {Shape-First Behavioral Segmentation of Household Energy Consumption},\\n  year = {2026},\\n  publisher = {GitHub},\\n  url = {https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}\\n}"
+  }
+}
