@@ -196,7 +196,7 @@ hourly_shape = df.pivot_table(
 ## Contact
 
 **Author**: Shantanu  
-**Email**: shxntanu@gmail.com  
+**Email**: shaxntanu@gmail.com  
 **ORCID**: [0009-0008-4403-0670](https://orcid.org/0009-0008-4403-0670)  
 **GitHub**: [@shaxntanu](https://github.com/shaxntanu)
 
