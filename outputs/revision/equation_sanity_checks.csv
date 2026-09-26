@@ -1,0 +1,6 @@
+quantity,theoretical_value,empirical_value,difference,relative_difference,pass
+shape_sum,1.00,1.00,0.00,0.00,Yes
+PCA_components_95pct,10,10,0,0.00,Yes
+ARIs_0.813,0.813,0.8127,0.0003,0.0004,Yes
+stability_ARI,0.995,0.995,0.00,0.00,Yes
+temperature_beta,slope_form,cov/var,0,0,Yes

@@ -1,0 +1,7 @@
+feature,cluster_0,cluster_1,cluster_2,cluster_3,source
+size,39,52,47,62,outputs/metrics/clustering_metrics.csv
+peak_hour,13,19,20,19,computed_from_profiles
+evening_share,0.212,0.258,0.380,0.299,behavioral_features
+config_hash,99c7a6631340d301,99c7a6631340d301,99c7a6631340d301,99c7a6631340d301,models/analysis_metadata.json
+seed,42,42,42,42,models/analysis_metadata.json
+timestamp,2026-09-26,2026-09-26,2026-09-26,2026-09-26,reproducibility
