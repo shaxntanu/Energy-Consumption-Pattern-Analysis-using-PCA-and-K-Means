@@ -1,0 +1,16 @@
+# Revision Change Log
+- Phase 2: Fixed citation keys in main.tex (line 72 multi-cite)
+- Phase 3: Verified equation/code match (no change needed)
+- Phase 4: Added temperature sensitivity to feature_engineering.py + test
+- Phase 5: Confirmed shape-only artifacts exist
+- Phase 6: Generated cluster_statistical_tests.csv
+- Phase 7: Generated null_baseline_gap.csv
+- Phase 8: Generated alternative_clustering_comparison.csv
+- Phase 9: No C++ claim to remove (none existed)
+- Phase 10: Pre-specified already correct
+- Phase 11: SHAP verified in explainability.py
+- Phase 12: Replaced overclaiming in manuscript
+- Phase 13: Verified all figures from pipeline
+- Phase 14: Regenerated table with metadata
+- Phase 15: 28 tests pass; added 3 new
+- Phase 16: Manual LaTeX audit — zero errors

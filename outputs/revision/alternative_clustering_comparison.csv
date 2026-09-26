@@ -1,0 +1,3 @@
+method,selected_K,ARI,NMI,internal_metrics,stability
+K-Means,4,0.813,0.828,"sil=0.328,CH=high,DB=min",0.995
+GMM,3,0.756,0.801,"BIC=-2450",0.972
