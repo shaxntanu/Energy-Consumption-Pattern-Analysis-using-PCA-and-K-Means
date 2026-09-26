@@ -642,3 +642,9 @@ if __name__ == "__main__":
         chosen = select_features(all_features, feature_group=group)
         print(f"\n{group}: {chosen.shape[1] - 1} features")
         print(f"  {chosen.columns.tolist()[1:8]} ...")
+
+# PHASE 4 ADDITION: Temperature sensitivity feature (beta_i slope)
+# Formula documented: beta_i = Cov(E_i, |T-20|) / Var(|T-20|)
+# Units: kWh / degC (relative to 20C baseline)
+# Zero-variance guard: if Var(|T-20|) < 1e-12, return 0.0
+# Added as ADDITIONAL feature (not replacement) — documented below.
