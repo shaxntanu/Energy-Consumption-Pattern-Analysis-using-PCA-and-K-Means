@@ -36,7 +36,7 @@
 % ============================================================================
 % METADATA
 % ============================================================================
-\title{\textbf{Shape-First Behavioral Segmentation of Household Energy Consumption: A Reproducible Framework with Evidence-Based K-Selection and Controlled Validation}}
+\title{\textbf{Shape-First Behavioral Segmentation of Household Energy Consumption: A Reproducible Framework with Evidence-Based K-Selection and Controlled Validation: A Reproducible Synthetic Benchmark}}
 
 \author{
   Shantanu\\[6pt]
@@ -823,6 +823,10 @@ Beyond methodological findings, this work demonstrates reproducibility standards
 \subsection{Dataset Limitations}
 
 \textbf{Synthetic Primary Dataset:} The primary validation uses synthetic data with four simplified behavioral archetypes. While this enables controlled validation with known ground truth, it does not prove generalization to real-world smart meter data. The archetypes are hand-designed and may not capture the full complexity of actual household behavior, including appliance-level heterogeneity, occupancy variability, and socioeconomic factors.
+
+\textbf{Single-Parameter Heterogeneity:} The generative model varies households only through a scalar baseline parameter; the diurnal cycle, weekend factor, and noise distribution are shared by all. This design choice ensures magnitude independence but may not capture the full diversity of real household behaviors.
+
+\textbf{Shared Temperature Series:} Temperature is modeled as a shared i.i.d. series across households, lacking seasonal or daily structure. Real households experience location-specific weather patterns that may correlate with consumption behavior.
 
 \textbf{Limited Archetype Diversity:} Four archetypes (daytime, evening, flat, weekend) provide a controlled test bed but may not represent the full spectrum of real consumption patterns. Real households may exhibit more complex or hybrid behaviors not captured by this simplified taxonomy.
 
