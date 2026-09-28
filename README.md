@@ -88,6 +88,20 @@ Key design: features are invariant to scalar multiplication, enabling clustering
 | Seed stability | Reproducibility across random initializations |
 | Temporal stability | Persistence across time windows |
 
+### Statistical Testing
+
+Feature-level statistical testing (Kruskal-Wallis with Holm-Bonferroni correction) confirms clusters differ meaningfully:
+- 50/51 features (98.0%) significant at α=0.05
+- 49 features show large effect sizes (η² ≥ 0.14)
+- Median η² = 0.647
+
+### Alternative Clustering Comparison
+
+K-means compared against GMM and hierarchical clustering at K=4:
+- K-means achieves highest silhouette (0.328)
+- Hierarchical Ward shows highest agreement with K-means (ARI=0.868)
+- All methods tested on same PCA-reduced representation (10 components, 95% variance)
+
 ---
 
 ## Results
