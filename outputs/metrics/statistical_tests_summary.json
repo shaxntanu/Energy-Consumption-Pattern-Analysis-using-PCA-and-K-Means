@@ -1,0 +1,12 @@
+{
+  "n_features_tested": 51,
+  "n_significant": 50,
+  "proportion_significant": 0.9803921568627451,
+  "effect_size_distribution": {
+    "large": 49,
+    "medium": 1,
+    "small": 1
+  },
+  "median_eta_squared": 0.6465977024405818,
+  "mean_eta_squared": 0.5804924107436952
+}

@@ -25,17 +25,6 @@
   "phase_recovery_corr": 0.6780669314235555,
   "phase_accuracy": 0.885,
   "n_truth_consumers": 185,
-  "cluster_amplitude_median": {
-    "0": 0.17516552646228636,
-    "1": 0.18243387245526,
-    "2": 0.1876786778035001,
-    "3": 0.16547529820722312
-  },
-  "figures": [
-    "outputs\\figures\\seasonal_mean_shape_by_season.png",
-    "outputs\\figures\\seasonal_daily_energy_and_peak_hour.png",
-    "outputs\\figures\\seasonal_phase_recovery.png"
-  ],
   "mean_shape_by_season": [
     {
       "season": "winter",
@@ -895,5 +884,16 @@
       182.21,
       228.0
     ]
+  ],
+  "cluster_amplitude_median": {
+    "0": 0.17516552646228636,
+    "1": 0.18243387245526,
+    "2": 0.1876786778035001,
+    "3": 0.16547529820722312
+  },
+  "figures": [
+    "outputs\\figures\\seasonal_mean_shape_by_season.png",
+    "outputs\\figures\\seasonal_daily_energy_and_peak_hour.png",
+    "outputs\\figures\\seasonal_phase_recovery.png"
   ]
 }
