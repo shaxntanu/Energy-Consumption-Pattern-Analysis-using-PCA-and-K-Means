@@ -1,0 +1,15 @@
+{
+  "n_permutations": 100,
+  "observed_silhouette": 0.3282866716821562,
+  "observed_calinski_harabasz": 96.61713813497728,
+  "observed_davies_bouldin": 1.1691088459670897,
+  "null_silhouette_mean": -0.04021108934756989,
+  "null_silhouette_std": 0.006849678760174288,
+  "null_ch_mean": 1.1195053796879761,
+  "null_ch_std": 0.49686786155287505,
+  "null_db_mean": 13.797902828006656,
+  "null_db_std": 3.3578552673822366,
+  "silhouette_p_value": 0.0,
+  "ch_p_value": 0.0,
+  "db_p_value": 0.0
+}
