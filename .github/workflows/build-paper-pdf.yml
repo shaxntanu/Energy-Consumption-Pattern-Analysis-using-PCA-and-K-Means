@@ -34,6 +34,11 @@ jobs:
       - name: Generate figures
         run: |
           python src/energy_analysis.py --n_days 365 --n_consumers 200
+          echo "Script exit code: $?"
+          echo "Checking outputs directory..."
+          ls -la outputs/
+          echo "Checking figures directory..."
+          ls -la outputs/figures/ || echo "Figures directory not found"
       
       - name: Verify figures exist
         run: |
