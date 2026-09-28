@@ -469,6 +469,85 @@ Algorithm~\ref{alg:kselection} details the selection procedure.
 
 \textbf{Critical:} ARI and NMI are computed after clustering against hidden archetype labels, never used during modeling.
 
+\subsection{Statistical Testing for Between-Cluster Differences}
+\label{sec:statistical_tests}
+
+To rigorously validate that clusters differ meaningfully on behavioral features, we perform statistical testing for each of the 51 features across the K=4 clusters.
+
+\subsubsection{Test Selection}
+
+Given the non-normal distribution of many behavioral features and the small sample size (N=200), we use non-parametric tests:
+
+\begin{itemize}
+    \item \textbf{Kruskal-Wallis test:} Omnibus test for differences across all K clusters (non-parametric alternative to ANOVA)
+    \item \textbf{Effect size:} Eta-squared ($\eta^2 = H / (N-1)$) where H is Kruskal-Wallis statistic
+    \item \textbf{Post-hoc pairwise tests:} Mann-Whitney U tests for all cluster pairs
+    \item \textbf{Multiple comparison correction:} Holm-Bonferroni method
+\end{itemize}
+
+\subsubsection{Results}
+
+Across 51 behavioral features tested:
+
+\begin{itemize}
+    \item \textbf{Significant features:} 50/51 (98.0\%) at $\alpha = 0.05$
+    \item \textbf{Effect size distribution:} 49 large ($\eta^2 \geq 0.14$), 1 medium ($0.06 \leq \eta^2 < 0.14$), 1 small ($0.01 \leq \eta^2 < 0.06$)
+    \item \textbf{Median $\eta^2$:} 0.647
+    \item \textbf{Mean $\eta^2$:} 0.580
+\end{itemize}
+
+All 24 normalized hourly shape features show large effect sizes ($\eta^2$ range: 0.22-0.83), confirming clusters differ fundamentally in temporal patterns. Key summary features with largest effects include evening\_share ($\eta^2 = 0.846$), profile\_ramp ($\eta^2 = 0.853$), and peak\_concentration ($\eta^2 = 0.797$). Only kurtosis shows medium effect size ($\eta^2 = 0.134$), indicating this feature is less discriminative.
+
+These results provide statistical evidence that the K=4 partition captures meaningful behavioral heterogeneity across the feature space.
+
+\subsection{Alternative Clustering Methods Comparison}
+\label{sec:alternative_clustering}
+
+To assess whether K-means is the appropriate clustering method for this problem, we compare it against alternative approaches on the same PCA-reduced representation (10 components, 95\% variance).
+
+\subsubsection{Methods Compared}
+
+\begin{enumerate}
+    \item \textbf{K-means:} Reference method, spherical clusters, equal variance assumption
+    \item \textbf{Gaussian Mixture Model (GMM):} Probabilistic clustering, tested with four covariance types (full, tied, diagonal, spherical)
+    \item \textbf{Hierarchical clustering:} Agglomerative clustering with three linkage methods (ward, complete, average)
+\end{enumerate}
+
+\subsubsection{Comparison Results}
+
+Table~\ref{tab:alternative_clustering} summarizes the comparison at K=4.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Alternative Clustering Method Comparison (K=4)}
+\label{tab:alternative_clustering}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method & Silhouette & Calinski-Harabasz & Davies-Bouldin & ARI vs K-Means \\
+\midrule
+K-means (reference) & 0.328 & 96.6 & 1.169 & -- \\
+GMM (full covariance) & 0.315 & 91.4 & 1.192 & 0.823 \\
+GMM (tied covariance) & 0.319 & 92.0 & 1.157 & 0.793 \\
+GMM (diagonal) & 0.237 & 57.5 & 1.533 & 0.583 \\
+GMM (spherical) & 0.318 & 94.4 & 1.142 & 0.805 \\
+Hierarchical (ward) & 0.316 & 92.2 & 1.182 & 0.868 \\
+Hierarchical (complete) & 0.222 & 39.2 & 1.146 & 0.329 \\
+Hierarchical (average) & 0.262 & 6.9 & 0.616 & 0.002 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Findings:}
+\begin{itemize}
+    \item K-means achieves the highest silhouette (0.328) among all methods
+    \item Hierarchical Ward shows highest agreement with K-means (ARI=0.868), indicating similar partition structure
+    \item GMM with full covariance achieves reasonable performance (silhouette 0.315, ARI vs K-means 0.823)
+    \item Hierarchical average linkage produces nearly random partition relative to K-means (ARI=0.002)
+\end{itemize}
+
+\textbf{Interpretation:} K-means performs competitively against alternatives on internal quality metrics. The high agreement with hierarchical Ward (ARI=0.868) suggests the partition structure is robust to method choice. We retain K-means as the primary method due to its interpretability, computational efficiency, and widespread adoption in energy analytics literature.
+
 \subsection{Stability Analysis}
 \label{sec:stability}
 
@@ -584,6 +663,20 @@ Applying PCA to the standardized 51-feature matrix with 95\% cumulative variance
 \includegraphics[width=0.9\textwidth]{../outputs/figures/explained_variance.png}
 \caption{PCA explained and cumulative variance. Ten components retain 95.05\% of variance. The first component explains 33.9\% alone, indicating a dominant mode of variation.}
 \label{fig:pca_variance}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{../outputs/figures/pca_projection_2d.png}
+\caption{PC1 vs PC2 projection of consumers colored by cluster assignment. The four clusters show separation in the principal component space, with PC1 capturing profile shape variation and PC2 capturing day/night balance.}
+\label{fig:pca_projection}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/component_loadings.png}
+\caption{PCA loadings heatmap showing correlations between original features and principal components. Darker colors indicate stronger correlations. The heatmap confirms PC1 is dominated by profile shape features, PC2 by day/night balance, and PC3 by morning patterns.}
+\label{fig:pca_loadings}
 \end{figure}
 
 \textbf{Top PC Interpretations (via loadings):}
