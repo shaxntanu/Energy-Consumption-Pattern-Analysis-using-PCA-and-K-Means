@@ -1,0 +1,141 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Energy Consumption Pattern Analysis Pipeline",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "pipeline",
+      "label": "Analysis Pipeline"
+    }
+  ],
+  "mainPath": [
+    "generate_data",
+    "preprocess",
+    "engineer_features",
+    "pca",
+    "kmeans",
+    "validation"
+  ],
+  "nodes": [
+    {
+      "id": "generate_data",
+      "lane": "pipeline",
+      "col": 0,
+      "type": "backend",
+      "label": "Generate Synthetic Data",
+      "width": 160
+    },
+    {
+      "id": "preprocess",
+      "lane": "pipeline",
+      "col": 1,
+      "type": "backend",
+      "label": "Preprocess",
+      "width": 100
+    },
+    {
+      "id": "engineer_features",
+      "lane": "pipeline",
+      "col": 2,
+      "type": "backend",
+      "label": "Engineer Features",
+      "width": 120
+    },
+    {
+      "id": "pca",
+      "lane": "pipeline",
+      "col": 3,
+      "type": "backend",
+      "label": "PCA",
+      "width": 100
+    },
+    {
+      "id": "kmeans",
+      "lane": "pipeline",
+      "col": 4,
+      "type": "backend",
+      "label": "K-Means Clustering",
+      "width": 130
+    },
+    {
+      "id": "validation",
+      "lane": "pipeline",
+      "col": 5,
+      "type": "backend",
+      "label": "Ground Truth Validation",
+      "width": 160
+    },
+    {
+      "id": "statistical_tests",
+      "lane": "pipeline",
+      "col": 5,
+      "type": "backend",
+      "label": "Statistical Tests",
+      "width": 140,
+      "yOffset": 80
+    },
+    {
+      "id": "null_baseline",
+      "lane": "pipeline",
+      "col": 5,
+      "type": "backend",
+      "label": "Null Baseline",
+      "width": 110,
+      "yOffset": 160
+    },
+    {
+      "id": "alternative_clustering",
+      "lane": "pipeline",
+      "col": 5,
+      "type": "backend",
+      "label": "Alt Clustering",
+      "width": 120,
+      "yOffset": 240
+    }
+  ],
+  "edges": [
+    {
+      "from": "generate_data",
+      "to": "preprocess",
+      "role": "main"
+    },
+    {
+      "from": "preprocess",
+      "to": "engineer_features",
+      "role": "main"
+    },
+    {
+      "from": "engineer_features",
+      "to": "pca",
+      "role": "main"
+    },
+    {
+      "from": "pca",
+      "to": "kmeans",
+      "role": "main"
+    },
+    {
+      "from": "kmeans",
+      "to": "validation",
+      "role": "main"
+    },
+    {
+      "from": "kmeans",
+      "to": "statistical_tests",
+      "role": "branch"
+    },
+    {
+      "from": "kmeans",
+      "to": "null_baseline",
+      "role": "branch"
+    },
+    {
+      "from": "kmeans",
+      "to": "alternative_clustering",
+      "role": "branch"
+    }
+  ]
+}

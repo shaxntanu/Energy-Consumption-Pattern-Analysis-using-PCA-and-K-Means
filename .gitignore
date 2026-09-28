@@ -20,4 +20,19 @@ build/
 *.pyd
 *.so
 *.dll
-*.lib 
+*.lib
+
+# Generated model artifacts and outputs (regenerate via analysis pipeline)
+src/models/
+src/outputs/
+
+# Research skills and agent infrastructure
+ai-research-skills/
+skills/
+AI-research-feedback/
+
+# Reviewer workflow artifacts
+Paper_Revision_Comments.pdf
+REVIEWER_COMMENTS.txt
+REVIEW_TASKS.md
+docs/REVIEWER_IMPLEMENTATION_REPORT.md 
