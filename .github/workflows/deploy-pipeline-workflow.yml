@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'docs/pipeline_workflow.html'
+      - 'docs/index.html'
       - 'docs/pipeline_workflow.json'
       - '.github/workflows/deploy-pipeline-workflow.yml'
 
