@@ -1,4 +1,4 @@
-name: Deploy Pipeline Workflow Diagram
+name: Deploy Pipeline Workflow Diagram to GitHub Pages
 
 on:
   push:
