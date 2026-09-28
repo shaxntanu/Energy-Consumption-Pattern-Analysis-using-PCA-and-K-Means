@@ -51,8 +51,8 @@ jobs:
       - name: Compile LaTeX
         uses: xu-cheng/latex-action@v2
         with:
-          root_file: paper/MAIN.tex
-          working_directory: .
+          root_file: MAIN.tex
+          working_directory: paper
           args: -pdf -file-line-error -halt-on-error -interaction=nonstopmode
       
       - name: Upload PDF artifact
