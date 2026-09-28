@@ -35,7 +35,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './docs'
-          name: pipeline-workflow
 
       - name: Deploy to GitHub Pages
         id: deployment
