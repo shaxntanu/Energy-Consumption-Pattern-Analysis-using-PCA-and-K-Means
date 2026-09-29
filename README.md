@@ -405,14 +405,10 @@ The scikit-learn pipeline is the scientific reference. C++ never changes the mat
 
 **What the engine contains**
 
-<div align="center">
-
 | Kernel | C++ implementation | Parity with the reference |
 |--------|--------------------|---------------------------|
-| PCA | Centered covariance plus symmetric Jacobi eigendecomposition (classical, stable; no hand-rolled unstable math), `svd_flip` sign convention, cumulative-variance threshold (0.95) plus Kaiser and scree-elbow selection rules | Components, variance, and scores match `sklearn.decomposition.PCA(svd_solver='full')`; component directions align to about 1e-9 in the benchmark |
-| K-Means | Lloyd's algorithm with K-Means++ (or uniform random) init, `n_init` restarts, `tol` on max centroid shift, empty-cluster relocation, OpenMP-parallel assignment under `#ifdef _OPENMP`, deterministic per-restart seeded RNG | Labels/inertia match `sklearn.cluster.KMeans` (same seed, k-means++): ARI > 0.99, inertia relative diff < 1e-3 in tests |
-
-</div>
+| PCA | Centered covariance + symmetric Jacobi eigendecomposition, `svd_flip` sign convention, 95% variance threshold, Kaiser and scree-elbow rules | Matches `sklearn.decomposition.PCA(svd_solver='full')`; component directions align to ~1e-9 |
+| K-Means | Lloyd's algorithm with K-Means++ init, `n_init` restarts, `tol` on centroid shift, empty-cluster relocation, OpenMP-parallel assignment | Matches `sklearn.cluster.KMeans` (same seed, k-means++): ARI > 0.99, inertia diff < 1e-3 |
 
 **Module surface** (`energy_cpp`): `pca_fit(X, n_rows, n_cols, threshold, max_components)`, `kmeans_fit(X, n_rows, n_cols, k, max_iter, tol, n_init, init, seed)`, `compile_info()`. The bridge (`src/cpp_bridge.py`) wraps these in sklearn-shaped objects (`cpp_pca_object`, `CppKMeans`) and offers `resolve_engine("python" | "cpp" | "auto")` plus an opt-in `patch_pipeline_kernels(True/False)` that swaps the pipeline's `.KMeans` and `perform_pca` for the native kernels (restored via `importlib.reload`).
 
@@ -498,12 +494,6 @@ The SDG contribution is visualized in the [Vercel interactive explorer](https://
 - Real-meter validation on a full-year panel (≥ 180 days) to populate the longitudinal lane and stress-test the generic adapter.
 - A minimal inference API (an extra web-side shim) for ad-hoc "which cluster is this meter" queries without redeploying.
 - SHAP is installed in the production dependency set. The permutation lane remains an emergency fallback for a genuine SHAP import or runtime failure, so the site can still render diagnostically rather than mislabeling substitute results as SHAP.
-
-
-#Aarna Srivastava
-#Johnson Victor Yalangi
-#Harsh Rathi
-#Varun Srivastava
 
 ---
 
