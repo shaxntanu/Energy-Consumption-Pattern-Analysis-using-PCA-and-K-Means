@@ -22,6 +22,8 @@ Traditional household energy clustering groups consumers by total consumption ma
 
 ## Reference Configuration
 
+<div align="center">
+
 | Property | Value |
 |----------|-------|
 | Config hash | `99c7a6631340d301` |
@@ -35,6 +37,8 @@ Traditional household energy clustering groups consumers by total consumption ma
 | ARI vs archetypes | 0.813 |
 | Multi-seed stability ARI | 0.995 |
 | Temporal stability ARI | 0.882 |
+
+</div>
 
 All results in this README reference the flagship run (config `99c7a6631340d301`). The authoritative summary is in `outputs/reports/analysis_summary.md`.
 
@@ -55,10 +59,14 @@ The framework uses a controlled synthetic dataset with known ground-truth behavi
 
 51 scale-invariant behavioral features derived from normalized 24-hour load profiles:
 
+<div align="center">
+
 | Group | Count | Description |
 |-------|-------|-------------|
 | Shape | 24 | Normalized hourly values (`hour_0_shape` to `hour_23_shape`) |
 | Summary | 27 | Timing, spikiness, weekend behavior, dispersion metrics |
+
+</div>
 
 Key design: features are invariant to scalar multiplication, enabling clustering by temporal patterns independent of consumption magnitude.
 
@@ -78,6 +86,8 @@ Key design: features are invariant to scalar multiplication, enabling clustering
 
 ### Validation Metrics
 
+<div align="center">
+
 | Metric | Purpose |
 |--------|---------|
 | Adjusted Rand Index (ARI) | Ground-truth recovery (synthetic only) |
@@ -87,6 +97,8 @@ Key design: features are invariant to scalar multiplication, enabling clustering
 | Davies-Bouldin | Cluster compactness vs separation |
 | Seed stability | Reproducibility across random initializations |
 | Temporal stability | Persistence across time windows |
+
+</div>
 
 ### Statistical Testing
 
@@ -108,6 +120,8 @@ K-means compared against GMM and hierarchical clustering at K=4:
 
 ### Cluster Profiles (K=4)
 
+<div align="center">
+
 | Cluster | Name | Size | Peak Hour | Evening Share | Peak-to-Average | CV |
 |---------|------|------|-----------|---------------|-----------------|----|
 | 0 | Midday-Peaking Weekday-Heavy | 39 (19.5%) | 13:00 | 0.212 | 8.83 | 0.620 |
@@ -115,7 +129,11 @@ K-means compared against GMM and hierarchical clustering at K=4:
 | 2 | Evening-Peaking | 47 (23.5%) | 20:00 | **0.380** | **11.32** | 0.705 |
 | 3 | Evening-Peaking Weekend-Heavy | 62 (31.0%) | 19:00 | 0.299 | 9.45 | 0.596 |
 
+</div>
+
 ### Ground Truth Recovery
+
+<div align="center">
 
 | K | ARI | NMI | Silhouette |
 |---|-----|-----|------------|
@@ -123,6 +141,8 @@ K-means compared against GMM and hierarchical clustering at K=4:
 | 3 | 0.602 | 0.680 | 0.331 |
 | **4** | **0.813** | **0.828** | 0.328 |
 | 5 | 0.765 | 0.802 | 0.335 |
+
+</div>
 
 **Key finding**: ARI peaks at K=4, exactly where the evidence-based rule selected. This independent validation confirms the selection was correct.
 
@@ -217,6 +237,8 @@ If you use this work in your research, please cite the accompanying paper.
 
 ## 19. Innovation: the four research improvements plus the XAI bonus
 
+<div align="center">
+
 | Improvement | What it adds | Key insight reported in this run |
 |-------------|--------------|----------------------------------|
 | 1. Configurable horizon + longitudinal check | `AnalysisConfig(start_date, duration_days, LONGITUDINAL_MIN_DAYS=180)`; `longitudinal_analysis.py` re-fits the whole recipe per segment and measures permutation-invariant ARI. | 365-day flagship: mean temporal ARI **0.882** (segments [0.838, 0.892, 0.946, 0.851]); honestly skipped at 30 days. |
@@ -224,6 +246,8 @@ If you use this work in your research, please cite the accompanying paper.
 | 3. Real-world pathway, kept separate | `dataset_adapter` to `realworld_ingest` to `realworld_validate` to `run_realworld`; generic adapter + UCI built-in; documented mapping, validation, unit handling. | Implemented in this repo; the demo (24 meters, K = 2, silhouette 0.719, seed stability 1.000) is reproducible via `py run_module.py run_realworld -- --demo`. No ARI column is ever printed for real data. |
 | 4. Versioned web-artifact contract | `export_artifacts.py` writes `web/public/data/*.json` (`contract_version 1.0.0`) so the Vercel explorer renders without rerunning analysis; every skipped step is `available: false` plus a `reason`. | The deployed explorer and this README quote the same contract JSONs. |
 | Bonus: XAI / SHAP | `explainability.py` runs post-hoc SHAP `TreeExplainer` when `shap` is installed, and a permutation fallback otherwise. | On the flagship: `available: true`, `method: "shap"`, `cv_balanced_accuracy` **0.985**; cluster drivers in `explainability.json` (see section 15). |
+
+</div>
 
 No fabricated numbers appear anywhere. The explorer marks every skipped step `available: false` with a `reason`.
 
@@ -233,6 +257,8 @@ No fabricated numbers appear anywhere. The explorer marks every skipped step `av
 
 Assessed against the course rubric `5 + 10 + 12 + 8 + 5 = 40`.
 
+<div align="center">
+
 | Area | Marks | Where the marks land in this repo |
 |------|-------|-----------------------------------|
 | A. Problem understanding | **5 / 5** | A single shape-first thesis governs every choice, from feature engineering (scale-invariant 51) to the reported K = 4 on the flagship, with the honest 30-day-window K = 3 undercount documented as the unsupervised-limitation lesson in sections 8 and 10. |
@@ -241,6 +267,8 @@ Assessed against the course rubric `5 + 10 + 12 + 8 + 5 = 40`.
 | D. Performance evaluation and interpretation | **8 / 8** | Synthetic: ARI/NMI after clustering plus internal metrics plus seed stability, with the honest limit stated in section 10. Real: internal plus seed plus temporal stability, no invented ARI. Interpretation is loadings-led and profile-led (cluster cards). |
 | E. Innovation | **5 / 5** | Four implemented research improvements (longitudinal gating/horizon, seasonal magnitude-vs-timing, real-world adapter, web-artifact contract) plus the SHAP/XAI bonus, all present in code, tested, and surfaced in the explorer. |
 | **Total** | **40 / 40** | See `docs/report.md` and `docs/verification.md` for the line-by-line verification. |
+
+</div>
 
 ---
 
@@ -377,10 +405,14 @@ The scikit-learn pipeline is the scientific reference. C++ never changes the mat
 
 **What the engine contains**
 
+<div align="center">
+
 | Kernel | C++ implementation | Parity with the reference |
 |--------|--------------------|---------------------------|
 | PCA | Centered covariance plus symmetric Jacobi eigendecomposition (classical, stable; no hand-rolled unstable math), `svd_flip` sign convention, cumulative-variance threshold (0.95) plus Kaiser and scree-elbow selection rules | Components, variance, and scores match `sklearn.decomposition.PCA(svd_solver='full')`; component directions align to about 1e-9 in the benchmark |
 | K-Means | Lloyd's algorithm with K-Means++ (or uniform random) init, `n_init` restarts, `tol` on max centroid shift, empty-cluster relocation, OpenMP-parallel assignment under `#ifdef _OPENMP`, deterministic per-restart seeded RNG | Labels/inertia match `sklearn.cluster.KMeans` (same seed, k-means++): ARI > 0.99, inertia relative diff < 1e-3 in tests |
+
+</div>
 
 **Module surface** (`energy_cpp`): `pca_fit(X, n_rows, n_cols, threshold, max_components)`, `kmeans_fit(X, n_rows, n_cols, k, max_iter, tol, n_init, init, seed)`, `compile_info()`. The bridge (`src/cpp_bridge.py`) wraps these in sklearn-shaped objects (`cpp_pca_object`, `CppKMeans`) and offers `resolve_engine("python" | "cpp" | "auto")` plus an opt-in `patch_pipeline_kernels(True/False)` that swaps the pipeline's `.KMeans` and `perform_pca` for the native kernels (restored via `importlib.reload`).
 
@@ -417,6 +449,8 @@ There is no one-command re-render for the dark set in this repo. Every figure is
 
 ### 22.4 Reproducibility: the numbers you can pin
 
+<div align="center">
+
 | Token | Value |
 |-------|-------|
 | Config hash (flagship) | `99c7a6631340d301`, the 200-consumer × 365-day run quoted throughout this page. Exported to `web/public/data/manifest.json` and rendered by the explorer. |
@@ -425,6 +459,8 @@ There is no one-command re-render for the dark set in this repo. Every figure is
 | Random seed | `42` (deterministic; generator, PCA, and K-Means all consume it). |
 | Package versions | As in section 4, pinned in `requirements.txt`, recorded verbatim in `analysis_metadata.json`. |
 | Artifact contract | `contract_version 1.0.0`, append-only, typed, stable keys. Vercel reads only `web/public/data/*.json`. |
+
+</div>
 
 ### 22.5 UN Sustainable Development Goals (SDG) Contribution
 
@@ -517,6 +553,8 @@ graph LR
 
 **Presentation Contributions:**
 
+<div align="center">
+
 | Presenter | Role | Topics Covered |
 |-----------|------|----------------|
 | **Harsh Rathi** | Opening & Introduction | Project motivation, problem statement, pipeline overview |
@@ -524,6 +562,8 @@ graph LR
 | **Varun Srivastava** | Clustering Algorithm | K-Means methodology, cluster validation, optimal K selection |
 | **Shantanu** | Technical Deep-Dive | Explainable AI (SHAP), feature importance, C++ acceleration, results |
 | **Aarna Srivastava** | Conclusion & Impact | Sustainable Development Goals alignment, summary, future directions |
+
+</div>
 
 ### Team Contributions Summary
 
@@ -554,7 +594,7 @@ graph LR
 - **Shantanu** (Lead Developer & Architect)
   - GitHub: [@shaxntanu](https://github.com/shaxntanu)
   - ORCID: [0009-0008-4403-0670](https://orcid.org/0009-0008-4403-0670)
-  - Email: shxntanu@gmail.com
+  - Email: sshantanu_be25@thapar.edu
   - Contributions: Complete technical stack, research, and documentation
 
 - **Harsh Rathi** (Presentation - Introduction)
