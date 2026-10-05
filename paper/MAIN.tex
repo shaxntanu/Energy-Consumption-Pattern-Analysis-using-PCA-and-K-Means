@@ -20,6 +20,9 @@
 \usepackage{array}
 \usepackage{xcolor}
 
+% Revision highlighting command
+\newcommand{\rev}[1]{\textcolor{blue}{#1}}
+
 % ============================================================================
 % BIBLIOGRAPHY
 % ============================================================================
@@ -470,7 +473,7 @@ Algorithm~\ref{alg:kselection} details the selection procedure.
 
 \textbf{Critical:} ARI and NMI are computed after clustering against hidden archetype labels, never used during modeling.
 
-\subsection{Statistical Testing for Between-Cluster Differences}
+\rev{\subsection{Statistical Testing for Between-Cluster Differences}
 \label{sec:statistical_tests}
 
 To rigorously validate that clusters differ meaningfully on behavioral features, we perform statistical testing for each of the 51 features across the K=4 clusters.
@@ -499,9 +502,9 @@ Across 51 behavioral features tested:
 
 All 24 normalized hourly shape features show large effect sizes ($\eta^2$ range: 0.22-0.83), confirming clusters differ fundamentally in temporal patterns. Key summary features with largest effects include evening\_share ($\eta^2 = 0.846$), profile\_ramp ($\eta^2 = 0.853$), and peak\_concentration ($\eta^2 = 0.797$). Only kurtosis shows medium effect size ($\eta^2 = 0.134$), indicating this feature is less discriminative.
 
-These results provide statistical evidence that the K=4 partition captures meaningful behavioral heterogeneity across the feature space.
+These results provide statistical evidence that the K=4 partition captures meaningful behavioral heterogeneity across the feature space.}
 
-\subsection{Alternative Clustering Methods Comparison}
+\rev{\subsection{Alternative Clustering Methods Comparison}
 \label{sec:alternative_clustering}
 
 To assess whether K-means is the appropriate clustering method for this problem, we compare it against alternative approaches on the same PCA-reduced representation (10 components, 95\% variance).
@@ -547,7 +550,7 @@ Hierarchical (average) & 0.262 & 6.9 & 0.616 & 0.002 \\
     \item Hierarchical average linkage produces nearly random partition relative to K-means (ARI=0.002)
 \end{itemize}
 
-\textbf{Interpretation:} K-means performs competitively against alternatives on internal quality metrics. The high agreement with hierarchical Ward (ARI=0.868) suggests the partition structure is robust to method choice. We retain K-means as the primary method due to its interpretability, computational efficiency, and widespread adoption in energy analytics literature.
+\textbf{Interpretation:} K-means performs competitively against alternatives on internal quality metrics. The high agreement with hierarchical Ward (ARI=0.868) suggests the partition structure is robust to method choice. We retain K-means as the primary method due to its interpretability, computational efficiency, and widespread adoption in energy analytics literature.}
 
 \subsection{Stability Analysis}
 \label{sec:stability}
@@ -666,19 +669,19 @@ Applying PCA to the standardized 51-feature matrix with 95\% cumulative variance
 \label{fig:pca_variance}
 \end{figure}
 
-\begin{figure}[ht]
+\rev{\begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{../outputs/figures/pca_projection_2d.png}
 \caption{PC1 vs PC2 projection of consumers colored by cluster assignment. The four clusters show separation in the principal component space, with PC1 capturing profile shape variation and PC2 capturing day/night balance.}
 \label{fig:pca_projection}
-\end{figure}
+\end{figure}}
 
-\begin{figure}[ht]
+\rev{\begin{figure}[ht]
 \centering
 \includegraphics[width=0.9\textwidth]{../outputs/figures/component_loadings.png}
 \caption{PCA loadings heatmap showing correlations between original features and principal components. Darker colors indicate stronger correlations. The heatmap confirms PC1 is dominated by profile shape features, PC2 by day/night balance, and PC3 by morning patterns.}
 \label{fig:pca_loadings}
-\end{figure}
+\end{figure}}
 
 \textbf{Top PC Interpretations (via loadings):}
 \begin{itemize}
@@ -938,13 +941,13 @@ Beyond methodological findings, this work demonstrates reproducibility standards
 
 \textbf{Horizon Dependence:} The 30-day window under-recovers archetypes (K=3 vs K=4 for 365 days), suggesting behavioral patterns may require sufficient observation duration to emerge. The optimal observation horizon for real-world applications is unknown.
 
-\subsection{Validation Limitations}
+\rev{\subsection{Validation Limitations}
 
 \textbf{No Benchmark Comparison:} This study does not compare against alternative clustering methods (Gaussian mixture models, hierarchical clustering, DBSCAN, spectral clustering). The selected K-means approach may not be optimal for all datasets.
 
 \textbf{Single Flagship Run:} The 365-day results represent a single experimental configuration without bootstrap confidence intervals or uncertainty quantification. Statistical significance of reported metrics cannot be assessed without repeated runs.
 
-\textbf{Post-hoc Explainability:} SHAP analysis explains a post-hoc surrogate random forest, not the K-means clustering directly. The surrogate accuracy (0.985) is the ceiling on explanation quality---features may carry additional information not captured by the surrogate.
+\textbf{Post-hoc Explainability:} SHAP analysis explains a post-hoc surrogate random forest, not the K-means clustering directly. The surrogate accuracy (0.985) is the ceiling on explanation quality---features may carry additional information not captured by the surrogate.}
 
 \subsection{Generalization Limitations}
 
@@ -954,7 +957,7 @@ Beyond methodological findings, this work demonstrates reproducibility standards
 
 \textbf{Absence of External Variables:} The synthetic model does not include socioeconomic factors, appliance ownership, or household demographics, which are known predictors of consumption in real datasets.
 
-\subsection{Future Work Required}
+\rev{\subsection{Future Work Required}
 
 To address these limitations, future work should:
 
@@ -966,7 +969,7 @@ To address these limitations, future work should:
     \item Explore non-linear dimensionality reduction methods
     \item Incorporate external variables (weather, demographics) into the clustering framework
     \item Validate cluster interpretations with domain experts or survey data
-\end{enumerate}
+\end{enumerate}}
 
 % ============================================================================
 % 8. CONCLUSION

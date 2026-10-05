@@ -1,3 +1,4 @@
+
 # Baseline vs Corrected Comparison
 
 Numbers below are from **executed** pipeline outputs. Baseline = `baseline/` (Phase 0 archive). Corrected = `outputs/` + `models/` after remediation (behavioral primary experiment).
