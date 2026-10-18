@@ -179,6 +179,18 @@ Run the Streamlit simulator:
 streamlit run streamlit_app.py
 ```
 
+### Visual explainer
+
+The Overview page includes a short [ManimGX animation](visualizations/manimgx/shape_first_method.mp4)
+showing why the analysis compares normalized daily shapes before PCA and K-Means. The
+rendered video is included, so running the dashboard does not require ManimGX. To rebuild it,
+use Python 3.13 or newer with the optional pinned dependency:
+
+```bash
+python -m pip install -r visualizations/manimgx/requirements.txt
+manimgx render visualizations/manimgx/shape_first_method.py -r 1280x720 --fps 30 -o visualizations/manimgx/shape_first_method.mp4
+```
+
 ---
 
 ## Project Structure
@@ -199,6 +211,7 @@ streamlit run streamlit_app.py
 ├── models/                 # Saved models and metadata
 ├── web/                    # Vercel explorer
 │   └── public/data/       # Artifact contract
+├── visualizations/         # Reproducible ManimGX explainer source and video
 ├── paper/                  # LaTeX manuscript
 │   ├── MAIN.tex
 │   └── references.bib
@@ -451,7 +464,7 @@ There is no one-command re-render for the dark set in this repo. Every figure is
 |-------|-------|
 | Config hash (flagship) | `99c7a6631340d301`, the 200-consumer × 365-day run quoted throughout this page. Exported to `web/public/data/manifest.json` and rendered by the explorer. |
 | Config hash (on disk) | `99c7a6631340d301`, the last executed pipeline run. `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` describe it (generated 2026-09-04). |
-| REFERENCE_HASH | `6896387297178841`, used by `streamlit_app.py` to label a run as the audited 30-day reference vs a new setting. The metadata's own `config_hash` is the authoritative per-run record. |
+| REFERENCE_HASH | `99c7a6631340d301`, the default 200-consumer × 365-day dashboard run shown as the reference run. The metadata's own `config_hash` remains the authoritative per-run record. |
 | Random seed | `42` (deterministic; generator, PCA, and K-Means all consume it). |
 | Package versions | As in section 4, pinned in `requirements.txt`, recorded verbatim in `analysis_metadata.json`. |
 | Artifact contract | `contract_version 1.0.0`, append-only, typed, stable keys. Vercel reads only `web/public/data/*.json`. |

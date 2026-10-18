@@ -9,12 +9,12 @@ gatherUsageStats = false
 
 # Palette foundation. The full design system (typography, components, the
 # time-of-day motif) is injected as CSS by src/dashboard_ui.py; these keys only
-# set the colours Streamlit paints before that CSS loads, so the first frame is
-# already dark rather than flashing white.
+# set the colours Streamlit paints before that CSS loads, so the first frame
+# matches the dark theme.
 [theme]
 base = "dark"
-primaryColor = "#3BC9DE"
-backgroundColor = "#0B0E14"
-secondaryBackgroundColor = "#141A24"
-textColor = "#EAECEF"
+primaryColor = "#55B7AA"
+backgroundColor = "#0F1519"
+secondaryBackgroundColor = "#151E22"
+textColor = "#E8EFED"
 font = "sans serif"
