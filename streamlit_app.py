@@ -33,7 +33,7 @@ import dashboard_zoom as zoom  # noqa: E402
 st.set_page_config(
     page_title="Energy Clustering Simulator",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 ui.inject_theme()
 
@@ -62,9 +62,9 @@ def _session_workdir() -> str:
 def build_config_from_sidebar() -> AnalysisConfig:
     st.sidebar.markdown(
         '<div style="font-family:IBM Plex Mono,monospace;font-size:0.82rem;'
-        'letter-spacing:0.2em;text-transform:uppercase;color:#3BC9DE;font-weight:600">'
+        'letter-spacing:0.12em;text-transform:uppercase;color:#55B7AA;font-weight:600">'
         "Interactive Simulator</div>"
-        '<div style="color:#8A93A6;font-size:0.82rem;margin:0.35rem 0 0.9rem">'
+        '<div style="color:#677673;font-size:0.82rem;margin:0.35rem 0 0.9rem">'
         "Adjust parameters and watch the analysis recompute.</div>",
         unsafe_allow_html=True,
     )
@@ -131,7 +131,7 @@ def get_or_run_analysis(config: AnalysisConfig) -> AnalysisResults:
     return results
 
 
-REFERENCE_HASH = "6896387297178841"
+REFERENCE_HASH = "99c7a6631340d301"
 
 
 # --- small helpers -----------------------------------------------------------
@@ -249,27 +249,6 @@ def nav_button(label: str, page: str, key: str) -> None:
     """A main-area call to action that moves to another page."""
     if st.button(label, key=key):
         goto(page)
-
-
-def render_view_switcher(active: str) -> None:
-    """Keep the simulator from becoming a one-way trip.
-
-    The whole project is one working analysis now, but the three core views stay
-    on top of the page as quick routes back. The sidebar carries the rest.
-    """
-    labels = ("Overview", "Dataset", "The clusters")
-    cols = st.columns(len(labels))
-    for col, label in zip(cols, labels):
-        with col:
-            if st.button(
-                label,
-                key=f"switch::{label}",
-                type="primary" if label == active else "secondary",
-                disabled=label == active,
-                width="stretch",
-            ):
-                goto(label)
-    st.write("")
 
 
 # --- pages -------------------------------------------------------------------
@@ -695,6 +674,17 @@ def page_overview(results: AnalysisResults):
         "This study groups consumers by the shape of their day, not by how much they use.",
     )
     ui.synthetic_badge("Synthetic data - not real households")
+    video_path = ROOT / "visualizations" / "manimgx" / "shape_first_method.mp4"
+    with st.expander("Watch the 10-second method explainer", expanded=False):
+        if video_path.is_file():
+            st.video(str(video_path))
+            st.caption(
+                "Illustrative household curves show why the analysis compares daily "
+                "shape. The feature count, PCA settings, and selected K match the "
+                "documented reference run."
+            )
+        else:
+            st.info("The explainer video is missing. See visualizations/manimgx to rebuild it.")
 
     sizes = results.cluster_sizes()
     stability = results.stability_results or {}
@@ -1493,7 +1483,6 @@ def main():
     page = current_page()
     ui.masthead(SECTION_OF_PAGE.get(page, "Start"), MASTHEAD_LINKS)
     results = get_or_run_analysis(config)
-    render_view_switcher(current_page())
     PAGE_FUNCS[page](results)
     ui.footer(
         run_line=f"Synthetic study &middot; PCA + K-Means &middot; run {config.config_hash()}",

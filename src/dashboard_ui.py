@@ -12,13 +12,10 @@ axis. That motif, not a logo, is the signature.
 
 Two colour ideas sit on top of that:
 
-- The instrument's own accent is an electric cyan. It marks anything the reader
-  acts on: links, focus rings, section rules, the primary controls. Energy green
-  is the second accent and is reserved for validation and agreement.
-- The load curve itself is coloured on a temperature ramp, cool indigo for the
-  small hours through to warm amber at the evening peak. Amber and indigo are
-  kept for that ramp and for warnings, so they never compete with the cyan of
-  the chrome.
+- A restrained teal marks interactive controls, links, and focus rings. Green
+  is reserved for validation and agreement.
+- The load curve itself is coloured on a temperature ramp, cool blue for the
+  small hours through to warm amber at the evening peak.
 
 Cluster identity is always colour *and* label, never colour alone, so the
 qualitative cluster palette is a distinct-hue set rather than an ordered ramp.
@@ -28,7 +25,6 @@ the pipeline already produced are shown.
 """
 from __future__ import annotations
 
-from datetime import date
 from typing import Iterable, Sequence
 
 import plotly.graph_objects as go
@@ -41,33 +37,27 @@ import streamlit as st
 from dashboard_github import format_count
 
 # --- Colour tokens -----------------------------------------------------------
-# Surfaces run from the graphite canvas up through raised panels.
-MIDNIGHT = "#0B0E14"    # app background, the darkest surface
-PANEL = "#141A24"       # raised surface: cards, sidebar
-PANEL_HI = "#1B2230"    # hover / nested surface
-LINE = "#262E3D"        # hairline rules and borders
-INK = "#EAECEF"         # primary text
-MIST = "#8A93A6"        # secondary text, captions, axis ticks
-SLATE = "#5B657A"       # tertiary text, disabled
+# A quiet graphite-and-teal palette, adapted from the Turbofan RUL dashboard.
+MIDNIGHT = "#0F1519"    # app canvas
+PANEL = "#151E22"       # cards and raised surfaces
+PANEL_HI = "#1A262A"    # nested surface / hover
+LINE = "#2B393C"        # borders and separators
+INK = "#E8EFED"         # primary text
+MIST = "#A7B6B2"        # secondary text, captions, axis ticks
+SLATE = "#82928E"       # tertiary text, disabled
 
-# Accents. CYAN is the brand and the interactive colour; GREEN is validation.
-CYAN = "#3BC9DE"        # primary accent: links, focus, section rules, controls
-CYAN_DEEP = "#1E9DB2"   # pressed / hover on the primary
-GREEN = "#4FD1A5"       # secondary accent: agreement, validation, positive
-GREEN_DEEP = "#2FA980"
+# Teal is the primary action colour; green is reserved for agreement.
+CYAN = "#55B7AA"
+CYAN_DEEP = "#398F85"
+GREEN = "#5CB98C"
+GREEN_DEEP = "#3A946C"
 
-# Reserved. AMBER and INDIGO are the poles of the load-curve temperature ramp
-# (indigo = the small hours, amber = the evening peak) and stand in for warnings.
-INDIGO = "#6C8CFF"      # night end of the ramp
-AMBER = "#F5A524"       # peak end of the ramp, and caution
-AMBER_DEEP = "#E0871B"
-ROSE = "#F26D6D"        # negative deviation, error
-VIOLET = "#B085F5"      # extra qualitative hue
-
-# Interface build stamp, shown in the masthead version badge. The number and
-# the build date pick themselves up on every rerun; bump the number when the
-# interface ships something new rather than on every data pipeline run.
-APP_VERSION = "1.0.0"
+# The daily load curve still moves from cool night hours to a warm evening peak.
+INDIGO = "#91A8C4"
+AMBER = "#E4A16D"
+AMBER_DEEP = "#C9804E"
+ROSE = "#E58A84"
+VIOLET = "#B09FE0"
 
 # Qualitative palette for cluster IDs. Cluster numbers are arbitrary, so this is
 # a distinct-hue set rather than an ordered ramp. It deliberately does not lead
@@ -87,13 +77,13 @@ DAY_RAMP: tuple[tuple[float, str], ...] = (
 # Four day-parts, each a start hour, end hour, label and faint fill. These are
 # the shading behind every hour axis and the definition of the *_share features.
 PERIODS: tuple[tuple[int, int, str, str], ...] = (
-    (0, 6, "Night", "rgba(108,140,255,0.05)"),
-    (6, 12, "Morning", "rgba(59,201,222,0.05)"),
-    (12, 18, "Afternoon", "rgba(79,209,165,0.05)"),
-    (18, 24, "Evening", "rgba(245,165,36,0.07)"),
+    (0, 6, "Night", "rgba(145,168,196,0.08)"),
+    (6, 12, "Morning", "rgba(85,183,170,0.07)"),
+    (12, 18, "Afternoon", "rgba(92,185,140,0.07)"),
+    (18, 24, "Evening", "rgba(228,161,109,0.08)"),
 )
 
-_TEMPLATE_NAME = "energy_dark"
+_TEMPLATE_NAME = "energy"
 
 
 def cluster_color(i: int) -> str:
@@ -112,7 +102,7 @@ def get_plotly_config() -> dict:
 
 
 def register_plotly_template() -> None:
-    """Register and activate the shared dark Plotly template.
+    """Register and activate the shared Plotly template.
 
     Idempotent: registering the same template twice is harmless, and setting it
     as the default means px/go figures created afterwards inherit it without
@@ -123,15 +113,15 @@ def register_plotly_template() -> None:
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(family="Inter, system-ui, sans-serif", color=INK, size=13),
-            title=dict(font=dict(family="Space Grotesk, sans-serif", size=18, color=INK), x=0.0, xanchor="left"),
+            title=dict(font=dict(family="Inter, system-ui, sans-serif", size=18, color=INK), x=0.0, xanchor="left"),
             colorway=list(CLUSTER_COLORS),
             xaxis=dict(
-                gridcolor="rgba(255,255,255,0.05)", zerolinecolor="rgba(255,255,255,0.10)",
+                gridcolor="#E7ECE9", zerolinecolor="#D9E2DD",
                 linecolor=LINE, tickfont=dict(family="IBM Plex Mono, monospace", size=11, color=MIST),
                 title=dict(font=dict(family="IBM Plex Mono, monospace", size=12, color=MIST)),
             ),
             yaxis=dict(
-                gridcolor="rgba(255,255,255,0.05)", zerolinecolor="rgba(255,255,255,0.10)",
+                gridcolor="#E7ECE9", zerolinecolor="#D9E2DD",
                 linecolor=LINE, tickfont=dict(family="IBM Plex Mono, monospace", size=11, color=MIST),
                 title=dict(font=dict(family="IBM Plex Mono, monospace", size=12, color=MIST)),
             ),
@@ -144,7 +134,7 @@ def register_plotly_template() -> None:
         )
     )
     pio.templates[_TEMPLATE_NAME] = template
-    pio.templates.default = f"plotly_dark+{_TEMPLATE_NAME}"
+    pio.templates.default = f"plotly_white+{_TEMPLATE_NAME}"
 
 
 def add_time_of_day_bands(fig: go.Figure) -> go.Figure:
@@ -171,17 +161,16 @@ def add_time_of_day_bands(fig: go.Figure) -> go.Figure:
 
 
 def _fonts_and_variables() -> str:
-    """Font import and CSS custom properties shared by every rule below."""
+    """CSS custom properties shared by every rule below."""
     return f"""
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 :root {{
   --midnight: {MIDNIGHT}; --panel: {PANEL}; --panel-hi: {PANEL_HI};
   --line: {LINE}; --ink: {INK}; --mist: {MIST}; --slate: {SLATE};
   --cyan: {CYAN}; --cyan-deep: {CYAN_DEEP}; --green: {GREEN}; --green-deep: {GREEN_DEEP};
   --indigo: {INDIGO}; --amber: {AMBER}; --amber-deep: {AMBER_DEEP}; --rose: {ROSE};
-  --display: 'Space Grotesk', system-ui, sans-serif;
-  --body: 'Inter', system-ui, sans-serif;
-  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 }}
 """
 
@@ -408,12 +397,7 @@ a:hover { text-decoration: underline; }
 .pipe .step .d { font-size: 0.82rem; color: var(--mist); margin-top: 0.25rem; line-height: 1.45; }
 
 /* Masthead -------------------------------------------------------------- */
-/* The band that used to be the landing page's top navigation. It carries
-   identity and the outbound links only; the page nav itself lives in the
-   sidebar, so there is one place to change pages and no competing menus.
-   The identity block is a translucent glass chip: a number logo, the brand
-   name, the "against the unknown" tagline and a version badge with the build
-   date, so the masthead reads like the title card of the study. */
+/* Compact identity and outbound links; page navigation lives in the sidebar. */
 .masthead {
   display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
   padding: 0.55rem 1rem; margin-bottom: 1.4rem;
@@ -804,6 +788,109 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .metric-card { transition: none; } }
 @media (max-width: 640px) { .block-container { padding-left: 1rem; padding-right: 1rem; } .insight .row { grid-template-columns: 1fr; gap: 0.2rem; } }
 
+/* Graphite-and-teal polish ---------------------------------------------- */
+/* Keep the component hooks above stable, while giving the dashboard the calm,
+   compact surfaces used by the companion RUL dashboard. */
+.block-container { max-width: 1320px; padding-top: 1.45rem; padding-bottom: 3rem; }
+[data-testid="stSidebar"] { background: var(--panel-hi); }
+[data-testid="stSidebar"] .block-container { padding-top: 1.15rem; }
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 { letter-spacing: 0.08em; }
+.masthead {
+  background: transparent; backdrop-filter: none; border: 0;
+  border-bottom: 1px solid var(--line); border-radius: 0;
+  padding: 0 0 0.85rem; margin-bottom: 1.55rem; box-shadow: none;
+}
+.masthead .brand, .masthead .where { color: var(--ink); text-shadow: none; }
+.masthead .logo, .masthead .tag, .masthead .ver { display: none; }
+.masthead .name { font-family: var(--display); font-weight: 650; letter-spacing: -0.02em; }
+.masthead .where { font-family: var(--body); letter-spacing: 0; font-size: 0.82rem; }
+.masthead .out {
+  color: var(--cyan); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 5px; box-shadow: none; padding: 0.35rem 0.65rem;
+}
+.masthead .out:hover { color: var(--cyan-deep); background: var(--panel-hi); transform: none; }
+.hero { border: 0; padding: 0.15rem 0 0.4rem; margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1.08; letter-spacing: -0.045em; }
+.hero .lede, .section .lede { color: var(--mist); max-width: 70ch; }
+.kicker { font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 0.45rem; }
+.metric-card {
+  background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--cyan);
+  border-radius: 7px; box-shadow: 0 2px 9px rgba(0,0,0,0.16);
+}
+.metric-card:hover { transform: none; box-shadow: 0 3px 12px rgba(0,0,0,0.22); }
+.arch-3d { perspective: none; height: 100%; }
+.arch-3d:hover .arch-card { transform: none; background-position: initial; box-shadow: none; }
+.arch-card {
+  transform: none; background-image: none; background-color: var(--panel);
+  border: 1px solid var(--line); border-radius: 7px; box-shadow: 0 2px 9px rgba(0,0,0,0.16);
+}
+.arch-card .arch-body { background: var(--panel); border-color: var(--line); }
+.arch-card:hover .arch-name { transform: none; }
+.insight, .ref-card, .pipe, .chapter {
+  background-color: var(--panel); border-color: var(--line); border-radius: 7px;
+}
+[data-testid="stMetric"] {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
+  padding: 0.85rem 1rem;
+}
+[data-testid="stMetricLabel"] { color: var(--mist); }
+[data-testid="stMetricValue"] { color: var(--ink); letter-spacing: -0.035em; }
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+  gap: 0.25rem; border-bottom: 1px solid var(--line);
+}
+[data-testid="stTabs"] [data-baseweb="tab"] {
+  color: var(--mist); font-family: var(--body); font-weight: 550;
+  border-radius: 5px 5px 0 0; padding: 0.55rem 0.85rem;
+}
+[data-testid="stTabs"] [aria-selected="true"] { color: var(--cyan-deep); }
+[data-testid="stExpander"] {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
+}
+[data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 7px; }
+[data-testid="stSidebar"] .stButton > button,
+[data-testid="stMain"] .stButton > button,
+[data-testid="stDownloadButton"] button {
+  min-height: 2.35rem; padding: 0.48rem 0.78rem;
+  border: 1px solid var(--line); border-radius: 5px;
+  background: var(--panel); color: var(--ink); box-shadow: none;
+  font-family: var(--body); font-size: 0.88rem; font-weight: 600;
+  letter-spacing: 0; text-transform: none; transform: none;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+[data-testid="stSidebar"] .stButton > button:hover,
+[data-testid="stMain"] .stButton > button:hover,
+[data-testid="stDownloadButton"] button:hover {
+  color: var(--ink); background: var(--panel-hi); border-color: #426B66;
+  box-shadow: none; transform: none;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"],
+[data-testid="stMain"] .stButton > button[kind="primary"] {
+  color: #0F1519; background: var(--cyan); border-color: var(--cyan);
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover,
+[data-testid="stMain"] .stButton > button[kind="primary"]:hover {
+  color: #0F1519; background: var(--cyan-deep); border-color: var(--cyan-deep);
+}
+[data-testid="stSidebar"] .stButton > button::before,
+[data-testid="stSidebar"] .stButton > button::after,
+[data-testid="stMain"] .stButton > button::before,
+[data-testid="stMain"] .stButton > button::after,
+[data-testid="stDownloadButton"] button::before,
+[data-testid="stDownloadButton"] button::after { display: none; content: none; }
+.gh-star {
+  color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 5px; box-shadow: none; transform: none;
+}
+.gh-star:hover { color: var(--cyan-deep); background: var(--panel-hi); box-shadow: none; transform: none; }
+.stCaption, [data-testid="stCaptionContainer"] { color: var(--mist); }
+@media (max-width: 640px) {
+  .block-container { padding-top: 1rem; padding-bottom: 2rem; }
+  .masthead { margin-bottom: 1.1rem; }
+  .hero h1 { font-size: 2rem; }
+  .metric-card { padding: 0.9rem 1rem; }
+}
+
 """
 
 
@@ -1011,11 +1098,7 @@ def pipeline(steps: Iterable[tuple[str, str]]) -> None:
 
 def masthead(section_label: str, links: Sequence[tuple[str, str]] = (),
              brand: str = "Load-Shape Study") -> None:
-    """The identity band at the top of every page.
-
-    The band carries the number logo, the brand name, the "against the
-    unknown" tagline and a version badge, then the breadcrumb and any
-    outbound links.
+    """Compact identity and breadcrumb band at the top of every page.
 
     Args:
         section_label: Where the reader currently is, shown as a breadcrumb.
@@ -1027,15 +1110,11 @@ def masthead(section_label: str, links: Sequence[tuple[str, str]] = (),
         f'<a class="out" href="{url}" target="_blank" rel="noopener">{label}</a>'
         for label, url in links
     )
-    today = date.today().strftime("%Y-%m")
     st.markdown(
         f'<div class="masthead">'
-        f'<span class="brand"><span class="logo">01</span>'
-        f'<span class="name">{brand}</span>'
-        f'<span class="tag">against the unknown</span></span>'
+        f'<span class="brand"><span class="name">{brand}</span></span>'
         f'<span class="where"><b>{section_label}</b></span>'
         f'<span class="spacer"></span>'
-        f'<span class="ver"><span class="dot"></span>v{APP_VERSION} &middot; {today}</span>'
         f'{outs}</div>',
         unsafe_allow_html=True,
     )
