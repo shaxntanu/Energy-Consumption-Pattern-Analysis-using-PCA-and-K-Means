@@ -523,7 +523,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     html[data-embed="true"] .toolbar,
     html[data-embed="true"] .header,
     html[data-embed="true"] .cards,
-    html[data-embed="true"] .diagram-nav,
     html[data-embed="true"] .overview-map,
     html[data-embed="true"] .focus-chip,
     html[data-embed="true"] .route-probe,
@@ -537,6 +536,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       border: 0;
       border-radius: 0;
       box-shadow: none;
+      touch-action: none;
+    }
+    html[data-embed="true"] .diagram-nav {
+      top: 0.5rem;
+      right: 0.5rem;
+      bottom: auto;
     }
     html[data-embed="true"] .diagram-container svg { min-width: 0; }
 
@@ -11559,7 +11564,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         renderControls();
         outBtn.disabled = state.scale <= 1;
         inBtn.disabled = state.scale >= 3;
-        container.classList.toggle('is-pannable', state.scale > 1);
+        container.classList.toggle('is-pannable', state.scale >= 1);
         svg.setAttribute('data-view-scale', String(state.scale));
         if (Archify.radar && typeof Archify.radar.sync === 'function') Archify.radar.sync();
         if (Archify.viewerChromeLayout && typeof Archify.viewerChromeLayout.schedule === 'function') {
@@ -11903,7 +11908,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       outBtn.addEventListener('click', function () { zoom(state.scale - 0.25); });
       resetBtn.addEventListener('click', reset);
       container.addEventListener('pointerdown', function (event) {
-        if (state.scale <= 1 || event.button !== 0 || event.target.closest('.diagram-nav, .focus-chip, .node-finder, .diagram-guide, .overview-map, .route-probe, .semantic-lens') || event.target.closest('[data-node-id]') || event.target.closest('[data-relationship-hit-key]')) return;
+        if (event.button !== 0 || event.target.closest('.diagram-nav, .focus-chip, .node-finder, .diagram-guide, .overview-map, .route-probe, .semantic-lens') || event.target.closest('[data-node-id]') || event.target.closest('[data-relationship-hit-key]')) return;
         interruptCamera();
         drag = { startX: event.clientX, startY: event.clientY, x: state.x, y: state.y, moved: false };
         container.classList.add('is-panning');
