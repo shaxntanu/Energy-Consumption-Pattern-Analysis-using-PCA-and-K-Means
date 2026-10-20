@@ -3028,6 +3028,7 @@ function App() {
         <a className="brand" href="#top">Load Shape Lab</a>
         <div className="nav-links">
           <a href="#about">About</a>
+          <a href="#pipeline">Pipeline</a>
           <a href="#charts">Charts</a>
           <a href="#seasons">Seasons</a>
           <a href="#performance">Performance</a>
@@ -3089,6 +3090,29 @@ function App() {
             <StatCard label="Silhouette" value={summaryStats.silhouette} note="modest but useful separation" />
             <StatCard label="Archetype recovery" value={summaryStats.recovery} note="ARI vs hidden archetypes at K=4" />
             <StatCard label="Temporal stability" value={summaryStats.temporalStability} note="mean ARI across 4 quarterly windows" />
+          </div>
+        </section>
+
+        <section className="band" id="pipeline">
+          <SectionHeader eyebrow="Analysis pipeline" title="How the energy patterns are found">
+            The diagram follows the project's core analysis: generated household energy
+            readings are preprocessed, converted into behavioral features, reduced with
+            PCA, and grouped with K-Means. The final branches show the checks used to
+            assess those clusters.
+          </SectionHeader>
+          <div className="pipeline-diagram-shell">
+            <iframe
+              className="pipeline-diagram-frame"
+              src="/pipeline?embed=1&theme=dark"
+              title="Energy consumption analysis pipeline diagram"
+              loading="lazy"
+            />
+          </div>
+          <div className="pipeline-diagram-footer">
+            <span>Project analysis stages and validation checks</span>
+            <a href="/pipeline" target="_blank" rel="noopener noreferrer">
+              Open full interactive diagram <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </section>
 

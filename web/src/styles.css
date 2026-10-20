@@ -92,6 +92,41 @@ a {
   color: var(--text);
 }
 
+.pipeline-diagram-shell {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #050606;
+}
+
+.pipeline-diagram-frame {
+  display: block;
+  width: 100%;
+  min-width: 760px;
+  height: clamp(585px, 82vw, 1080px);
+  border: 0;
+  background: #050606;
+}
+
+.pipeline-diagram-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.pipeline-diagram-footer a {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.pipeline-diagram-footer a:hover {
+  color: var(--text);
+}
+
 /* GitHub button (nav): ghost pill, matching the single-CTA language. */
 .nav-links .button {
   display: flex;
@@ -1307,6 +1342,11 @@ p {
 }
 
 @media (max-width: 560px) {
+  .pipeline-diagram-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   h1 {
     font-size: 3rem;
   }
