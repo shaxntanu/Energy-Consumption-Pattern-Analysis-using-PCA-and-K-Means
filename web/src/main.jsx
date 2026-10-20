@@ -3109,7 +3109,7 @@ function App() {
             />
           </div>
           <div className="pipeline-diagram-footer">
-            <span>Project analysis stages and validation checks</span>
+            <span>Drag the diagram to pan; use the on-canvas controls to zoom.</span>
             <a href="/pipeline" target="_blank" rel="noopener noreferrer">
               Open full interactive diagram <span aria-hidden="true">↗</span>
             </a>
