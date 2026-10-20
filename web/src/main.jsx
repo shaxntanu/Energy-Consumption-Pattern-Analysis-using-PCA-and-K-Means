@@ -3101,16 +3101,20 @@ function App() {
             assess those clusters.
           </SectionHeader>
           <div className="pipeline-diagram-shell">
+            <div className="pipeline-diagram-topline">
+              <span>ZOOM, THEN DRAG TO PAN · 0 TO RESET</span>
+              <span>ENERGY CONSUMPTION PIPELINE</span>
+            </div>
             <iframe
               className="pipeline-diagram-frame"
-              src="/pipeline?embed=1&theme=dark"
+              src="/pipeline?present=1&theme=dark"
               title="Energy consumption analysis pipeline diagram"
               loading="lazy"
             />
           </div>
           <div className="pipeline-diagram-footer">
-            <span>Drag the diagram to pan; use the on-canvas controls to zoom.</span>
-            <a href="/pipeline" target="_blank" rel="noopener noreferrer">
+            <span>Drag the canvas to explore the full analysis flow.</span>
+            <a href="/pipeline?present=1&theme=dark" target="_blank" rel="noopener noreferrer">
               Open full interactive diagram <span aria-hidden="true">↗</span>
             </a>
           </div>

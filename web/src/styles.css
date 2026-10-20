@@ -93,19 +93,37 @@ a {
 }
 
 .pipeline-diagram-shell {
-  overflow-x: auto;
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #050606;
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 48%), #111716;
+}
+
+.pipeline-diagram-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--line);
+  color: #95a29b;
+  font: 0.62rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pipeline-diagram-topline > span:last-child {
+  color: var(--cyan);
 }
 
 .pipeline-diagram-frame {
   display: block;
   width: 100%;
-  min-width: 760px;
-  height: clamp(585px, 82vw, 1080px);
+  min-width: 0;
+  height: clamp(560px, 62vw, 820px);
   border: 0;
-  background: #050606;
+  background: #0b1010;
 }
 
 .pipeline-diagram-footer {
