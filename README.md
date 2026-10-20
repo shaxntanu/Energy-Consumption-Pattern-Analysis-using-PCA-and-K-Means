@@ -4,7 +4,6 @@ A reproducible framework for household energy consumption clustering that separa
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://energy-consumption-pattern.vercel.app)
 [![Interactive Simulator](https://img.shields.io/badge/Simulator-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://energy-consumption-pattern-vqrh.streamlit.app/)
-[![Pipeline Workflow](https://img.shields.io/badge/Pipeline-GitHub%20Pages-181717?style=for-the-badge&logo=github)](https://shaxntanu.github.io/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/)
 
 ---
 
