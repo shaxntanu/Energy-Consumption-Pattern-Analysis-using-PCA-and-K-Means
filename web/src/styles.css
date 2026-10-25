@@ -13,10 +13,10 @@
   --panel-strong: #131315;
   --line: #3a3a3f;
   --text: #ffffff;
-  --muted: #f0f0fa;
-  --faint: rgba(240, 240, 250, 0.42);
+  --muted: #b4b4b4;
+  --faint: #949494;
   /* Data-series tokens (kept): the charts are the page's one source of colour. */
-  --cyan: #48d7c2;
+  --cyan: #55b7aa;
   --blue: #6c8cff;
   --amber: #f2b04b;
   --violet: #b78cff;
@@ -90,6 +90,10 @@ a {
 
 .nav-links a:hover {
   color: var(--text);
+}
+
+.mobile-nav {
+  display: none;
 }
 
 .pipeline-diagram-shell {
@@ -268,9 +272,9 @@ a {
   margin-bottom: 1rem;
   color: var(--muted);
   font-family: var(--font-body);
-  font-size: 0.76rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 1.17px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -366,8 +370,20 @@ p {
 }
 
 .section-header {
-  max-width: 780px;
+  max-width: 70ch;
   margin-bottom: 1.25rem;
+}
+
+.section-header h2 {
+  font-size: clamp(1.75rem, 3.1vw, 2.85rem);
+  line-height: 1.08;
+  letter-spacing: 0.04em;
+}
+
+.section-header > p {
+  max-width: 70ch;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
 .stats-grid,
@@ -376,6 +392,10 @@ p {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1rem;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .stat-card,
@@ -397,8 +417,8 @@ p {
   display: block;
   color: var(--muted);
   font-family: var(--font-body);
-  font-size: 0.74rem;
-  letter-spacing: 0.96px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -413,6 +433,8 @@ p {
   display: block;
   margin-top: 0.4rem;
   color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
 }
 
 .chart-grid {
@@ -1354,12 +1376,81 @@ p {
     grid-template-columns: 1fr;
   }
 
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .nav-links {
     display: none;
+  }
+
+  .mobile-nav {
+    position: relative;
+    display: block;
+  }
+
+  .mobile-nav summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-size: 0.875rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mobile-nav summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-nav-sheet {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    width: min(380px, calc(100vw - 2rem));
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    background: var(--panel-strong);
+  }
+
+  .mobile-nav-sheet a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .mobile-nav-sheet a:hover,
+  .mobile-nav-sheet a:focus-visible {
+    color: var(--text);
   }
 }
 
 @media (max-width: 560px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat-card {
+    min-height: 132px;
+    padding: 0.9rem;
+  }
+
+  .stat-card strong {
+    font-size: clamp(1.45rem, 6.4vw, 1.9rem);
+  }
+
   .pipeline-diagram-footer {
     align-items: flex-start;
     flex-direction: column;
