@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import './hero-ascii-one.css';
 
 const PROJECT_ID = 'OMzqyUv6M3kSnv0JeAtC';
@@ -66,13 +65,10 @@ export default function HeroAsciiOne() {
     );
   });
   const [status, setStatus] = useState<Status>('static');
-  // Starts false = the loader is up straight away. It only flips to done (and
-  // fades out) once the animation reaches a terminal state, so the first thing
-  // a user sees is an opaque loader with nothing behind it.
-  const [loaderDone, setLoaderDone] = useState(false);
-  // Gates the scene (and with it the Sunee mascot's messages). Starts false so
-  // the scene stays inert during the loader, and only flips true 5s AFTER the
-  // loader ends so Sunee's messages can't begin until then.
+  // The animation is a background enhancement. The page stays readable and
+  // usable while it loads or falls back to the static view.
+  const [sceneSettled, setSceneSettled] = useState(false);
+  // Give the hero a short quiet period before the companion starts speaking.
   const [suneeReady, setSuneeReady] = useState(false);
   const active = eligible;
 
@@ -129,34 +125,18 @@ export default function HeroAsciiOne() {
     };
   }, [active]);
 
-  // Once the scene is ready, the loader's backdrop dims to 0% and the overlay
-  // fades away; on the 20s static-fallback it fades out too rather than linger.
   useEffect(() => {
-    if (status === 'ready' || status === 'unavailable') setLoaderDone(true);
+    if (status === 'ready' || status === 'unavailable') setSceneSettled(true);
   }, [status]);
 
-  // After the loader ends, hold the scene inert for 5s more so Sunee's messages
-  // only start coming 5 seconds after the loader has gone.
   useEffect(() => {
-    if (!loaderDone) return;
+    if (!sceneSettled) return;
     const t = window.setTimeout(() => setSuneeReady(true), 5000);
     return () => window.clearTimeout(t);
-  }, [loaderDone]);
-
-  // True while the intro lock is up. While it is, the page cannot scroll and
-  // the opaque fixed overlay swallows every interaction (nav, links, the Sunee
-  // mascot message) — the whole project, not just the hero, starts only once
-  // the loader is done and the hero visual is alive.
-  const loaderAlive = eligible && !loaderDone;
-  useEffect(() => {
-    if (!loaderAlive) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
-  }, [loaderAlive]);
+  }, [sceneSettled]);
 
   const statusLabel = {
-    static: 'STATIC.VIEW', loading: 'SCENE.LOADING', ready: 'SCENE.READY', unavailable: 'STATIC.FALLBACK',
+    static: 'Static view', loading: 'Loading animation', ready: 'Animation ready', unavailable: 'Static fallback',
   }[status];
 
   return (
@@ -179,27 +159,6 @@ export default function HeroAsciiOne() {
           the visual covers that region; solid black blends into the hero so the
           patch itself is invisible, it only hides the badge. */}
       <div className="ascii-hero__watermark-cover" aria-hidden="true" />
-      {/* Rendered through a portal into document.body so it sits at the root
-          stacking context (above the sticky nav) and the opaque fixed overlay
-          covers the entire page — not just the hero — while loading. */}
-      {eligible && createPortal(
-        <div
-          className={`ascii-hero__loader${loaderDone ? ' is-hidden' : ''}`}
-          aria-hidden="true"
-        >
-          <div className="loader">
-            <span><span /><span /><span /><span /></span>
-            <div className="base">
-              <span />
-              <div className="face" />
-            </div>
-          </div>
-          <div className="longfazers">
-            <span /><span /><span /><span />
-          </div>
-        </div>,
-        document.body,
-      )}
       <div className="ascii-hero__topline">
         <span>PCA / K-MEANS</span>
       </div>
@@ -207,7 +166,7 @@ export default function HeroAsciiOne() {
         <div className="ascii-hero__copy">
           <div className="ascii-hero__rule" aria-hidden="true"><span />∞<span /></div>
           <p className="ascii-hero__eyebrow">When energy is used matters.</p>
-          <h1 id="ascii-hero-title">Energy use is a pattern, not just a number.</h1>
+          <h1 id="ascii-hero-title">Energy use has a rhythm.</h1>
           <div className="ascii-hero__dots" aria-hidden="true" />
           <p className="ascii-hero__description">
             A synthetic year of household electricity readings. Behavioural features,

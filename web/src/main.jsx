@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import HeroAsciiOne from "./components/ui/hero-ascii-one.tsx";
 import {
   BarElement,
   CategoryScale,
@@ -2361,7 +2362,7 @@ function ScienceHighlights() {
   );
   return (
     <section className="band" id="highlights">
-      <SectionHeader eyebrow="Beyond the base pipeline" title="Seasonal, longitudinal, explainability, and the real-world pathway">
+      <SectionHeader eyebrow="Beyond the base pipeline" title="Beyond clustering">
         The upgraded run adds four analysis threads on top of the core K-Means story. All
         figures are the committed flagship outputs (contract_version 1.0.0, config
         99c7a6631340d301). At shorter horizons the pipeline reports available: false with a
@@ -2962,7 +2963,7 @@ function SeasonBand() {
   const maxKwh = Math.max(...seasons.map((s) => s.kwh));
   return (
     <section className="band" id="seasons">
-      <SectionHeader eyebrow="Seasons" title="The same households, measured four times a year">
+      <SectionHeader eyebrow="Seasons" title="Four seasons, the same households">
         The seasonal thread separates magnitude from timing. One channel tracks how mean daily
         energy swings across the year (amplitude), another tracks when the 24-hour profile
         peaks (phase). Both are scored against the seasonal phase hidden at generation time,
@@ -3019,53 +3020,45 @@ function SeasonBand() {
   );
 }
 
-const HeroAsciiOne = React.lazy(() => import("./components/ui/hero-ascii-one.tsx"));
-
 function App() {
+  const navItems = [
+    { label: "About", href: "#about" },
+    { label: "Pipeline", href: "#pipeline" },
+    { label: "Charts", href: "#charts" },
+    { label: "Seasons", href: "#seasons" },
+    { label: "Performance", href: "#performance" },
+    { label: "SDG Impact", href: "#sdg-impact" },
+    { label: "References", href: "#references" },
+    { label: "Simulator", href: "https://energy-consumption-pattern-vqrh.streamlit.app/", external: true },
+  ];
+  const renderNavLinks = (className) => (
+    <div className={className}>
+      {navItems.map(({ label, href, external }) => (
+        <a
+          key={label}
+          href={href}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noopener noreferrer" : undefined}
+          onClick={(event) => event.currentTarget.closest("details.mobile-nav")?.removeAttribute("open")}
+        >
+          {label}
+        </a>
+      ))}
+    </div>
+  );
+
   return (
     <div>
       <nav className="site-nav" aria-label="Main navigation">
         <a className="brand" href="#top">Load Shape Lab</a>
-        <div className="nav-links">
-          <a href="#about">About</a>
-          <a href="#pipeline">Pipeline</a>
-          <a href="#charts">Charts</a>
-          <a href="#seasons">Seasons</a>
-          <a href="#performance">Performance</a>
-          <a href="#sdg-impact">SDG Impact</a>
-          <a href="#references">References</a>
-          <a href="https://energy-consumption-pattern-vqrh.streamlit.app/" target="_blank" rel="noopener noreferrer">Simulator</a>
-        </div>
+        {renderNavLinks("nav-links")}
+        <details className="mobile-nav">
+          <summary>Sections <span aria-hidden="true">⌄</span></summary>
+          {renderNavLinks("mobile-nav-sheet")}
+        </details>
       </nav>
 
-      {/* While the lazy hero chunk loads, show a full-viewport black overlay
-          instead of any page content. Fixed at the root stacking context with
-          z-index 9999, it also covers the sticky nav, so the very first paint
-          is the loader's black backdrop — never a flash of content ahead of
-          it. Once HeroAsciiOne mounts its own opaque loader takes over. */}
-      <React.Suspense fallback={
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            background: '#000',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            fontFamily: "'Times New Roman', Times, serif",
-            letterSpacing: '0.12em',
-            fontSize: '0.8rem',
-            textTransform: 'uppercase',
-            userSelect: 'none',
-          }}
-        >
-          Loading visual
-        </div>
-      }>
-        <HeroAsciiOne />
-      </React.Suspense>
+      <HeroAsciiOne />
       <section className="hero" aria-label="Animated analysis walkthrough">
         <div className="hero-panel chart-panel tall">
           <LoadShapeCarousel tall />
@@ -3074,7 +3067,7 @@ function App() {
 
       <main>
         <section className="band" id="about">
-          <SectionHeader eyebrow="What is this project about" title="A simple way to find daily energy rhythms">
+          <SectionHeader eyebrow="What is this project about" title="A simpler way to find energy rhythms">
             The analysis asks whether consumers can be grouped by when they use power. It
             uses a controlled synthetic year (200 households × 365 days, config
             99c7a6631340d301) so the result is a reproducible demonstration of the method,
@@ -3094,7 +3087,7 @@ function App() {
         </section>
 
         <section className="band" id="pipeline">
-          <SectionHeader eyebrow="Analysis pipeline" title="How the energy patterns are found">
+          <SectionHeader eyebrow="Analysis pipeline" title="How clustering finds daily patterns">
             The diagram follows the project's core analysis: generated household energy
             readings are preprocessed, converted into behavioral features, reduced with
             PCA, and grouped with K-Means. The final branches show the checks used to
@@ -3121,7 +3114,7 @@ function App() {
         </section>
 
         <section className="band" id="charts">
-          <SectionHeader eyebrow="Chart.js dashboard" title="The matplotlib results, rebuilt for the web">
+          <SectionHeader eyebrow="Chart.js dashboard" title="Matplotlib results, rebuilt for the web">
             The charts below use the committed analysis artifacts, including cluster load
             shapes, PCA variance, K-selection metrics, and cluster profiles.
           </SectionHeader>
@@ -3188,7 +3181,7 @@ function App() {
 
         <PerformanceSection />
 
-        // SDG Impact Section - Impact Beyond Clustering
+        {/* SDG impact section */}
         <section className="band" id="sdg-impact">
           <SectionHeader
             eyebrow="Impact & Sustainable Development"

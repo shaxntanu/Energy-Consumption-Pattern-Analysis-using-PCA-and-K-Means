@@ -95,8 +95,8 @@
   flex-wrap: wrap;
   gap: 1rem;
   padding: 1.1rem clamp(1.25rem, 4vw, 3.5rem);
-  font-size: .7rem;
-  letter-spacing: .09em;
+  font-size: .8125rem;
+  letter-spacing: .04em;
   color: #d1d1d1;
   background: #000c;
 }
@@ -105,12 +105,13 @@
 .ascii-hero__content { display: flex; align-items: center; justify-content: flex-end; padding: 4rem clamp(1.5rem, 6vw, 6rem); }
 .ascii-hero__copy { width: min(52%, 650px); padding: 1.5rem; background: #000b; }
 .ascii-hero__rule,
-.ascii-hero__notation { display: flex; align-items: center; gap: .75rem; color: #b8b8b8; font-size: .65rem; }
+.ascii-hero__rule,
+.ascii-hero__notation { display: flex; align-items: center; gap: .75rem; color: #b8b8b8; font-size: .75rem; }
 .ascii-hero__rule { margin-bottom: 1.5rem; }
 .ascii-hero__rule span,
 .ascii-hero__notation span:nth-child(2) { flex: 1; height: 1px; background: #ffffff66; }
 .ascii-hero__rule span:first-child { flex: 0 0 32px; }
-.ascii-hero__copy .ascii-hero__eyebrow { font: inherit; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 1rem; color: #d1d1d1; }
+.ascii-hero__copy .ascii-hero__eyebrow { font: inherit; font-size: .8125rem; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 1rem; color: #d1d1d1; }
 .ascii-hero__copy h1 {
   position: relative;
   font-family: inherit;
@@ -118,7 +119,7 @@
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: .025em;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
   margin: 0 0 1.5rem;
 }
 .ascii-hero__copy h1::after {
@@ -130,7 +131,7 @@
   background: repeating-linear-gradient(0deg, transparent 0 1px, white 1px 2px);
 }
 .ascii-hero__dots { width: 120px; height: 4px; background: radial-gradient(circle, #fff8 1px, transparent 1px) 0 0 / 4px 4px; margin-bottom: 1.5rem; }
-.ascii-hero__copy .ascii-hero__description { font-family: inherit; font-size: clamp(.85rem, 1vw, 1rem); line-height: 1.8; color: #dedede; margin-bottom: 1.75rem; }
+.ascii-hero__copy .ascii-hero__description { font-family: inherit; font-size: clamp(1rem, 1.1vw, 1.125rem); line-height: 1.65; color: #dedede; margin-bottom: 1.75rem; }
 .ascii-hero__actions { display: flex; flex-wrap: wrap; gap: .85rem; }
 .ascii-hero__actions a {
   display: inline-flex;
@@ -150,21 +151,7 @@
 .ascii-hero__notation { margin-top: 1.75rem; }
 .ascii-hero__footer { border-top: 1px solid #ffffff33; }
 .ascii-hero__footer-group { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-/* Cover the interactive footer controls (the scene-status, the pause/ resume
-   button, and the Unicorn Studio credit link) with an opaque black strip. The
-   strip hides them visually and, with pointer-events: auto, blocks any click
-   on them. The leading SYNTHETIC.STUDY group stays untouched. */
-.ascii-hero__footer { position: relative; }
-.ascii-hero__footer > .ascii-hero__footer-group:last-child { position: relative; }
-.ascii-hero__footer > .ascii-hero__footer-group:last-child::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: #000;
-  z-index: 5;
-  pointer-events: auto;
-  cursor: default;
-}
+/* Keep the scene status and visual credit readable in the footer. */
 .ascii-hero__meters { display: flex; align-items: end; gap: 3px; height: 16px; }
 .ascii-hero__meters i { display: block; width: 4px; background: #ffffff66; }
 .ascii-hero__footer button { min-height: 44px; padding: .5rem; font: inherit; color: #fff; background: transparent; border: 1px solid #ffffff66; cursor: pointer; }
@@ -183,209 +170,4 @@
 @media (prefers-reduced-motion: reduce) {
   .ascii-hero__scene, .ascii-hero__actions a { transition: none; }
   html:has(.ascii-hero) { scroll-behavior: auto; }
-}
-
-/* Loader: the Uiverse "speeder" indicator, recoloured from its default black
-   to the white-on-black brand so it reads against the black hero. It fades in
-   over the scene while the animation loads; once the scene reports ready, the
-   opaque backdrop dims to 0% and the overlay dissolves (transition below). It
-   is decorative only (pointer-events: none, aria-hidden already set in JSX). */
-.ascii-hero__loader {
-  /* Fixed, full-viewport, frontmost: while the loader is alive it covers the
-     entire site — an opaque black backdrop with pointer-events: auto, so every
-     click (nav, links, the Sunee mascot) is swallowed and nothing of the
-     project is usable until the hero scene reports ready. The page behind is
-     pure black. */
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: block;
-  background: #000;
-  pointer-events: auto;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: opacity 700ms ease, background-color 700ms ease;
-}
-.ascii-hero__loader.is-hidden {
-  opacity: 0;
-  background: rgba(0, 0, 0, 0);
-  pointer-events: none;
-}
-/* Speeder (centre of the hero). #000 -> #fff for the brand. */
-.ascii-hero__loader .loader {
-  position: absolute;
-  top: 50%;
-  margin-left: -50px;
-  left: 50%;
-  animation: speeder 0.4s linear infinite;
-}
-.ascii-hero__loader .loader > span {
-  height: 5px;
-  width: 35px;
-  background: #fff;
-  position: absolute;
-  top: -19px;
-  left: 60px;
-  border-radius: 2px 10px 1px 0;
-}
-.ascii-hero__loader .base span {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-top: 6px solid transparent;
-  border-right: 100px solid #fff;
-  border-bottom: 6px solid transparent;
-}
-.ascii-hero__loader .base span:before {
-  content: "";
-  height: 22px;
-  width: 22px;
-  border-radius: 50%;
-  background: #fff;
-  position: absolute;
-  right: -110px;
-  top: -16px;
-}
-.ascii-hero__loader .base span:after {
-  content: "";
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-top: 0 solid transparent;
-  border-right: 55px solid #fff;
-  border-bottom: 16px solid transparent;
-  top: -16px;
-  right: -98px;
-}
-.ascii-hero__loader .face {
-  position: absolute;
-  height: 12px;
-  width: 20px;
-  background: #fff;
-  border-radius: 20px 20px 0 0;
-  transform: rotate(-40deg);
-  right: -125px;
-  top: -15px;
-}
-.ascii-hero__loader .face:after {
-  content: "";
-  height: 12px;
-  width: 12px;
-  background: #fff;
-  right: 4px;
-  top: 7px;
-  position: absolute;
-  transform: rotate(40deg);
-  transform-origin: 50% 50%;
-  border-radius: 0 0 0 2px;
-}
-.ascii-hero__loader .loader > span > span:nth-child(1),
-.ascii-hero__loader .loader > span > span:nth-child(2),
-.ascii-hero__loader .loader > span > span:nth-child(3),
-.ascii-hero__loader .loader > span > span:nth-child(4) {
-  width: 30px;
-  height: 1px;
-  background: #fff;
-  position: absolute;
-  animation: fazer1 0.2s linear infinite;
-}
-.ascii-hero__loader .loader > span > span:nth-child(2) {
-  top: 3px;
-  animation: fazer2 0.4s linear infinite;
-}
-.ascii-hero__loader .loader > span > span:nth-child(3) {
-  top: 1px;
-  animation: fazer3 0.4s linear infinite;
-  animation-delay: -1s;
-}
-.ascii-hero__loader .loader > span > span:nth-child(4) {
-  top: 4px;
-  animation: fazer4 1s linear infinite;
-  animation-delay: -1s;
-}
-/* Long faders: full-hero horizontal streaks, white on the black hero. */
-.ascii-hero__loader .longfazers {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-.ascii-hero__loader .longfazers span {
-  position: absolute;
-  height: 2px;
-  width: 20%;
-  background: #fff;
-}
-.ascii-hero__loader .longfazers span:nth-child(1) {
-  top: 20%;
-  animation: lf 0.6s linear infinite;
-  animation-delay: -5s;
-}
-.ascii-hero__loader .longfazers span:nth-child(2) {
-  top: 40%;
-  animation: lf2 0.8s linear infinite;
-  animation-delay: -1s;
-}
-.ascii-hero__loader .longfazers span:nth-child(3) {
-  top: 60%;
-  animation: lf3 0.6s linear infinite;
-}
-.ascii-hero__loader .longfazers span:nth-child(4) {
-  top: 80%;
-  animation: lf4 0.5s linear infinite;
-  animation-delay: -3s;
-}
-@keyframes speeder {
-  0% { transform: translate(2px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -3px) rotate(-1deg); }
-  20% { transform: translate(-2px, 0px) rotate(1deg); }
-  30% { transform: translate(1px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 3px) rotate(-1deg); }
-  60% { transform: translate(-1px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-2px, -1px) rotate(1deg); }
-  90% { transform: translate(2px, 1px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
-}
-@keyframes fazer1 {
-  0% { left: 0; }
-  100% { left: -80px; opacity: 0; }
-}
-@keyframes fazer2 {
-  0% { left: 0; }
-  100% { left: -100px; opacity: 0; }
-}
-@keyframes fazer3 {
-  0% { left: 0; }
-  100% { left: -50px; opacity: 0; }
-}
-@keyframes fazer4 {
-  0% { left: 0; }
-  100% { left: -150px; opacity: 0; }
-}
-@keyframes lf {
-  0% { left: 200%; }
-  100% { left: -200%; opacity: 0; }
-}
-@keyframes lf2 {
-  0% { left: 200%; }
-  100% { left: -200%; opacity: 0; }
-}
-@keyframes lf3 {
-  0% { left: 200%; }
-  100% { left: -100%; opacity: 0; }
-}
-@keyframes lf4 {
-  0% { left: 200%; }
-  100% { left: -100%; opacity: 0; }
-}
-/* The 20s hard-timeout backstop (STATIC.FALLBACK) leaves the hero with no
-   animation; in that case the loader unmounts entirely (loaderActive false) so
-   nothing lingers. A static hero gets no loader at all. */
-@media (prefers-reduced-motion: reduce) {
-  .ascii-hero__loader .loader,
-  .ascii-hero__loader .loader > span > span,
-  .ascii-hero__loader .longfazers span {
-    animation: none;
-  }
 }

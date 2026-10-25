@@ -112,18 +112,18 @@ def register_plotly_template() -> None:
         layout=dict(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="Inter, system-ui, sans-serif", color=INK, size=13),
-            title=dict(font=dict(family="Inter, system-ui, sans-serif", size=18, color=INK), x=0.0, xanchor="left"),
+            font=dict(family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color=INK, size=13),
+            title=dict(font=dict(family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", size=18, color=INK), x=0.0, xanchor="left"),
             colorway=list(CLUSTER_COLORS),
             xaxis=dict(
-                gridcolor="#E7ECE9", zerolinecolor="#D9E2DD",
-                linecolor=LINE, tickfont=dict(family="IBM Plex Mono, monospace", size=11, color=MIST),
-                title=dict(font=dict(family="IBM Plex Mono, monospace", size=12, color=MIST)),
+                gridcolor=LINE, zerolinecolor="#44565A",
+                linecolor=LINE, tickfont=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=11, color=MIST),
+                title=dict(font=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=12, color=MIST)),
             ),
             yaxis=dict(
-                gridcolor="#E7ECE9", zerolinecolor="#D9E2DD",
-                linecolor=LINE, tickfont=dict(family="IBM Plex Mono, monospace", size=11, color=MIST),
-                title=dict(font=dict(family="IBM Plex Mono, monospace", size=12, color=MIST)),
+                gridcolor=LINE, zerolinecolor="#44565A",
+                linecolor=LINE, tickfont=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=11, color=MIST),
+                title=dict(font=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=12, color=MIST)),
             ),
             legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=12, color=MIST),
                         bordercolor=LINE),
@@ -230,7 +230,7 @@ a:hover { text-decoration: underline; }
 .section .lede { color: var(--mist); max-width: 70ch; margin: 0; }
 
 /* Metric cards ---------------------------------------------------------- */
-.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.85rem; margin: 0.4rem 0 0.6rem 0; }
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.85rem; margin: 0.4rem 0 0.6rem 0; }
 .metric-card {
   background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
   padding: 1rem 1.1rem; transition: transform 0.18s ease, border-color 0.18s ease;
@@ -815,10 +815,10 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 .hero .lede, .section .lede { color: var(--mist); max-width: 70ch; }
 .kicker { font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 0.45rem; }
 .metric-card {
-  background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--cyan);
-  border-radius: 7px; box-shadow: 0 2px 9px rgba(0,0,0,0.16);
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 7px; box-shadow: none;
 }
-.metric-card:hover { transform: none; box-shadow: 0 3px 12px rgba(0,0,0,0.22); }
+.metric-card:hover { transform: none; border-color: #426B66; box-shadow: none; }
 .arch-3d { perspective: none; height: 100%; }
 .arch-3d:hover .arch-card { transform: none; background-position: initial; box-shadow: none; }
 .arch-card {
@@ -872,6 +872,15 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 [data-testid="stMain"] .stButton > button[kind="primary"]:hover {
   color: #0F1519; background: var(--cyan-deep); border-color: var(--cyan-deep);
 }
+/* A slim teal rail marks the current sidebar section without filling the row. */
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+  color: var(--cyan); background: transparent; border-color: var(--line);
+  border-left: 3px solid var(--cyan); padding-left: calc(0.78rem - 2px);
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+  color: var(--cyan); background: var(--panel); border-color: #426B66;
+  border-left-color: var(--cyan);
+}
 [data-testid="stSidebar"] .stButton > button::before,
 [data-testid="stSidebar"] .stButton > button::after,
 [data-testid="stMain"] .stButton > button::before,
@@ -890,6 +899,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
   .hero h1 { font-size: 2rem; }
   .metric-card { padding: 0.9rem 1rem; }
 }
+@media (max-width: 1000px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 """
 
