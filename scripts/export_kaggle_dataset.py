@@ -22,7 +22,7 @@ from data_loader import generate_synthetic_data, SeasonalConfig
 
 
 def export_kaggle_dataset():
-    """Generate and export the flagship dataset to kaggle/dataset/"""
+    """Generate and export the flagship dataset to dataset/kaggle/dataset/"""
     
     print("=" * 70)
     print("KAGGLE DATASET EXPORT - Flagship Configuration")
@@ -67,7 +67,7 @@ def export_kaggle_dataset():
     print(f"  Columns: {list(df.columns)}")
     
     # Create output directory
-    output_dir = project_root / 'kaggle' / 'dataset'
+    output_dir = project_root / 'dataset' / 'kaggle' / 'dataset'
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Export main dataset (DROP archetype and seasonal_phase - they're ground truth for validation only)
@@ -408,7 +408,7 @@ For questions, issues, or contributions, please open an issue on the [GitHub rep
     print(f"\nReady for Kaggle upload:")
     print(f"   1. Navigate to: https://www.kaggle.com/datasets")
     print(f"   2. Click 'New Dataset'")
-    print(f"   3. Upload the entire 'kaggle/dataset/' folder")
+    print(f"   3. Upload the entire 'dataset/kaggle/dataset/' folder")
     print(f"   4. Title: 'Household Energy Consumption - Synthetic Behavioral Dataset'")
     print(f"   5. Subtitle: 'Hourly energy data for 200 households with behavioral archetypes'")
     
