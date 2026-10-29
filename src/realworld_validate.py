@@ -127,12 +127,12 @@ class RealWorldReport:
         lines.append("")
         lines.append("## Cluster interpretability")
         lines.append("")
-        lines.append("| Cluster | Share | Peak hour | Evening share |"
+        lines.append("| Cluster | Share | Mean individual peak hour | Evening share |"
                      " Peak-to-avg | CV | Weekend ratio |")
         lines.append("|---------:|------:|----------:|--------------:|-----------:|----:|--------------:|")
         for _, prof in self.cluster_profiles.sort_values("cluster").iterrows():
             peak = prof.get("peak_hour")
-            peak_txt = f"{int(peak):02d}:00" if pd.notna(peak) else "-"
+            peak_txt = f"{peak:.1f}" if pd.notna(peak) else "-"
             lines.append(
                 f"| {int(prof['cluster'])} | {prof.get('size_share', 0):.0%} |"
                 f" {peak_txt} |"
@@ -188,6 +188,7 @@ def _profile_clusters(preprocessed: pd.DataFrame, labels: np.ndarray,
             "peak_hour": (_mean(sub, "_peak_hour") if "_peak_hour" in sub.columns
                           else float("nan")),
             **{col: _mean(sub, col) for col in profile_cols},
+            **{f"mean_{col}": _mean(sub, col) for col in shape_cols},
         })
     profiles = pd.DataFrame(rows)
     for c in range(k):
@@ -261,7 +262,8 @@ def run_real_world_study(panel: pd.DataFrame, facts: dict,
                          k_range: tuple = DEFAULT_K_RANGE,
                          random_state: int = 42,
                          stability_runs: int = DEFAULT_STABILITY_RUNS,
-                         profile: bool = True) -> RealWorldReport:
+                         profile: bool = True,
+                         max_energy_kwh: Optional[float] = None) -> RealWorldReport:
     """Run the real-world validation pathway end to end.
 
     Args:
@@ -274,6 +276,9 @@ def run_real_world_study(panel: pd.DataFrame, facts: dict,
         random_state: Seed for all fits.
         stability_runs: Restarts per K for seed stability.
         profile: Whether to build the interpretable cluster profile (slower).
+        max_energy_kwh: Optional source-specific upper plausibility bound for
+            hourly energy. None disables the generic 1000 kWh default because
+            public client datasets can include commercial or industrial loads.
 
     Returns:
         A RealWorldReport ready to render to markdown.
@@ -283,7 +288,11 @@ def run_real_world_study(panel: pd.DataFrame, facts: dict,
     #    'consumer_id' for within-meter imputation, so rename before cleaning.
     if "meter_id" in panel.columns and "consumer_id" not in panel.columns:
         panel = panel.rename(columns={"meter_id": "consumer_id"})
-    preprocessed = preprocess_pipeline(panel)
+    energy_upper_bound = np.inf if max_energy_kwh is None else max_energy_kwh
+    preprocessed = preprocess_pipeline(
+        panel,
+        column_ranges={"energy_consumption_kwh": (0, energy_upper_bound)},
+    )
 
     n_consumers = int(preprocessed["consumer_id"].nunique())
     if n_consumers < k_range[1]:

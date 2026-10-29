@@ -498,12 +498,12 @@ The SDG contribution is visualized in the [Vercel interactive explorer](https://
 - **Internal indices under-counted real groups on the 30-day window.** The rule chose K = 3 while recovery peaked at K = 4. On the 365-day flagship the same rule lands cleanly on K = 4 (ARI 0.81). On real data such a gap is undetectable, a stated limit of unsupervised clustering.
 - **The ablation/seed study is scoped to one generator** (same 4 archetypes, 30-day, 200-consumer shape). A feature set that wins inside the sim is not shown to be "the right choice for household electricity data."
 - **SHAP is post-hoc and surrogate-led.** `cv_balanced_accuracy` is an honest ceiling for how well the surrogate tracks the clusters, not a claim about the clusters themselves.
-- **The real-world pathway is not yet executed in this repo.** The explorer's real-world card ships the shared codebase's documented demo. `py run_module.py run_realworld -- --demo` reproduces it locally.
+- **Measured-data analysis is available separately from the demo.** The UCI ElectricityLoadDiagrams20112014 analysis script samples 120 client columns, excludes all-zero 2012 profiles, and records results and provenance in `outputs/reports/real_world_uci_load_diagrams_2012.md` and `.json`. The analysis includes 104 active clients; restart ARI was 1.000, while stability across three chronological windows was low (mean ARI 0.288). PCA diagnostics and load-shape plots are saved under `outputs/metrics/real_world/` and `outputs/figures/real_world/`. UCI identifies anonymized points/clients, not necessarily households, and provides no behavioral labels. The source archive is not committed. The small `run_realworld -- --demo` remains a separate synthetic demonstration.
 
 ### 22.7 Future work
 
 - Longer, heterogeneous synthetic horizons and a broader archetype library to tighten the seasonal amplitude and phase recovery bounds.
-- Real-meter validation on a full-year panel (≥ 180 days) to populate the longitudinal lane and stress-test the generic adapter.
+- Repeat measured-data analysis across additional multi-client datasets and years; investigate temporal drift and timestamp conventions.
 - A minimal inference API (an extra web-side shim) for ad-hoc "which cluster is this meter" queries without redeploying.
 - SHAP is installed in the production dependency set. The permutation lane remains an emergency fallback for a genuine SHAP import or runtime failure, so the site can still render diagnostically rather than mislabeling substitute results as SHAP.
 
@@ -614,7 +614,7 @@ graph LR
 ### Special Acknowledgments
 
 - **Zephyr Station** - Custom weather API developed by Shantanu for `season` data integration
-- **UCI Machine Learning Repository** - Household power consumption dataset (real-world pathway)
+- **UCI Machine Learning Repository** - ElectricityLoadDiagrams20112014 multi-client dataset; anonymized clients are not assumed to be households.
 - **Open Source Community** - scikit-learn, pandas, numpy, matplotlib, streamlit, pybind11, Eigen
 
 ---
