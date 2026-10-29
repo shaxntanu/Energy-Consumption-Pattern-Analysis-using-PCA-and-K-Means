@@ -245,8 +245,9 @@ def remove_outliers(df: pd.DataFrame, column: str, method: str = 'iqr',
     return df_clean
 
 
-def preprocess_pipeline(df: pd.DataFrame, required_columns: list = None, 
-                        remove_outliers_flag: bool = False) -> pd.DataFrame:
+def preprocess_pipeline(df: pd.DataFrame, required_columns: list = None,
+                        remove_outliers_flag: bool = False,
+                        column_ranges: dict = None) -> pd.DataFrame:
     """
     Complete preprocessing pipeline with panel/time-series awareness.
     
@@ -254,6 +255,9 @@ def preprocess_pipeline(df: pd.DataFrame, required_columns: list = None,
         df: Input DataFrame
         required_columns: List of required columns for validation
         remove_outliers_flag: If True, remove outliers; if False, only detect and log
+        column_ranges: Optional source-specific physical ranges passed to
+            :func:`detect_invalid_values`. When omitted, the historical project
+            defaults are retained.
         
     Returns:
         Preprocessed DataFrame
@@ -280,7 +284,7 @@ def preprocess_pipeline(df: pd.DataFrame, required_columns: list = None,
         logger.info(f"Sorted by {sort_cols}")
     
     # Detect invalid values (only truly impossible values)
-    df = detect_invalid_values(df)
+    df = detect_invalid_values(df, column_ranges=column_ranges)
     logger.info(f"After detect_invalid_values: {df.columns.tolist()}")
     
     # Handle missing values with within-consumer awareness

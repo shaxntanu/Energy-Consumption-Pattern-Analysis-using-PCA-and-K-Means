@@ -20,8 +20,8 @@
 \usepackage{array}
 \usepackage{xcolor}
 
-% Revision highlighting command
-\newcommand{\rev}[1]{\textcolor{blue}{#1}}
+% Keep the editing wrapper available without revision-color markup.
+\newcommand{\rev}[1]{#1}
 
 % ============================================================================
 % BIBLIOGRAPHY
@@ -39,7 +39,7 @@
 % ============================================================================
 % METADATA
 % ============================================================================
-\title{\textbf{Shape-First Behavioral Segmentation of Household Energy Consumption: A Reproducible Framework with Evidence-Based K-Selection and Controlled Validation: A Reproducible Synthetic Benchmark}}
+\title{\textbf{Shape-First Electricity Load Segmentation: Controlled Synthetic Validation and Unsupervised Analysis of Real Client Data}}
 
 \author{
   Shantanu\\[6pt]
@@ -62,9 +62,9 @@
 % ABSTRACT
 % ============================================================================
 \begin{abstract}
-Household energy consumption segmentation typically groups consumers by total usage magnitude, overlooking temporal behavioral patterns critical for demand response and grid management. We present a reproducible framework that separates consumption magnitude from temporal usage behavior through shape-normalized feature engineering, enabling behavioral clustering that reflects when energy is consumed rather than how much. The framework employs 51 scale-invariant features derived from normalized 24-hour load profiles, applies PCA to retain 95\% variance (10 components), and selects the number of clusters K via a pre-specified multi-criterion composite rule combining silhouette coefficient, Calinski-Harabasz index, Davies-Bouldin index, and multi-seed stability analysis. Validated on a controlled synthetic dataset of 200 consumers over 365 days with known ground-truth behavioral archetypes, the framework achieves K=4 with Adjusted Rand Index (ARI) 0.813 against hidden labels never used during clustering. Multi-seed stability yields mean pairwise ARI 0.995, and temporal stability across quarterly segments achieves mean ARI 0.882, demonstrating robust behavioral groupings independent of seasonal magnitude variations. A comprehensive ablation study shows magnitude-only features achieve near-zero archetype recovery (ARI approximately 0.00) despite highest silhouette scores (0.52), confirming successful separation of scale from behavior. The framework includes complete reproducibility infrastructure with cryptographic configuration hashing, deterministic execution, versioned artifacts, and documented pathways for real-world data adaptation. All code, synthetic data generation, experimental protocols, and results are publicly available. This work contributes methodological rigor and reproducibility standards for behavioral energy analytics rather than novel clustering algorithms.
+We evaluate a reproducible shape-first electricity-load clustering pipeline in two settings. In a controlled synthetic experiment with 200 consumers over 365 days, the selected four-cluster solution attains an Adjusted Rand Index (ARI) of 0.813 against hidden archetype labels. Across 20 shorter synthetic datasets, magnitude-only features have near-zero mean archetype recovery (ARI 0.013), despite a higher silhouette than the behavioral representation. In a separate unsupervised analysis of the UCI ElectricityLoadDiagrams20112014 dataset, a seeded sample of 120 client columns for 2012 contained 16 all-zero clients, which were excluded because normalized load shapes are undefined for them; the remaining 104 clients produced 913,536 hourly records. The pipeline selected K=2, the only candidate from K=2--8 to meet its five-percent minimum cluster-size rule. Eight K-means restarts yielded pairwise ARI 1.000, while independently fitted partitions across three chronological windows had mean pairwise ARI 0.288. These measured-data results show a reproducible full-year fit but weak persistence across time windows; they do not establish behavioral ground truth or household-specific patterns. The UCI clients are not assumed to be households. We report the synthetic and measured-data analyses separately and provide the source hash, sampling record, script, and outputs for replication.
 
-\textbf{Keywords:} household energy consumption, load profile clustering, behavioral segmentation, shape normalization, PCA, K-means, evidence-based K selection, reproducible research, smart meter analytics, demand response
+\textbf{Keywords:} electricity load profiles, client segmentation, shape normalization, PCA, K-means, unsupervised validation, reproducible research, smart meter analytics
 \end{abstract}
 
 % ============================================================================
@@ -101,29 +101,30 @@ Existing household energy clustering studies face several methodological challen
 
 \subsection{Contributions}
 
-This paper addresses these gaps through a comprehensive, reproducible framework for shape-first behavioral segmentation. Our specific contributions are:
+This paper evaluates a reproducible framework for shape-first electricity-load segmentation. Its contributions are:
 
 \begin{enumerate}
     \item \textbf{Shape-Normalized Feature Engineering:} 51 scale-invariant behavioral features derived from normalized 24-hour load profiles, explicitly separating magnitude from temporal patterns.
     
-    \item \textbf{Evidence-Based K Selection:} Pre-specified multi-criterion composite rule combining silhouette, Calinski-Harabasz, Davies-Bouldin, cluster balance constraints, and multi-seed stability, with parsimony preference when solutions are statistically indistinguishable.
+    \item \textbf{Evidence-Based K Selection:} A multi-criterion composite rule combining silhouette, Calinski-Harabasz, Davies-Bouldin, cluster balance constraints, and multi-seed stability, with a heuristic parsimony preference for solutions within a pre-set score tolerance.
     
     \item \textbf{Controlled Validation:} Synthetic dataset with known ground-truth behavioral archetypes enabling quantitative assessment of recovery (ARI=0.813), while explicitly hiding ground truth during all modeling steps.
     
-    \item \textbf{Comprehensive Stability Analysis:} Multi-seed clustering stability (mean ARI=0.995) and temporal stability across quarterly segments (mean ARI=0.882), confirming robust behavioral groupings independent of seasonal variations.
+    \item \textbf{Stability Analysis in Two Settings:} On the synthetic flagship run, multi-seed stability is high (mean ARI=0.995) and quarterly temporal stability is 0.882. On the UCI client sample, restart stability is 1.000 but stability across three chronological windows is lower (mean ARI=0.288); these results are reported separately.
     
     \item \textbf{Rigorous Ablation Study:} Systematic comparison of five feature sets (magnitude-only, shape-only, behavioral, combined) demonstrating that magnitude-only features achieve near-zero behavioral recovery (ARI approximately 0.00) despite highest internal quality metrics.
     
-    \item \textbf{Complete Reproducibility Infrastructure:} Deterministic configuration with cryptographic hashing, pinned dependencies, versioned artifacts, documented execution protocols, and publicly available implementation.
+    \item \textbf{Reproducible Measured-Data Analysis:} A versioned protocol for a seeded 2012 sample from a public multi-client load dataset, with source hash, client IDs, conversion assumptions, and outputs recorded; no ground-truth scores are fabricated for these unlabeled clients.
+    \item \textbf{Reproducibility Infrastructure:} Deterministic configuration, versioned artifacts, documented execution protocols, and a publicly available implementation.
 \end{enumerate}
 
 \subsection{Scope and Positioning}
 
-This work is a methodology paper emphasizing reproducible research practices for behavioral energy analytics. We do not claim novelty in PCA or K-means algorithms (both well-established \cite{jolliffe2002pca,lloyd1982least,arthur2007kmeans}), but rather contribute rigorous implementation, comprehensive validation, and reproducibility standards. The primary experimental validation uses synthetic data with known ground truth; a documented pathway for real-world data exists but is not executed in this study (discussed in Section~\ref{sec:limitations}).
+This work evaluates a reproducible shape-first pipeline in two settings. The controlled synthetic experiment provides known labels for external recovery metrics. A separate analysis uses 120 seeded client columns sampled from UCI's 370-client load-diagram dataset, excluding 16 clients with zero consumption over the selected year; it reports internal quality, restart stability, temporal stability, and profile descriptions without treating unlabeled clusters as ground truth. The UCI clients are not assumed to be residential households. We do not claim novelty in PCA or K-means algorithms (both well-established \cite{jolliffe2002pca,lloyd1982least,arthur2007kmeans}); the contribution is the comparative evaluation protocol and reproducible implementation.
 
 \subsection{Paper Organization}
 
-Section~\ref{sec:literature} reviews related work on household energy clustering, PCA-based dimensionality reduction, and validation methodologies. Section~\ref{sec:dataset} details the synthetic dataset generation and provenance. Section~\ref{sec:methodology} presents the complete analytical pipeline from feature engineering through cluster profiling. Section~\ref{sec:experiments} describes experimental design and evaluation protocols. Section~\ref{sec:results} presents flagship results, ablation studies, and stability analyses. Section~\ref{sec:discussion} interprets findings and practical implications. Section~\ref{sec:limitations} acknowledges methodological constraints and dataset scope. Section~\ref{sec:conclusion} summarizes contributions and future directions.
+Section~\ref{sec:literature} reviews related work on household energy clustering, PCA-based dimensionality reduction, and validation methodologies. Section~\ref{sec:dataset} describes the synthetic and UCI datasets and their provenance. Section~\ref{sec:methodology} presents the analytical pipeline. Section~\ref{sec:experiments} describes experimental design and evaluation protocols. Section~\ref{sec:results} presents synthetic results, the UCI client analysis, ablations, and stability analyses. Section~\ref{sec:discussion} interprets findings and practical implications. Section~\ref{sec:limitations} acknowledges methodological constraints and dataset scope. Section~\ref{sec:conclusion} summarizes contributions and future directions.
 
 % ============================================================================
 % 2. LITERATURE SURVEY
@@ -212,9 +213,9 @@ Our framework addresses these gaps through systematic magnitude-timing separatio
 \subsection{Source Dataset and Data Provenance}
 \label{sec:provenance}
 
-This study uses a fully synthetic dataset generated within the repository. There is no original real-world dataset serving as a basis. The synthetic data generator is implemented in \texttt{src/data\_loader.py} and is designed to produce controlled, reproducible household energy consumption patterns with known ground-truth behavioral archetypes.
+The study uses two datasets with different roles. The controlled experiment uses synthetic data generated within the repository by \texttt{src/data\_loader.py}; it provides known archetype labels for measuring recovery. A separate analysis uses a public UCI multi-client dataset without behavioral labels; it assesses internal structure, restart and temporal stability, and load-shape descriptions. The measured-data analysis does not provide external validation against ground truth.
 
-\textbf{Rationale for Synthetic Data:} Real household smart meter data with known behavioral ground truth is unavailable due to privacy constraints and absence of behavioral labels. Synthetic data enables controlled validation: each consumer is assigned a behavioral archetype, allowing quantitative assessment of clustering recovery while maintaining the independence property critical for evaluating magnitude-timing separation.
+\textbf{Rationale for Synthetic Data:} Measured client data in this study has no behavioral ground truth. Synthetic data therefore enables a controlled recovery analysis: each consumer is assigned an archetype, allowing quantitative assessment of clustering recovery while maintaining the independence property critical for evaluating magnitude-timing separation. The UCI analysis complements this controlled experiment but cannot establish that a cluster corresponds to a real behavior.
 
 \textbf{Generator Design Principles:} The synthetic generator is hand-designed to create four behavioral archetypes with realistic temporal patterns. Two critical design choices ensure the experiment tests magnitude-timing separation:
 
@@ -287,6 +288,15 @@ The flagship experiment uses the following configuration:
 \subsubsection{Ground Truth Handling}
 
 Archetype labels and seasonal phases are stored in the generated dataset but dropped before any preprocessing or modeling. These labels are used exclusively for post-hoc validation via Adjusted Rand Index (ARI) and never influence feature engineering, PCA, or K-means. This independence is verified through dataset integrity checks.
+
+\subsection{Real Client Load-Diagram Dataset}
+\label{sec:real_dataset}
+
+To assess behavior on measured data, we use the UCI ElectricityLoadDiagrams20112014 dataset, which contains 15-minute mean-power measurements in kW for 370 anonymized electricity points/clients across 2011--2014 \cite{trindade2015electricityloaddiagrams}. UCI states that the file is semicolon-delimited, uses Portuguese local-clock timestamps, and provides 96 readings per day, with documented daylight-saving-time adjustments. The dataset does not identify all points as households, so we refer to them as clients throughout this real-data analysis.
+
+We sampled 120 client columns uniformly without replacement using seed 42 and analyzed calendar year 2012, including its 366 days. Sixteen sampled clients had zero total consumption throughout that year and were excluded because a normalized daily shape is undefined for an all-zero profile. The analysis therefore includes 104 clients and 913,536 meter-hour records. The sampled, excluded, and analyzed client IDs are saved in the JSON run record. For each quarter-hour interval, energy is computed as mean kW divided by four; we assume each timestamp labels the interval ending then, assign the reading to the preceding 15-minute interval, and sum four quarter-hour kWh values into local-clock-hour energy. UCI provides Portuguese local-clock timestamps; no timezone conversion is applied. Source values in the selected sample were finite and non-negative. Because client loads can exceed the generic household-oriented preprocessing cap, the real-data run does not impose a fixed upper kWh bound; the IQR diagnostic flags unusual observations but does not remove them. The archive is obtained from UCI and is not redistributed with this repository; the source lists the dataset under CC BY 4.0.
+
+No behavioral labels are supplied for the UCI clients. We therefore report internal clustering metrics, eight K-means restarts, pairwise stability across three equal-duration chronological windows, and descriptive load-shape profiles. ARI/NMI against inferred or fabricated labels are not computed. The complete import and analysis command, client IDs, archive SHA-256, timestamp assumption, and run settings are recorded in the repository's research script and JSON output.
 
 \subsection{Feature Engineering}
 \label{sec:features}
@@ -408,7 +418,7 @@ where $C_k$ is cluster $k$, $\mathbf{c}_k$ is centroid, $\mathbf{t}_i$ is consum
 
 Configuration: n\_init=10 restarts, max\_iter=300, tol=$10^{-4}$, random\_state=42 for determinism.
 
-\subsection{Evidence-Based K Selection}
+\subsection{Multi-Criterion K Selection}
 \label{sec:kselection}
 
 Rather than heuristic K choice, we apply a pre-specified multi-criterion rule evaluated for $K \in \{2, \ldots, 10\}$.
@@ -451,7 +461,7 @@ Algorithm~\ref{alg:kselection} details the selection procedure.
 \end{algorithmic}
 \end{algorithm}
 
-\textbf{Rationale:} Filters ensure non-degenerate, reproducible partitions. Composite score integrates complementary quality signals. Tolerance band with parsimony preference selects simplest statistically-indistinguishable solution.
+\textbf{Rationale:} Balance and stability filters remove degenerate or unstable candidates. The composite score integrates complementary internal quality signals. The tolerance band is a heuristic on the normalized composite score, not a statistical equivalence test; it favors the smallest K within that fixed score margin.
 
 \subsection{Validation Metrics}
 \label{sec:validation}
@@ -473,36 +483,10 @@ Algorithm~\ref{alg:kselection} details the selection procedure.
 
 \textbf{Critical:} ARI and NMI are computed after clustering against hidden archetype labels, never used during modeling.
 
-subsection{Statistical Testing for Between-Cluster Differences}
+\subsection{Post-Clustering Feature Descriptions}
 \label{sec:statistical_tests}
 
-\rev{To rigorously validate that clusters differ meaningfully on behavioral features, we perform statistical testing for each of the 51 features across the K=4 clusters.}
-
-\subsubsection{Test Selection}
-
-\rev{Given the non-normal distribution of many behavioral features and the small sample size (N=200), we use non-parametric tests:}
-
-\begin{itemize}
-    \item \rev{\textbf{Kruskal-Wallis test:} Omnibus test for differences across all K clusters (non-parametric alternative to ANOVA)}
-    \item \rev{\textbf{Effect size:} Eta-squared ($\eta^2 = H / (N-1)$) where H is Kruskal-Wallis statistic}
-    \item \rev{\textbf{Post-hoc pairwise tests:} Mann-Whitney U tests for all cluster pairs}
-    \item \rev{\textbf{Multiple comparison correction:} Holm-Bonferroni method}
-\end{itemize}
-
-\subsubsection{Results}
-
-\rev{Across 51 behavioral features tested:}
-
-\begin{itemize}
-    \item \rev{\textbf{Significant features:} 50/51 (98.0\%) at $\alpha = 0.05$}
-    \item \rev{\textbf{Effect size distribution:} 49 large ($\eta^2 \geq 0.14$), 1 medium ($0.06 \leq \eta^2 < 0.14$), 1 small ($0.01 \leq \eta^2 < 0.06$)}
-    \item \rev{\textbf{Median $\eta^2$:} 0.647}
-    \item \rev{\textbf{Mean $\eta^2$:} 0.580}
-\end{itemize}
-
-\rev{All 24 normalized hourly shape features show large effect sizes ($\eta^2$ range: 0.22-0.83), confirming clusters differ fundamentally in temporal patterns. Key summary features with largest effects include evening\_share ($\eta^2 = 0.846$), profile\_ramp ($\eta^2 = 0.853$), and peak\_concentration ($\eta^2 = 0.797$). Only kurtosis shows medium effect size ($\eta^2 = 0.134$), indicating this feature is less discriminative.}
-
-\rev{These results provide statistical evidence that the K=4 partition captures meaningful behavioral heterogeneity across the feature space.}
+Cluster profiles and feature summaries are reported to describe the partitions. Because the same behavioral features are used to construct the clusters, tests of those features across the resulting clusters are post-selection comparisons and do not provide independent evidence that the partition is meaningful. We therefore treat such contrasts as descriptive and do not use their p-values to validate the clusters. External recovery metrics are reserved for the synthetic experiment, where labels are hidden from model fitting; the real-client dataset has no behavioral ground truth.
 
 \subsection{Alternative Clustering Methods Comparison}
 \label{sec:alternative_clustering}
@@ -526,9 +510,9 @@ subsection{Statistical Testing for Between-Cluster Differences}
 \small
 \caption{Alternative Clustering Method Comparison (K=4)}
 \label{tab:alternative_clustering}
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}p{4.2cm}cccc@{}}
 \toprule
-Method & Silhouette & Calinski-Harabasz & Davies-Bouldin & ARI vs K-Means \\
+Method & Silhouette & CH & DB & ARI vs K-Means \\
 \midrule
 K-means (reference) & 0.328 & 96.6 & 1.169 & -- \\
 GMM (full covariance) & 0.315 & 91.4 & 1.192 & 0.823 \\
@@ -550,7 +534,7 @@ Hierarchical (average) & 0.262 & 6.9 & 0.616 & 0.002 \\
     \item \rev{Hierarchical average linkage produces nearly random partition relative to K-means (ARI=0.002)}
 \end{itemize}
 
-\rev{\textbf{Interpretation:} K-means performs competitively against alternatives on internal quality metrics. The high agreement with hierarchical Ward (ARI=0.868) suggests the partition structure is robust to method choice. We retain K-means as the primary method due to its interpretability, computational efficiency, and widespread adoption in energy analytics literature.}
+\rev{\textbf{Interpretation:} On this synthetic representation and fixed $K=4$, the tested methods have different internal scores and several produce partitions similar to K-means. The comparison does not tune $K$ separately for each method, test on the UCI client data, or show agreement with real behavioral labels. K-means remains the pipeline's reference method; this experiment does not establish its superiority.}
 
 \subsection{Stability Analysis}
 \label{sec:stability}
@@ -761,11 +745,11 @@ Comparing recovered clusters against hidden behavioral archetypes (never used du
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{../outputs/figures/archetype_recovery.png}
-\caption{Ground truth recovery: ARI and NMI vs K. Both metrics peak at K=4 (ARI=0.813, NMI=0.828), exactly where the evidence-based rule selected. This independent validation confirms the selection was correct.}
+\caption{Ground-truth recovery on the synthetic flagship dataset: ARI and NMI versus K. Both metrics peak at K=4 (ARI=0.813, NMI=0.828), the K selected without access to archetype labels in this run. This single result does not establish that the selection rule will recover the true K on other datasets.}
 \label{fig:recovery}
 \end{figure}
 
-\textbf{Key Finding:} ARI peaks at K=4 (0.813), exactly where evidence-based rule selected. This independent validation confirms the selection was correct.
+\textbf{Key Finding:} ARI peaks at K=4 (0.813), which is also the K selected by the internal rule on this synthetic run. This is evidence of alignment for this controlled dataset, not proof that internal selection generally identifies a true K.
 
 \textbf{Confusion Matrix at K=4:} Three archetypes recover near-perfectly (evening 47/50, flat 50/50, weekend 49/50). Daytime archetype splits: 39/50 in Cluster 0, 10/50 in Cluster 3, reflecting behavioral overlap between midday-peaking and evening-peaking patterns when weekend behavior differs.
 
@@ -802,6 +786,44 @@ Quarterly segments re-analyzed independently:
 
 \textbf{Interpretation:} Behavioral groupings are stable properties of the modeled archetypes under the tested seasonal perturbations, not seasonal artifacts. Despite magnitude variations (monthly mean kWh: Jan 26.1 $\rightarrow$ Jun 39.4 $\rightarrow$ Dec 25.3), temporal patterns remain coherent.
 
+\subsection{Unsupervised Analysis of UCI Client Data}
+\label{sec:uci-results}
+
+On the 104 active clients in the seeded 2012 sample, PCA retained 11 of 51 behavioral features (95.54\% cumulative variance). The K-selection procedure selected $K=2$: this was the only candidate in the tested range $K=2$--8 whose reference partition met the five-percent minimum-cluster-size rule. The elbow estimate was $K=4$, but those larger candidates contained clusters below the pre-specified size threshold. Thus, the selected value is the outcome of this heuristic and sample, not an estimate of a true number of behavioral groups. At $K=2$, silhouette was 0.466, Calinski--Harabasz was 37.6, and Davies--Bouldin was 0.908.
+
+The eight fixed-seed K-means restarts produced identical partitions (mean pairwise ARI 1.000). In contrast, refitting the full feature/PCA/clustering pipeline independently in three equal-duration chronological windows produced mean pairwise ARI 0.288 (standard deviation 0.466 across the three window pairs). This low temporal agreement limits any claim that the full-year partition persists through the year. It also shows that restart stability alone is insufficient evidence of temporal robustness.
+
+Table~\ref{tab:uci_cluster_profiles} and Figure~\ref{fig:uci_cluster_shapes} summarize the full-year partition descriptively. Cluster 0 (90 clients, 86.5\%) has a broad profile with more overnight energy share; Cluster 1 (14 clients, 13.5\%) has lower overnight share and greater daytime/afternoon share. Mean individual peak hour and other profile measures describe these sample clusters only. With no behavioral labels, these patterns cannot be interpreted as household routines or validated as useful customer segments.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Descriptive profiles for the full-year UCI client sample ($K=2$).}
+\label{tab:uci_cluster_profiles}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Measure & Cluster 0 & Cluster 1 \\
+\midrule
+Clients ($n$) & 90 & 14 \\
+Share & 86.5\% & 13.5\% \\
+Mean individual peak hour & 16.6 & 18.5 \\
+Evening energy share & 0.282 & 0.334 \\
+Afternoon energy share & 0.289 & 0.377 \\
+Night energy share & 0.174 & 0.092 \\
+Peak-to-average ratio & 2.33 & 2.83 \\
+Coefficient of variation & 0.391 & 0.649 \\
+Weekend ratio & 0.993 & 0.958 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{../outputs/figures/real_world/cluster_load_shapes.png}
+\caption{Mean normalized 24-hour load shape for each UCI client cluster. Each client's profile is normalized by its daily energy before aggregation; the figure is descriptive and does not imply ground-truth behavior.}
+\label{fig:uci_cluster_shapes}
+\end{figure}
+
 \subsection{Feature Ablation}
 
 Five feature sets compared on 30-day window with identical protocol:
@@ -824,20 +846,19 @@ Twenty independent 30-day datasets (seeds 1-19, 42), five feature sets each:
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{../outputs/figures/seed_robustness.png}
-\caption{Seed robustness: archetype ARI across 20 independent datasets. Behavioral features achieve consistent recovery (mean 0.641 $\pm$ 0.115). Scale features consistently fail (mean 0.013 $\pm$ 0.036). Statistical test: behavioral vs scale p=1.9$\times$10$^{-6}$ (highly significant).}
+\caption{Archetype ARI across 20 independently generated synthetic datasets. Behavioral features have mean recovery 0.641 ($\pm$0.115); scale features have mean recovery 0.013 ($\pm$0.036). An unadjusted paired permutation comparison of behavioral versus scale recovery gives $p=1.9\times10^{-6}$; this result applies to the tested synthetic generator.}
 \label{fig:robustness}
 \end{figure}
 
 \textbf{Statistical Tests (Paired Permutation):}
 \begin{itemize}
-    \item Behavioral vs scale: p = 1.9 $\times$ 10$^{-6}$ (highly significant)
-    \item Behavioral vs shape: p = 0.123 (not significant)
-    \item Behavioral vs summary: Close, indistinguishable
+    \item Behavioral vs scale: unadjusted $p = 1.9 \times 10^{-6}$
+    \item Behavioral vs shape: unadjusted $p = 0.123$; this does not establish equivalence or that the methods perform the same
 \end{itemize}
 
-\textbf{Interpretation:} Top three feature sets (behavioral, summary, shape) statistically indistinguishable in recovery. Behavioral selected as shipped feature set based on best mean ARI (0.641) with reasonable interpretability story. Honest reporting: behavioral is not uniquely optimal, but provides best mean performance with scale-invariant design.
+\textbf{Interpretation:} The observed mean ARIs for behavioral, summary, and shape feature sets are close, but these comparisons do not establish equivalence. The behavioral representation is retained for its combination of scale-normalized design and feature-level interpretability; the synthetic experiment does not show that it is uniquely best.
 
-Scale features consistently fail (ARI $\approx$ 0.01) despite highest silhouette (0.521), confirming magnitude-timing separation is critical for behavioral segmentation.
+For this synthetic generator, scale-only features consistently have near-zero archetype recovery (mean ARI $\approx$ 0.01) despite high silhouette. This result is specific to the tested generation and clustering setup.
 
 % ============================================================================
 % 6. DISCUSSION
@@ -847,19 +868,19 @@ Scale features consistently fail (ARI $\approx$ 0.01) despite highest silhouette
 
 \subsection{Principal Findings}
 
-This study demonstrates that shape-normalized behavioral features enable household energy clustering by temporal usage patterns independent of consumption magnitude. Four principal findings emerge:
+The synthetic and measured-data analyses support different, limited conclusions. Four findings emerge:
 
-\textbf{1. Magnitude-Timing Separation is Achievable and Critical.} The ablation study (Figure~\ref{fig:ablation}) provides conclusive evidence: magnitude-only features achieve near-zero behavioral recovery (ARI -0.004) despite highest internal quality (silhouette 0.521). This confirms that raw consumption scale dominates distance calculations when features are not explicitly normalized. The 51-feature behavioral representation successfully isolates timing from magnitude, achieving ARI 0.813 on the flagship 365-day experiment.
+\textbf{1. Magnitude-Timing Separation Helps on the Tested Synthetic Data.} In the ablation study (Figure~\ref{fig:ablation}), magnitude-only features achieve near-zero archetype recovery (ARI -0.004) despite the highest internal silhouette (0.521). This shows that, for this generator and protocol, internal geometric quality does not imply recovery of the intended archetypes. The 51-feature behavioral representation achieves ARI 0.813 on the synthetic flagship run.
 
-\textbf{2. Evidence-Based K Selection Aligns with Ground Truth.} Algorithm~\ref{alg:kselection} selects K=4 using only internal metrics (silhouette, Calinski-Harabasz, Davies-Bouldin, stability), without seeing hidden archetypes. Independent validation confirms K=4 maximizes ARI (0.813) and NMI (0.828) against ground truth (Figure~\ref{fig:recovery}). This alignment suggests the composite multi-criterion approach with stability constraints effectively identifies meaningful structure.
+\textbf{2. K Selection Aligns with Ground Truth on the Synthetic Flagship Run.} Algorithm~\ref{alg:kselection} selects K=4 using only internal metrics (silhouette, Calinski--Harabasz, Davies--Bouldin, stability), without seeing hidden archetypes. In this run, external ARI (0.813) and NMI (0.828) also peak at K=4 (Figure~\ref{fig:recovery}). This single controlled result does not establish general K-recovery performance.
 
-\textbf{3. Behavioral Groupings Are Robust Across Time and Initializations.} Multi-seed stability (ARI 0.995) and temporal stability (mean ARI 0.882 across quarters) demonstrate clusters are reproducible properties of consumers, not random artifacts or seasonal effects. Despite 47\% seasonal magnitude variation (Jun 39.4 kWh/day vs Dec 25.3), temporal patterns remain coherent, validating the magnitude-timing separation.
+\textbf{3. Stability Depends on the Data Setting.} On synthetic data, multi-seed stability is high (ARI 0.995) and temporal stability across quarters is 0.882. In the UCI sample, eight restarts reproduce one full-year partition (ARI 1.000), but independently fitted partitions across three chronological windows have mean ARI 0.288. The UCI result cautions that a stable full-year fit need not persist across time.
 
-\textbf{4. Internal Metrics Alone Cannot Validate Behavioral Segmentation.} The scale-only arm achieves highest silhouette (0.521) yet zero behavioral recovery, demonstrating that internal quality metrics measure cluster compactness but not semantic meaning. Ground truth validation (even synthetic) or domain expert review remains essential for confirming behavioral interpretability.
+\textbf{4. Internal Metrics Alone Cannot Validate Behavioral Segmentation.} On the synthetic ablation, scale-only features have the highest silhouette (0.521) but near-zero archetype recovery. This illustrates that internal metrics describe geometric properties, not semantic agreement. The UCI analysis has no labels to resolve that gap; external labels or domain review would be needed to assess behavioral interpretation.
 
 \subsection{Comparison with Prior Work}
 
-Our framework extends prior household energy clustering studies \cite{kwac2014household,rhodes2014clustering,jin2016loadshape,lazar2021investigating} through systematic integration of: (1) comprehensive 51-feature behavioral representation beyond simple normalization \cite{valdes2021smart} or raw sequences \cite{kwac2014household}; (2) evidence-based K selection combining multiple metrics with stability rather than heuristic choice; (3) controlled validation quantifying recovery against hidden ground truth; (4) comprehensive stability analysis across both random seeds and temporal windows; (5) rigorous ablation demonstrating magnitude-timing separation; (6) complete reproducibility infrastructure.
+This study evaluates an integration of: (1) a 51-feature behavioral representation derived from normalized load shapes; (2) heuristic K selection combining internal metrics, balance, and restart stability; (3) controlled synthetic recovery analysis with hidden labels; (4) seed and temporal stability measurements in both synthetic and measured-client settings; (5) feature ablation; and (6) a reproducible analysis protocol. The results do not establish that this pipeline is superior to prior methods or generally recovers behavioral groups.
 
 Afzalan et al.~\cite{afzalan2020twostage} proposed two-stage clustering separating shape from magnitude using DTW, but did not systematically assess temporal stability or provide controlled validation. Valdes et al.~\cite{valdes2021smart} normalized load shapes for demand response but focused on k-medoids without PCA or multi-criterion K selection. Lazar et al.~\cite{lazar2021investigating} identified temperature as dominant variability driver but did not validate clustering stability across time windows.
 
@@ -867,7 +888,7 @@ Our contribution is methodological integration and reproducibility rather than a
 
 \subsection{Interpretation of Recovered Clusters}
 
-The four clusters exhibit semantically coherent behavioral patterns grounded in SHAP analysis:
+The four synthetic clusters can be described by their generated profiles and post-hoc SHAP summaries. These descriptions concern the modeled dataset; they should not be read as validated consumer types:
 
 \textbf{Cluster 0 (Midday-Peaking Weekday-Heavy, 19.5\%):} Afternoon peak (13:00), elevated afternoon share (0.357), depressed weekend ratio (0.747). The synthetic archetypes suggest this pattern is consistent with home-office workers, daytime HVAC use, or retirees with daytime routines. Weekday focus suggests occupancy-driven consumption in the modeled behavior.
 
@@ -879,7 +900,7 @@ The four clusters exhibit semantically coherent behavioral patterns grounded in 
 
 \subsection{Practical Implications for Demand Response}
 
-The synthetic experiments suggest that behavioral segmentation could enable targeted demand response strategies. These implications are hypotheses derived from the modeled archetypes and require real-data validation and require validation with real smart meter data:
+The synthetic experiments suggest possible demand-response hypotheses. The unlabeled UCI analysis does not validate demand-response effects, customer behavior, or household-specific interpretations:
 
 \textbf{Time-of-Use Pricing:} In the synthetic framework, Clusters 2 and 3 (combined 54.5\%) exhibit strong evening peaking, making them candidates for evening off-peak incentives if this pattern holds in real data. Cluster 0 (19.5\%) midday peakers could potentially benefit from midday solar generation incentives.
 
@@ -893,23 +914,23 @@ The synthetic experiments suggest that behavioral segmentation could enable targ
 
 \subsubsection{Shape Normalization}
 
-The explicit separation of magnitude from timing through Equation~\ref{eq:shape_normalization} addresses a fundamental challenge in energy clustering. Prior work often used raw kWh features \cite{kwac2014household,rhodes2014clustering}, allowing scale to dominate. Simple normalization (z-score) preserves relative magnitude differences. Our approach---dividing by daily total---removes magnitude entirely, enabling pure behavioral clustering. The ablation study conclusively validates this design choice.
+The explicit separation of magnitude from timing through Equation~\ref{eq:shape_normalization} addresses a challenge in energy clustering. Prior work often used raw kWh features \cite{kwac2014household,rhodes2014clustering}, allowing scale to dominate. Dividing each hourly profile by its daily total removes the per-client scale from this representation. The synthetic ablation supports this design for the tested generator; it does not establish that the feature set is optimal for measured clients.
 
 \subsubsection{Evidence-Based K Selection}
 
-Algorithm~\ref{alg:kselection} synthesizes best practices from cluster validation literature \cite{hennig2020comparing,gates2019adjusted}: multiple complementary metrics (silhouette, CH, DB), balance constraints (no outlier isolation), stability validation (multi-seed ARI), and parsimony preference (simplest within tolerance). The alignment between selected K=4 and ground truth recovery peak demonstrates this composite approach outperforms single-metric heuristics.
+Algorithm~\ref{alg:kselection} combines complementary internal metrics (silhouette, CH, DB), balance constraints, restart stability, and a parsimony preference. The synthetic flagship run selects the same K that maximizes external recovery, but this one result does not demonstrate that the composite rule outperforms single-metric heuristics.
 
 \subsubsection{Controlled Validation}
 
-Synthetic data with hidden archetypes enables quantitative recovery assessment impossible with real unlabeled data. Critical design: magnitude drawn independently of archetype, enabling validation of magnitude-timing separation. This controlled approach complements (not replaces) real-world validation, providing mechanistic understanding of method performance.
+Synthetic data with hidden archetypes enables quantitative recovery assessment that is unavailable for the unlabeled UCI clients. In the generator, magnitude is drawn independently of archetype, enabling a controlled assessment of magnitude-timing separation. This experiment complements the measured-client analysis but does not establish generalization to labeled household data.
 
 \subsubsection{Temporal Stability}
 
-Most energy clustering studies report single-window results without temporal validation \cite{kwac2014household,rhodes2014clustering}. Our quarterly re-analysis with full pipeline re-execution (features, PCA, K-selection) per segment provides stronger evidence: mean ARI 0.882 demonstrates consumer groups are stable longitudinal properties, not seasonal artifacts. This finding has practical importance---consumer behavior types persist, enabling long-term program targeting.
+The synthetic quarterly re-analysis has mean ARI 0.882 under the tested seasonal perturbations. The UCI analysis provides a contrasting measured-data result: partitions from three independently fitted chronological windows have mean pairwise ARI 0.288. The synthetic stability result therefore should not be generalized to measured client populations or treated as evidence for long-term program targeting.
 
 \subsection{Reproducibility as Research Contribution}
 
-Beyond methodological findings, this work demonstrates reproducibility standards for computational energy analytics: deterministic configuration with cryptographic hashing (99c7a6631340d301), pinned dependencies, versioned artifacts, documented execution protocols, public code/data availability, and automated integrity validation. The 0.995 multi-seed stability and 0.882 temporal stability would be undetectable without explicit measurement. Future energy clustering studies should adopt similar reproducibility practices to enable independent verification and meta-analysis.
+The repository records deterministic configurations, versioned outputs, and execution protocols. The UCI analysis additionally records the sampled client IDs, zero-consumption exclusions, source archive hash, and timestamp-conversion assumption; the raw archive is not redistributed. These records support replication and scrutiny of the reported results.
 
 % ============================================================================
 % 7. LIMITATIONS
@@ -929,7 +950,7 @@ Beyond methodological findings, this work demonstrates reproducibility standards
 
 \textbf{Moderate Scale:} The flagship experiment uses 200 consumers, which is sufficient for methodological validation but smaller than utility-scale deployments (thousands to millions of meters). Computational scalability has been demonstrated through C++ acceleration, but behavioral patterns at utility scale may differ.
 
-\textbf{Real-World Pathway Not Executed:} A documented pathway for real-world data ingestion exists (src/realworld\_ingest.py, src/realworld\_validate.py) but was not executed in this study. Validation on actual smart meter data remains essential future work.
+\textbf{Limited Measured-Data Scope:} The real-data analysis covers one seeded sample of 104 active clients in a single calendar year from one public dataset. Sixteen sampled columns with zero consumption in 2012 were excluded. The low mean temporal ARI (0.288) indicates that the full-year partition does not persist consistently across the three analyzed windows. UCI describes anonymized points/clients, not necessarily households, and supplies no behavioral labels.
 
 \subsection{Methodological Limitations}
 
@@ -943,9 +964,9 @@ Beyond methodological findings, this work demonstrates reproducibility standards
 
 \subsection{Validation Limitations}
 
-\rev{\textbf{No Benchmark Comparison:} This study does not compare against alternative clustering methods (Gaussian mixture models, hierarchical clustering, DBSCAN, spectral clustering). The selected K-means approach may not be optimal for all datasets.}
+\textbf{Limited Benchmark Scope:} Alternative methods are compared only at fixed $K=4$ on the synthetic flagship representation after PCA. The comparison does not optimize $K$ separately for each method and has not been repeated on UCI data; it therefore cannot establish method superiority or real-world robustness.
 
-\rev{\textbf{Single Flagship Run:} The 365-day results represent a single experimental configuration without bootstrap confidence intervals or uncertainty quantification. Statistical significance of reported metrics cannot be assessed without repeated runs.}
+\textbf{Uncertainty Quantification:} The synthetic 365-day flagship and the UCI sample each use one main configuration. Neither has bootstrap confidence intervals for its internal metrics or cluster profiles. The 20-run feature ablation is a separate synthetic robustness analysis, not uncertainty quantification for the UCI findings.
 
 \rev{\textbf{Post-hoc Explainability:} SHAP analysis explains a post-hoc surrogate random forest, not the K-means clustering directly. The surrogate accuracy (0.985) is the ceiling on explanation quality---features may carry additional information not captured by the surrogate.}
 
@@ -959,16 +980,15 @@ Beyond methodological findings, this work demonstrates reproducibility standards
 
 \subsection{Future Work Required}
 
-\rev{To address these limitations, future work should:}
+To address these limitations, future work should:
 
 \begin{enumerate}
-    \item \rev{Execute the real-world ingestion pathway on publicly available datasets (e.g., UCI Household Electric Power Consumption \cite{uci_household}) or utility data}
-    \item \rev{Add benchmark comparison with alternative clustering methods}
-    \item \rev{Implement bootstrap confidence intervals for flagship metrics}
-    \item \rev{Expand synthetic diversity (more archetypes, larger N, more complex patterns)}
-    \item \rev{Explore non-linear dimensionality reduction methods}
-    \item \rev{Incorporate external variables (weather, demographics) into the clustering framework}
-    \item \rev{Validate cluster interpretations with domain experts or survey data}
+    \item Repeat the measured-data analysis with additional multi-client datasets, samples, and observation years; avoid single-household sources when evaluating cross-client clustering
+    \item Investigate low temporal stability with rolling windows, feature-drift analysis, and sensitivity to timestamp and daylight-saving conventions
+    \item Compare clustering methods on measured data, with method-specific K selection and uncertainty estimates
+    \item Add bootstrap or resampling intervals for internal metrics and descriptive cluster profiles
+    \item Expand synthetic diversity with more archetypes, larger samples, and more complex patterns
+    \item Incorporate external variables where available and validate interpretations with domain experts or labeled survey data
 \end{enumerate}
 
 % ============================================================================
@@ -977,48 +997,48 @@ Beyond methodological findings, this work demonstrates reproducibility standards
 \section{Conclusion}
 \label{sec:conclusion}
 
-This study presents a reproducible framework for behavioral segmentation of household energy consumption that separates consumption magnitude from temporal usage patterns through shape-normalized feature engineering. The framework employs 51 scale-invariant behavioral features, applies PCA to retain 95\% variance (10 components), and selects the number of clusters K via a pre-specified multi-criterion composite rule combining silhouette, Calinski-Harabasz, Davies-Bouldin, and multi-seed stability analysis.
+This study evaluates a reproducible shape-first clustering pipeline using controlled synthetic data and a separate unlabeled multi-client dataset. The pipeline employs 51 behavioral features, PCA, and a heuristic K-selection rule combining internal metrics, cluster-size constraints, and restart stability. It is an evaluation framework rather than a new clustering algorithm.
 
-Validated on a controlled synthetic dataset of 200 consumers over 365 days with known ground-truth behavioral archetypes, the framework achieves K=4 with Adjusted Rand Index (ARI) 0.813 against hidden labels never used during clustering. Multi-seed stability yields mean pairwise ARI 0.995, and temporal stability across quarterly segments achieves mean ARI 0.882, demonstrating robust behavioral groupings independent of seasonal magnitude variations.
+On the 200-consumer, 365-day synthetic flagship dataset, the pipeline selects K=4 and obtains ARI 0.813 against labels withheld from modeling. Across 20 shorter synthetic datasets, scale-only features have mean ARI 0.013 while behavioral features have mean ARI 0.641. These results depend on the generator and do not establish recovery on real consumers.
 
-A comprehensive ablation study provides conclusive evidence that magnitude-only features achieve near-zero behavioral recovery (ARI approximately 0.00) despite highest internal quality metrics (silhouette 0.52), confirming successful separation of scale from behavior. This finding demonstrates that internal clustering metrics alone cannot validate behavioral segmentation---ground truth validation or domain expert review remains essential.
+In the UCI ElectricityLoadDiagrams20112014 analysis, a seeded 120-column sample included 104 clients with nonzero consumption throughout 2012 after excluding 16 all-zero columns. The selection rule chose K=2, the only tested candidate meeting the five-percent cluster-size threshold. Eight restarts agreed perfectly (mean ARI 1.000), but independently fitted partitions across three chronological windows had low mean pairwise ARI (0.288). With no behavioral labels and limited temporal persistence, this analysis describes one sample and does not validate household behavior or demand-response applications.
 
-The framework includes complete reproducibility infrastructure with cryptographic configuration hashing, deterministic execution, versioned artifacts, and documented pathways for real-world data adaptation. All code, synthetic data generation, experimental protocols, and results are publicly available.
+The analysis script, source archive hash, sample IDs, exclusions, settings, report, and figure are recorded in the repository. The UCI archive itself is available from its repository and is not redistributed here.
 
 \subsection{Contributions}
 
-This work contributes methodological rigor and reproducibility standards for behavioral energy analytics rather than novel clustering algorithms. Specific contributions include:
+This work contributes an evaluated protocol for shape-first electricity-load clustering rather than novel clustering algorithms. Specific contributions include:
 
 \begin{enumerate}
     \item Shape-normalized feature engineering (51 scale-invariant features) explicitly separating magnitude from temporal behavior
     \item Evidence-Based K selection with pre-specified multi-criterion composite rule
     \item Controlled validation with synthetic ground truth hidden during modeling
-    \item Comprehensive stability analysis across random seeds and temporal windows
-    \item Rigorous ablation study demonstrating magnitude-timing separation
-    \item Complete reproducibility infrastructure with versioned artifacts
+    \item Separate stability analyses across seeds and time windows for synthetic and measured data
+    \item Synthetic feature ablation and an explicitly unlabeled UCI client analysis
+    \item Reproducibility records for source provenance, sampling, and transformations
 \end{enumerate}
 
 \subsection{Future Directions}
 
-The most critical next step is executing the real-world ingestion pathway on actual smart meter data to validate generalization. Additional future work includes benchmark comparison with alternative clustering methods, uncertainty quantification through bootstrap resampling, and incorporation of external variables (socioeconomic factors, appliance ownership) into the clustering framework.
+Next steps are to repeat the measured-data analysis on additional multi-client datasets and years, investigate temporal drift, compare methods with method-specific K selection, and quantify uncertainty in profiles and internal metrics.
 
 The synthetic validation framework itself provides a foundation for methodological research: new clustering algorithms, feature engineering approaches, or validation metrics can be evaluated against known ground truth before deployment on real data.
 
 \subsection{Reproducibility Statement}
 
-All code, data generation scripts, experimental configurations, and results are publicly available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. Configuration hash for flagship run: 99c7a6631340d301. Interactive results explorer: \url{https://energy-consumption-pattern.vercel.app}. The repository includes complete test suite, documentation, and execution protocols enabling independent replication.
+Analysis code, synthetic generation scripts, experimental configurations, and derived outputs are available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. Configuration hash for the synthetic flagship run: 99c7a6631340d301. The real-data JSON sidecar records the selected client IDs and UCI archive SHA-256 so the analysis can be reproduced from the source dataset.
 
 % ============================================================================
 % ACKNOWLEDGMENTS
 % ============================================================================
 \section*{Acknowledgments}
-The author acknowledges the use of the Zephyr Station weather API for seasonal data integration in the real-world pathway. This research was conducted as part of an academic project on energy consumption pattern analysis.
+This research was conducted as part of an academic project on energy consumption pattern analysis.
 
 % ============================================================================
 % DATA AVAILABILITY
 % ============================================================================
 \section*{Data Availability}
-The synthetic dataset generator, complete analysis pipeline, experimental configurations, and all results are publicly available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. Configuration hash for flagship run: \texttt{99c7a6631340d301}. Interactive results explorer: \url{https://energy-consumption-pattern.vercel.app}.
+The synthetic dataset generator, analysis pipeline, experimental configurations, and derived results are available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. The UCI source archive is available from the UCI Machine Learning Repository under CC BY 4.0 \cite{trindade2015electricityloaddiagrams}; it is not redistributed here. The report and JSON sidecar record the source archive hash, selected IDs, and exclusions. Configuration hash for the synthetic flagship run: \texttt{99c7a6631340d301}. Interactive results explorer: \url{https://energy-consumption-pattern.vercel.app}.
 
 % ============================================================================
 % CODE AVAILABILITY
