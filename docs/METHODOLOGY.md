@@ -1,108 +1,77 @@
-# Methodology Notes
+# Methodology
 
-## Problem statement
+## Study design
 
-Segment electricity consumers by **behavioral usage patterns** (timing, weekend preference, variability), using PCA + K-Means. Magnitude-only splits are insufficient for the project claim.
+The project has three distinct evidence paths:
 
-## Dataset
+1. **Controlled synthetic analysis:** seeded profiles with generator-defined archetypes. Labels are dropped before preprocessing and are used only after clustering to calculate recovery metrics.
+2. **Measured-data analyses:** separate UCI and London scripts with dataset-specific transformations and coverage rules. These data do not provide behavioral labels, so outputs are descriptive/internal-stability analyses.
+3. **Counterfactual load-shift scenarios:** assumptions about flexible fractions and destination windows. They are not observed responses or causal effect estimates.
 
-| Field | Value |
-|-------|-------|
-| Source | **Synthetic** (archetype-based generator in `src/data_loader.py`) |
-| Archetypes | daytime-heavy, evening-heavy, flat/industrial-like, weekend-heavy |
-| Hidden label | `archetype`, validation only; never a K-Means feature |
-| Typical run | 200 consumers × 30 days × hourly |
+Do not pool the results from these paths as if they had the same sampling frame or ground truth.
 
-Generation pipeline per consumer: latent archetype → 24h template → amplitude → peak-timing/shape perturbation → weekday/weekend modifier → noise/spikes → optional weather from **timestamp** (shared across consumers at the same clock time).
+## Synthetic pipeline
 
-See `outputs/reports/dataset_validation_report.md`.
-
-## Preprocessing
-
-```
-schema → timestamp parse → sort(consumer_id, timestamp)
-  → duplicates → invalid-range flag (configurable)
-  → within-consumer ffill/bfill → outlier detect (default: keep peaks)
-```
-
-- No global forward-fill across the full table.
-- Measurement errors (impossible negatives/ranges) vs behavioral extremes are separated.
-- Valid ranges live in `detect_invalid_values(column_ranges=...)`.
-
-## Feature engineering
-
-Three groups:
-
-| Group | Examples | Role |
-|-------|----------|------|
-| **A Behavioral shape** | `hour_0_shape`…`hour_23_shape`, morning/afternoon/evening/night usage | Primary clustering |
-| **B Variability/timing** | peak-to-average, CV, skewness, kurtosis | Primary with A |
-| **C Scale/context** | mean/max/sum energy, electrical means | Secondary / ablation only |
-
-**Weekend definition (documented):**
-
-```
-weekend_ratio = mean(energy | weekend) / mean(energy | weekday)
+```mermaid
+flowchart TD
+    A[Seeded synthetic records] --> B[Schema and timestamp preprocessing]
+    B --> C[Drop archetype and hidden seasonal phase]
+    C --> D[Engineer selected feature set]
+    D --> E[StandardScaler]
+    E --> F[PCA; retain components reaching 95% variance]
+    F --> G[Evaluate K=2 through 10]
+    G --> H[Apply size and restart-stability filters]
+    H --> I[Normalize internal metrics and choose K]
+    I --> J[Profile, export, report]
+    A -. labels held for post-fit check .-> V[ARI / NMI validation]
+    I --> V
 ```
 
-Normalized load shape:
+The 365-day reference run uses 200 consumers, 51 behavioral features, 10 principal components, K=4, and seed 42. The default synthetic generator also supports shorter horizons; a setting is part of a run's configuration hash.
 
-```
-normalized_profile[h] = mean_hourly_energy[h] / sum_h mean_hourly_energy[h]
-```
+## Features
 
-so consumers with different totals can share a cluster if timing matches.
+The behavioral feature set contains:
 
-## PCA
+- 24 normalized hourly mean-load shares. Each consumer's hourly profile is divided by its total, so scalar changes in magnitude do not change this part of the representation.
+- 27 derived timing, variability, and weekend descriptors.
 
-1. Drop identifiers (`consumer_id`).
-2. StandardScaler on the modeling matrix.
-3. Fit full PCA; retain components until cumulative explained variance ≥ **95%** (documented threshold).
-4. Persist scaler, PCA, `feature_names.txt`, metrics CSV, and `analysis_metadata.json`.
+The separate scale feature set contains magnitude summaries. The combined set is used for ablation. Feature groups and selectors are defined in `src/feature_engineering.py`.
 
-Loadings are interpreted descriptively only; signs are not causal.
+## Preprocessing and PCA
 
-## K-Means
+Records are parsed and ordered within consumer. Missing values are handled within consumer boundaries. Outlier removal is configurable and defaults to preserving high values because high consumption can be behavior rather than a data error. StandardScaler is fitted before PCA. The retained component count reaches the configured cumulative variance threshold (0.95 in the reference configuration).
 
-Candidate **K = 2…10**. For each K the pipeline records inertia, silhouette, Calinski-Harabasz, Davies-Bouldin, and stability across random restarts. The selection rule is fixed in advance and never sees the hidden archetype labels:
+PCA loadings and cluster profiles support interpretation; neither is causal evidence.
 
-1. Discard any K whose smallest cluster holds less than 5% of consumers (`MIN_CLUSTER_SHARE = 0.05`) - isolating a handful of outliers is not a segmentation.
-2. Discard any K whose mean pairwise Adjusted Rand Index across restarts falls below 0.60 (`MIN_STABILITY_ARI = 0.60`) - an unstable partition is not a finding.
-3. Combine silhouette, Calinski-Harabasz and Davies-Bouldin (the last negated, so lower is better) into one composite by min-max normalizing each across the surviving candidates.
-4. Among candidates within 0.05 of the best composite (`SCORE_TOLERANCE`), take the smallest K, so two indistinguishable solutions resolve to the simpler one.
+## K selection and validation
 
-If every candidate fails a filter, the filter is relaxed and the relaxation is logged, so a weak result is reported rather than silently invented. There is **no** preference for any particular K. The inertia elbow is computed and reported for comparison only; it does not drive the choice.
+For each candidate K, the pipeline records inertia, silhouette, Calinski–Harabasz, Davies–Bouldin, and restart stability. The current selection implementation in `src/clustering.py`:
 
-- On the shipped run this selects **K = 3** (the elbow suggests 4; K in 6…10 are rejected for leaving a sub-5% cluster). See `outputs/reports/analysis_summary.md`.
-- Persist the exact fitted `KMeans` used for all downstream numbers.
-- K-to-metric display uses **dictionary lookup** (`silhouette_by_k[k]`), never `scores[k-2]`.
+1. Prefers candidates whose smallest cluster is at least 5% of consumers and whose mean pairwise restart ARI is at least 0.60.
+2. Min-max scales silhouette and Calinski–Harabasz (higher is better) and Davies–Bouldin (lower is better), then averages the three scores.
+3. Selects the smallest K within a 0.05 score tolerance of the best candidate.
+4. Relaxes filters and records the relaxation if no candidate qualifies.
 
-## Profiling & recommendations
+The tolerance and filters are heuristics, not statistical equivalence tests. Synthetic ARI/NMI are computed only after K-Means has been fitted. For measured data, only internal metrics, restart stability, temporal stability, and descriptive profiles are reported.
 
-Profiles use **original feature space** (mean/median-oriented fields where available), population baselines, and behavior-derived names.
+## Measured-data studies
 
-Recommendations follow:
+### UCI ElectricityLoadDiagrams20112014
 
-```
-Observation → Trigger metric → Observed value → Population baseline → Suggested action
-```
+The repository copy is loaded by `research/run_uci_load_diagrams_validation.py`. The study samples client columns, excludes all-zero sampled clients, converts quarter-hour readings to hourly energy, and evaluates a 2012 period. A client is not assumed to be a household. Source citation, checksum, license, and command are in [the dataset notes](../dataset/real%20world/README.md).
 
-No universal “add smart meters / renewables” spam; no guaranteed savings claims.
+### London SmartMeter
 
-## Dashboard
+`research/run_london_household_validation.py` reads the partitioned source archive, chooses complete members, applies household coverage filters, and evaluates 2013. The available local archive was truncated; only 11 complete CSV members were analyzed. It is not a representative sample of the full dataset.
 
-One `AnalysisResults` object from `EnergyAnalysis`. Sidebar parameter changes recompute via `config_hash` and clear stale session keys. Pages never fit a separate PCA for evaluation display.
+## Counterfactual scenario
 
-## Ablation
+The UCI scenario in `research/simulate_demand_response_uci.py` reassigns an assumed fraction of selected time-window energy to another window while preserving daily energy by construction. A same-fraction comparator is used. The scenarios compare arithmetic load profiles; they do not model customer utility, rebound, tariffs, costs, grid carbon intensity, or realized response.
 
-Five feature sets are run on the same data, the same seed and the same K-selection rule, so the only thing that varies is which columns go in:
+The [interactive test-bench figure](visualizations.md) uses the saved UCI hourly profiles to show the target-cluster scenario and equal-energy comparator. Its slider interpolates only between the saved baseline and 10% endpoints; it does not refit clustering or introduce new data.
 
-| Arm | Features | Count | Purpose |
-|-----|----------|-------|---------|
-| scale | magnitude summaries | 7 | Magnitude-dominated control |
-| shape | normalized 24-hour profile only | 24 | Timing alone |
-| summary | scalars derived from the profile | 27 | Timing without the raw profile |
-| behavioral | shape + summary (the shipped set) | 51 | Primary scientific experiment |
-| combined | behaviour + magnitude | 58 | Interaction check |
+## Reproducibility
 
-Higher silhouette on scale does **not** override the behavioral objective. The scale arm scores best on silhouette (0.52) yet its agreement with the hidden archetypes is zero (ARI -0.004) - exactly the case the rule was written to resist. On a single draw the rule can land on `shape`; the feature set is fixed from a 20-dataset seed-robustness study that selects `behavioral` on the pooled evidence. See `outputs/reports/ablation_study_report.md` and `outputs/reports/seed_robustness_report.md`.
+Use the scripts and commands linked in [the experiment index](experiments/README.md). Each study should be rerun when source data, transformations, selection settings, or dependencies change. Preserve its raw CSV/JSON sidecars, source checksum, seeds, and environment information.
+\n

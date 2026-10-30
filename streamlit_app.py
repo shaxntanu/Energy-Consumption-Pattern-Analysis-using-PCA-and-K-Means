@@ -61,15 +61,15 @@ def _session_workdir() -> str:
 
 def build_config_from_sidebar() -> AnalysisConfig:
     st.sidebar.markdown(
-        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.82rem;'
-        'letter-spacing:0.12em;text-transform:uppercase;color:#55B7AA;font-weight:600">'
-        "Interactive Simulator</div>"
-        '<div style="color:#677673;font-size:0.82rem;margin:0.35rem 0 0.9rem">'
+        '<div style="font-family:Source Sans,sans-serif;font-size:0.88rem;'
+        'letter-spacing:0;text-transform:none;color:#55B7AA;font-weight:600">'
+        "Interactive simulator</div>"
+        '<div style="color:#A7B6B2;font-size:0.85rem;margin:0.35rem 0 0.9rem">'
         "Adjust parameters and watch the analysis recompute.</div>",
         unsafe_allow_html=True,
     )
 
-    st.sidebar.markdown("### Simulation Controls")
+    st.sidebar.markdown("### Simulation controls")
     st.sidebar.caption(
         "Longer windows reveal seasonal and longitudinal effects; short windows "
         "honestly report `available: false` for those steps.",
@@ -79,19 +79,22 @@ def build_config_from_sidebar() -> AnalysisConfig:
         "Observation window (days)",
         options=[30, 90, 180, 365],
         value=365,
+        key="horizon_days",
         help="30/90/180/365 are the validated horizons (data_loader.VALID_HORIZONS_DAYS). "
              "365 matches the committed dataset (200 consumers x 365 days = 1,752,000 "
              "records); longitudinal and seasonal analyses need it too.",
     )
     n_days = int(horizon_choice)
-    n_consumers = st.sidebar.slider("Consumers", 50, 500, 200, step=10)
+    n_consumers = st.sidebar.slider("Consumers", 50, 500, 200, step=10, key="n_consumers")
     feature_set = st.sidebar.selectbox(
         "Feature set", ["behavioral", "scale", "combined"], index=0,
+        key="feature_set",
         help="behavioral = shape patterns, scale = magnitude, combined = both",
     )
-    random_seed = st.sidebar.number_input("Random seed", min_value=0, value=42, step=1)
+    random_seed = st.sidebar.number_input("Random seed", min_value=0, value=42, step=1, key="random_seed")
     test_stability = st.sidebar.checkbox(
         "Measure clustering stability", value=True,
+        key="test_stability",
         help="Repeats K-Means from several seeds. Turn off for faster runs.",
     )
 
@@ -674,17 +677,17 @@ def page_overview(results: AnalysisResults):
         "This study groups consumers by the shape of their day, not by how much they use.",
     )
     ui.synthetic_badge("Synthetic data - not real households")
-    video_path = ROOT / "visualizations" / "manimgx" / "shape_first_method.mp4"
+    video_path = ROOT / "web" / "public" / "animations" / "shape-first-method.mp4"
     with st.expander("Watch the 10-second method explainer", expanded=False):
         if video_path.is_file():
             st.video(str(video_path))
             st.caption(
                 "Illustrative household curves show why the analysis compares daily "
-                "shape. The feature count, PCA settings, and selected K match the "
-                "documented reference run."
+                "shape. The curve is illustrative; the feature count, PCA settings, "
+                "and selected K match the documented reference run."
             )
         else:
-            st.info("The explainer video is missing. See visualizations/manimgx to rebuild it.")
+            st.info("The explainer video is missing. See visualizations/manimgx/README.md to rebuild it.")
 
     sizes = results.cluster_sizes()
     stability = results.stability_results or {}
@@ -1116,7 +1119,7 @@ def _comparison_table(results, picked):
 
     fig = go.Figure(go.Table(
         header=dict(values=header, fill_color=ui.PANEL_HI, align="left",
-                    font=dict(color=ui.INK, family="IBM Plex Mono, monospace", size=12),
+                    font=dict(color=ui.INK, family="'Source Sans', sans-serif", size=12),
                     line_color=ui.LINE),
         cells=dict(values=table_cols, fill_color=ui.PANEL, align="left",
                    font=dict(color=ui.INK, size=12), line_color=ui.LINE, height=30),
@@ -1489,7 +1492,7 @@ def main():
         tagline="Grouped by the shape of the day, not the size of the bill.",
         links=(("Read the code", content.REPO_URL),),
     )
-    # Last, so the zero-height frame lands at the end of the page rather than
+    # Last, so the one-pixel frame lands at the end of the page rather than
     # opening a gap between sections. The listeners are on the document and the
     # markers are built on demand, so it does not need the charts to exist yet.
     zoom.inject()

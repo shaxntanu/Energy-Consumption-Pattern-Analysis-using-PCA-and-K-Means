@@ -28,6 +28,7 @@ src/outputs/
 /outputs/real_world/
 /visualizations/manimgx/shape_first_method.storyboard.png
 /visualizations/manimgx/ShapeFirstMethod.storyboard.png
+/visualizations/manimgx/.build/
 
 # Research skills and agent infrastructure
 ai-research-skills/

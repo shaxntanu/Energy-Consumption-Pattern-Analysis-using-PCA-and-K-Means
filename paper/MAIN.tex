@@ -18,10 +18,6 @@
 \usepackage{subcaption}
 \usepackage{multirow}
 \usepackage{array}
-\usepackage{xcolor}
-
-% Keep the editing wrapper available without revision-color markup.
-\newcommand{\rev}[1]{#1}
 
 % ============================================================================
 % BIBLIOGRAPHY
@@ -39,7 +35,7 @@
 % ============================================================================
 % METADATA
 % ============================================================================
-\title{\textbf{Shape-First Electricity Load Segmentation: Controlled Synthetic Validation and Unsupervised Analysis of Real Client Data}}
+\title{\textbf{Evaluating Shape-First Electricity Load Segmentation: Synthetic Benchmarks and Exploratory Analyses of Real-World Meter Data}}
 
 \author{
   Shantanu\\[6pt]
@@ -62,7 +58,7 @@
 % ABSTRACT
 % ============================================================================
 \begin{abstract}
-We evaluate a reproducible shape-first electricity-load clustering pipeline in two settings. In a controlled synthetic experiment with 200 consumers over 365 days, the selected four-cluster solution attains an Adjusted Rand Index (ARI) of 0.813 against hidden archetype labels. Across 20 shorter synthetic datasets, magnitude-only features have near-zero mean archetype recovery (ARI 0.013), despite a higher silhouette than the behavioral representation. In a separate unsupervised analysis of the UCI ElectricityLoadDiagrams20112014 dataset, a seeded sample of 120 client columns for 2012 contained 16 all-zero clients, which were excluded because normalized load shapes are undefined for them; the remaining 104 clients produced 913,536 hourly records. The pipeline selected K=2, the only candidate from K=2--8 to meet its five-percent minimum cluster-size rule. Eight K-means restarts yielded pairwise ARI 1.000, while independently fitted partitions across three chronological windows had mean pairwise ARI 0.288. These measured-data results show a reproducible full-year fit but weak persistence across time windows; they do not establish behavioral ground truth or household-specific patterns. The UCI clients are not assumed to be households. We report the synthetic and measured-data analyses separately and provide the source hash, sampling record, script, and outputs for replication.
+We evaluate a reproducible shape-first electricity-load clustering pipeline through controlled synthetic experiments and exploratory analyses of two unlabeled measured-data sources. Across 20 independent synthetic datasets of 200 consumers over 365 days, fixed-$K=4$ clustering with 51 behavioral features and PCA achieves mean ARI 0.854 (95\% bootstrap CI [0.825, 0.880]) against hidden archetypes, compared with 0.693 [0.655, 0.732] for a normalized 24-hour shape baseline without PCA. The paired ARI difference is 0.161 [0.125, 0.201]. PCA changes the shape-only result by 0.000 [-0.005, 0.006]; the heuristic K-selection rule chooses $K=3$ in 7 of 20 runs and $K=4$ in 13, with mean ARI 0.778 [0.719, 0.836]. Intervals resample generator seeds and do not quantify real-population uncertainty. In the UCI ElectricityLoadDiagrams20112014 sample, the pipeline selects $K=2$ for 104 active clients in 2012; eight restarts agree (ARI 1.000), while three independently fitted chronological partitions have mean pairwise ARI 0.288. A London SmartMeter analysis covers 292 coverage-eligible households found in 11 complete CSV members recovered from a truncated archive. Its selected $K=3$ partition contains a singleton cluster, and monthly agreement with the annual partition ranges from approximately 0.000 to 0.957 (mean 0.609). Neither measured dataset has behavioral ground truth. Retrospective load-shifting scenarios preserve daily energy by construction and assume flexibility; they do not estimate causal response or realized savings. The results support the tested synthetic comparison and document the limits of stability and interpretation in these measured-data samples.
 
 \textbf{Keywords:} electricity load profiles, client segmentation, shape normalization, PCA, K-means, unsupervised validation, reproducible research, smart meter analytics
 \end{abstract}
@@ -104,18 +100,12 @@ Existing household energy clustering studies face several methodological challen
 This paper evaluates a reproducible framework for shape-first electricity-load segmentation. Its contributions are:
 
 \begin{enumerate}
-    \item \textbf{Shape-Normalized Feature Engineering:} 51 scale-invariant behavioral features derived from normalized 24-hour load profiles, explicitly separating magnitude from temporal patterns.
-    
-    \item \textbf{Evidence-Based K Selection:} A multi-criterion composite rule combining silhouette, Calinski-Harabasz, Davies-Bouldin, cluster balance constraints, and multi-seed stability, with a heuristic parsimony preference for solutions within a pre-set score tolerance.
-    
-    \item \textbf{Controlled Validation:} Synthetic dataset with known ground-truth behavioral archetypes enabling quantitative assessment of recovery (ARI=0.813), while explicitly hiding ground truth during all modeling steps.
-    
-    \item \textbf{Stability Analysis in Two Settings:} On the synthetic flagship run, multi-seed stability is high (mean ARI=0.995) and quarterly temporal stability is 0.882. On the UCI client sample, restart stability is 1.000 but stability across three chronological windows is lower (mean ARI=0.288); these results are reported separately.
-    
-    \item \textbf{Rigorous Ablation Study:} Systematic comparison of five feature sets (magnitude-only, shape-only, behavioral, combined) demonstrating that magnitude-only features achieve near-zero behavioral recovery (ARI approximately 0.00) despite highest internal quality metrics.
-    
-    \item \textbf{Reproducible Measured-Data Analysis:} A versioned protocol for a seeded 2012 sample from a public multi-client load dataset, with source hash, client IDs, conversion assumptions, and outputs recorded; no ground-truth scores are fabricated for these unlabeled clients.
-    \item \textbf{Reproducibility Infrastructure:} Deterministic configuration, versioned artifacts, documented execution protocols, and a publicly available implementation.
+    \item A 51-feature, scale-invariant representation and a heuristic K-selection procedure, evaluated as an integrated pipeline rather than as novel PCA or K-means algorithms.
+    \item Controlled synthetic recovery experiments that keep hidden archetype labels out of feature construction and model fitting.
+    \item A 20-seed, full-year benchmark comparing normalized 24-hour shape and behavioral features, with and without PCA, and reporting seed-level confidence intervals.
+    \item Separate measured-data analyses of 104 UCI clients and 292 London households, with restart/monthly stability and descriptive profiles; the London result explicitly exposes a singleton cluster and archive-coverage limitation.
+    \item Retrospective, energy-preserving peak-shift scenarios on both measured-data samples, including a matched-energy UCI comparator and explicit limits on claims about actual response or savings.
+    \item Reproducibility records that include scripts, derived tables and figures, source hashes, sampling/coverage decisions, and transformation assumptions.
 \end{enumerate}
 
 \subsection{Scope and Positioning}
@@ -124,7 +114,7 @@ This work evaluates a reproducible shape-first pipeline in two settings. The con
 
 \subsection{Paper Organization}
 
-Section~\ref{sec:literature} reviews related work on household energy clustering, PCA-based dimensionality reduction, and validation methodologies. Section~\ref{sec:dataset} describes the synthetic and UCI datasets and their provenance. Section~\ref{sec:methodology} presents the analytical pipeline. Section~\ref{sec:experiments} describes experimental design and evaluation protocols. Section~\ref{sec:results} presents synthetic results, the UCI client analysis, ablations, and stability analyses. Section~\ref{sec:discussion} interprets findings and practical implications. Section~\ref{sec:limitations} acknowledges methodological constraints and dataset scope. Section~\ref{sec:conclusion} summarizes contributions and future directions.
+Section~\ref{sec:literature} reviews prior work. Section~\ref{sec:dataset} describes the synthetic, UCI, and London data and their provenance. Section~\ref{sec:methodology} presents the pipeline. Section~\ref{sec:experiments} describes the seed replication, baselines, and measured-data protocols. Section~\ref{sec:results} reports recovery, stability, profiles, and retrospective scenarios. Sections~\ref{sec:discussion}--\ref{sec:conclusion} discuss interpretation, limitations, and future work.
 
 % ============================================================================
 % 2. LITERATURE SURVEY
@@ -213,7 +203,7 @@ Our framework addresses these gaps through systematic magnitude-timing separatio
 \subsection{Source Dataset and Data Provenance}
 \label{sec:provenance}
 
-The study uses two datasets with different roles. The controlled experiment uses synthetic data generated within the repository by \texttt{src/data\_loader.py}; it provides known archetype labels for measuring recovery. A separate analysis uses a public UCI multi-client dataset without behavioral labels; it assesses internal structure, restart and temporal stability, and load-shape descriptions. The measured-data analysis does not provide external validation against ground truth.
+The study uses a controlled synthetic dataset and two public measured-data sources. Synthetic archetype labels support recovery metrics but are withheld from modeling. The UCI ElectricityLoadDiagrams20112014 data provide unlabeled electricity-client time series. The London SmartMeter data provide household readings, but the analysis is limited to a convenience subset of complete CSV members from an incomplete local archive. Neither measured-data source provides behavioral ground truth.
 
 \textbf{Rationale for Synthetic Data:} Measured client data in this study has no behavioral ground truth. Synthetic data therefore enables a controlled recovery analysis: each consumer is assigned an archetype, allowing quantitative assessment of clustering recovery while maintaining the independence property critical for evaluating magnitude-timing separation. The UCI analysis complements this controlled experiment but cannot establish that a cluster corresponds to a real behavior.
 
@@ -297,6 +287,13 @@ To assess behavior on measured data, we use the UCI ElectricityLoadDiagrams20112
 We sampled 120 client columns uniformly without replacement using seed 42 and analyzed calendar year 2012, including its 366 days. Sixteen sampled clients had zero total consumption throughout that year and were excluded because a normalized daily shape is undefined for an all-zero profile. The analysis therefore includes 104 clients and 913,536 meter-hour records. The sampled, excluded, and analyzed client IDs are saved in the JSON run record. For each quarter-hour interval, energy is computed as mean kW divided by four; we assume each timestamp labels the interval ending then, assign the reading to the preceding 15-minute interval, and sum four quarter-hour kWh values into local-clock-hour energy. UCI provides Portuguese local-clock timestamps; no timezone conversion is applied. Source values in the selected sample were finite and non-negative. Because client loads can exceed the generic household-oriented preprocessing cap, the real-data run does not impose a fixed upper kWh bound; the IQR diagnostic flags unusual observations but does not remove them. The archive is obtained from UCI and is not redistributed with this repository; the source lists the dataset under CC BY 4.0.
 
 No behavioral labels are supplied for the UCI clients. We therefore report internal clustering metrics, eight K-means restarts, pairwise stability across three equal-duration chronological windows, and descriptive load-shape profiles. ARI/NMI against inferred or fabricated labels are not computed. The complete import and analysis command, client IDs, archive SHA-256, timestamp assumption, and run settings are recorded in the repository's research script and JSON output.
+
+\subsection{London Household Smart-Meter Data}
+\label{sec:london_dataset}
+
+The London Datastore describes the SmartMeter Energy Consumption Data in London Households as half-hourly household kWh readings for 5,567 households from 2011 to 2014, under a Creative Commons Attribution license \cite{london_smartmeter_datastore}. The analysis uses calendar year 2013. The locally available partitioned ZIP was truncated at 50 MiB, so only 11 complete CSV members could be recovered. These members contain 319 distinct household IDs. We retained households with at least 99.6\% of expected half-hour records and at least one reading in each month; all 292 eligible households in these members were analyzed. This sample is not representative of the full London dataset or population. The complete member list, source-prefix hash, member hashes, household IDs, and coverage results are in the JSON sidecar. Exact duplicate rows are removed before hourly aggregation; raw meter data are not redistributed.
+
+For each retained household, half-hourly kWh values are aggregated to hourly kWh and passed through the same 51-feature, PCA, and K-means pipeline used elsewhere. The annual run considers K=2--8 with eight restarts. For monthly agreement, the feature/PCA/clustering pipeline is refit separately for each month with annual K fixed at 3. ARI is agreement with the full-year partition, not ground truth; 95\% percentile intervals use 2,000 household bootstrap resamples per month and are conditional on the sampled members, annual labels, and chosen K.
 
 \subsection{Feature Engineering}
 \label{sec:features}
@@ -491,19 +488,19 @@ Cluster profiles and feature summaries are reported to describe the partitions. 
 \subsection{Alternative Clustering Methods Comparison}
 \label{sec:alternative_clustering}
 
-\rev{To assess whether K-means is the appropriate clustering method for this problem, we compare it against alternative approaches on the same PCA-reduced representation (10 components, 95\% variance).}
+To assess whether K-means is the appropriate clustering method for this problem, we compare it against alternative approaches on the same PCA-reduced representation (10 components, 95\% variance).
 
 \subsubsection{Methods Compared}
 
 \begin{enumerate}
-    \item \rev{\textbf{K-means:} Reference method, spherical clusters, equal variance assumption}
-    \item \rev{\textbf{Gaussian Mixture Model (GMM):} Probabilistic clustering, tested with four covariance types (full, tied, diagonal, spherical)}
-    \item \rev{\textbf{Hierarchical clustering:} Agglomerative clustering with three linkage methods (ward, complete, average)}
+    \item \textbf{K-means:} Reference method, spherical clusters, equal variance assumption
+    \item \textbf{Gaussian Mixture Model (GMM):} Probabilistic clustering, tested with four covariance types (full, tied, diagonal, spherical)
+    \item \textbf{Hierarchical clustering:} Agglomerative clustering with three linkage methods (ward, complete, average)
 \end{enumerate}
 
 \subsubsection{Comparison Results}
 
-\rev{Table~\ref{tab:alternative_clustering} summarizes the comparison at K=4.}
+Table~\ref{tab:alternative_clustering} summarizes the comparison at K=4.
 
 \begin{table}[ht]
 \centering
@@ -526,15 +523,15 @@ Hierarchical (average) & 0.262 & 6.9 & 0.616 & 0.002 \\
 \end{tabular}
 \end{table}
 
-\rev{\textbf{Key Findings:}}
+\textbf{Key Findings:}
 \begin{itemize}
-    \item \rev{K-means achieves the highest silhouette (0.328) among all methods}
-    \item \rev{Hierarchical Ward shows highest agreement with K-means (ARI=0.868), indicating similar partition structure}
-    \item \rev{GMM with full covariance achieves reasonable performance (silhouette 0.315, ARI vs K-means 0.823)}
-    \item \rev{Hierarchical average linkage produces nearly random partition relative to K-means (ARI=0.002)}
+    \item K-means achieves the highest silhouette (0.328) among all methods
+    \item Hierarchical Ward shows highest agreement with K-means (ARI=0.868), indicating similar partition structure
+    \item GMM with full covariance achieves reasonable performance (silhouette 0.315, ARI vs K-means 0.823)
+    \item Hierarchical average linkage produces nearly random partition relative to K-means (ARI=0.002)
 \end{itemize}
 
-\rev{\textbf{Interpretation:} On this synthetic representation and fixed $K=4$, the tested methods have different internal scores and several produce partitions similar to K-means. The comparison does not tune $K$ separately for each method, test on the UCI client data, or show agreement with real behavioral labels. K-means remains the pipeline's reference method; this experiment does not establish its superiority.}
+\textbf{Interpretation:} On this synthetic representation and fixed $K=4$, the tested methods have different internal scores and several produce partitions similar to K-means. The comparison does not tune $K$ separately for each method, test on the UCI client data, or show agreement with real behavioral labels. K-means remains the pipeline's reference method; this experiment does not establish its superiority.
 
 \subsection{Stability Analysis}
 \label{sec:stability}
@@ -616,7 +613,15 @@ Each feature set undergoes identical preprocessing, standardization, PCA (95\% t
 
 \subsection{Robustness Study Design}
 
-To assess generalization across datasets, we generate 20 independent 30-day datasets (seeds 1-19, 42). For each dataset, we evaluate all five feature sets and record archetype recovery ARI. Statistical significance is assessed via paired permutation tests.
+The existing 20-run, 30-day ablation is treated as exploratory evidence for the tested generator. Paired permutation results describe seed-paired differences within that generator; they do not validate semantic cluster meaning or generalize to measured households.
+
+\subsection{Full-Year Synthetic Replication and Shape Baselines}
+
+We independently regenerate 20 datasets of 200 consumers over 365 days using data seeds 100--119 and separate model seeds 10000--10019. For each run, we evaluate (i) normalized 24-hour bins without PCA, (ii) the same bins with PCA retaining 95\% variance, (iii) the 51-feature behavioral representation without PCA, and (iv) the 51-feature representation with PCA at 95\% variance, each at fixed K=4. We additionally evaluate the 51-feature PCA pipeline with the repository's K-selection rule. Eight K-means restart seeds are used for each K candidate. Ground-truth archetypes are accessed only after fitting to compute ARI and NMI. Reported 95\% percentile intervals use 5,000 bootstrap resamples of the 20 independent generator seeds; they represent seed-to-seed variability under this generator, not sampling uncertainty for households. Paired ARI contrasts use matched generator seeds.
+
+\subsection{Measured-Data Stability and Peak-Shift Scenarios}
+
+For London, the annual K-selection procedure is applied to the 292 coverage-eligible households found in the recovered archive members. Monthly fits use the same households and hold K fixed at the annual selection. The peak-shift scenario identifies the cluster with the highest mean household 17:00--21:00 energy share, shifts an assumed 10\% of its energy evenly into 12:00--17:00, and compares this with shifting the same fraction from non-target clusters. Because cluster totals differ, shifted energy also differs; effects per MWh shifted are therefore reported. For UCI, the previously analyzed 104-client sample is used. The target is the cluster with the highest mean client 17:00--21:00 energy share; 10\% of its evening-window energy is moved to 12:00--17:00. The comparator shifts equal aggregate energy from non-target clusters, allowing a matched-energy comparison. Both scenarios conserve daily energy by construction and assume the specified flexibility; they do not estimate causal response or realized savings.
 
 \subsection{Evaluation Protocols}
 
@@ -636,7 +641,7 @@ All experiments follow strict protocols:
 \section{Results}
 \label{sec:results}
 
-This section presents results from the flagship 365-day experiment (configuration hash 99c7a6631340d301), ablation study, and robustness analyses. All numerical values are traceable to outputs/reports/analysis\_summary.md and models/analysis\_metadata.json.
+This section reports the synthetic flagship and 365-day seed replication, the 30-day ablation, and the separate UCI and London analyses. Every newly added result is traceable to a script and sidecar under \texttt{research/} and \texttt{outputs/research\_additions/}.
 
 \subsection{Dataset Characteristics}
 
@@ -656,14 +661,14 @@ Applying PCA to the standardized 51-feature matrix with 95\% cumulative variance
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{../outputs/figures/pca_projection_2d.png}
-\caption{\rev{PC1 vs PC2 projection of consumers colored by cluster assignment. The four clusters show separation in the principal component space, with PC1 capturing profile shape variation and PC2 capturing day/night balance.}}
+\caption{PC1 vs PC2 projection of consumers colored by cluster assignment. The four clusters show separation in the principal component space, with PC1 capturing profile shape variation and PC2 capturing day/night balance.}
 \label{fig:pca_projection}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.9\textwidth]{../outputs/figures/component_loadings.png}
-\caption{\rev{PCA loadings heatmap showing correlations between original features and principal components. Darker colors indicate stronger correlations. The heatmap confirms PC1 is dominated by profile shape features, PC2 by day/night balance, and PC3 by morning patterns.}}
+\caption{PCA loadings heatmap showing correlations between original features and principal components. Darker colors indicate stronger correlations. The heatmap confirms PC1 is dominated by profile shape features, PC2 by day/night balance, and PC3 by morning patterns.}
 \label{fig:pca_loadings}
 \end{figure}
 
@@ -824,6 +829,118 @@ Weekend ratio & 0.993 & 0.958 \\
 \label{fig:uci_cluster_shapes}
 \end{figure}
 
+\subsubsection{UCI Retrospective Peak-Shift Scenario}
+
+On the 104-client sample, the evening-heavy cluster contains 14 clients. Shifting 10\% of this cluster's 17:00--21:00 energy to 12:00--17:00 reduces the sample's evening peak by 5.64\%. A matched-energy shift from the other clusters reduces it by 5.62\%, a nearly identical result. Both scenarios move the whole-day peak from 18:00 to 16:00 and raise it from 179,126.6 kW to 185,212.5 kW. The scenario is an energy-preserving counterfactual, not measured demand response; the new afternoon peak shows that destination-hour choice matters.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{UCI matched-energy retrospective peak-shift scenarios.}
+\label{tab:uci_demand_response}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Scenario & Shifted energy (kWh/day) & Evening peak reduction & Whole-day peak after shift (kW @ hour) \\
+\midrule
+Target evening-heavy cluster & 39,610.397 & 10,095.956 kW (5.64\%) & 185,212.520 @ 16:00 \\
+Equal-energy non-target comparator & 39,610.397 & 10,065.986 kW (5.62\%) & 185,212.520 @ 16:00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.82\textwidth]{../outputs/figures/research_additions/demand_response_uci_2012.png}
+\caption{UCI retrospective peak-shift scenario. Shifting energy out of the evening window creates a higher afternoon whole-day peak under the assumed destination profile.}
+\label{fig:uci_demand_response}
+\end{figure}
+
+\subsection{Exploratory Household Validation on London Data}
+\label{sec:london_results}
+
+The 292 coverage-eligible households yield 2,557,790 household-hour records for 2013. PCA retains 19 components (95.62\% cumulative variance). The K-selection procedure selects K=3, with silhouette 0.612 and mean pairwise restart ARI 0.979 over eight restarts. However, no candidate from K=2--8 satisfies the 5\% minimum-cluster-share rule, so the procedure relaxes that filter; the selected clusters contain 11, 280, and 1 household. The singleton makes the solution poorly suited to substantive interpretation despite high restart agreement. The profiles below are descriptive only.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Descriptive profiles for the selected London household partition. Cluster 2 is a singleton.}
+\label{tab:london_cluster_profiles}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Cluster & Households & Share & Mean peak hour & Mean 18:00--24:00 share \\
+\midrule
+0 & 11 & 3.8\% & 3.5 & 0.244 \\
+1 & 280 & 95.9\% & 17.0 & 0.323 \\
+2 & 1 & 0.3\% & 8.0 & 0.001 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{../outputs/figures/research_additions/london_household_clusters_2013.png}
+\caption{Descriptive annual profiles of clusters in the recovered London household subset. The singleton and archive-member sampling limit interpretation.}
+\label{fig:london_clusters}
+\end{figure}
+
+Monthly partitions are less consistent than restart runs. Each month is independently refit on the same households with annual K fixed at 3. Mean ARI against the annual partition is 0.609, but monthly ARI ranges from approximately 0.000 in August to 0.957 in November. The bootstrap intervals are conditional on this selected subset and the annual clustering; they are not population-level intervals.
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\caption{Monthly agreement with the full-year London partition. The 95\% intervals resample households and are conditional on the annual labels and selected archive members.}
+\label{tab:london_monthly_stability}
+\begin{tabular}{@{}rr@{}}
+\toprule
+Month & ARI [95\% household-bootstrap CI] \\
+\midrule
+Jan & 0.800 [0.552, 0.958] \\
+Feb & 0.866 [0.679, 1.000] \\
+Mar & 0.952 [0.824, 1.000] \\
+Apr & 0.333 [0.185, 0.479] \\
+May & 0.778 [0.529, 0.943] \\
+Jun & 0.029 [0.004, 0.065] \\
+Jul & 0.743 [0.508, 0.913] \\
+Aug & 0.000 [-0.024, 0.035] \\
+Sep & 0.026 [0.002, 0.065] \\
+Oct & 0.908 [0.745, 1.000] \\
+Nov & 0.957 [0.848, 1.000] \\
+Dec & 0.916 [0.768, 1.000] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.82\textwidth]{../outputs/figures/research_additions/london_household_monthly_stability_2013.png}
+\caption{Monthly agreement with the full-year London partition; intervals are conditional household-bootstrap intervals.}
+\label{fig:london_monthly_stability}
+\end{figure}
+
+In the London peak-shift scenario, shifting an assumed 10\% of the 17:00--21:00 energy from the 280-household evening-heavy cluster moves 69.16 kWh per average day and reduces the sampled evening peak by 18.05 kW (9.72\%). Shifting the same fraction from non-target clusters moves only 2.11 kWh/day and reduces the peak by 0.51 kW (0.28\%). Because the scenario volumes differ, these absolute effects are not a matched-dose targeting comparison; reductions per MWh shifted are 260.97 and 242.12 kW/MWh, respectively. Total daily energy is unchanged by construction. These values depend on assumed flexibility, and the singleton cluster plus nonrepresentative archive subset preclude program recommendations.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{London retrospective peak-shift scenarios on the sampled household subset.}
+\label{tab:london_demand_response}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Scenario & Shifted energy (kWh/day) & Evening peak change & Reduction (kW/MWh) & Whole-day peak after shift \\
+\midrule
+Target evening-heavy cluster & 69.163 & -18.049 kW (-9.72\%) & 260.97 & 167.787 kW @ 16:30 \\
+Same-fraction non-target comparator & 2.109 & -0.511 kW (-0.28\%) & 242.12 & 185.092 kW @ 19:00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.82\textwidth]{../outputs/figures/research_additions/london_household_demand_response_2013.png}
+\caption{Assumption-driven London household peak-shift scenarios. The target and non-target scenarios shift different amounts of energy.}
+\label{fig:london_demand_response}
+\end{figure}
+
 \subsection{Feature Ablation}
 
 Five feature sets compared on 30-day window with identical protocol:
@@ -860,6 +977,40 @@ Twenty independent 30-day datasets (seeds 1-19, 42), five feature sets each:
 
 For this synthetic generator, scale-only features consistently have near-zero archetype recovery (mean ARI $\approx$ 0.01) despite high silhouette. This result is specific to the tested generation and clustering setup.
 
+\subsection{Full-Year Synthetic Replication and Shape Baselines}
+\label{sec:synthetic_replication}
+
+Across 20 independent 365-day datasets, the 51-feature behavioral representation at fixed K=4 reaches mean ARI 0.854 (95\% seed-bootstrap CI [0.825, 0.880]), compared with 0.693 [0.655, 0.732] for normalized 24-hour bins without PCA. The paired ARI difference is 0.161 [0.125, 0.201]. Applying PCA to the 24-bin baseline changes mean ARI by 0.000 [-0.005, 0.006], whereas the behavioral representation with PCA has mean ARI 0.854 [0.825, 0.880]. These PCA comparisons are conditional on this generator and feature scaling; they do not establish a general effect of PCA.
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\caption{Full-year synthetic recovery across 20 independent generator seeds. Intervals bootstrap seeds, not consumers or households.}
+\label{tab:synthetic_365_replication}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}p{5.0cm}ccc>{\centering\arraybackslash}p{2.0cm}@{}}
+\toprule
+Representation and model & ARI [95\% CI] & NMI [95\% CI] & Silhouette & K counts \\
+\midrule
+24 normalized hourly bins, no PCA, K=4 & 0.693 [0.655, 0.732] & 0.719 [0.691, 0.746] & 0.331 & 4: 20 \\
+24 normalized hourly bins, PCA 95\%, K=4 & 0.693 [0.657, 0.729] & 0.718 [0.693, 0.743] & 0.346 & 4: 20 \\
+51 behavioral features, no PCA, K=4 & 0.851 [0.825, 0.875] & 0.846 [0.825, 0.866] & 0.299 & 4: 20 \\
+51 behavioral features, PCA 95\%, K=4 & 0.854 [0.825, 0.880] & 0.848 [0.825, 0.870] & 0.321 & 4: 20 \\
+51 behavioral features, PCA 95\%, selected K & 0.778 [0.719, 0.836] & 0.799 [0.756, 0.838] & 0.325 & 3: 7; 4: 13 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The selected-K row is lower than the fixed-K=4 behavioral row because it chooses K=3 in seven seeds; this is an observed limitation of the heuristic under this generator. Paired ARI differences from the no-PCA 24-bin baseline are +0.000 [-0.005, 0.006] for its PCA version, +0.158 [0.122, 0.197] for behavioral features without PCA, +0.161 [0.125, 0.201] for behavioral features with PCA at fixed K=4, and +0.085 [0.028, 0.139] for the selected-K pipeline.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.86\textwidth]{../outputs/figures/research_additions/synthetic_365_baseline_comparison.png}
+\caption{ARI across the full-year synthetic shape-baseline study. Error bars show 95\% bootstrap intervals over the 20 independent generator seeds.}
+\label{fig:synthetic_365_replication}
+\end{figure}
+
 % ============================================================================
 % 6. DISCUSSION
 % ============================================================================
@@ -868,15 +1019,9 @@ For this synthetic generator, scale-only features consistently have near-zero ar
 
 \subsection{Principal Findings}
 
-The synthetic and measured-data analyses support different, limited conclusions. Four findings emerge:
+The results support a limited set of claims. First, the 365-day synthetic replication repeatedly favors the 51-feature representation over a normalized 24-bin baseline for recovering this generator's archetypes: the paired ARI gain is 0.161 [0.125, 0.201]. The PCA shape-only contrast is centered at zero with an interval spanning small positive and negative effects. Second, the selection heuristic chooses K=3 in 7 of 20 seeds despite the generator containing four archetypes, so fixed-K and selected-K results should be distinguished. Third, restart agreement does not ensure temporal consistency: UCI restart ARI is 1.000 while its three-window mean ARI is 0.288; the London annual partition has high restart ARI (0.979) but monthly agreement averages 0.609 and includes near-zero months. Finally, the London partition includes a singleton and comes from a truncated-archive subset. It is evidence that the pipeline can be run on measured household data, not evidence of validated household types.
 
-\textbf{1. Magnitude-Timing Separation Helps on the Tested Synthetic Data.} In the ablation study (Figure~\ref{fig:ablation}), magnitude-only features achieve near-zero archetype recovery (ARI -0.004) despite the highest internal silhouette (0.521). This shows that, for this generator and protocol, internal geometric quality does not imply recovery of the intended archetypes. The 51-feature behavioral representation achieves ARI 0.813 on the synthetic flagship run.
-
-\textbf{2. K Selection Aligns with Ground Truth on the Synthetic Flagship Run.} Algorithm~\ref{alg:kselection} selects K=4 using only internal metrics (silhouette, Calinski--Harabasz, Davies--Bouldin, stability), without seeing hidden archetypes. In this run, external ARI (0.813) and NMI (0.828) also peak at K=4 (Figure~\ref{fig:recovery}). This single controlled result does not establish general K-recovery performance.
-
-\textbf{3. Stability Depends on the Data Setting.} On synthetic data, multi-seed stability is high (ARI 0.995) and temporal stability across quarters is 0.882. In the UCI sample, eight restarts reproduce one full-year partition (ARI 1.000), but independently fitted partitions across three chronological windows have mean ARI 0.288. The UCI result cautions that a stable full-year fit need not persist across time.
-
-\textbf{4. Internal Metrics Alone Cannot Validate Behavioral Segmentation.} On the synthetic ablation, scale-only features have the highest silhouette (0.521) but near-zero archetype recovery. This illustrates that internal metrics describe geometric properties, not semantic agreement. The UCI analysis has no labels to resolve that gap; external labels or domain review would be needed to assess behavioral interpretation.
+Internal scores describe geometric properties of a fitted partition. Synthetic ARI/NMI evaluate recovery only relative to the hand-designed generator labels. Neither measured dataset has external behavioral labels, and no measured-data ARI/NMI against invented labels is reported.
 
 \subsection{Comparison with Prior Work}
 
@@ -900,15 +1045,9 @@ The four synthetic clusters can be described by their generated profiles and pos
 
 \subsection{Practical Implications for Demand Response}
 
-The synthetic experiments suggest possible demand-response hypotheses. The unlabeled UCI analysis does not validate demand-response effects, customer behavior, or household-specific interpretations:
+The retrospective scenarios show how clusters could define a targeting hypothesis, while also showing why a scenario is not evidence of actual flexibility. In the UCI sample, the evening-heavy-cluster shift reduces the evening peak by 5.64\%, almost the same as the 5.62\% reduction from an equal-energy shift among the other clusters. Both scenarios create a higher whole-day peak in the afternoon. In the London subset, the target-cluster scenario reduces the evening peak by 9.72\% under the assumed shift, but the same-fraction comparator moves much less energy; normalized peak reduction per MWh shifted is similar (260.97 versus 242.12 kW/MWh). These comparisons do not show that clustering improves targeting, and they do not estimate tariff response, participant behavior, emissions, energy savings, or bill savings. They are conditional engineering calculations intended to expose the effect of the assumed shift destination and comparator.
 
-\textbf{Time-of-Use Pricing:} In the synthetic framework, Clusters 2 and 3 (combined 54.5\%) exhibit strong evening peaking, making them candidates for evening off-peak incentives if this pattern holds in real data. Cluster 0 (19.5\%) midday peakers could potentially benefit from midday solar generation incentives.
-
-\textbf{Load Shifting Programs:} The synthetic model suggests Cluster 2's concentrated evening demand (peak-to-average 11.32) indicates high flexibility potential for pre-cooling, appliance scheduling, or EV charging shifts. Cluster 1's flat profile (peak-to-average 4.92) indicates limited shifting opportunity without baseline reduction in the modeled behavior.
-
-\textbf{Weekend Programs:} The synthetic archetypes show Clusters 0 and 3 exhibit opposite weekend behavior (ratios 0.747 vs 1.313), suggesting weekend-specific program targeting could be effective if real households exhibit similar patterns. Weekend-heavy consumers (Cluster 3, 31\%) may respond to weekend time-of-use rates differently than weekday-heavy (Cluster 0, 19.5\%).
-
-\textbf{Program Enrollment:} Rather than enrolling all consumers in uniform programs, utilities could design cluster-specific strategies based on behavioral patterns: evening peakers receive evening shift incentives, flat consumers receive baseline reduction programs, weekend-heavy consumers receive weekend-specific rates. This approach requires validation with real-world data to confirm effectiveness.
+The measured-data evidence therefore supports using clusters, at most, to formulate testable program hypotheses. A real intervention would need measured response and a suitable control group, including evaluation of rebound and system-wide peaks, before any effectiveness claim.
 
 \subsection{Methodological Contributions}
 
@@ -922,15 +1061,15 @@ Algorithm~\ref{alg:kselection} combines complementary internal metrics (silhouet
 
 \subsubsection{Controlled Validation}
 
-Synthetic data with hidden archetypes enables quantitative recovery assessment that is unavailable for the unlabeled UCI clients. In the generator, magnitude is drawn independently of archetype, enabling a controlled assessment of magnitude-timing separation. This experiment complements the measured-client analysis but does not establish generalization to labeled household data.
+Synthetic data with hidden archetypes enables quantitative recovery assessment. The 20-seed 365-day comparison strengthens this evidence for the tested generator, but does not establish generalization to labeled household data. The UCI and London datasets have no behavioral labels, so their cluster assignments are not external validation.
 
 \subsubsection{Temporal Stability}
 
-The synthetic quarterly re-analysis has mean ARI 0.882 under the tested seasonal perturbations. The UCI analysis provides a contrasting measured-data result: partitions from three independently fitted chronological windows have mean pairwise ARI 0.288. The synthetic stability result therefore should not be generalized to measured client populations or treated as evidence for long-term program targeting.
+The synthetic seed intervals quantify variation between independently generated datasets under one generator. In measured data, UCI independently fitted chronological windows have mean pairwise ARI 0.288; London month-to-year agreement has mean ARI 0.609 and ranges from near zero to 0.957. These conditional results show that temporal consistency depends on the sample and window; neither supports long-term targeting claims.
 
 \subsection{Reproducibility as Research Contribution}
 
-The repository records deterministic configurations, versioned outputs, and execution protocols. The UCI analysis additionally records the sampled client IDs, zero-consumption exclusions, source archive hash, and timestamp-conversion assumption; the raw archive is not redistributed. These records support replication and scrutiny of the reported results.
+The repository records deterministic configurations, versioned outputs, and execution protocols. The UCI analysis records sampled client IDs, zero-consumption exclusions, source archive hash, and timestamp-conversion assumption; the extracted source data and CC BY 4.0 attribution are included in the repository. The London analysis records the truncated source-prefix hash, recovered member names and hashes, household IDs, coverage checks, and transformations; its source archive is not redistributed.
 
 % ============================================================================
 % 7. LIMITATIONS
@@ -950,7 +1089,7 @@ The repository records deterministic configurations, versioned outputs, and exec
 
 \textbf{Moderate Scale:} The flagship experiment uses 200 consumers, which is sufficient for methodological validation but smaller than utility-scale deployments (thousands to millions of meters). Computational scalability has been demonstrated through C++ acceleration, but behavioral patterns at utility scale may differ.
 
-\textbf{Limited Measured-Data Scope:} The real-data analysis covers one seeded sample of 104 active clients in a single calendar year from one public dataset. Sixteen sampled columns with zero consumption in 2012 were excluded. The low mean temporal ARI (0.288) indicates that the full-year partition does not persist consistently across the three analyzed windows. UCI describes anonymized points/clients, not necessarily households, and supplies no behavioral labels.
+\textbf{Limited Measured-Data Scope:} The UCI analysis covers 104 active clients from a seeded 120-column sample in one year; clients are not necessarily households and have no behavioral labels. The London analysis is narrower than the public dataset: 292 coverage-eligible households were found in only 11 complete members of a locally truncated archive. That subset is not representative of all 5,567 households. Its selected K=3 solution contains a singleton because the five-percent cluster-size filter had to be relaxed. In both datasets, profiles are descriptive, not externally validated behaviors.
 
 \subsection{Methodological Limitations}
 
@@ -964,11 +1103,9 @@ The repository records deterministic configurations, versioned outputs, and exec
 
 \subsection{Validation Limitations}
 
-\textbf{Limited Benchmark Scope:} Alternative methods are compared only at fixed $K=4$ on the synthetic flagship representation after PCA. The comparison does not optimize $K$ separately for each method and has not been repeated on UCI data; it therefore cannot establish method superiority or real-world robustness.
+\textbf{Limited Benchmark Scope:} The GMM and hierarchical comparison remains fixed at K=4 on the synthetic PCA representation and does not tune K separately by method or evaluate alternatives on measured data. The new normalized-shape baseline comparison concerns feature representation under K-means; it does not establish general method superiority.
 
-\textbf{Uncertainty Quantification:} The synthetic 365-day flagship and the UCI sample each use one main configuration. Neither has bootstrap confidence intervals for its internal metrics or cluster profiles. The 20-run feature ablation is a separate synthetic robustness analysis, not uncertainty quantification for the UCI findings.
-
-\rev{\textbf{Post-hoc Explainability:} SHAP analysis explains a post-hoc surrogate random forest, not the K-means clustering directly. The surrogate accuracy (0.985) is the ceiling on explanation quality---features may carry additional information not captured by the surrogate.}
+\textbf{Uncertainty Quantification:} The 365-day synthetic intervals resample 20 independent generator seeds and apply only to this synthetic process. London monthly ARI intervals resample households conditional on the selected archive members, annual labels, and K; they do not cover source-population or model-selection uncertainty. UCI internal metrics and cluster profiles do not have sampling intervals. The retrospective scenarios are deterministic counterfactuals under stated shift assumptions.
 
 \subsection{Generalization Limitations}
 
@@ -983,12 +1120,12 @@ The repository records deterministic configurations, versioned outputs, and exec
 To address these limitations, future work should:
 
 \begin{enumerate}
-    \item Repeat the measured-data analysis with additional multi-client datasets, samples, and observation years; avoid single-household sources when evaluating cross-client clustering
-    \item Investigate low temporal stability with rolling windows, feature-drift analysis, and sensitivity to timestamp and daylight-saving conventions
-    \item Compare clustering methods on measured data, with method-specific K selection and uncertainty estimates
-    \item Add bootstrap or resampling intervals for internal metrics and descriptive cluster profiles
-    \item Expand synthetic diversity with more archetypes, larger samples, and more complex patterns
-    \item Incorporate external variables where available and validate interpretations with domain experts or labeled survey data
+    \item Repeat the London analysis using the complete public archive and a preregistered household sample; replicate on an independent household dataset such as REFIT
+    \item Investigate low monthly/temporal stability with rolling windows and sensitivity analyses for missingness, time conventions, and daylight-saving handling
+    \item Compare clustering methods on measured data with method-specific K selection and uncertainty estimates
+    \item Quantify sampling and model-selection uncertainty in cluster profiles and scenario outcomes
+    \item Expand synthetic diversity and test whether the full-year baseline results persist under alternative generators
+    \item Obtain independent behavioral labels, survey evidence, or intervention data before making semantic or demand-response effectiveness claims
 \end{enumerate}
 
 % ============================================================================
@@ -997,36 +1134,35 @@ To address these limitations, future work should:
 \section{Conclusion}
 \label{sec:conclusion}
 
-This study evaluates a reproducible shape-first clustering pipeline using controlled synthetic data and a separate unlabeled multi-client dataset. The pipeline employs 51 behavioral features, PCA, and a heuristic K-selection rule combining internal metrics, cluster-size constraints, and restart stability. It is an evaluation framework rather than a new clustering algorithm.
+This study evaluates a reproducible shape-first clustering pipeline through a controlled synthetic benchmark and two separate unlabeled measured-data analyses. It evaluates an integrated feature, PCA, and K-selection protocol rather than introducing a new clustering algorithm.
 
-On the 200-consumer, 365-day synthetic flagship dataset, the pipeline selects K=4 and obtains ARI 0.813 against labels withheld from modeling. Across 20 shorter synthetic datasets, scale-only features have mean ARI 0.013 while behavioral features have mean ARI 0.641. These results depend on the generator and do not establish recovery on real consumers.
+Across 20 independent full-year synthetic datasets, 51 behavioral features with PCA at fixed K=4 achieve mean ARI 0.854 [95\% seed-bootstrap CI 0.825, 0.880], compared with 0.693 [0.655, 0.732] for normalized hourly-shape bins without PCA. The paired difference is 0.161 [0.125, 0.201]. The selected-K rule chooses K=3 in 7 of 20 runs and attains lower mean ARI 0.778 [0.719, 0.836], so the fixed-K result should not be conflated with the heuristic's performance. These intervals describe variation across seeds of one generator.
 
-In the UCI ElectricityLoadDiagrams20112014 analysis, a seeded 120-column sample included 104 clients with nonzero consumption throughout 2012 after excluding 16 all-zero columns. The selection rule chose K=2, the only tested candidate meeting the five-percent cluster-size threshold. Eight restarts agreed perfectly (mean ARI 1.000), but independently fitted partitions across three chronological windows had low mean pairwise ARI (0.288). With no behavioral labels and limited temporal persistence, this analysis describes one sample and does not validate household behavior or demand-response applications.
+On measured data, the UCI sample has perfect restart agreement but low agreement across three chronological windows (mean pairwise ARI 0.288). The London analysis covers 292 eligible households from 11 complete CSV members recovered from a truncated archive; its selected K=3 solution includes a singleton and its mean monthly ARI against the annual solution is 0.609. These results demonstrate pipeline execution on real meter readings, but do not establish household behavioral ground truth, population representativeness, or stable customer segments.
 
-The analysis script, source archive hash, sample IDs, exclusions, settings, report, and figure are recorded in the repository. The UCI archive itself is available from its repository and is not redistributed here.
+The retrospective peak-shift scenarios preserve daily energy by construction. On UCI, targeting an evening-heavy cluster performs nearly identically to an equal-energy non-target shift for evening-peak reduction and both create a larger afternoon peak. On the London subset, the target scenario reduces the sampled evening peak under an assumed flexibility level, but the comparator shifts substantially less energy. Neither analysis measures actual response or savings. The scripts, outputs, and provenance records are included for reproduction. The UCI source is included under CC BY 4.0; the London source archive is not redistributed.
 
 \subsection{Contributions}
 
-This work contributes an evaluated protocol for shape-first electricity-load clustering rather than novel clustering algorithms. Specific contributions include:
+This work contributes an evaluated protocol for shape-first electricity-load clustering rather than a novel clustering algorithm. Specific contributions include:
 
 \begin{enumerate}
-    \item Shape-normalized feature engineering (51 scale-invariant features) explicitly separating magnitude from temporal behavior
-    \item Evidence-Based K selection with pre-specified multi-criterion composite rule
-    \item Controlled validation with synthetic ground truth hidden during modeling
-    \item Separate stability analyses across seeds and time windows for synthetic and measured data
-    \item Synthetic feature ablation and an explicitly unlabeled UCI client analysis
-    \item Reproducibility records for source provenance, sampling, and transformations
+    \item A reproducible evaluation of 51 scale-invariant features and heuristic K selection
+    \item A 20-seed, full-year comparison against normalized 24-bin shape baselines with seed-bootstrap intervals
+    \item Separate stability and descriptive analyses on UCI clients and a caveated London household subset
+    \item Retrospective, energy-preserving peak-shift scenarios with explicit assumptions and negative or ambiguous outcomes
+    \item Reproducibility records for source provenance, sampling, coverage, transformations, scripts, and outputs
 \end{enumerate}
 
 \subsection{Future Directions}
 
-Next steps are to repeat the measured-data analysis on additional multi-client datasets and years, investigate temporal drift, compare methods with method-specific K selection, and quantify uncertainty in profiles and internal metrics.
+Next steps are to rerun the London study on the complete archive, validate on an independent household dataset, investigate temporal drift and selection instability, compare methods with method-specific K selection, and obtain independent behavioral or intervention evidence before making application claims.
 
 The synthetic validation framework itself provides a foundation for methodological research: new clustering algorithms, feature engineering approaches, or validation metrics can be evaluated against known ground truth before deployment on real data.
 
 \subsection{Reproducibility Statement}
 
-Analysis code, synthetic generation scripts, experimental configurations, and derived outputs are available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. Configuration hash for the synthetic flagship run: 99c7a6631340d301. The real-data JSON sidecar records the selected client IDs and UCI archive SHA-256 so the analysis can be reproduced from the source dataset.
+Analysis scripts, synthetic configurations, derived outputs, and provenance sidecars are available at \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. The synthetic flagship configuration hash is 99c7a6631340d301. UCI and London sidecars record source hashes and sampling decisions; the London sidecar also identifies its recovered archive members. Public source archives must be obtained from their respective repositories.
 
 % ============================================================================
 % ACKNOWLEDGMENTS
@@ -1038,7 +1174,7 @@ This research was conducted as part of an academic project on energy consumption
 % DATA AVAILABILITY
 % ============================================================================
 \section*{Data Availability}
-The synthetic dataset generator, analysis pipeline, experimental configurations, and derived results are available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. The UCI source archive is available from the UCI Machine Learning Repository under CC BY 4.0 \cite{trindade2015electricityloaddiagrams}; it is not redistributed here. The report and JSON sidecar record the source archive hash, selected IDs, and exclusions. Configuration hash for the synthetic flagship run: \texttt{99c7a6631340d301}. Interactive results explorer: \url{https://energy-consumption-pattern.vercel.app}.
+The synthetic generator, analysis pipeline, configurations, scripts, and derived results are available at: \url{https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means}. The extracted UCI ElectricityLoadDiagrams20112014 source is included in \path{dataset/real world/} under CC BY 4.0, with attribution and a checksum in its README; the UCI repository is cited at \cite{trindade2015electricityloaddiagrams}. The London SmartMeter data are available from the London Datastore under its stated Creative Commons Attribution license \cite{london_smartmeter_datastore}, but the source archive is not redistributed. Sidecars record source hashes, sample/coverage decisions, and transformations. Synthetic flagship configuration hash: \texttt{99c7a6631340d301}. Interactive results explorer: \url{https://energy-consumption-pattern.vercel.app}.
 
 % ============================================================================
 % CODE AVAILABILITY

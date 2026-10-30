@@ -311,7 +311,13 @@
       "No synthetic archetype labels are available or used.",
       "ARI/NMI are not computed against inferred labels.",
       "Client IDs are sampled reproducibly and retained in the JSON sidecar."
-    ]
+    ],
+    "repository_source_file": {
+      "path": "dataset/real world/LD2011_2014.txt",
+      "sha256": "d51565f2cb5a6b768d06ba1bbd3c084c6e2f3aab07f00c6f2dcb80e90175124b",
+      "size_bytes": 710998915,
+      "license": "CC BY 4.0"
+    }
   },
   "meters": 104,
   "records": 913536,

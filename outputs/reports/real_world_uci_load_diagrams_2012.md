@@ -36,6 +36,7 @@ _No ARI/NMI is reported here: real data has no ground-truth archetype. Scores ar
 - Source: https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014
 - License: Creative Commons Attribution 4.0 International (CC BY 4.0)
 - Raw archive SHA-256: `f6c4d0e0df12ecdb9ea008dd6eef3518adb52c559d04a9bac2e1b81dcfc8d4e1`
+- Repository source copy: dataset/real world/LD2011_2014.txt (SHA-256 d51565f2cb5a6b768d06ba1bbd3c084c6e2f3aab07f00c6f2dcb80e90175124b; CC BY 4.0)
 - Window: 2012-01-01 to 2012-12-31 (inclusive)
 - Sampling: uniform sample without replacement from UCI client columns; n=104, seed=42
 - Zero-consumption sampled clients excluded: 16

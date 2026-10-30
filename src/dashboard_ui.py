@@ -112,25 +112,25 @@ def register_plotly_template() -> None:
         layout=dict(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color=INK, size=13),
-            title=dict(font=dict(family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", size=18, color=INK), x=0.0, xanchor="left"),
+            font=dict(family="'Source Sans', sans-serif", color=INK, size=13),
+            title=dict(font=dict(family="'Source Sans', sans-serif", size=18, color=INK), x=0.0, xanchor="left"),
             colorway=list(CLUSTER_COLORS),
             xaxis=dict(
                 gridcolor=LINE, zerolinecolor="#44565A",
-                linecolor=LINE, tickfont=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=11, color=MIST),
-                title=dict(font=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=12, color=MIST)),
+                linecolor=LINE, tickfont=dict(family="'Source Sans', sans-serif", size=12, color=MIST),
+                title=dict(font=dict(family="'Source Sans', sans-serif", size=12, color=MIST)),
             ),
             yaxis=dict(
                 gridcolor=LINE, zerolinecolor="#44565A",
-                linecolor=LINE, tickfont=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=11, color=MIST),
-                title=dict(font=dict(family="SFMono-Regular, Consolas, 'Liberation Mono', monospace", size=12, color=MIST)),
+                linecolor=LINE, tickfont=dict(family="'Source Sans', sans-serif", size=12, color=MIST),
+                title=dict(font=dict(family="'Source Sans', sans-serif", size=12, color=MIST)),
             ),
             legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=12, color=MIST),
                         bordercolor=LINE),
             margin=dict(l=54, r=24, t=54, b=48),
             colorscale=dict(sequential=[[pos, col] for pos, col in DAY_RAMP]),
             hoverlabel=dict(bgcolor=PANEL, bordercolor=LINE,
-                            font=dict(family="Inter, sans-serif", color=INK, size=12)),
+            font=dict(family="'Source Sans', sans-serif", color=INK, size=12)),
         )
     )
     pio.templates[_TEMPLATE_NAME] = template
@@ -155,7 +155,7 @@ def add_time_of_day_bands(fig: go.Figure) -> go.Figure:
         fig.add_vrect(
             x0=start, x1=end, fillcolor=fill, line_width=0, layer="below",
             annotation_text=label, annotation_position="top left",
-            annotation=dict(font=dict(family="IBM Plex Mono, monospace", size=9, color=MIST)),
+            annotation=dict(font=dict(family="'Source Sans', sans-serif", size=12, color=MIST)),
         )
     return fig
 
@@ -168,9 +168,9 @@ def _fonts_and_variables() -> str:
   --line: {LINE}; --ink: {INK}; --mist: {MIST}; --slate: {SLATE};
   --cyan: {CYAN}; --cyan-deep: {CYAN_DEEP}; --green: {GREEN}; --green-deep: {GREEN_DEEP};
   --indigo: {INDIGO}; --amber: {AMBER}; --amber-deep: {AMBER_DEEP}; --rose: {ROSE};
-  --display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --display: 'Source Sans', sans-serif;
+  --body: 'Source Sans', sans-serif;
+  --mono: 'Source Sans', sans-serif;
 }}
 """
 
@@ -199,14 +199,14 @@ a:hover { text-decoration: underline; }
 [data-testid="stSidebar"] { background: var(--panel); border-right: 1px solid var(--line); }
 [data-testid="stSidebar"] .block-container { padding-top: 1.5rem; }
 [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
-  font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.2em;
-  font-family: var(--mono); color: var(--mist); font-weight: 600;
+  font-size: 0.88rem; text-transform: none; letter-spacing: 0;
+  font-family: var(--body); color: var(--mist); font-weight: 600;
 }
 
 /* Kicker / eyebrow ------------------------------------------------------ */
 .kicker {
-  font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.22em; color: var(--cyan);
+  font-family: var(--body); font-size: 0.82rem; font-weight: 600;
+  text-transform: none; letter-spacing: 0; color: var(--cyan);
   display: inline-block; margin-bottom: 0.6rem;
   user-select: none;
 }
@@ -216,7 +216,6 @@ a:hover { text-decoration: underline; }
 .hero h1 {
   font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 700; line-height: 1.03;
   margin: 0 0 0.9rem 0;
-  user-select: none;
 }
 .hero .lede { font-size: clamp(1rem, 1.6vw, 1.2rem); color: var(--mist); max-width: 62ch; margin: 0; }
 .hero .accent { color: var(--cyan); }
@@ -225,7 +224,6 @@ a:hover { text-decoration: underline; }
 .section { margin: 2.4rem 0 1.1rem 0; }
 .section h2 { 
   font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 600; margin: 0.2rem 0 0.4rem 0;
-  user-select: none;
 }
 .section .lede { color: var(--mist); max-width: 70ch; margin: 0; }
 
@@ -237,8 +235,8 @@ a:hover { text-decoration: underline; }
 }
 .metric-card:hover { transform: translateY(-2px); border-color: var(--cyan-deep); }
 .metric-card .label {
-  font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase;
-  letter-spacing: 0.14em; color: var(--mist); margin-bottom: 0.5rem;
+  font-family: var(--body); font-size: 0.82rem; text-transform: none;
+  letter-spacing: 0; color: var(--mist); margin-bottom: 0.5rem;
 }
 .metric-card .value {
   font-family: var(--display); font-size: 1.9rem; font-weight: 600; color: var(--ink);
@@ -250,12 +248,12 @@ a:hover { text-decoration: underline; }
 /* Synthetic-data badge -------------------------------------------------- */
 .badge-synthetic {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  background: rgba(245,165,36,0.10); border: 1px solid rgba(245,165,36,0.35);
-  color: var(--amber); font-family: var(--mono); font-size: 0.72rem;
-  text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600;
+  background: rgba(85,183,170,0.10); border: 1px solid rgba(85,183,170,0.35);
+  color: var(--cyan); font-family: var(--body); font-size: 0.82rem;
+  text-transform: none; letter-spacing: 0; font-weight: 600;
   padding: 0.4rem 0.8rem; border-radius: 999px;
 }
-.badge-synthetic::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+.badge-synthetic::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
 
 /* Tag / chip ------------------------------------------------------------ */
 .tag {
@@ -592,7 +590,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
   border: none;
   border-radius: 1.1em; /* the reference's radius */
   background-color: #212121;
-  font-family: 'Barlow', var(--body);
+  font-family: var(--body);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -795,7 +793,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 [data-testid="stSidebar"] { background: var(--panel-hi); }
 [data-testid="stSidebar"] .block-container { padding-top: 1.15rem; }
 [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
-[data-testid="stSidebar"] h3 { letter-spacing: 0.08em; }
+[data-testid="stSidebar"] h3 { letter-spacing: 0; }
 .masthead {
   background: transparent; backdrop-filter: none; border: 0;
   border-bottom: 1px solid var(--line); border-radius: 0;
@@ -811,9 +809,9 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 }
 .masthead .out:hover { color: var(--cyan-deep); background: var(--panel-hi); transform: none; }
 .hero { border: 0; padding: 0.15rem 0 0.4rem; margin-bottom: 1rem; }
-.hero h1 { font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1.08; letter-spacing: -0.045em; }
+.hero h1 { font-size: clamp(1.5rem, 2.3vw, 2rem); line-height: 1.12; letter-spacing: -0.035em; }
 .hero .lede, .section .lede { color: var(--mist); max-width: 70ch; }
-.kicker { font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 0.45rem; }
+.kicker { font-size: 0.82rem; letter-spacing: 0; margin-bottom: 0.45rem; }
 .metric-card {
   background: var(--panel); border: 1px solid var(--line);
   border-radius: 7px; box-shadow: none;
@@ -896,7 +894,7 @@ a.gh-star.gh-star:hover { color: var(--cyan); text-decoration: none; }
 @media (max-width: 640px) {
   .block-container { padding-top: 1rem; padding-bottom: 2rem; }
   .masthead { margin-bottom: 1.1rem; }
-  .hero h1 { font-size: 2rem; }
+  .hero h1 { font-size: 1.5rem; }
   .metric-card { padding: 0.9rem 1rem; }
 }
 @media (max-width: 1000px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -923,7 +921,7 @@ def hero(title_html: str, lede: str) -> None:
 
 
 def kicker(text: str) -> None:
-    """Uppercase mono eyebrow label."""
+    """A compact, sentence-case context label."""
     st.markdown(f'<span class="kicker">{text}</span>', unsafe_allow_html=True)
 
 

@@ -1,0 +1,4 @@
+# Development and test dependencies. Runtime dependencies are shared with the app.
+-r requirements.txt
+pytest==9.0.3
+pip-audit==2.10.1

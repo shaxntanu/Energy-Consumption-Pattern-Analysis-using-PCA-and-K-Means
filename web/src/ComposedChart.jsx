@@ -582,7 +582,7 @@ function ComposedChart({
                     y={gy + 3}
                     textAnchor="end"
                     style={{ fill: isBaseline ? "var(--text)" : "var(--muted)" }}
-                    fontSize={9.5}
+                    fontSize={12}
                     fontFamily="inherit"
                   >
                     {leftTickFmt(tick)}
@@ -600,8 +600,8 @@ function ComposedChart({
                   transform={`rotate(-90 ${margin.left * 0.45} ${plotTop + plotH / 2})`}
                   textAnchor="middle"
                   style={{ fill: "var(--muted)", textTransform: "uppercase" }}
-                  fontSize={9}
-                  letterSpacing="0.06em"
+                  fontSize={12}
+                  letterSpacing="0.02em"
                 >
                   {y.props.label || ""}
                 </text>
@@ -629,7 +629,7 @@ function ComposedChart({
                     y={gy + 3}
                     textAnchor="start"
                     style={{ fill: "var(--muted)" }}
-                    fontSize={9.5}
+                    fontSize={12}
                     fontFamily="inherit"
                   >
                     {rightTickFmt(tick)}
@@ -647,8 +647,8 @@ function ComposedChart({
                   transform={`rotate(90 ${width - margin.right * 0.45} ${plotTop + plotH / 2})`}
                   textAnchor="middle"
                   style={{ fill: "var(--muted)", textTransform: "uppercase" }}
-                  fontSize={9}
-                  letterSpacing="0.06em"
+                  fontSize={12}
+                  letterSpacing="0.02em"
                 >
                   {y.props.label || ""}
                 </text>
@@ -682,7 +682,7 @@ function ComposedChart({
                   textAnchor="middle"
                   transform={rotation ? `rotate(${rotation} ${x} ${y})` : undefined}
                   style={{ fill: isSelected ? "var(--cyan)" : "var(--muted)" }}
-                  fontSize={9.5}
+                  fontSize={12}
                   fontFamily="inherit"
                   fontWeight={isSelected ? 700 : 400}
                 >

@@ -50,15 +50,18 @@ def test_the_cta_treatment_is_confined_to_the_main_area(css):
             assert '[data-testid="stMain"]' in selector, selector
 
 
-def test_the_cta_grows_from_pseudo_elements_not_the_button(css):
-    """The label must not move, so the movement belongs to ::before and ::after."""
-    assert '[data-testid="stMain"] .stButton > button::before' in css
-    assert '[data-testid="stMain"] .stButton > button::after' in css
-    hover = _rules_for(css, '.stButton > button:hover::before')
-    assert hover and any('transform' in b and 'width' in b for b in hover)
-    # The face itself keeps no background of its own, or there would be two.
-    base = _rules_for(css, '[data-testid="stMain"] .stButton > button')[0]
-    assert 'background: transparent' in base
+def test_main_buttons_use_the_dark_palette_and_visible_focus(css):
+    """Main actions use the current graphite palette and remain keyboard-visible."""
+    base = next(
+        block for block in reversed(_rules_for(css, '[data-testid="stMain"] .stButton > button'))
+        if 'min-height: 2.35rem' in block
+    )
+    assert 'background: var(--panel)' in base
+    assert 'border: 1px solid var(--line)' in base
+    hover = _rules_for(css, '[data-testid="stMain"] .stButton > button:hover')[-1]
+    assert 'background: var(--panel-hi)' in hover
+    focus = _rules_for(css, '[data-testid="stMain"] .stButton > button:focus-visible')
+    assert focus and 'outline: 2px solid #fff' in focus[-1]
 
 
 def test_the_cta_label_sits_above_the_moving_layers(css):
@@ -67,12 +70,13 @@ def test_the_cta_label_sits_above_the_moving_layers(css):
     assert block and 'z-index: 2' in block[0]
 
 
-def test_the_cta_wash_is_faint_at_rest_and_accented_on_hover(css):
-    """At rest it is glass; the colour arrives on hover, where it means something."""
-    rest = _rules_for(css, '[data-testid="stMain"] .stButton > button::after')[0]
-    assert 'rgba(255, 255, 255, 0.055)' in rest
-    hover = _rules_for(css, '.stButton > button:hover::after')[0]
-    assert 'rgba(59, 201, 222' in hover
+def test_main_buttons_do_not_use_the_retired_pseudo_element_wash(css):
+    """The current button treatment uses direct surfaces, without moving overlays."""
+    hidden = _rules_for(css, '[data-testid="stMain"] .stButton > button::before')
+    assert hidden and 'display: none' in hidden[-1] and 'content: none' in hidden[-1]
+    hover = _rules_for(css, '[data-testid="stMain"] .stButton > button:hover')[-1]
+    assert 'var(--panel-hi)' in hover
+    assert 'rgba(59, 201, 222' not in hover
 
 
 def test_the_cta_stands_still_for_a_reader_who_asked_for_less_motion(css):

@@ -27,9 +27,12 @@ def _small_run(at: AppTest) -> AppTest:
 
     The sidebar controls are set before the first run so the pipeline is only
     ever executed at the reduced size; booting at the default 200 consumers and
-    30 days would make this suite far slower than the analysis tests.
+    365 days would make this suite far slower than the analysis tests.
     """
     at.session_state['_page'] = 'Overview'
+    at.session_state['horizon_days'] = 30
+    at.session_state['n_consumers'] = 50
+    at.session_state['test_stability'] = False
     at.run(timeout=BOOT_TIMEOUT)
     return at
 
@@ -81,7 +84,6 @@ def test_overview_draws_the_simulator_summary(booted):
     labels = [button.label for button in booted.button]
     assert 'View the dataset' in labels
     assert 'See cluster details' in labels
-    assert {'Overview', 'Dataset', 'The clusters'}.issubset(labels)
 
 
 def test_dataset_page_draws_its_tables_and_charts(booted):

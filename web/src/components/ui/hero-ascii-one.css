@@ -13,6 +13,16 @@
 .ascii-hero__stars,
 .ascii-hero__visual,
 .ascii-hero__corners { position: absolute; inset: 0; z-index: -1; }
+.ascii-hero__fallback {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: min(50%, 820px);
+  height: auto;
+  transform: translateY(-50%);
+  opacity: .72;
+}
+.ascii-hero__scene { position: absolute; inset: 0; }
 .ascii-hero__stars {
   background-image:
     radial-gradient(1px 1px at 20% 30%, white, transparent),
@@ -111,7 +121,7 @@
 .ascii-hero__rule span,
 .ascii-hero__notation span:nth-child(2) { flex: 1; height: 1px; background: #ffffff66; }
 .ascii-hero__rule span:first-child { flex: 0 0 32px; }
-.ascii-hero__copy .ascii-hero__eyebrow { font: inherit; font-size: .8125rem; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 1rem; color: #d1d1d1; }
+.ascii-hero__copy .ascii-hero__eyebrow { font: inherit; font-size: .8125rem; letter-spacing: .02em; text-transform: none; margin: 0 0 1rem; color: #d1d1d1; }
 .ascii-hero__copy h1 {
   position: relative;
   font-family: inherit;

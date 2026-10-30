@@ -1,8 +1,7 @@
-# Pinned for reproducibility. Rebuild artifacts after any version change.
+# Pinned runtime dependencies. Rebuild artifacts after any version change.
 #
-# Python 3.12 or newer. The floor is not a preference: scipy 1.18.0 requires
-# >=3.12, and every other pin here requires 3.11 or less, so 3.12 is the oldest
-# interpreter this set installs on. Tested on 3.14.0 (Dockerfile: python:3.14-slim).
+# Python 3.12 or newer. scipy 1.18.0 requires >=3.12; the runtime image uses
+# Python 3.14 (Dockerfile: python:3.14-slim).
 pandas==3.0.0
 numpy==2.3.5
 scikit-learn==1.9.0
@@ -10,9 +9,9 @@ scipy==1.18.0
 matplotlib==3.10.8
 seaborn==0.13.2
 plotly==6.5.2
-streamlit==1.62.0
+streamlit==1.66.1
+pillow==13.0.0
 joblib==1.5.3
-pytest==8.4.2
 # Required by the production TreeExplainer path. This release provides wheels
 # compatible with the Python 3.14 / NumPy 2 stack pinned above.
 shap==0.52.0

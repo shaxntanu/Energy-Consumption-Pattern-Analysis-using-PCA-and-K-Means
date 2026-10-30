@@ -1,5 +1,11 @@
 # Verification Matrix for `Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means`
 
+> **Historical snapshot.** The commands and pending statuses below refer to an
+> earlier checkout and are not the current verification record. In particular,
+> the absolute-path audit below missed a machine-specific VS Code setting and
+> history entries. See [the current repository audit](REPOSITORY_AUDIT.md) and
+> [the current traceability matrix](traceability.md) for the superseding results.
+
 This file is the line-by-line audit trail for every claim in the README and
 `docs/report.md`. Every number below is either (a) read directly from an
 on-disk output of an executed run or from the genuine `web/public/data/`
@@ -173,7 +179,7 @@ JSON files under `web/public/data/`, `vercel.json` (`framework: vite`,
 | Check | Result |
 |---|---|
 | `__pycache__` / `*.pyc` in tracked tree | checked (gitignored) |
-| Absolute `C:\Users\...` paths in committed files | **none** (report/verification/README use relative paths) |
+| Absolute-path scan in this historical snapshot | **incomplete**; a VS Code setting and prior Git blobs contained machine-specific paths. Current correction and history scan are recorded in `docs/REPOSITORY_AUDIT.md`. |
 | Original trial repo touched | **no**, all writes within this directory |
 | `web/public/data/` contract files | **present** (8 JSON files, flagship `99c7a6631340d301`) |
 

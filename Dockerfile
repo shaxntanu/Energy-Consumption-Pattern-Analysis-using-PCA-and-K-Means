@@ -10,10 +10,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
+# Use a fixed unprivileged UID; no passwd package is needed in the slim image.
+RUN mkdir -p /home/app && chown 10001:10001 /home/app
+ENV HOME=/home/app
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY --chown=10001:10001 . .
+
+USER 10001:10001
 
 EXPOSE 8501
 

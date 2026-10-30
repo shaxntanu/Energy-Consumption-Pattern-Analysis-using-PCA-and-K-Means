@@ -1,0 +1,123 @@
+{
+  "study": "synthetic_365_day_independent_seed_replication_and_shape_baselines",
+  "n_consumers": 200,
+  "n_days": 365,
+  "hourly_records_per_run": 1752000,
+  "independent_runs": 20,
+  "data_seeds": [
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119
+  ],
+  "model_seeds": [
+    10000,
+    10001,
+    10002,
+    10003,
+    10004,
+    10005,
+    10006,
+    10007,
+    10008,
+    10009,
+    10010,
+    10011,
+    10012,
+    10013,
+    10014,
+    10015,
+    10016,
+    10017,
+    10018,
+    10019
+  ],
+  "stability_restarts_per_k": 8,
+  "k_candidates": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "bootstrap": {
+    "unit": "independent synthetic generation seed",
+    "draws": 5000,
+    "seed": 20261029,
+    "interval": "percentile 95% confidence interval"
+  },
+  "selected_k_frequency": {
+    "3": 7,
+    "4": 13
+  },
+  "methods": {
+    "shape_24_no_pca": "24 normalized hourly bins; no PCA; K=4",
+    "shape_24_pca95": "24 normalized hourly bins; PCA to 95%; K=4",
+    "behavioral_51_no_pca": "51 behavioral features; no PCA; K=4",
+    "behavioral_51_pca95_k4": "51 behavioral features; PCA to 95%; K=4",
+    "behavioral_51_pca95_selected_k": "51 behavioral features; PCA to 95%; K by predeclared rule"
+  },
+  "paired_ari_differences_vs_shape24_no_pca": {
+    "shape_24_pca95": {
+      "contrast": "shape_24_pca95 minus shape_24_no_pca",
+      "mean_ari_difference": 0.00019353004701157527,
+      "sd_ari_difference": 0.011869251961858581,
+      "bootstrap_ci95_low": -0.004517203325273108,
+      "bootstrap_ci95_high": 0.005561060403169282
+    },
+    "behavioral_51_no_pca": {
+      "contrast": "behavioral_51_no_pca minus shape_24_no_pca",
+      "mean_ari_difference": 0.15793919059817957,
+      "sd_ari_difference": 0.08632521114577503,
+      "bootstrap_ci95_low": 0.12228524452727671,
+      "bootstrap_ci95_high": 0.19682195423993007
+    },
+    "behavioral_51_pca95_k4": {
+      "contrast": "behavioral_51_pca95_k4 minus shape_24_no_pca",
+      "mean_ari_difference": 0.16113870063196822,
+      "sd_ari_difference": 0.08889108418310225,
+      "bootstrap_ci95_low": 0.12455754048349656,
+      "bootstrap_ci95_high": 0.20073296518973419
+    },
+    "behavioral_51_pca95_selected_k": {
+      "contrast": "behavioral_51_pca95_selected_k minus shape_24_no_pca",
+      "mean_ari_difference": 0.08479922859045888,
+      "sd_ari_difference": 0.12968278842297157,
+      "bootstrap_ci95_low": 0.02824746328967753,
+      "bootstrap_ci95_high": 0.13885369336675005
+    }
+  },
+  "software": {
+    "python": "3.14.7",
+    "numpy": "2.3.5",
+    "pandas": "3.0.0",
+    "scipy": "1.18.0",
+    "scikit_learn": "1.9.0"
+  },
+  "outputs": {
+    "run_metrics": "outputs\\research_additions\\synthetic_365_seed_runs.csv",
+    "summary": "outputs\\research_additions\\synthetic_365_seed_summary.csv",
+    "figure": "outputs\\figures\\research_additions\\synthetic_365_baseline_comparison.png"
+  },
+  "interpretation_limit": "Intervals quantify variation across this synthetic generator's independent seeds; they do not quantify uncertainty for a real household population."
+}

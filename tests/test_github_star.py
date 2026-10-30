@@ -10,6 +10,7 @@ reasons that have nothing to do with this repository.
 """
 import io
 import json
+import re
 import urllib.error
 
 import pytest
@@ -213,14 +214,14 @@ def test_the_button_carries_no_emoji(monkeypatch):
 def test_the_style_the_button_needs_is_in_the_stylesheet():
     css = ui._css()
     assert '.gh-star' in css and '.gh-count' in css
-    # Black, as every repository page's star button is.
-    assert 'background: #000' in css
+    # The current dashboard uses the graphite panel and teal hover state.
+    star_blocks = re.findall(r'\.gh-star\s*\{([^{}]*)\}', css)
+    assert star_blocks and 'background: var(--panel)' in star_blocks[-1]
+    assert 'border: 1px solid var(--line)' in star_blocks[-1]
+    assert '.gh-star:hover { color: var(--cyan-deep); background: var(--panel-hi);' in css
     # The label is chrome and unselectable; the count is a fact and is not.
     assert 'user-select: none' in css.split('.gh-star .gh-face')[1].split('}')[0]
-    # The hover shine and the amber star, and neither one forced on a reader who
-    # asked for less motion.
-    assert '.gh-star:hover::after' in css
-    assert 'var(--amber)' in css
-    assert '.gh-star, .gh-star::after' in css
+    # Motion is removed for readers who request reduced motion.
+    assert '.gh-star, .gh-star .gh-count svg' in css
     # Clipped rather than hidden, so it stays in the accessibility tree.
     assert '.sr-only' in css and 'clip: rect(0, 0, 0, 0)' in css

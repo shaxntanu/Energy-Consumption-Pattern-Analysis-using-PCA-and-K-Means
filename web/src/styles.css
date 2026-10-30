@@ -112,9 +112,8 @@ a {
   padding: 12px 15px;
   border-bottom: 1px solid var(--line);
   color: #95a29b;
-  font: 0.62rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font: 0.75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.03em;
 }
 
 .pipeline-diagram-topline > span:last-child {
@@ -128,6 +127,55 @@ a {
   height: clamp(560px, 62vw, 820px);
   border: 0;
   background: #0b1010;
+}
+
+.load-shift-shell {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0b0b0b;
+}
+
+.load-shift-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font: 0.75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.03em;
+}
+
+.load-shift-topline a,
+.load-shift-note a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.load-shift-frame {
+  display: block;
+  width: 100%;
+  height: clamp(700px, 72vw, 940px);
+  border: 0;
+  background: #0b0b0b;
+}
+
+.load-shift-note {
+  max-width: 90ch;
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 680px) {
+  .load-shift-frame {
+    height: 780px;
+  }
 }
 
 .pipeline-diagram-footer {
@@ -147,6 +195,87 @@ a {
 
 .pipeline-diagram-footer a:hover {
   color: var(--text);
+}
+
+.method-video {
+  margin-top: 1.25rem;
+  border: 1px solid var(--line);
+  background: #080808;
+}
+
+.method-video > summary {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.method-video > summary::-webkit-details-marker {
+  display: none;
+}
+
+.method-video > summary::after {
+  content: "+";
+  color: var(--muted);
+  font: 1.1rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.method-video[open] > summary::after {
+  content: "−";
+}
+
+.method-video > summary:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+.method-video-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.method-video-meta {
+  color: var(--muted);
+  font: 0.75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.03em;
+}
+
+.method-video-content {
+  padding: 0 1rem 1rem;
+}
+
+.method-video-content video {
+  display: block;
+  width: min(100%, 960px);
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  background: #0b0b0b;
+}
+
+.method-video-content p {
+  max-width: 90ch;
+  margin: 0.75rem auto 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 560px) {
+  .method-video > summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-right: 2.5rem;
+  }
+
+  .method-video > summary::after {
+    position: absolute;
+    right: 1rem;
+  }
 }
 
 /* GitHub button (nav): ghost pill, matching the single-CTA language. */
@@ -274,8 +403,7 @@ a {
   font-family: var(--font-body);
   font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 h1,
@@ -418,8 +546,7 @@ p {
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 0.8125rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .stat-card strong {
@@ -427,6 +554,7 @@ p {
   margin-top: 0.8rem;
   font-family: var(--font-display);
   font-size: 2.1rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-card small {
@@ -876,7 +1004,7 @@ p {
   align-items: center;
   gap: 0.45rem;
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   line-height: 1.2;
   opacity: 0;
   transform: translateY(3px);
@@ -968,10 +1096,9 @@ p {
 .availability {
   flex: none;
   font-family: var(--font-body);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.96px;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   border-radius: 9999px;
   padding: 0.2rem 0.55rem;
   color: var(--muted);
@@ -1003,14 +1130,13 @@ p {
 
 .chip {
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--panel-strong);
   padding: 0.22rem 0.5rem;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .mini-bars {
@@ -1032,9 +1158,8 @@ p {
   white-space: nowrap;
   color: var(--muted);
   font-family: var(--font-body);
-  font-size: 0.66rem;
-  letter-spacing: 0.5px;
-  text-transform: lowercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
 .mini-track {
@@ -1055,7 +1180,8 @@ p {
   text-align: right;
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .bench-table-wrap {
@@ -1070,7 +1196,8 @@ p {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
   min-width: 640px;
 }
 
@@ -1085,9 +1212,8 @@ p {
 .bench-table th {
   color: var(--muted);
   font-weight: 700;
-  letter-spacing: 0.96px;
-  text-transform: uppercase;
-  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  font-size: 0.75rem;
 }
 
 .bench-table td:first-child,
@@ -1503,9 +1629,8 @@ p {
 .k-selected-tag {
   flex: none;
   font-family: var(--font-body);
-  font-size: 0.66rem;
-  letter-spacing: 0.96px;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
   color: var(--text);
   border: 1px solid var(--text);
   background: transparent;
@@ -1545,8 +1670,8 @@ p {
   flex-wrap: wrap;
   min-width: 0;
   font-family: var(--font-body);
-  font-size: 0.66rem;
-  letter-spacing: 0.96px;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
   color: var(--muted);
 }
 
@@ -1661,7 +1786,7 @@ p {
 .radar-ring-label {
   fill: var(--muted);
   font-family: var(--font-body);
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   pointer-events: none;
 }
 
@@ -1791,9 +1916,8 @@ p {
 .season-card-name {
   color: var(--muted);
   font-family: var(--font-body);
-  font-size: 0.74rem;
-  letter-spacing: 0.96px;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
 .season-card-kwh {
@@ -1892,10 +2016,9 @@ p {
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.96px;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--muted);
 }
 
@@ -2073,9 +2196,9 @@ p {
 
 .sdg-number {
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.96px;
+  letter-spacing: 0.03em;
   color: var(--sdg-color);
 }
 
@@ -2093,10 +2216,9 @@ p {
   align-items: center;
   gap: 0.4rem;
   font-family: var(--font-body);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.96px;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--muted);
   white-space: nowrap;
 }

@@ -2549,7 +2549,7 @@ function PerformanceSection() {
     <section className="band" id="performance">
       <SectionHeader
         eyebrow="High-performance computing engine"
-        title="The same two kernels, compiled to native code"
+        title="Two kernels, native C++"
       >
         PCA and K-Means also ship as an optional C++ engine (energy_cpp). The
         Python/scikit-learn implementation remains the scientific reference for every
@@ -2978,7 +2978,7 @@ function SeasonBand() {
       <div className="season-grid">
         {seasons.map((s) => (
           <article className="season-card" key={s.label}>
-            <span className="season-card-name">{s.label}</span>
+            <span className="season-card-name">{s.label[0].toUpperCase() + s.label.slice(1)}</span>
             <strong className="season-card-kwh">{s.kwh.toFixed(1)}<small> mean daily kWh</small></strong>
             <span className="season-track">
               <span className="season-fill" style={{ width: `${(s.kwh / maxKwh) * 100}%` }} />
@@ -3020,11 +3020,48 @@ function SeasonBand() {
   );
 }
 
+function DemandResponseSection() {
+  return (
+    <section className="band" id="load-shifting">
+      <SectionHeader eyebrow="Counterfactual · UCI 2012" title="The peak shifts to 16:00">
+        In this saved scenario, an assumed shift moves energy from 17:00–21:00 into 12:00–17:00.
+        The target case lowers the evening peak by 5.64%, but both tested shifts create a larger
+        whole-day peak at 16:00. The figure replays those arithmetic profiles; it does not show
+        measured participant response.
+      </SectionHeader>
+      <div className="load-shift-shell">
+        <div className="load-shift-topline">
+          <span>2012 UCI · 104 anonymized clients · saved hourly profiles</span>
+          <a href="/research/load-shift-test-rig.html" target="_blank" rel="noopener noreferrer">
+            Open interactive figure <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <iframe
+          className="load-shift-frame"
+          src="/research/load-shift-test-rig.html"
+          title="Interactive isometric explanation of the retrospective UCI load-shifting scenario"
+          loading="lazy"
+        />
+      </div>
+      <p className="load-shift-note">
+        UCI client identifiers are not treated as household identities. The 10% target scenario
+        and its equal-energy comparison preserve daily energy by construction; they do not
+        estimate flexibility, causality, savings, or operational grid impact. See the{" "}
+        <a href="https://github.com/shaxntanu/Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means/blob/main/outputs/reports/demand_response_uci_2012.md">
+          full protocol and limitations
+        </a>{" "}
+        or view the <a href="/research/load-shift-test-rig.svg">static SVG fallback</a>.
+      </p>
+    </section>
+  );
+}
+
 function App() {
   const navItems = [
     { label: "About", href: "#about" },
     { label: "Pipeline", href: "#pipeline" },
     { label: "Charts", href: "#charts" },
+    { label: "Load shift", href: "#load-shifting" },
     { label: "Seasons", href: "#seasons" },
     { label: "Performance", href: "#performance" },
     { label: "SDG Impact", href: "#sdg-impact" },
@@ -3067,7 +3104,7 @@ function App() {
 
       <main>
         <section className="band" id="about">
-          <SectionHeader eyebrow="What is this project about" title="A simpler way to find energy rhythms">
+          <SectionHeader eyebrow="What is this project about" title="Find daily energy rhythms">
             The analysis asks whether consumers can be grouped by when they use power. It
             uses a controlled synthetic year (200 households × 365 days, config
             99c7a6631340d301) so the result is a reproducible demonstration of the method,
@@ -3087,7 +3124,7 @@ function App() {
         </section>
 
         <section className="band" id="pipeline">
-          <SectionHeader eyebrow="Analysis pipeline" title="How clustering finds daily patterns">
+          <SectionHeader eyebrow="Analysis pipeline" title="From load curves to clusters">
             The diagram follows the project's core analysis: generated household energy
             readings are preprocessed, converted into behavioral features, reduced with
             PCA, and grouped with K-Means. The final branches show the checks used to
@@ -3095,8 +3132,8 @@ function App() {
           </SectionHeader>
           <div className="pipeline-diagram-shell">
             <div className="pipeline-diagram-topline">
-              <span>ZOOM, THEN DRAG TO PAN · 0 TO RESET</span>
-              <span>ENERGY CONSUMPTION PIPELINE</span>
+              <span>Zoom, then drag to pan · 0 to reset</span>
+              <span>Energy consumption pipeline</span>
             </div>
             <iframe
               className="pipeline-diagram-frame"
@@ -3111,6 +3148,30 @@ function App() {
               Open full interactive diagram <span aria-hidden="true">↗</span>
             </a>
           </div>
+          <details className="method-video">
+            <summary>
+              <span className="method-video-title">Watch the 10-second shape-first explainer</span>
+              <span className="method-video-meta">ManimGX · on demand</span>
+            </summary>
+            <div className="method-video-content">
+              <video
+                controls
+                preload="none"
+                playsInline
+                poster="/animations/shape-first-method-poster.svg"
+                aria-label="Illustration of daily load curves being normalized before PCA and K-Means"
+              >
+                <source src="/animations/shape-first-method.mp4" type="video/mp4" />
+                Your browser does not support embedded video.
+              </video>
+              <p>
+                The two example curves have the same daily rhythm at different scales.
+                Per-consumer normalization removes that scale before the feature, PCA,
+                and K-Means stages. The curves are illustrative; they are not measured
+                household results.
+              </p>
+            </div>
+          </details>
         </section>
 
         <section className="band" id="charts">
@@ -3178,6 +3239,8 @@ function App() {
         </section>
 
         <ScienceHighlights />
+
+        <DemandResponseSection />
 
         <PerformanceSection />
 
@@ -3494,7 +3557,7 @@ function SDGImpactSection() {
                 <GoalIcon goal={sdg.number} />
               </span>
               <div className="sdg-title-row">
-                <span className="sdg-number">SDG {sdg.number}</span>
+                <span className="sdg-number">Goal {sdg.number}</span>
                 <span className="sdg-title">{sdg.shortTitle}</span>
               </div>
               <span className={`sdg-classification ${sdg.classification.toLowerCase()}`}>
@@ -3534,7 +3597,7 @@ function SDGNodeCard({ sdg }) {
       <div className="node-icon">
         <GoalIcon goal={sdg.number} />
       </div>
-      <div className="node-sdg-label">SDG {sdg.number}</div>
+      <div className="node-sdg-label">Goal {sdg.number}</div>
       <div className="node-sdg-title">{sdg.shortTitle}</div>
     </div>
   );

@@ -38,6 +38,34 @@ logger = logging.getLogger(__name__)
 
 ENERGY_COL = 'energy_consumption_kwh'
 
+
+def temperature_sensitivity_slope(temperature, energy) -> float:
+    """Return the least-squares energy-per-degree slope for paired observations.
+
+    This is a descriptive helper, not one of the 51 scale-invariant clustering
+    features: its value depends on energy magnitude and must not be added to the
+    primary behavioral matrix without changing the research question. Non-finite
+    pairs are ignored. Fewer than two valid observations or constant temperature
+    yields 0.0 rather than a division-by-zero result.
+    """
+    temperature = np.asarray(temperature, dtype=float).reshape(-1)
+    energy = np.asarray(energy, dtype=float).reshape(-1)
+    if temperature.size != energy.size:
+        raise ValueError("temperature and energy must contain the same number of observations")
+
+    valid = np.isfinite(temperature) & np.isfinite(energy)
+    if valid.sum() < 2:
+        return 0.0
+
+    x = temperature[valid]
+    y = energy[valid]
+    x_centered = x - x.mean()
+    denominator = float(np.dot(x_centered, x_centered))
+    if denominator <= np.finfo(float).eps:
+        return 0.0
+    y_centered = y - y.mean()
+    return float(np.dot(x_centered, y_centered) / denominator)
+
 # Hour blocks used for the period shares. Half-open intervals.
 PERIOD_BLOCKS = {
     'night': (0, 6),

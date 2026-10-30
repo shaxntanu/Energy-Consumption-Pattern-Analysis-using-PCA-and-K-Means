@@ -27,7 +27,7 @@ export const INTRO_KEY = 'sunee-intro-shown'
 export const introMessage = {
   priority: MESSAGE_PRIORITY.intro,
   animation: 'happy',
-  text: "Hi! I'm Sunee 👋 I'll be your little guide through this project. Stick around, and I'll show you some interesting things along the way!",
+  text: "Hi! I'm Sunee. I'll guide you through the project and point out the key findings as you explore.",
 }
 
 // ---- Cursor gaze (continuous) --------------------------------------------

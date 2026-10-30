@@ -148,6 +148,12 @@ export default function HeroAsciiOne() {
         aria-hidden="true"
         inert={!suneeReady}
       >
+        <img
+          className="ascii-hero__fallback"
+          src="/animations/shape-first-method-poster.svg"
+          alt=""
+          decoding="async"
+        />
         <div
           className={`ascii-hero__scene${status === 'ready' ? ' is-ready' : ''}`}
           data-us-project={active ? PROJECT_ID : undefined}

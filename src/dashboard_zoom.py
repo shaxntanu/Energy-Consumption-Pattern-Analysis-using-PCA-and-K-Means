@@ -25,17 +25,15 @@ Three rules shape it:
   resized, which no reader did.
 
 Implementation note: Streamlit has no hook for page-level JavaScript, so the
-script is delivered through a zero-height ``components.html`` frame and reaches
-the app through ``window.parent``. That frame is same-origin, so this is a
-supported access, but it means the listeners belong to a frame that is replaced
-on every rerun. The teardown handle is therefore parked on the parent document
-and called by the next frame before it installs its own, so listeners cannot
-accumulate.
+script is delivered through a zero-height ``st.iframe`` and reaches the app
+through ``window.parent``. The frame is same-origin, so it can observe Plotly
+charts in the app document. Because Streamlit replaces the frame on each rerun,
+the teardown handle is parked on the parent document and called by the next
+frame before it installs its own, so listeners cannot accumulate.
 """
 from __future__ import annotations
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from dashboard_ui import CYAN, GREEN, INK, MIDNIGHT, MIST
 
@@ -82,12 +80,12 @@ _CSS = f"""
   background: {MIDNIGHT}; border-radius: 10px; padding: 9px 14px 10px 14px;
 }}
 .zoomhint .z-title {{
-  font-family: "IBM Plex Mono", monospace; font-weight: 700;
+  font-family: "Source Sans", sans-serif; font-weight: 700;
   font-size: 0.62rem; letter-spacing: 0.24em; color: {CYAN};
   text-shadow: 0 0 10px rgba(59, 201, 222, 0.55);
 }}
 .zoomhint .z-sub {{
-  font-family: "IBM Plex Mono", monospace; font-size: 0.56rem;
+  font-family: "Source Sans", sans-serif; font-size: 0.72rem;
   letter-spacing: 0.16em; color: {INK}; opacity: 0.8; margin-top: 3px;
 }}
 
@@ -290,4 +288,4 @@ def payload() -> str:
 
 def inject() -> None:
     """Install the zoom hint for this run. Safe to call on every rerun."""
-    components.html(payload(), height=0)
+    st.iframe(payload(), height=1, tab_index=-1, alt="Chart zoom hint")

@@ -1,10 +1,10 @@
 """Run the project's real-data pathway on UCI ElectricityLoadDiagrams20112014.
 
-The source archive is not committed. Download it from the UCI page and pass
-either the ZIP archive or its extracted ``LD2011_2014.txt`` file:
+The extracted UCI source file is included under dataset/real world/ and
+tracked with Git LFS. Pass it directly, or use the original ZIP archive:
 
     python research/run_uci_load_diagrams_validation.py \
-        --source C:/data/electricityloaddiagrams20112014.zip
+        --source "dataset/real world/LD2011_2014.txt"
 
 By default this creates a seeded sample of 120 clients for calendar year 2012.
 The UCI source contains 15-minute mean-power values in kW. Each value is

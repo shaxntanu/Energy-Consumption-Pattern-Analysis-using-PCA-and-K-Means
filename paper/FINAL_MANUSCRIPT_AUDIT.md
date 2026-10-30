@@ -1,30 +1,23 @@
 # Current manuscript audit
 
-**Updated:** 2026-10-29
-**Canonical source:** `paper/MAIN.tex`
-**Status:** Active revision; not submission-ready.
+**Updated:** 2026-10-30 | **Canonical source:** paper/MAIN.tex | **Status:** Active revision; not submission-ready.
 
 ## Scope and claims
 
-The manuscript now separates controlled synthetic results from the unlabeled UCI client-data analysis. It does not treat UCI clients as households or report ARI/NMI against fabricated labels. It describes cluster profiles as descriptive, changes the K-selection tolerance to a heuristic rather than a significance test, removes post-clustering p-values as cluster-validity evidence, and treats non-significance as inconclusive rather than equivalence.
+The manuscript separates synthetic recovery evidence from unlabeled measured-data descriptions. UCI electricity points are called clients, not assumed to be households. London results are an exploratory household subset. The singleton selected cluster and truncated archive are disclosed. The K-selection tolerance is heuristic; post-clustering feature comparisons are descriptive and not independent validation. The manuscript makes no measured energy-savings or causal demand-response claim.
 
-Alternative-method results are explicitly limited to fixed K=4 on the synthetic PCA representation. The real-data analysis has one seeded year/sample and low stability across three chronological windows; the paper does not claim behavioral or demand-response validation from it.
+## Evidence record
 
-## Measured-data record
+- 365-day synthetic replication: 20 independent generator seeds. Behavioral 51-feature + PCA fixed-K=4 ARI 0.854 [0.825, 0.880]; normalized 24-bin no-PCA baseline ARI 0.693 [0.655, 0.732]; paired difference 0.161 [0.125, 0.201]. CIs bootstrap seeds and do not quantify household-population uncertainty.
+- UCI: 104 active clients from a seeded 120-client 2012 sample; 16 all-zero columns excluded; 913,536 meter-hours; K=2; restart ARI 1.000; three-window mean pairwise ARI 0.288.
+- London: 292 coverage-eligible households across 11 recovered complete CSV members; 319 IDs observed; K=3 cluster sizes 11/280/1 after relaxing the five-percent size filter; restart ARI 0.979; monthly mean ARI 0.609, range about 0.000-0.957. The source archive is incomplete and the subset is not representative.
+- UCI peak-shift simulation: equal-energy target/comparator evening-peak reductions 5.64% and 5.62%; the whole-day peak rises and shifts to 16:00 in both scenarios.
+- London peak-shift simulation: assumed 10% shifts preserve daily energy by construction; comparator moves a different amount of energy. No causal or realized savings estimate is made.
 
-- Source: UCI ElectricityLoadDiagrams20112014; citation key `trindade2015electricityloaddiagrams`.
-- Sample: 120 client columns selected uniformly with seed 42 for 2012; 16 all-zero columns excluded; 104 analyzed clients and 913,536 hourly records.
-- PCA: 11 components, 95.54% cumulative variance.
-- Selected K: 2, the only candidate from 2--8 meeting the five-percent minimum-cluster-size rule.
-- Internal metrics: silhouette 0.4662; Calinski-Harabasz 37.5607; Davies-Bouldin 0.9081.
-- Eight-restart mean pairwise ARI: 1.0000.
-- Three-window mean pairwise ARI: 0.2884 (SD 0.4661).
-- Full source hash, selected/excluded IDs, processing assumptions, software versions, and profiles are in `outputs/reports/real_world_uci_load_diagrams_2012.json`.
+## Data and reproducibility
 
-The timestamp-ending interpretation is an explicit assumption in the ingest script. It assigns each 15-minute mean-power value to the preceding quarter-hour, converts kW to kWh by dividing by four, and aggregates four quarters to a local-clock hour. The run does not apply a timezone conversion or a fixed household-scale upper bound.
+UCI ElectricityLoadDiagrams20112014 source data are included in dataset/real world/ under CC BY 4.0 with attribution and SHA-256. The London dataset source is cited in paper/references.bib; raw readings are not redistributed. UCI and London analysis metadata record sampling and transformation assumptions. No synthetic labels are assigned to measured-data records.
 
-## Compilation and remaining checks
+## Compilation
 
-The built-in LaTeX compiler produced a first-pass XDV document but returned `compile-failed` because `biber` is unavailable in its environment. The bibliography remained empty and citations/references unresolved in that run. Local `pdflatex`, `biber`, and `latexmk` are not installed. Therefore `paper/MAIN.pdf` is not verified against the current source and should be treated as stale. The log also reported some overfull boxes; inspect those after building with a complete TeX toolchain.
-
-A source-level citation key check found no undefined keys. `git diff --check` should be clean after this revision. No journal submission or venue choice is part of this audit.
+The built-in compiler generated a partial XDV and stopped because Biber is unavailable. Citations and bibliography were therefore unresolved in that run; paper/MAIN.pdf remains unverified and stale. Recompile with a complete TeX/Biber toolchain and inspect overfull boxes and figures before submission. The manuscript still uses its generic article class; a target venue template has not been selected.

@@ -17,6 +17,7 @@ from feature_engineering import (
     engineer_normalized_load_shape,
     engineer_shape_descriptors,
     engineer_temporal_features,
+    temperature_sensitivity_slope,
 )
 
 
@@ -451,6 +452,22 @@ def test_scale_invariance():
     assert np.isclose(original.sum()/original.sum(), scaled.sum()/scaled.sum())
 
 def test_temperature_sensitivity_zero_variance_guard():
-    from src.feature_engineering import temperature_sensitivity_slope
     # Zero variance temperature must not crash
     assert temperature_sensitivity_slope(np.ones(10), np.ones(10)*15) == 0.0
+
+
+def test_temperature_sensitivity_returns_descriptive_linear_slope():
+    temperature = np.array([10.0, 12.0, 14.0, 16.0])
+    energy = 3.0 * temperature + 7.0
+    assert temperature_sensitivity_slope(temperature, energy) == pytest.approx(3.0)
+
+
+def test_temperature_sensitivity_ignores_nonfinite_pairs():
+    temperature = np.array([10.0, 12.0, np.nan, 16.0])
+    energy = np.array([20.0, 24.0, 100.0, 32.0])
+    assert temperature_sensitivity_slope(temperature, energy) == pytest.approx(2.0)
+
+
+def test_temperature_sensitivity_rejects_mismatched_inputs():
+    with pytest.raises(ValueError, match="same number"):
+        temperature_sensitivity_slope([10.0, 12.0], [20.0])

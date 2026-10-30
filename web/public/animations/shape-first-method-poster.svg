@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Normalizing daily load shapes before clustering</title>
+  <desc id="desc">Two illustrative daily electricity profiles share the same timing but have different totals. Dividing by each daily total aligns their shapes before feature construction, PCA, and K-Means.</desc>
+  <rect width="1280" height="720" fill="#000"/>
+  <g font-family="Times New Roman, Times, serif" fill="#fff">
+    <text x="76" y="74" font-size="19" letter-spacing="2" fill="#b4b4b4">ILLUSTRATIVE PROFILES · SYNTHETIC REFERENCE RUN</text>
+    <text x="76" y="138" font-size="50" font-weight="700">Same rhythm, different total.</text>
+    <text x="76" y="181" font-size="23" fill="#b4b4b4">Normalize each day before comparing its shape.</text>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M90 480 C150 480 176 469 195 440 C218 405 239 408 262 443 C283 475 304 482 330 470 C361 455 376 416 404 389 C429 365 453 379 470 411 C489 448 503 474 548 480" stroke="#55b7aa" stroke-width="6"/>
+    <path d="M90 480 C150 480 176 458 195 400 C218 330 239 335 262 406 C283 470 304 484 330 460 C361 430 376 352 404 298 C429 250 453 277 470 342 C489 416 503 468 548 480" stroke="#e4a16d" stroke-width="6"/>
+    <path d="M90 480 H550 M90 480 V260" stroke="#59605f" stroke-width="2"/>
+    <path d="M603 375 H682" stroke="#b4b4b4" stroke-width="3"/>
+    <path d="M682 375 L666 365 M682 375 L666 385" stroke="#b4b4b4" stroke-width="3"/>
+    <path d="M734 480 C794 480 820 469 839 440 C862 405 883 408 906 443 C927 475 948 482 974 470 C1005 455 1020 416 1048 389 C1073 365 1097 379 1114 411 C1133 448 1147 474 1192 480" stroke="#55b7aa" stroke-width="6"/>
+    <path d="M734 480 C794 480 820 469 839 440 C862 405 883 408 906 443 C927 475 948 482 974 470 C1005 455 1020 416 1048 389 C1073 365 1097 379 1114 411 C1133 448 1147 474 1192 480" stroke="#e4a16d" stroke-width="2" stroke-dasharray="8 10"/>
+    <path d="M734 480 H1194 M734 480 V260" stroke="#59605f" stroke-width="2"/>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="19" fill="#d7dcda">
+    <circle cx="111" cy="225" r="7" fill="#55b7aa"/><text x="130" y="232">A · lower daily total</text>
+    <circle cx="330" cy="225" r="7" fill="#e4a16d"/><text x="349" y="232">B · about twice the total</text>
+    <text x="622" y="342" text-anchor="middle" fill="#b4b4b4">divide by</text>
+    <text x="622" y="365" text-anchor="middle" fill="#b4b4b4">daily total</text>
+    <text x="734" y="232" fill="#fff">Same normalized shape</text>
+    <text x="90" y="515" fill="#949494">00:00</text><text x="532" y="515" fill="#949494">23:00</text>
+    <text x="734" y="515" fill="#949494">00:00</text><text x="1176" y="515" fill="#949494">23:00</text>
+    <text x="76" y="590" font-size="21" fill="#d7dcda">51 behavioral features</text>
+    <path d="M292 584 H370" stroke="#59605f" stroke-width="2"/>
+    <path d="M370 584 L358 577 M370 584 L358 591" stroke="#59605f" stroke-width="2"/>
+    <text x="394" y="590" font-size="21" fill="#d7dcda">PCA · 10 components</text>
+    <path d="M642 584 H720" stroke="#59605f" stroke-width="2"/>
+    <path d="M720 584 L708 577 M720 584 L708 591" stroke="#59605f" stroke-width="2"/>
+    <text x="744" y="590" font-size="21" fill="#d7dcda">K-Means · K = 4</text>
+    <text x="76" y="657" font-size="17" fill="#949494">The curves are illustrative; they are not measured household results.</text>
+  </g>
+</svg>
