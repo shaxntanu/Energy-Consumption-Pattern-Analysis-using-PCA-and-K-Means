@@ -24,6 +24,12 @@ Open the [standalone HTML source](docs/assets/research-pipeline-architecture.htm
 
 Synthetic archetype labels are used only for post-fit checks. The UCI and London studies use separate ingestion scripts and have no behavioral ground truth. Streamlit runs selected analyses through Python; the Vercel explorer reads committed JSON and CSV artifacts without fitting models.
 
+## PCA and K-Means, at a glance
+
+![Dark isometric instrument explaining the reference run from 51 standardized features through PCA and K-Means to four saved cluster profiles.](docs/assets/research-method-instrument.svg)
+
+Open the [interactive method figure](docs/assets/research-method-instrument.html) or its [rebuild source](docs/visualizations/anatomy/build_method_instrument.mjs). The moving strip is a stage marker, not a live model run; the four output curves come from the saved normalized cluster profiles.
+
 ## Reference results
 
 The committed reference configuration uses 200 synthetic consumers over 365 days, 51 behavioral features, 10 PCA components retaining 95.05% variance, and K=4. Its synthetic archetype recovery is ARI 0.813 and NMI 0.828. These values describe the generated data and are not estimates of real household classification accuracy.
