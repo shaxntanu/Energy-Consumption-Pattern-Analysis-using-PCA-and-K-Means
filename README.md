@@ -18,24 +18,11 @@ The repository includes:
 
 ## How the analysis works
 
-```mermaid
-flowchart LR
-    S[Synthetic generator] --> P[Preprocess]
-    U[UCI / London ingestion scripts] --> P
-    P --> F[Behavioral features]
-    F --> Z[Standardize]
-    Z --> PCA[PCA at 95% variance]
-    PCA --> K[K sweep and K selection]
-    K --> C[Profiles and validation]
-    C --> O[Figures, metrics, reports, models]
-    O --> W[Versioned web artifact export]
-    W --> V[Static Vercel explorer]
-    C --> D[Streamlit simulator]
-    PCA -. optional kernel .-> CPP[pybind11 C++ engine]
-    K -. optional kernel .-> CPP
-```
+![Research architecture: synthetic and measured energy data flow through the Python analysis pipeline to the Streamlit simulator and static Vercel explorer.](docs/assets/research-pipeline-architecture.svg)
 
-Synthetic archetype labels are retained only for post-fit validation and are dropped before preprocessing and clustering. Measured-data runs use separate ingestion scripts and do not claim recovery against labels that are not present. See [the architecture and data-flow notes](docs/architecture.md).
+Open the [standalone HTML source](docs/assets/research-pipeline-architecture.html) or the [implementation-level architecture and data-flow notes](docs/architecture.md).
+
+Synthetic archetype labels are used only for post-fit checks. The UCI and London studies use separate ingestion scripts and have no behavioral ground truth. Streamlit runs selected analyses through Python; the Vercel explorer reads committed JSON and CSV artifacts without fitting models.
 
 ## Reference results
 

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Energy consumption research pipeline</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --paper: #0f1519;
+      --panel: #151e22;
+      --panel-raised: #1a262a;
+      --line: #2b393c;
+      --ink: #e8efed;
+      --muted: #a7b6b2;
+      --soft: #82928e;
+      --accent: #55b7aa;
+      font-family: system-ui, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--paper); }
+    body { padding: 24px; }
+    main { max-width: 1280px; min-width: 0; margin: 0 auto; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    svg { display: block; width: 100%; min-width: 1280px; }
+    @media print {
+      body { padding: 0; }
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 hidden>Energy consumption research pipeline</h1>
+    <div class="diagram-container">
+      <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"
+           role="img" aria-labelledby="diagram-title diagram-description">
+        <title id="diagram-title">From load profiles to evidence</title>
+        <desc id="diagram-description">Synthetic profiles and separate UCI and London meter datasets enter a Python research pipeline for validation, feature engineering, scaling, PCA, and K-Means. Streamlit runs selected analyses. The Vercel explorer reads committed JSON and CSV exports without fitting models.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+            <path d="M0 0 L8 4 L0 8 Z" fill="#82928e"/>
+          </marker>
+          <pattern id="fine-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.7" fill="#e8efed" opacity="0.075"/>
+          </pattern>
+        </defs>
+
+        <rect width="1280" height="720" fill="#0f1519"/>
+        <rect width="1280" height="720" fill="url(#fine-grid)"/>
+
+        <text x="64" y="48" fill="#a7b6b2" font-size="9" font-weight="600"
+              font-family="ui-monospace, Consolas, monospace" letter-spacing="0.16em">ENERGY CONSUMPTION · RESEARCH SYSTEM</text>
+        <text x="64" y="98" fill="#e8efed" font-size="34" font-weight="400"
+              font-family="Georgia, 'Times New Roman', serif" letter-spacing="-0.02em">From load profiles to evidence</text>
+        <text x="64" y="128" fill="#a7b6b2" font-size="12"
+              font-family="system-ui, 'Segoe UI', sans-serif">Separate study inputs share a reproducible analysis path, with a different contract for each app.</text>
+
+        <!-- Python analysis boundary -->
+        <rect x="284" y="204" width="928" height="240" rx="8" fill="#e8efed" fill-opacity="0.018"
+              stroke="#e8efed" stroke-opacity="0.13" stroke-width="1"/>
+        <rect x="304" y="216" width="208" height="16" rx="2" fill="#0f1519"/>
+        <text x="312" y="228" fill="#82928e" font-size="8" font-weight="500"
+              font-family="ui-monospace, Consolas, monospace" letter-spacing="0.13em">PYTHON RESEARCH PIPELINE</text>
+
+        <!-- Connectors are routed around nodes and drawn first. -->
+        <path d="M248 288 H272 Q280 288 280 296 V316 Q280 324 288 324 H312"
+              fill="none" stroke="#82928e" stroke-width="1.4" marker-end="url(#arrow)"/>
+        <path d="M248 424 H272 Q280 424 280 416 V372 Q280 364 288 364 H312"
+              fill="none" stroke="#82928e" stroke-width="1.4" marker-end="url(#arrow)"/>
+        <line x1="480" y1="344" x2="520" y2="344" stroke="#82928e" stroke-width="1.4" marker-end="url(#arrow)"/>
+        <line x1="688" y1="344" x2="728" y2="344" stroke="#82928e" stroke-width="1.4" marker-end="url(#arrow)"/>
+        <line x1="924" y1="344" x2="964" y2="344" stroke="#82928e" stroke-width="1.4" marker-end="url(#arrow)"/>
+        <path d="M724 520 V464 Q724 456 732 456 H818 Q826 456 826 448 V392"
+              fill="none" stroke="#82928e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+        <line x1="1068" y1="392" x2="1068" y2="520" stroke="#82928e" stroke-width="1.3" marker-end="url(#arrow)"/>
+
+        <!-- Connector labels use opaque masks with visible spacing. -->
+        <rect x="752" y="464" width="48" height="16" rx="2" fill="#0f1519"/>
+        <text x="776" y="475" fill="#a7b6b2" font-size="8" font-family="ui-monospace, Consolas, monospace"
+              text-anchor="middle" letter-spacing="0.06em">RUN</text>
+        <rect x="972" y="464" width="88" height="16" rx="2" fill="#0f1519"/>
+        <text x="1016" y="475" fill="#a7b6b2" font-size="8" font-family="ui-monospace, Consolas, monospace"
+              text-anchor="middle" letter-spacing="0.06em">READ EXPORTS</text>
+
+        <!-- Inputs -->
+        <g aria-label="Synthetic profiles">
+          <rect x="64" y="248" width="184" height="80" rx="6" fill="#151e22" stroke="#3a4a4d" stroke-width="1"/>
+          <rect x="76" y="258" width="72" height="14" rx="2" fill="#1a262a"/>
+          <text x="112" y="268" fill="#a7b6b2" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">SYNTHETIC</text>
+          <text x="156" y="292" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">Generated profiles</text>
+          <text x="156" y="310" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">known labels · post-fit only</text>
+        </g>
+
+        <g aria-label="Measured UCI and London datasets">
+          <rect x="64" y="384" width="184" height="80" rx="6" fill="#151e22" stroke="#3a4a4d" stroke-width="1"/>
+          <rect x="76" y="394" width="68" height="14" rx="2" fill="#1a262a"/>
+          <text x="110" y="404" fill="#a7b6b2" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">MEASURED</text>
+          <text x="156" y="428" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">UCI + London data</text>
+          <text x="156" y="448" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">separate scripts · no labels</text>
+        </g>
+
+        <!-- Analysis stages -->
+        <g aria-label="Study-specific validation and preprocessing">
+          <rect x="312" y="296" width="168" height="96" rx="6" fill="#151e22" stroke="#3a4a4d" stroke-width="1"/>
+          <rect x="324" y="306" width="56" height="14" rx="2" fill="#1a262a"/>
+          <text x="352" y="316" fill="#82928e" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">INGEST</text>
+          <text x="396" y="350" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">Validate + preprocess</text>
+          <text x="396" y="370" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">source-specific checks</text>
+        </g>
+
+        <g aria-label="Behavioral feature engineering">
+          <rect x="520" y="296" width="168" height="96" rx="6" fill="#151e22" stroke="#3a4a4d" stroke-width="1"/>
+          <rect x="532" y="306" width="72" height="14" rx="2" fill="#1a262a"/>
+          <text x="568" y="316" fill="#82928e" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">FEATURES</text>
+          <text x="604" y="350" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">Behavioral features</text>
+          <text x="604" y="370" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">behavior · scale · combined</text>
+        </g>
+
+        <g aria-label="Scaling, PCA, and K-Means, with optional C++ kernels">
+          <rect x="728" y="296" width="196" height="96" rx="6" fill="#55b7aa" fill-opacity="0.08" stroke="#55b7aa" stroke-width="1.2"/>
+          <rect x="740" y="306" width="56" height="14" rx="2" fill="#55b7aa" fill-opacity="0.12"/>
+          <text x="768" y="316" fill="#55b7aa" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">MODEL</text>
+          <text x="826" y="350" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">Scale · PCA · K-Means</text>
+          <text x="826" y="370" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">Python reference · optional C++ kernels</text>
+        </g>
+
+        <g aria-label="Cluster profiles, diagnostics, and exported artifacts">
+          <rect x="964" y="296" width="208" height="96" rx="6" fill="#151e22" stroke="#3a4a4d" stroke-width="1"/>
+          <rect x="976" y="306" width="60" height="14" rx="2" fill="#1a262a"/>
+          <text x="1006" y="316" fill="#82928e" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">EVIDENCE</text>
+          <text x="1068" y="350" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">Profiles + exports</text>
+          <text x="1068" y="370" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">diagnostics · figures · JSON / CSV</text>
+        </g>
+
+        <!-- Consumers -->
+        <g aria-label="Streamlit simulator runs selected configurations and shows results">
+          <rect x="612" y="520" width="224" height="88" rx="6" fill="#151e22" stroke="#3a4a4d" stroke-width="1"/>
+          <rect x="624" y="530" width="56" height="14" rx="2" fill="#1a262a"/>
+          <text x="652" y="540" fill="#a7b6b2" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">RUNNER</text>
+          <text x="724" y="566" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">Streamlit simulator</text>
+          <text x="724" y="586" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">runs selected settings · shows results</text>
+        </g>
+
+        <g aria-label="Static Vercel explorer reads committed JSON and CSV without fitting models">
+          <rect x="960" y="520" width="216" height="88" rx="6" fill="#151e22" stroke="#3a4a4d" stroke-width="1"/>
+          <rect x="972" y="530" width="72" height="14" rx="2" fill="#1a262a"/>
+          <text x="1008" y="540" fill="#a7b6b2" font-size="7" font-family="ui-monospace, Consolas, monospace"
+                text-anchor="middle" letter-spacing="0.1em">STATIC WEB</text>
+          <text x="1068" y="566" fill="#e8efed" font-size="12" font-weight="600" font-family="system-ui, 'Segoe UI', sans-serif" text-anchor="middle">Vercel explorer</text>
+          <text x="1068" y="586" fill="#a7b6b2" font-size="8.5" font-family="ui-monospace, Consolas, monospace" text-anchor="middle">committed JSON / CSV · no fitting</text>
+        </g>
+
+        <line x1="64" y1="636" x2="1216" y2="636" stroke="#2b393c" stroke-width="1"/>
+        <text x="64" y="660" fill="#82928e" font-size="8" font-weight="500"
+              font-family="ui-monospace, Consolas, monospace" letter-spacing="0.12em">SCOPE</text>
+        <text x="64" y="680" fill="#a7b6b2" font-size="10" font-family="system-ui, 'Segoe UI', sans-serif">Exploratory analysis · no live utility ingestion or grid control.</text>
+        <text x="680" y="660" fill="#82928e" font-size="8" font-weight="500"
+              font-family="ui-monospace, Consolas, monospace" letter-spacing="0.12em">LABELS</text>
+        <text x="680" y="680" fill="#a7b6b2" font-size="10" font-family="system-ui, 'Segoe UI', sans-serif">Synthetic labels are post-fit checks; measured datasets have no behavior labels.</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>
