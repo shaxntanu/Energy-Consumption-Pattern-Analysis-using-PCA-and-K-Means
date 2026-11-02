@@ -272,7 +272,7 @@ K-means is unsupervised and has no native feature importance. We employ post-hoc
     \item Apply SHAP TreeExplainer \cite{lundberg2017shap} to surrogate
 \end{enumerate}
 
-\textbf{Interpretation:} SHAP values indicate which features most distinguish clusters in the surrogate. Cross-validation accuracy is the \emph{ceiling} on explanation quality---cannot explain more than the surrogate captures.
+\textbf{Interpretation:} SHAP values indicate which features most distinguish clusters in the surrogate. Cross-validation accuracy is the \emph{ceiling} on explanation quality because explanations cannot capture more than the surrogate itself.
 
 \textbf{Critical:} Surrogate never feeds back into clustering; it is purely diagnostic.
 

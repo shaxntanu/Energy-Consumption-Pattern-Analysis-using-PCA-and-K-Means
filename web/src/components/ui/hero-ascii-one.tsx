@@ -53,7 +53,7 @@ function destroyScenes(scenes: Scene[]) {
 
 export default function HeroAsciiOne() {
   // Resolve eligibility synchronously so the loader's opacity (and whether it
-  // renders at all) is correct on the very first paint — no frame where the
+  // renders at all) is correct on the very first paint - no frame where the
   // hero text shows ahead of the loader, and no loader at all on environments
   // that never run the animation (small screens, reduced motion, hidden tab).
   const [eligible, setEligible] = useState(() => {

@@ -3,8 +3,8 @@
    No accent colour in the
    chrome; no drop shadows or gradient overlays. The only chromatic content is
    the chart data itself, which is kept as-is (the data series ARE the imagery of
-   the project, standing in for the brand's photography). All UI chrome — canvas,
-   panels, nav, buttons, borders, text, ticks, focus rings, tags — is mapped onto
+   the project, standing in for the brand's photography). All UI chrome - canvas,
+   panels, nav, buttons, borders, text, ticks, focus rings, tags - is mapped onto
    the black/white system. */
 
 :root {
@@ -666,7 +666,7 @@ p {
 }
 
 /* Reference cards: flat near-black surfaces with a hairline border. No 3D
-   shadow, no corner accent, no stripes/dots — the chromed austerity of the
+   shadow, no corner accent, no stripes/dots - the chromed austerity of the
    brand. */
 .reference-card {
   position: relative;
@@ -688,7 +688,7 @@ p {
   transform: translateY(0);
 }
 
-/* Title area: clean white surface with black caps — the one filled moment on
+/* Title area: clean white surface with black caps - the one filled moment on
    each card, flipped to text-inverse where the photography/video logic would
    otherwise sit. */
 .ref-title-area {

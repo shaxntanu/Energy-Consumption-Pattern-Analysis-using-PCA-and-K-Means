@@ -82,14 +82,14 @@ Characteristic & Cluster 0 & Cluster 1 & Cluster 2 & Cluster 3 & Population \\
 \midrule
 Size (N) & 39 & 52 & 47 & 62 & 200 \\
 Share (\%) & 19.5 & 26.0 & 23.5 & 31.0 & 100 \\
-Peak hour & 13:00 & 19:00 & 20:00 & 19:00 & --- \\
+Peak hour & 13:00 & 19:00 & 20:00 & 19:00 & N/A \\
 Evening share & 0.212 & 0.258 & \textbf{0.380} & 0.299 & 0.290 \\
 Afternoon share & \textbf{0.357} & 0.271 & 0.229 & 0.310 & 0.290 \\
 Weekend ratio & \textbf{0.747} & 0.952 & 1.026 & \textbf{1.313} & 1.041 \\
 Peak-to-avg & 8.83 & \textbf{4.92} & \textbf{11.32} & 9.45 & 8.59 \\
 CV & 0.620 & \textbf{0.302} & 0.705 & 0.596 & 0.550 \\
 \midrule
-Assigned name & Midday- & Flat & Evening- & Evening- & --- \\
+Assigned name & Midday- & Flat & Evening- & Evening- & N/A \\
  & Peaking & All-Day & Peaking & Peaking & \\
  & Weekday- &  &  & Weekend- & \\
  & Heavy &  &  & Heavy & \\
@@ -105,7 +105,7 @@ Assigned name & Midday- & Flat & Evening- & Evening- & --- \\
     \item \textbf{Cluster 3} (Evening-Peaking Weekend-Heavy): Evening peak with elevated weekend ratio (1.313)
 \end{itemize}
 
-\textbf{Mean Consumption Context:} Mean kWh/record for clusters [1.30, 1.38, 1.38, 1.32] vs population 1.35---approximately uniform, confirming magnitude does not drive clustering.
+\textbf{Mean Consumption Context:} Mean kWh/record for clusters [1.30, 1.38, 1.38, 1.32] vs population 1.35, which is approximately uniform and confirms that magnitude does not drive clustering.
 
 \subsection{Ground Truth Recovery (Synthetic Validation)}
 
@@ -256,7 +256,7 @@ combined & 58 & 3 & 0.279 & 0.983 & 0.623 \\
 \end{tabular}
 \end{table}
 
-\textbf{Critical Finding:} Scale-only features achieve highest silhouette (0.521) but \emph{zero} archetype recovery (ARI $-0.004$). This demonstrates internal quality metrics alone cannot validate behavioral segmentation. High silhouette on magnitude simply confirms consumers with different totals are well-separated---but this is the wrong research question.
+\textbf{Critical Finding:} Scale-only features achieve highest silhouette (0.521) but \emph{zero} archetype recovery (ARI $-0.004$). This demonstrates internal quality metrics alone cannot validate behavioral segmentation. High silhouette on magnitude simply confirms consumers with different totals are well-separated, but this is the wrong research question.
 
 Behavioral and combined feature sets achieve similar recovery (0.614, 0.623), with behavioral slightly simpler (51 vs 58 features). Shape-only achieves 0.646, suggesting raw hourly bins carry strong signal, but behavioral descriptors add interpretability.
 

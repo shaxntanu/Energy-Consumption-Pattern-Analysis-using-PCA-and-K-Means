@@ -2,7 +2,7 @@
 
 This folder contains the extracted source file used for the real-client analyses:
 
-- `LD2011_2014.txt` — 15-minute mean-power observations in kW for 370 anonymized electricity points.
+- `LD2011_2014.txt` - 15-minute mean-power observations in kW for 370 anonymized electricity points.
 
 ## Source and attribution
 

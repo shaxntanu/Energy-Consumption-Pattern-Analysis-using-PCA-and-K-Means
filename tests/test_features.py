@@ -448,7 +448,7 @@ def test_scale_invariance():
     import numpy as np
     original = np.random.rand(24)
     scaled = original * 2.5
-    # Feature engineering uses division by total — shape invariant
+    # Feature engineering uses division by total - shape invariant
     assert np.isclose(original.sum()/original.sum(), scaled.sum()/scaled.sum())
 
 def test_temperature_sensitivity_zero_variance_guard():

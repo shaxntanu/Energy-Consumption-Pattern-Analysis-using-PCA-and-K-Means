@@ -43,7 +43,7 @@
    is already inert + aria-hidden, so nothing injected can be focused or
    clicked; these rules reinforce that and also hide injected interactive
    chrome (<a>/<button> credits, the usual form a player badge takes), so the
-   "Unicorn Studio" credit is not shown twice — once here and once in the page
+   "Unicorn Studio" credit is not shown twice - once here and once in the page
    footer. Only injected chrome is targeted; the canvas animation is untouched. */
 .ascii-hero__scene {
   position: relative;
@@ -66,14 +66,14 @@
 }
 .ascii-hero__corners { z-index: 1; pointer-events: none; }
 /* A small opaque black patch covering the injected player badge on the
-   animation. The hero is pure black, so the patch is invisible on its own — it
+   animation. The hero is pure black, so the patch is invisible on its own - it
    only occludes the "Made with Unicorn Studio" watermark drawn into the video/
    canvas. Layered above the visual (-1) but under the loader (3); adjust
    left/top/size to track wherever the badge actually sits. */
 .ascii-hero__watermark-cover {
   /* A compact opaque black rectangle overlayed in front of the badge. The
      badge is drawn into the video/canvas pixels, so it cannot be removed with
-     CSS — it can only be occluded, and a solid black patch blends invisibly
+     CSS - it can only be occluded, and a solid black patch blends invisibly
      into the hero while hiding just the badge. Positioned per the report: the
      badge sits under the "Explore the charts / Understand the method" buttons,
      horizontally centred. top: 62% drops it below the headline so it no longer

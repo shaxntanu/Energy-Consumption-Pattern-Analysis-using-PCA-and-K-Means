@@ -13,4 +13,4 @@
 - Phase 13: Verified all figures from pipeline
 - Phase 14: Regenerated table with metadata
 - Phase 15: 28 tests pass; added 3 new
-- Phase 16: Manual LaTeX audit — zero errors
+- Phase 16: Manual LaTeX audit - zero errors

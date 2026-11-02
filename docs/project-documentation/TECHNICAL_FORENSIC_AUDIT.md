@@ -3,8 +3,8 @@
 **Audit Date:** 2026-09-26  
 **Repository:** Energy-Consumption-Pattern-Analysis-using-PCA-and-K-Means  
 **Branch:** claude/kind-leavitt-f73a23  
-**Scope:** Complete forensic audit prior to any revision work — mapping reviewer comments to code, manuscript, and artifacts.  
-**Status of this document:** DRAFT — produced by automated codebase reading; figures and output artifacts were inspected by file listing, not by re-execution.
+**Scope:** Complete forensic audit prior to any revision work - mapping reviewer comments to code, manuscript, and artifacts.
+**Status of this document:** DRAFT - produced by automated codebase reading; figures and output artifacts were inspected by file listing, not by re-execution.
 
 ---
 
@@ -22,9 +22,9 @@ The repository implements a **shape-first behavioral segmentation pipeline** for
 
 **What the audit identified as needing attention:**
 - The manuscript's "Section ??" reference and raw citation keys will prevent compilation.
-- The reviewer may ask for benchmark comparisons (GMM, DBSCAN, hierarchical) — none exist in the codebase.
+- The reviewer may ask for benchmark comparisons (GMM, DBSCAN, hierarchical) - none exist in the codebase.
 - The C++ bridge exists (`cpp_engine/`) but is not built; tests skip gracefully when unavailable.
-- The real-world UCI pathway is implemented but not executed — flagged honestly in the codebase.
+- The real-world UCI pathway is implemented but not executed - flagged honestly in the codebase.
 
 **What the audit did NOT do (per user instruction):** No code or manuscript changes were made.
 
@@ -66,9 +66,9 @@ generate → preprocess → engineer features → select feature group → stand
 
 ## 3. Dataset History
 
-- **Original design:** 200 consumers × 30 days hourly (144,000 observations) — confirmed in `data_loader.py` defaults and the audit report.
+- **Original design:** 200 consumers × 30 days hourly (144,000 observations) - confirmed in `data_loader.py` defaults and the audit report.
 - **Current pipeline:** Configurable `n_days` (30/90/180/365 documented horizons) and `n_consumers`. The flagship metrics in `RESEARCH_AUDIT.md` reference a 365-day run (1,752,000 records).
-- **Synthetic generator:** `generate_synthetic_data_archetype_based()` in `data_loader.py` — 4 archetypes (daytime, evening, flat, weekend), amplitude drawn independently of archetype, blended towards population mean, optional seasonal model.
+- **Synthetic generator:** `generate_synthetic_data_archetype_based()` in `data_loader.py` - 4 archetypes (daytime, evening, flat, weekend), amplitude drawn independently of archetype, blended towards population mean, optional seasonal model.
 - **No real dataset committed.** The UCI household dataset is referenced but not included; the real-world pathway is implemented but not executed.
 
 **Audit concern:** The reviewer may ask for provenance of the "original 30-day/144,000 observation dataset." The generator is deterministic (seed 42), so the dataset is reproducible from `data_loader.py`, but no raw CSV of the original 30-day dataset is committed. The current pipeline generates on the fly.
@@ -96,10 +96,10 @@ Key results traced to code:
 
 The manuscript (`paper/main.tex`) contains equations. The audit read the LaTeX but did not execute it. Key items to verify manually:
 
-- **Shape normalization equation** (magnitude-timing separation) — check that the manuscript's Equation matches `engineer_normalized_load_shape()` in `feature_engineering.py` (divides each hour's consumption by the daily total).
-- **PCA SVD decomposition** — manuscript should state X = UΣVᵀ; code uses `sklearn.decomposition.PCA` with `svd_solver="full"`.
-- **K-Means objective** — standard inertia minimization; manuscript should state it.
-- **Adjusted Rand Index** — chance-corrected Rand index; manuscript should cite the Hubert & Arabie (1985) formula or equivalent.
+- **Shape normalization equation** (magnitude-timing separation) - check that the manuscript's Equation matches `engineer_normalized_load_shape()` in `feature_engineering.py` (divides each hour's consumption by the daily total).
+- **PCA SVD decomposition** - manuscript should state X = UΣVᵀ; code uses `sklearn.decomposition.PCA` with `svd_solver="full"`.
+- **K-Means objective** - standard inertia minimization; manuscript should state it.
+- **Adjusted Rand Index** - chance-corrected Rand index; manuscript should cite the Hubert & Arabie (1985) formula or equivalent.
 
 **Action required:** Read `paper/main.tex` and verify each equation matches the corresponding code function. This was not automated.
 
@@ -110,7 +110,7 @@ The manuscript (`paper/main.tex`) contains equations. The audit read the LaTeX b
 `src/feature_engineering.py` (lines 1–644):
 
 - **5 groups, 51 features:**
-  - Shape (24): `hour_0_shape` through `hour_23_shape` — normalized 24-hour profile
+  - Shape (24): `hour_0_shape` through `hour_23_shape` - normalized 24-hour profile
   - Timing (11): peak hour, period shares, weekend ratio, etc.
   - Shape descriptors (9): entropy, Gini, concentration, ramp, etc.
   - Variability (4): CV, daily_total_cv, p90_median_ratio, etc.
@@ -118,10 +118,10 @@ The manuscript (`paper/main.tex`) contains equations. The audit read the LaTeX b
 
 - **Scale invariance:** Shape features are computed as `hour_h / Σ_h` (proportion of daily energy per hour), making them invariant to scalar multiplication of the entire series. This is the core design claim and is correctly implemented.
 
-- **`engineer_normalized_load_shape()`** — builds the 24-bin normalized shape.
-- **`engineer_temporal_features()`** — builds the 11 timing features.
-- **`engineer_shape_descriptors()`** — builds the 9 shape descriptors.
-- **`engineer_all_features()`** — dispatches to all groups based on `feature_set` parameter.
+- **`engineer_normalized_load_shape()`** - builds the 24-bin normalized shape.
+- **`engineer_temporal_features()`** - builds the 11 timing features.
+- **`engineer_shape_descriptors()`** - builds the 9 shape descriptors.
+- **`engineer_all_features()`** - dispatches to all groups based on `feature_set` parameter.
 
 **Audit finding:** The feature engineering is correctly implemented and matches the manuscript's claim of 51 scale-invariant behavioral features.
 
@@ -132,7 +132,7 @@ The manuscript (`paper/main.tex`) contains equations. The audit read the LaTeX b
 **Pre-registered decision rules (documented before results):**
 
 1. **K-selection rule** (`clustering.py`): Filter by balance (min cluster share ≥ 5%) and stability (mean ARI ≥ 0.60), then composite score (silhouette + CH + DB, equal weight), with 0.05 tolerance for ties and parsimony preference.
-2. **Ablation arm rule** (`run_ablation_study.py`): Step 1 — reject unstable or imbalanced arms; Step 2 — rank by archetype agreement (or shape separation without ground truth); Step 3 — tie-break on fewer features; Step 4 — report silhouette but do not let it decide.
+2. **Ablation arm rule** (`run_ablation_study.py`): Step 1 - reject unstable or imbalanced arms; Step 2 - rank by archetype agreement (or shape separation without ground truth); Step 3 - tie-break on fewer features; Step 4 - report silhouette but do not let it decide.
 3. **Seed robustness rule** (`run_seed_robustness.py`): Same arm rule applied to 20 datasets, pooled evidence, majority-strict reading for step 1.
 
 **Audit finding:** The pre-registered rules are documented in module docstrings before any numbers are produced. This is good practice and matches the reviewer's likely concern about circular reasoning.
@@ -159,10 +159,10 @@ The manuscript (`paper/main.tex`) contains equations. The audit read the LaTeX b
 - Hourly segmentation: Kwac 2014, Rhodes 2014
 
 **Issues found:**
-1. **Raw citation keys in manuscript** — `[lazar2021investigating, kwac2014household]` needs `\cite{}` wrapping.
-2. **"Section ??" reference** — unresolved cross-reference in the Paper Organization section.
-3. **Some entries have `note` field used as annotation** — the `note` field is non-standard; consider moving annotations to `comment` or removing them.
-4. **Year discrepancy:** Chicco 2024 entry has `year={2024}` but the URL points to UrbanSim 2024 proceedings — verify this is correct.
+1. **Raw citation keys in manuscript** - `[lazar2021investigating, kwac2014household]` needs `\cite{}` wrapping.
+2. **"Section ??" reference** - unresolved cross-reference in the Paper Organization section.
+3. **Some entries have `note` field used as annotation** - the `note` field is non-standard; consider moving annotations to `comment` or removing them.
+4. **Year discrepancy:** Chicco 2024 entry has `year={2024}` but the URL points to UrbanSim 2024 proceedings - verify this is correct.
 
 ---
 
@@ -170,9 +170,9 @@ The manuscript (`paper/main.tex`) contains equations. The audit read the LaTeX b
 
 Issues identified in `paper/main.tex`:
 
-1. **Raw citation keys** (critical): `[lazar2021investigating, kwac2014household]` — these will not compile. Must be `\cite{lazar2021investigating}` etc.
-2. **"Section ??" reference** (critical): Unresolved `\ref{}` or manual text — needs the correct section number.
-3. **Bibliography backend:** Uses `backend=biber, style=numeric` — requires `biber` not `bibtex`. Ensure the build chain uses `biber`.
+1. **Raw citation keys** (critical): `[lazar2021investigating, kwac2014household]` - these will not compile. Must be `\cite{lazar2021investigating}` etc.
+2. **"Section ??" reference** (critical): Unresolved `\ref{}` or manual text - needs the correct section number.
+3. **Bibliography backend:** Uses `backend=biber, style=numeric` - requires `biber` not `bibtex`. Ensure the build chain uses `biber`.
 4. **Citations in reference list:** The `.bib` file has 28 entries; the manuscript should cite all of them or remove unused ones.
 
 **Action required:** Fix raw citation keys and "Section ??" reference before resubmission.
@@ -225,33 +225,33 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 
 ## 12. Critical Problems
 
-1. **LaTeX compilation failures** — raw citation keys and "Section ??" reference will prevent compilation.
-2. **No benchmark comparison** — reviewer will likely ask why K-Means specifically; no GMM/DBSCAN/hierarchical comparison exists.
-3. **Real-world pathway not executed** — the UCI pathway is implemented but not run; reviewer may ask for real-data results.
-4. **Single flagship run** — the 365-day results are from one run; no bootstrap CIs or uncertainty quantification.
-5. **C++ bridge not built** — the benchmark claim about C++ performance is not verifiable from the repository.
-6. **Synthetic data only** — all results are on synthetic data; generalization to real smart meter data is not demonstrated.
+1. **LaTeX compilation failures** - raw citation keys and "Section ??" reference will prevent compilation.
+2. **No benchmark comparison** - reviewer will likely ask why K-Means specifically; no GMM/DBSCAN/hierarchical comparison exists.
+3. **Real-world pathway not executed** - the UCI pathway is implemented but not run; reviewer may ask for real-data results.
+4. **Single flagship run** - the 365-day results are from one run; no bootstrap CIs or uncertainty quantification.
+5. **C++ bridge not built** - the benchmark claim about C++ performance is not verifiable from the repository.
+6. **Synthetic data only** - all results are on synthetic data; generalization to real smart meter data is not demonstrated.
 
 ---
 
 ## 13. Recommended Revision Plan
 
-**Phase 1 — Fix LaTeX compilation (blocking):**
+**Phase 1 - Fix LaTeX compilation (blocking):**
 1. Replace raw citation keys with `\cite{}` commands.
 2. Resolve "Section ??" reference.
 3. Verify `biber` build chain.
 
-**Phase 2 — Address reviewer concerns (high priority):**
-1. Add benchmark comparison section (GMM, DBSCAN, hierarchical) — or explicitly state this is future work.
-2. Execute the real-world UCI pathway and report results — or explicitly state this is future work.
+**Phase 2 - Address reviewer concerns (high priority):**
+1. Add benchmark comparison section (GMM, DBSCAN, hierarchical) - or explicitly state this is future work.
+2. Execute the real-world UCI pathway and report results - or explicitly state this is future work.
 3. Add bootstrap CIs for flagship metrics (ARI, silhouette, stability).
 
-**Phase 3 — Strengthen the paper (medium priority):**
-1. Add statistical testing section (Friedman, Wilcoxon, Holm correction) — already in `run_seed_robustness.py`, needs manuscript integration.
-2. Add C++ benchmark results if the claim is to be maintained — or remove the claim.
+**Phase 3 - Strengthen the paper (medium priority):**
+1. Add statistical testing section (Friedman, Wilcoxon, Holm correction) - already in `run_seed_robustness.py`, needs manuscript integration.
+2. Add C++ benchmark results if the claim is to be maintained - or remove the claim.
 3. Verify all figure numbers and table numbers in the manuscript match actual outputs.
 
-**Phase 4 — Polish (low priority):**
+**Phase 4 - Polish (low priority):**
 1. Clean up `note` fields in `references.bib`.
 2. Verify all cross-references in the LaTeX manuscript.
 3. Add author affiliations (currently placeholders).
@@ -260,13 +260,13 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 
 ## 14. Information Missing From Repository
 
-1. **The reviewer PDF** — the actual comments were not parsed; a full extraction is needed for complete mapping.
-2. **Raw 30-day dataset CSV** — not committed; the generator is deterministic but the raw data is not shipped.
-3. **C++ benchmark results** — the bridge exists but is not built; benchmark results are not in the repo.
-4. **Real-world UCI results** — pathway implemented but not executed; no results to audit.
-5. **Flagship output artifacts** — `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` should contain the exact numbers; these were not read in full during this audit.
-6. **Test execution results** — the test suite exists (`tests/`) but was not executed; pass/fail status is unknown.
-7. **Dashboard content** — the Streamlit app (`app/`) is present but not inspected; the dashboard may contain additional claims.
+1. **The reviewer PDF** - the actual comments were not parsed; a full extraction is needed for complete mapping.
+2. **Raw 30-day dataset CSV** - not committed; the generator is deterministic but the raw data is not shipped.
+3. **C++ benchmark results** - the bridge exists but is not built; benchmark results are not in the repo.
+4. **Real-world UCI results** - pathway implemented but not executed; no results to audit.
+5. **Flagship output artifacts** - `outputs/reports/analysis_summary.md` and `models/analysis_metadata.json` should contain the exact numbers; these were not read in full during this audit.
+6. **Test execution results** - the test suite exists (`tests/`) but was not executed; pass/fail status is unknown.
+7. **Dashboard content** - the Streamlit app (`app/`) is present but not inspected; the dashboard may contain additional claims.
 
 ---
 
@@ -300,15 +300,15 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 | Dispersion | 3 | base_load_share, harmonic_1_amplitude, harmonic_2_amplitude |
 
 **Scale invariance mechanism:**
-- Shape features: `hour_h / Σ_h` — invariant to scalar multiplication ✓
-- Timing features: derived from shape — invariant ✓
-- Shape descriptors: computed on normalized shape — invariant ✓
-- Variability features: computed on shape — invariant ✓
-- Dispersion features: computed on shape — invariant ✓
+- Shape features: `hour_h / Σ_h` - invariant to scalar multiplication ✓
+- Timing features: derived from shape - invariant ✓
+- Shape descriptors: computed on normalized shape - invariant ✓
+- Variability features: computed on shape - invariant ✓
+- Dispersion features: computed on shape - invariant ✓
 
 **Scale features (ablation arm A):**
 - `energy_consumption_kwh_mean`, `energy_consumption_kwh_max`, `energy_consumption_kwh_sum`
-- These are magnitude features, NOT scale-invariant — correctly identified as the "naive baseline" arm.
+- These are magnitude features, NOT scale-invariant - correctly identified as the "naive baseline" arm.
 
 **Audit finding:** The feature engineering is correctly implemented. The scale-invariance claim is supported by the code.
 
@@ -344,9 +344,9 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 
 **Tests implemented in `run_seed_robustness.py`:**
 
-1. **Friedman test** — ranks across all arms, blocks on dataset. Non-parametric, rank-based, handles non-normal ARI distribution.
-2. **Wilcoxon signed-rank** — exact test for each pair, with Holm step-down correction.
-3. **Holm correction** — implemented in `_holm()` function, order-preserving, controls family-wise error rate.
+1. **Friedman test** - ranks across all arms, blocks on dataset. Non-parametric, rank-based, handles non-normal ARI distribution.
+2. **Wilcoxon signed-rank** - exact test for each pair, with Holm step-down correction.
+3. **Holm correction** - implemented in `_holm()` function, order-preserving, controls family-wise error rate.
 
 **Tests NOT implemented (reviewer may ask for):**
 - Bootstrap CIs for flagship metrics
@@ -361,13 +361,13 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 ## 19. Null Baseline Audit
 
 **Null baselines present:**
-1. **Scale-only arm** (ablation arm A) — ARI ≈ −0.004 on seed 42. This is the null: magnitude features alone cannot recover archetypes.
-2. **Random labeling** — ARI = 0 by definition; the scale arm scores below random, which is a stronger statement.
-3. **Population baseline** — `cluster_profiling.py` reports population means for comparison.
+1. **Scale-only arm** (ablation arm A) - ARI ≈ −0.004 on seed 42. This is the null: magnitude features alone cannot recover archetypes.
+2. **Random labeling** - ARI = 0 by definition; the scale arm scores below random, which is a stronger statement.
+3. **Population baseline** - `cluster_profiling.py` reports population means for comparison.
 
 **Null baselines missing:**
-1. **No-randomization test** — permute archetype labels and check ARI distribution under null.
-2. **No benchmark against simple heuristics** — e.g., "cluster by weekend ratio alone" or "cluster by peak hour alone."
+1. **No-randomization test** - permute archetype labels and check ARI distribution under null.
+2. **No benchmark against simple heuristics** - e.g., "cluster by weekend ratio alone" or "cluster by peak hour alone."
 
 **Audit finding:** The scale-only arm serves as a strong null baseline. Additional null tests (permutation, heuristic) would strengthen the paper.
 
@@ -394,7 +394,7 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 
 **C++ bridge:** `cpp_engine/` directory exists with CMake build, pybind11 bindings, and tests.
 
-**Test file:** `tests/test_cpp_bridge.py` — tests skip gracefully when `energy_cpp` module is not built.
+**Test file:** `tests/test_cpp_bridge.py` - tests skip gracefully when `energy_cpp` module is not built.
 
 **Test coverage:**
 - PCA sign-aligned components match sklearn
@@ -410,9 +410,9 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 ## 22. Pre-registration Language Audit
 
 **Pre-registered rules found in code docstrings:**
-1. K-selection rule: `clustering.py` — filter by balance + stability, composite score, parsimony
-2. Ablation arm rule: `run_ablation_study.py` — 4-step rule, stated before results
-3. Seed robustness rule: `run_seed_robustness.py` — same rule, 20 datasets, pooled evidence
+1. K-selection rule: `clustering.py` - filter by balance + stability, composite score, parsimony
+2. Ablation arm rule: `run_ablation_study.py` - 4-step rule, stated before results
+3. Seed robustness rule: `run_seed_robustness.py` - same rule, 20 datasets, pooled evidence
 
 **Pre-registration NOT found:**
 - No explicit pre-registration document (OSF, AsPredicted, etc.)
@@ -446,12 +446,12 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 ## 24. Overclaiming Audit
 
 **Claims in code (conservative):**
-- "THIS IS SYNTHETIC DATA" — appears in every report generator ✓
-- "The archetype column is dropped before preprocessing" — verified ✓
-- "This is not evidence about real-world household behaviour" — appears in `energy_analysis.py` ✓
-- "The pipeline's feature_set is fixed from that wider study" — seed robustness report ✓
-- "On this data the internal index and the research question happen to agree. That agreement is a property of this data, not a general result." — ablation report ✓
-- "A feature set that wins here has been shown to suit this generator, which is a weaker claim than suiting household electricity data." — seed robustness report ✓
+- "THIS IS SYNTHETIC DATA" - appears in every report generator ✓
+- "The archetype column is dropped before preprocessing" - verified ✓
+- "This is not evidence about real-world household behaviour" - appears in `energy_analysis.py` ✓
+- "The pipeline's feature_set is fixed from that wider study" - seed robustness report ✓
+- "On this data the internal index and the research question happen to agree. That agreement is a property of this data, not a general result." - ablation report ✓
+- "A feature set that wins here has been shown to suit this generator, which is a weaker claim than suiting household electricity data." - seed robustness report ✓
 
 **Potential overclaiming to check in manuscript:**
 - Does the manuscript claim "real-world validation"? Code says no.
@@ -466,9 +466,9 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 ## 25. Figure and Table Audit
 
 **Figures generated (by file listing):**
-- `outputs/figures/` — cluster visualizations, PCA projections, elbow curves, silhouette scores, K-selection metrics
-- `outputs/ablation/*/figures/` — per-arm ablation figures
-- `dark_mode_plots/figures/` — dark-mode versions
+- `outputs/figures/` - cluster visualizations, PCA projections, elbow curves, silhouette scores, K-selection metrics
+- `outputs/ablation/*/figures/` - per-arm ablation figures
+- `dark_mode_plots/figures/` - dark-mode versions
 
 **Tables generated:**
 - `outputs/metrics/ablation_study_results.csv`
@@ -504,7 +504,7 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 
 **C++ bridge tests:** Skip gracefully when `energy_cpp` module is not built (verified in `test_cpp_bridge.py`).
 
-**Action required:** Execute `pytest tests/` and report results. This is a blocker for the audit — the test suite must pass before submission.
+**Action required:** Execute `pytest tests/` and report results. This is a blocker for the audit - the test suite must pass before submission.
 
 ---
 
@@ -532,11 +532,11 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 
 ## Appendix B: Discrepancies Found
 
-1. **LaTeX raw citation keys** — `[lazar2021investigating, kwac2014household]` must be `\cite{lazar2021investigating}` etc.
-2. **"Section ??" reference** — unresolved cross-reference in manuscript.
-3. **Chicco 2024 entry** — year and URL need verification.
-4. **Flagship metrics** — `RESEARCH_AUDIT.md` reports ARI=0.813, but the code reports ARI=0.8127. Minor rounding difference, but the manuscript must match the committed artifact.
-5. **30-day vs 365-day results** — the ablation study is on 30-day data, the seed robustness is on 30-day data, but the flagship metrics are on 365-day data. The manuscript must be clear about which window each result comes from.
+1. **LaTeX raw citation keys** - `[lazar2021investigating, kwac2014household]` must be `\cite{lazar2021investigating}` etc.
+2. **"Section ??" reference** - unresolved cross-reference in manuscript.
+3. **Chicco 2024 entry** - year and URL need verification.
+4. **Flagship metrics** - `RESEARCH_AUDIT.md` reports ARI=0.813, but the code reports ARI=0.8127. Minor rounding difference, but the manuscript must match the committed artifact.
+5. **30-day vs 365-day results** - the ablation study is on 30-day data, the seed robustness is on 30-day data, but the flagship metrics are on 365-day data. The manuscript must be clear about which window each result comes from.
 
 ---
 
@@ -560,16 +560,16 @@ The reviewer PDF was not fully extracted (no PDF parser was run), but based on t
 
 ## Appendix D: Next Steps
 
-1. **Parse the reviewer PDF** — extract all comments and map them explicitly.
-2. **Execute the test suite** — `pytest tests/` and report results.
-3. **Fix LaTeX compilation** — raw citation keys and "Section ??" reference.
-4. **Verify figure/table numbers** — manuscript vs actual output files.
-5. **Read the full reviewer PDF** — complete the comment mapping in Appendix C.
-6. **Decide on benchmark comparison** — add GMM/DBSCAN or state as future work.
-7. **Decide on real-world pathway** — execute UCI pathway or state as future work.
+1. **Parse the reviewer PDF** - extract all comments and map them explicitly.
+2. **Execute the test suite** - `pytest tests/` and report results.
+3. **Fix LaTeX compilation** - raw citation keys and "Section ??" reference.
+4. **Verify figure/table numbers** - manuscript vs actual output files.
+5. **Read the full reviewer PDF** - complete the comment mapping in Appendix C.
+6. **Decide on benchmark comparison** - add GMM/DBSCAN or state as future work.
+7. **Decide on real-world pathway** - execute UCI pathway or state as future work.
 
 ---
 
 **Audit completed:** 2026-09-26  
 **Next audit step:** Parse reviewer PDF and complete the comment mapping.  
-**No code or manuscript changes were made** — this audit is read-only.
+**No code or manuscript changes were made** - this audit is read-only.

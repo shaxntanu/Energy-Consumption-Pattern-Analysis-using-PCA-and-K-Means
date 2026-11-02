@@ -7,14 +7,14 @@ Use the current [repository audit](../REPOSITORY_AUDIT.md), [methodology](../MET
 ## Contents
 
 ### Audit reports
-- [audit_report.md](audit_report.md) — earlier general audit
-- [RESEARCH_AUDIT.md](RESEARCH_AUDIT.md) — earlier research-method review
-- [RESEARCH_INFRASTRUCTURE_AUDIT.md](RESEARCH_INFRASTRUCTURE_AUDIT.md) — earlier infrastructure snapshot
-- [TECHNICAL_FORENSIC_AUDIT.md](TECHNICAL_FORENSIC_AUDIT.md) — earlier technical review
+- [audit_report.md](audit_report.md) - earlier general audit
+- [RESEARCH_AUDIT.md](RESEARCH_AUDIT.md) - earlier research-method review
+- [RESEARCH_INFRASTRUCTURE_AUDIT.md](RESEARCH_INFRASTRUCTURE_AUDIT.md) - earlier infrastructure snapshot
+- [TECHNICAL_FORENSIC_AUDIT.md](TECHNICAL_FORENSIC_AUDIT.md) - earlier technical review
 
 ### Project information
-- [PROJECT_FEATURES_AND_PIPELINE.md](PROJECT_FEATURES_AND_PIPELINE.md) — historical pipeline description
-- [RESULTS.md](RESULTS.md) — earlier run results
+- [PROJECT_FEATURES_AND_PIPELINE.md](PROJECT_FEATURES_AND_PIPELINE.md) - historical pipeline description
+- [RESULTS.md](RESULTS.md) - earlier run results
 
 ### Revision documentation
 - [REVIEW_TASKS.md](REVIEW_TASKS.md)

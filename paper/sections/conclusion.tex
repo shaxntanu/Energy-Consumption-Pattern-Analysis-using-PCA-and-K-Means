@@ -7,7 +7,7 @@ This paper presents a reproducible framework for shape-first behavioral segmenta
 
 \textbf{1. Methodological Integration:} We synthesize shape normalization, 51-feature behavioral representation, PCA dimensionality reduction, evidence-based K selection, and multi-axis stability validation into a cohesive, reproducible pipeline. While individual techniques are established (PCA \cite{jolliffe2002pca}, K-means \cite{lloyd1982least,arthur2007kmeans}), their rigorous integration with controlled validation and comprehensive stability analysis advances methodological standards for behavioral energy analytics.
 
-\textbf{2. Empirical Validation of Magnitude-Timing Separation:} The ablation study provides conclusive evidence: magnitude-only features achieve highest internal quality (silhouette 0.521) yet zero behavioral recovery (ARI $-0.004$), while shape-normalized behavioral features achieve ARI 0.813. This demonstrates that internal metrics alone cannot validate behavioral segmentation---external validation (even synthetic ground truth) is essential.
+\textbf{2. Empirical Validation of Magnitude-Timing Separation:} The ablation study provides conclusive evidence: magnitude-only features achieve highest internal quality (silhouette 0.521) yet zero behavioral recovery (ARI $-0.004$), while shape-normalized behavioral features achieve ARI 0.813. This demonstrates that internal metrics alone cannot validate behavioral segmentation. External validation, even with synthetic ground truth, is essential.
 
 \textbf{3. Evidence-Based K Selection:} Algorithm~\ref{alg:kselection} integrates multiple complementary metrics (silhouette, Calinski-Harabasz, Davies-Bouldin), balance constraints, stability validation, and parsimony preference. The selected K=4 independently aligns with ground truth recovery peak (ARI 0.813), validating the composite approach over single-metric heuristics.
 
@@ -68,7 +68,7 @@ Beyond household energy, shape-normalized behavioral clustering generalizes to:
     \item Network traffic classification
 \end{itemize}
 
-The methodological framework---separate magnitude from behavior, apply evidence-based selection, validate through multiple axes, ensure reproducibility---applies wherever temporal patterns must be distinguished from scale.
+The methodological framework separates magnitude from behavior, applies evidence-based selection, validates through multiple axes, and ensures reproducibility. It applies wherever temporal patterns must be distinguished from scale.
 
 \subsection{Reproducibility and Open Science}
 
@@ -91,7 +91,7 @@ We encourage researchers to:
 
 \subsection{Final Remarks}
 
-Household energy consumption clustering has traditionally focused on magnitude-based segmentation, grouping consumers by \emph{how much} they use. This paper demonstrates that behavioral segmentation by \emph{when} they use energy is achievable through shape normalization, provides complementary insights for demand response, and requires fundamentally different validation approaches. Internal quality metrics (silhouette, Calinski-Harabasz, Davies-Bouldin) measure cluster compactness but cannot confirm behavioral meaningfulness. External validation---whether through synthetic ground truth, domain experts, or intervention trials---is essential.
+Household energy consumption clustering has traditionally focused on magnitude-based segmentation, grouping consumers by \emph{how much} they use. This paper demonstrates that behavioral segmentation by \emph{when} they use energy is achievable through shape normalization, provides complementary insights for demand response, and requires fundamentally different validation approaches. Internal quality metrics (silhouette, Calinski-Harabasz, Davies-Bouldin) measure cluster compactness but cannot confirm behavioral meaningfulness. External validation, whether through synthetic ground truth, domain experts, or intervention trials, is essential.
 
 The methodological contributions (shape normalization, evidence-based K selection, comprehensive stability analysis, reproducibility infrastructure) advance standards for computational energy analytics. Real-world validation remains critical future work. We have established methodological rigor on controlled synthetic data; the next step is demonstrating effectiveness on utility smart meter deployments.
 

@@ -51,7 +51,7 @@ Behavioral segmentation enables targeted demand response strategies:
 
 \subsubsection{Shape Normalization}
 
-The explicit separation of magnitude from timing through Equation~\ref{eq:shape_normalization} (section text) addresses a fundamental challenge in energy clustering. Prior work often used raw kWh features \cite{kwac2014household,rhodes2014clustering}, allowing scale to dominate. Simple normalization (z-score) preserves relative magnitude differences. Our approach---dividing by daily total---removes magnitude entirely, enabling pure behavioral clustering. The ablation study conclusively validates this design choice.
+The explicit separation of magnitude from timing through Equation~\ref{eq:shape_normalization} (section text) addresses a fundamental challenge in energy clustering. Prior work often used raw kWh features \cite{kwac2014household,rhodes2014clustering}, allowing scale to dominate. Simple normalization (z-score) preserves relative magnitude differences. Our approach divides each value by the daily total, removing magnitude entirely and enabling pure behavioral clustering. The ablation study conclusively validates this design choice.
 
 \subsubsection{Evidence-Based K Selection}
 
@@ -63,7 +63,7 @@ Synthetic data with hidden archetypes enables quantitative recovery assessment i
 
 \subsubsection{Temporal Stability}
 
-Most energy clustering studies report single-window results without temporal validation \cite{kwac2014household,rhodes2014clustering}. Our quarterly re-analysis with full pipeline re-execution (features, PCA, K-selection) per segment provides stronger evidence: mean ARI 0.882 demonstrates consumer groups are stable longitudinal properties, not seasonal artifacts. This finding has practical importance---consumer behavioral types persist, enabling long-term program targeting.
+Most energy clustering studies report single-window results without temporal validation \cite{kwac2014household,rhodes2014clustering}. Our quarterly re-analysis with full pipeline re-execution (features, PCA, K-selection) per segment provides stronger evidence: mean ARI 0.882 demonstrates consumer groups are stable longitudinal properties, not seasonal artifacts. This finding has practical importance because consumer behavioral types persist, enabling long-term program targeting.
 
 \subsection{Limitations and Generalization}
 
