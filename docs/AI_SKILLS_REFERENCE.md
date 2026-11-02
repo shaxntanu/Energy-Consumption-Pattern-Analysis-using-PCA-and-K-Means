@@ -2,7 +2,7 @@
 
 **Reviewed:** 2026-11-02
 
-This registry records specialist tools named in the supplied repository prompt. It separates local availability from actual project use. A repository appearing here does not mean its code was installed or its skill was invoked. No skill package or additional application dependency was added to the repository for this audit. Python test dependencies were installed only in a task-specific virtual environment.
+This registry records specialist tools named in the supplied repository prompt and its companion token-efficiency guide. It separates local availability from actual project use. A repository appearing here does not mean its code was installed or its skill was invoked. No skill package or additional application dependency was added to the repository for this audit. Python test dependencies were installed only in a task-specific virtual environment.
 
 ## Available locally and relevant to this repository
 
@@ -93,3 +93,15 @@ The prompt says to activate this group only for KiCad schematic or PCB work. Thi
 ## Project visualization tools
 
 Matplotlib, Plotly, React, and Chart.js are application or visualization libraries, not agent skills. Their dependency declarations and source use are in the repository. Existing figures retain their data provenance and limitations in [`docs/visualizations.md`](visualizations.md). No new visualization dependency was added by this audit.
+
+## Token-efficient agent stack from the companion guide
+
+The five integrations below were not exposed as callable tools or skills in the current Codex session. None was installed, configured, or invoked, and none generated a repository artifact. Their working principles were applied manually with native tools: targeted retrieval, bounded output, reuse of existing code and documentation, and risk-based verification. The repository links were opened, but setup instructions, runtime behavior, and compatibility with other agent clients were not evaluated.
+
+| Tool | Repository | Purpose and trigger | Do not use when |
+|---|---|---|---|
+| Ponytail | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Reduce unnecessary implementation complexity during code changes and substantial reviews. | Minimization would skip required correctness, safety, accessibility, or validation work. |
+| Lean Coding Agent | [JeremyFaubert/lean-coding-agent-skill](https://github.com/JeremyFaubert/lean-coding-agent-skill) | Retrieve repository context just in time and choose checks according to change risk. | Dependencies, callers, or behavior remain unclear and need broader inspection. |
+| Serena | [oraios/serena](https://github.com/oraios/serena) | Use semantic symbol lookup and references for non-trivial code navigation or cross-file changes. | A known small file or exact text search can answer the question more cheaply. |
+| skill-search | [sowhan/skill-search](https://github.com/sowhan/skill-search) | Discover a specialist skill on demand when the environment supports semantic skill retrieval. | No specialist skill is needed or the available skill catalog is already small and accessible. |
+| Token Optimizer MCP | [ooples/token-optimizer-mcp](https://github.com/ooples/token-optimizer-mcp) | Measure or reduce tool-output and context costs when an MCP integration is available and useful. | The task is small or output reduction would hide evidence needed for correctness. |
