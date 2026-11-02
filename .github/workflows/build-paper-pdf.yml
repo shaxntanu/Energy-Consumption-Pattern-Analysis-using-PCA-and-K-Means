@@ -60,5 +60,3 @@ jobs:
         with:
           name: paper-pdf
           path: paper/MAIN.pdf
-      
-\n
