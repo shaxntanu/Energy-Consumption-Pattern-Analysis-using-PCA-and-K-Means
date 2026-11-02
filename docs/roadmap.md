@@ -7,7 +7,7 @@ Items are proposals, not commitments. Priorities depend on obtaining complete da
 - [ ] Re-run the London study against the complete source archive and publish the exact source checksum and selection protocol.
 - [ ] Complete a reproducible C++ versus Python timing report with hardware, compiler, library versions, thread settings, raw trials, and parity checks.
 - [ ] Extend automated coverage for the UCI/London ingestion and experiment-sidecar schemas.
-- [ ] Add an SBOM artifact once a release or deployment process needs a machine-readable dependency inventory.
+- [ ] Refresh the four checked-in SBOMs whenever dependency pins or the npm lockfile change, and review the inventory diff with the dependency audit.
 
 ## Short term
 

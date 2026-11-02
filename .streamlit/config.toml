@@ -1,7 +1,8 @@
 [server]
 headless = true
 address = "0.0.0.0"
-enableCORS = false
+enableCORS = true
+corsAllowedOrigins = ["https://energy-consumption-pattern-vqrh.streamlit.app"]
 enableXsrfProtection = true
 
 [browser]

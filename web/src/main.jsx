@@ -3247,14 +3247,12 @@ function App() {
         {/* SDG impact section */}
         <section className="band" id="sdg-impact">
           <SectionHeader
-            eyebrow="Impact & Sustainable Development"
-            title="From data patterns to global goals"
+            eyebrow="Research relevance"
+            title="A possible link to SDG 7.3"
           >
-            This project contributes to the UN Sustainable Development Goals through its
-            methodology and outputs. The contribution hierarchy reflects how the
-            analytical pipeline connects to each goal: direct contributions from core
-            capabilities, supported goals through enabling features, and indirect
-            contributions through downstream applications.
+            Load-shape clustering could inform further energy-efficiency research. This
+            project does not calculate the UN energy-intensity indicator, measure an
+            efficiency improvement, or evaluate an intervention.
           </SectionHeader>
           <SDGImpactSection />
         </section>
@@ -3351,7 +3349,7 @@ function App() {
           </a>
         </section>
 
-        {/* LogoLoop, the tech stack scroller: closes the page */}
+        {/* LogoLoop, the project toolkit scroller: closes the page */}
         <section className="band" style={{ paddingTop: 0, paddingBottom: 2 }}>
           <div style={{ height: 140, position: 'relative', overflow: 'hidden' }}>
             <LogoLoop
@@ -3363,7 +3361,7 @@ function App() {
               scaleOnHover
               fadeOut
               fadeOutColor="#000000"
-              ariaLabel="Technology stack"
+              ariaLabel="Project toolkit"
             />
           </div>
         </section>
@@ -3410,195 +3408,58 @@ class RootBoundary extends React.Component {
 }
 
 // ---------------------------------------------------------------------------
-// SDG Impact Section: Visual contribution hierarchy
+// Potential SDG relevance, limited to what the evidence supports.
 // ---------------------------------------------------------------------------
 function SDGImpactSection() {
-  const sdgData = [
-    {
-      number: 7,
-      title: "Affordable and Clean Energy",
-      shortTitle: "Clean Energy",
-      classification: "Primary",
-      description: "Core contribution: data-driven energy management insights from load-shape clustering enable utilities to design efficient programs, reduce waste, and improve energy access.",
-      features: [
-        "Behavioral load-shape segmentation (4 clusters, ARI 0.81)",
-        "Seasonal shape/energy/phase analysis across 200 consumers",
-        "Peak/base load profiling for demand-side management",
-        "Longitudinal stability tracking (quarterly ARI mean 0.92)"
-      ],
-      color: "var(--cyan)"
-    },
-    {
-      number: 9,
-      title: "Industry, Innovation and Infrastructure",
-      shortTitle: "Innovation",
-      classification: "Supported",
-      description: "Enabling contribution: ML analytics pipeline with explainable AI, interactive exploration tools, and production-grade infrastructure for utility-scale deployment.",
-      features: [
-        "PCA (10 components, 95% variance) + K-Means pipeline",
-        "SHAP-based explainability for cluster assignment",
-        "Hybrid Python/C++ engine with 50× speedup potential",
-        "Interactive web dashboard (Chart.js + React)"
-      ],
-      color: "var(--blue)"
-    },
-    {
-      number: 12,
-      title: "Responsible Consumption and Production",
-      shortTitle: "Responsible Consumption",
-      classification: "Supported",
-      description: "Enabling contribution: Peak/base load analysis reveals demand-shifting opportunities; cluster profiles support targeted efficiency programs without prescribing specific reductions.",
-      features: [
-        "Peak hour identification per cluster (20:00, 19:00, 07:00, 14:00)",
-        "Base-to-peak ratio analysis across 4 archetypes",
-        "Seasonal energy variation patterns (winter +35%, summer +28%)",
-        "Weekday/weekend behavioral differentiation"
-      ],
-      color: "var(--amber)"
-    },
-    {
-      number: 11,
-      title: "Sustainable Cities and Communities",
-      shortTitle: "Sustainable Cities",
-      classification: "Indirect",
-      description: "Downstream contribution: Population-level demand planning enabled by segmented load forecasts; utilities can model infrastructure needs at neighborhood scale.",
-      features: [
-        "Aggregate cluster shares for demand forecasting",
-        "Seasonal infrastructure stress modeling (shape/phase recovery r=0.68)",
-        "Scalable to 150M+ smart meter deployments",
-        "Integration-ready export for grid planning tools"
-      ],
-      color: "var(--violet)"
-    },
-    {
-      number: 13,
-      title: "Climate Action",
-      shortTitle: "Climate Action",
-      classification: "Indirect",
-      description: "Downstream contribution: Potential efficiency and demand-management benefits through better program targeting; no direct carbon reduction claimed without deployment measurement.",
-      features: [
-        "Enables targeted demand-response program design",
-        "Supports load-shifting to lower-carbon generation periods",
-        "Infrastructure avoidance through improved planning",
-        "Measured outcomes require utility deployment data"
-      ],
-      color: "var(--rose)"
-    }
-  ];
+  const sdg = {
+    number: 7,
+    title: "Affordable and Clean Energy",
+    classification: "Potential relevance",
+    description:
+      "The method groups synthetic and selected measured load profiles by timing. If validated with representative data, this could support further research related to energy efficiency. It is not evidence of an efficiency gain.",
+    features: [
+      "The flagship synthetic run reports ARI 0.813 against generated archetype labels.",
+      "The UCI and London studies do not have independent behavioral ground-truth labels.",
+      "The load-shift scenario is a retrospective counterfactual, not measured participant response.",
+      "No efficiency outcome, bill saving, or emissions reduction is measured."
+    ],
+    color: "var(--cyan)"
+  };
 
   return (
     <div className="sdg-impact-section">
-      {/* Contribution Hierarchy Visualization */}
-      <div className="sdg-hierarchy">
-        <div className="hierarchy-header">
-          <h3>SDG Contribution Hierarchy</h3>
-          <p className="hierarchy-note">
-            Contribution is ranked by how direct it is: primary goals are addressed by the pipeline
-            itself, supported goals by its capabilities, and indirect goals through downstream adoption.
-          </p>
-        </div>
-        <div className="hierarchy-flow">
-          {/* Primary */}
-          <div className="hierarchy-node primary">
-            <div className="node-badge">PRIMARY</div>
-            <div className="node-content">
-              <SDGNodeCard sdg={sdgData[0]} />
-            </div>
-          </div>
-
-          {/* Arrow down to supported */}
-          <div className="hierarchy-arrow vertical" />
-
-          {/* Supported row */}
-          <div className="hierarchy-row supported-row">
-            <div className="hierarchy-node supported">
-              <div className="node-badge">SUPPORTED</div>
-              <div className="node-content">
-                <SDGNodeCard sdg={sdgData[1]} />
-              </div>
-            </div>
-            <div className="hierarchy-arrow horizontal" />
-            <div className="hierarchy-node supported">
-              <div className="node-badge">SUPPORTED</div>
-              <div className="node-content">
-                <SDGNodeCard sdg={sdgData[2]} />
-              </div>
-            </div>
-          </div>
-
-          {/* Arrow down to indirect */}
-          <div className="hierarchy-arrow vertical" />
-
-          {/* Indirect row */}
-          <div className="hierarchy-row indirect-row">
-            <div className="hierarchy-node indirect">
-              <div className="node-badge">INDIRECT</div>
-              <div className="node-content">
-                <SDGNodeCard sdg={sdgData[3]} />
-              </div>
-            </div>
-            <div className="hierarchy-arrow horizontal" />
-            <div className="hierarchy-node indirect">
-              <div className="node-badge">INDIRECT</div>
-              <div className="node-content">
-                <SDGNodeCard sdg={sdgData[4]} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Cards */}
       <div className="sdg-detail-grid">
-        {sdgData.map((sdg) => (
-          <article key={sdg.number} className="sdg-detail-card" style={{ "--sdg-color": sdg.color }}>
-            <div className="sdg-card-header">
-              <span className="sdg-icon">
-                <GoalIcon goal={sdg.number} />
-              </span>
-              <div className="sdg-title-row">
-                <span className="sdg-number">Goal {sdg.number}</span>
-                <span className="sdg-title">{sdg.shortTitle}</span>
-              </div>
-              <span className={`sdg-classification ${sdg.classification.toLowerCase()}`}>
-                {sdg.classification}
-              </span>
+        <article className="sdg-detail-card" style={{ "--sdg-color": sdg.color }}>
+          <div className="sdg-card-header">
+            <span className="sdg-icon">
+              <GoalIcon goal={sdg.number} />
+            </span>
+            <div className="sdg-title-row">
+              <span className="sdg-number">Goal {sdg.number}, Target 7.3</span>
+              <span className="sdg-title">{sdg.title}</span>
             </div>
-            <p className="sdg-description">{sdg.description}</p>
-            <ul className="sdg-features">
-              {sdg.features.map((feature, idx) => (
-                <li key={idx}>
-                  <span className="feature-bullet" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-          </article>
-        ))}
+            <span className="sdg-classification">{sdg.classification}</span>
+          </div>
+          <p className="sdg-description">{sdg.description}</p>
+          <ul className="sdg-features">
+            {sdg.features.map((feature) => (
+              <li key={feature}>
+                <span className="feature-bullet" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </article>
       </div>
 
-      {/* Disclaimer */}
       <div className="sdg-disclaimer">
         <p>
-          <strong>Accuracy note:</strong> Classifications follow UN SDG target definitions. "Primary" means the project's core output
-          directly addresses specific SDG targets. "Supported" means the project provides enabling capabilities. "Indirect" means
-          potential downstream benefits that require deployment and measurement by adopting organizations. No direct energy savings,
-          carbon reduction, or infrastructure avoidance claims are made without empirical deployment evidence.
+          <strong>Evidence boundary:</strong> The SDG 7.3 connection is a research hypothesis. This
+          project does not calculate primary energy intensity relative to GDP or measure an
+          intervention outcome. Further relevance would require representative data and
+          independently measured results.
         </p>
       </div>
-    </div>
-  );
-}
-
-// Reusable SDG node card for hierarchy visualization
-function SDGNodeCard({ sdg }) {
-  return (
-    <div className="sdg-node-card" style={{ "--sdg-color": sdg.color }}>
-      <div className="node-icon">
-        <GoalIcon goal={sdg.number} />
-      </div>
-      <div className="node-sdg-label">Goal {sdg.number}</div>
-      <div className="node-sdg-title">{sdg.shortTitle}</div>
     </div>
   );
 }
@@ -3606,37 +3467,7 @@ function SDGNodeCard({ sdg }) {
 // Stroke-only glyphs for each goal, drawn with the site's tokens.
 function GoalIcon({ goal }) {
   const paths = {
-    7: <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />,
-    9: (
-      <>
-        <circle cx="12" cy="4.5" r="2.2" />
-        <circle cx="4.5" cy="17.5" r="2.2" />
-        <circle cx="19.5" cy="17.5" r="2.2" />
-        <path d="M11.2 6.6 5.9 15.6M12.8 6.6l5.3 9" />
-      </>
-    ),
-    12: (
-      <>
-        <path d="M5 12a7 7 0 0 1 12.1-4.9" />
-        <path d="m19.7 4.2-.3 3.7-3.5-1.4" />
-        <path d="M19 12a7 7 0 0 1-12.1 4.9" />
-        <path d="m4.3 19.8.3-3.7 3.5 1.4" />
-      </>
-    ),
-    11: (
-      <>
-        <rect x="4" y="10" width="4.5" height="10" />
-        <rect x="10" y="4" width="4.5" height="16" />
-        <rect x="16" y="12" width="4" height="8" />
-      </>
-    ),
-    13: (
-      <>
-        <circle cx="12" cy="12" r="8.5" />
-        <path d="M3.5 12h17" />
-        <path d="M12 3.5c2.8 2.4 2.8 14.6 0 17-2.8-2.4-2.8-14.6 0-17Z" />
-      </>
-    )
+    7: <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
   };
   return (
     <svg

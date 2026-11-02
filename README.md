@@ -158,6 +158,7 @@ Important limitations include generator-specific synthetic validation, unlabeled
 - [Roadmap](docs/roadmap.md)
 - [Security](SECURITY.md)
 - [Repository audit and maturity assessment](docs/REPOSITORY_AUDIT.md)
+- [AI skills and tool reference](docs/AI_SKILLS_REFERENCE.md)
 - [Software bills of materials](sbom/README.md)
 - [Changelog](docs/CHANGELOG.md)
 

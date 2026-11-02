@@ -497,6 +497,10 @@ p {
   border-top: 1px solid var(--line);
 }
 
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
 .section-header {
   max-width: 70ch;
   margin-bottom: 1.25rem;
@@ -1499,7 +1503,15 @@ p {
 
 @media (max-width: 920px) {
   .chart-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chart-panel {
+    min-width: 0;
+  }
+
+  .chart-panel.wide {
+    grid-column: auto;
   }
 
   .stats-grid {
@@ -2150,7 +2162,8 @@ p {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
-  margin-bottom: 2.5rem;
+  max-width: 860px;
+  margin: 0 auto 2.5rem;
 }
 
 .sdg-detail-card {

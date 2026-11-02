@@ -3,32 +3,30 @@ import { useEffect, useRef, useState, memo } from "react";
 /**
  * LogoLoop: infinite logo scroller with fade-out edges.
  * Adapted from @react-bits/LogoLoop-JS-CSS for this project's theme.
- * Uses react-icons for tech logos.
+ * Uses react-icons for project technology logos.
  */
 import {
+  SiPython,
+  SiStreamlit,
+  SiScikitlearn,
+  SiNumpy,
+  SiPlotly,
   SiReact,
-  SiNextdotjs,
-  SiTypescript,
-  SiTailwindcss,
   SiVite,
   SiChartdotjs,
-  SiThreedotjs,
-  SiNpm,
-  SiGit,
-  SiGithub,
+  SiCplusplus,
 } from "react-icons/si";
 
 const LOGOS = [
+  { Component: SiPython, label: "Python" },
+  { Component: SiStreamlit, label: "Streamlit" },
+  { Component: SiScikitlearn, label: "scikit-learn" },
+  { Component: SiNumpy, label: "NumPy" },
+  { Component: SiPlotly, label: "Plotly" },
   { Component: SiReact, label: "React" },
-  { Component: SiNextdotjs, label: "Next.js" },
-  { Component: SiTypescript, label: "TypeScript" },
-  { Component: SiTailwindcss, label: "Tailwind CSS" },
   { Component: SiVite, label: "Vite" },
   { Component: SiChartdotjs, label: "Chart.js" },
-  { Component: SiThreedotjs, label: "Three.js" },
-  { Component: SiNpm, label: "npm" },
-  { Component: SiGit, label: "Git" },
-  { Component: SiGithub, label: "GitHub" },
+  { Component: SiCplusplus, label: "C++" },
 ];
 
 const ANIMATION_CONFIG = {
@@ -50,7 +48,7 @@ export default function LogoLoop({
   fadeOut = true,
   fadeOutColor = "#000000",
   className = "",
-  ariaLabel = "Technology stack",
+  ariaLabel = "Project toolkit",
 }) {
   const containerRef = useRef(null);
   const trackRef = useRef(null);
