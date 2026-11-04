@@ -13,13 +13,15 @@
 .ascii-hero__stars,
 .ascii-hero__visual,
 .ascii-hero__corners { position: absolute; inset: 0; z-index: -1; }
+.ascii-hero__visual { perspective: 1400px; transform-style: preserve-3d; }
 .ascii-hero__fallback {
   position: absolute;
   left: 0;
   top: 50%;
   width: min(50%, 820px);
   height: auto;
-  transform: translateY(-50%);
+  transform: translateY(-50%) rotateY(-5deg);
+  transform-origin: left center;
   opacity: .72;
 }
 .ascii-hero__scene { position: absolute; inset: 0; }
@@ -180,4 +182,12 @@
 @media (prefers-reduced-motion: reduce) {
   .ascii-hero__scene, .ascii-hero__actions a { transition: none; }
   html:has(.ascii-hero) { scroll-behavior: auto; }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .ascii-hero__fallback { animation: load-shape-drift 22s ease-in-out infinite alternate; }
+
+  @keyframes load-shape-drift {
+    to { transform: translateY(calc(-50% - 10px)) rotateY(-7deg) rotateZ(-.5deg); }
+  }
 }
